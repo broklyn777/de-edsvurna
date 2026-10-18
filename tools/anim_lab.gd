@@ -8,26 +8,40 @@ extends Node3D
 ## Steg i --seq (kommaseparerade, valfri längd i sekunder efter kolon):
 ##   cast:<skola>:<s>  ladda en besvärjelse så länge, sedan släpp
 ##   attack[:s]  hit[:s]  block:<s>  kick[:s]  idle:<s>  walk:<s>
+##
+## Uppställning: --units=heroes, --units=enemies, --units=all eller --units=paladin,brokk,…
+## visar flera figurer i rad (alla gör samma sekvens). --shot=<fil.png> sparar en bild efter
+## --frames=<n> bildrutor och avslutar.
 
 var _model: UnitModel
+var _models: Array[UnitModel] = []
+var _shot := ""
+var _shot_frames := 30
 var _steps: Array = []
 var _wait := 0.3
 
 
 func _ready() -> void:
 	var data := GameData.load_all()
-	var unit_id := "alva"
+	var unit_ids: Array = ["alva"]
 	var seq := "idle:1"
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--unit="):
-			unit_id = arg.get_slice("=", 1)
+			unit_ids = [arg.get_slice("=", 1)]
+		elif arg.begins_with("--units="):
+			var list := arg.get_slice("=", 1)
+			match list:
+				"heroes": unit_ids = data.heroes.keys()
+				"enemies": unit_ids = data.enemies.keys()
+				"all": unit_ids = data.heroes.keys() + data.enemies.keys()
+				_: unit_ids = Array(list.split(","))
 		elif arg.begins_with("--seq="):
 			seq = arg.get_slice("=", 1)
+		elif arg.begins_with("--shot="):
+			_shot = arg.get_slice("=", 1)
+		elif arg.begins_with("--frames="):
+			_shot_frames = int(arg.get_slice("=", 1))
 	_steps = Array(seq.split(","))
-	var is_hero: bool = data.heroes.has(unit_id)
-	var d: Dictionary = data.heroes[unit_id] if is_hero else data.enemies[unit_id]
-	var u := CombatUnit.from_data(unit_id, d, 0 if is_hero else 1)
-	u.position = Vector2.ZERO
 
 	var env := WorldEnvironment.new()
 	env.environment = Environment.new()
@@ -41,55 +55,85 @@ func _ready() -> void:
 	add_child(sun)
 	var floor_mesh := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
-	plane.size = Vector2(8, 8)
+	plane.size = Vector2(40, 12)
 	floor_mesh.mesh = plane
 	add_child(floor_mesh)
 
-	_model = UnitModel.new()
-	add_child(_model)
-	_model.setup(u, null, d.visual)
-	_model.face(Vector3(1.0, 0, 1.0))
+	var x := 0.0
+	var tallest := 1.0
+	for unit_id in unit_ids:
+		var is_hero: bool = data.heroes.has(unit_id)
+		var d: Dictionary = data.heroes[unit_id] if is_hero else data.enemies[unit_id]
+		var u := CombatUnit.from_data(unit_id, d, 0 if is_hero else 1)
+		var m := UnitModel.new()
+		add_child(m)
+		var width: float = 1.3 * d.visual.get("scale", 1.0)
+		x += width / 2.0
+		u.position = Vector2(x, 0) / UnitModel.WORLD_SCALE
+		m.setup(u, null, d.visual)
+		m.face(m.position + Vector3(0.6 if unit_ids.size() == 1 else 0.0, 0, 1.0))
+		x += width / 2.0
+		tallest = maxf(tallest, m.model_scale)
+		if unit_ids.size() > 1:
+			var label := Label3D.new()
+			label.text = d.get("name", unit_id)
+			label.pixel_size = 0.004
+			label.position = m.position + Vector3(0, 2.05 * m.model_scale + 0.1, 0)
+			add_child(label)
+		_models.append(m)
+	_model = _models[0]
 	var cam := Camera3D.new()
-	var s := _model.model_scale
 	add_child(cam)
 	cam.fov = 35.0
-	cam.position = Vector3(2.7, 1.3, 3.9) * s
-	cam.look_at(Vector3(0, 0.95 * s, 0))
+	if _models.size() == 1:
+		var s := _model.model_scale
+		cam.position = Vector3(2.7, 1.3, 3.9) * s
+		cam.look_at(Vector3(0, 0.95 * s, 0))
+	else:
+		var mid := Vector3(x / 2.0, 0.95 * tallest, 0)
+		cam.position = mid + Vector3(0, 0.5, maxf(x * 1.05, 2.6 * tallest + 1.5))
+		cam.look_at(mid)
 
 
 func _process(delta: float) -> void:
+	if _shot != "":
+		_shot_frames -= 1
+		if _shot_frames == 0:
+			get_viewport().get_texture().get_image().save_png(_shot)
+			get_tree().quit()
 	_wait -= delta
 	if _wait > 0.0 or _steps.is_empty():
 		return
 	var parts: PackedStringArray = String(_steps.pop_front()).split(":")
 	var arg := func(i: int, fallback: float) -> float: return float(parts[i]) if parts.size() > i else fallback
-	var front := _model.global_position + Vector3(1, 0, 1)
-	match parts[0]:
+	var step := parts[0]
+	for m in _models:
+		var front := m.global_position + Vector3(1, 0, 1)
+		match step:
+			"cast": m.start_cast(parts[1] if parts.size() > 1 else "holy", false)
+			"release": m.end_cast(true)
+			"attack": m.attack(front)
+			"kick": m.kick(front)
+			"hit": m.hit(2.0, front)
+			"block": m.set_blocking(true)
+			"unblock": m.set_blocking(false)
+			"walk": m.move_to(m.position + Vector3(-1.5, 0, 0), arg.call(1, 1.2), false)
+	match step:
 		"cast":
-			_model.start_cast(parts[1] if parts.size() > 1 else "holy", false)
 			_wait = arg.call(2, 2.0)
 			_steps.push_front("release")
 		"release":
-			_model.end_cast(true)
 			_wait = 1.0
-		"attack":
-			_model.attack(front)
-			_wait = arg.call(1, 1.2)
-		"kick":
-			_model.kick(front)
+		"attack", "kick":
 			_wait = arg.call(1, 1.2)
 		"hit":
-			_model.hit(2.0, front)
 			_wait = arg.call(1, 1.0)
 		"block":
-			_model.set_blocking(true)
 			_wait = arg.call(1, 2.0)
 			_steps.push_front("unblock")
 		"unblock":
-			_model.set_blocking(false)
 			_wait = 0.6
 		"walk":
-			_model.move_to(_model.position + Vector3(-1.5, 0, 0), arg.call(1, 1.2), false)
 			_wait = arg.call(1, 1.2) + 0.3
 		_:
 			_wait = arg.call(1, 1.0)

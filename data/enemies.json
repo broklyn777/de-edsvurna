@@ -20,7 +20,7 @@
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk"
+				"walk": "Walk_Loop"
 			}
 		},
 		"trophy": "bone_finger"
@@ -40,14 +40,37 @@
 			"model": "skelett",
 			"scale": 0.95,
 			"tint": "#d8cfb4",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"liria/Liria_Quiver",
+				"liria/Liria_Arrow_0",
+				"liria/Liria_Arrow_1",
+				"liria/Liria_Arrow_2",
+				"liria/Liria_Arrow_3",
+				"liria/Liria_Arrow_4",
+				"liria/Liria_Fletch_0",
+				"liria/Liria_Fletch_1",
+				"liria/Liria_Fletch_2",
+				"liria/Liria_Fletch_3",
+				"liria/Liria_Fletch_4"
+			],
+			"weapons": {
+				"grip_l": "Longbow"
+			},
 			"anims": {
-				"idle": "Sword_Idle",
+				"idle": "Bow_Idle",
 				"attack": [
-					"Sword_Attack"
+					"Bow_Shoot"
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk"
+				"walk": "Walk_Loop"
 			}
 		},
 		"trophy": "bow_sinew",
@@ -80,15 +103,41 @@
 			"model": "skelett",
 			"scale": 1.0,
 			"tint": "#c9b8ff",
-			"glow": "#5a3a9a",
+			"anims_from": [
+				"solveig"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"kapa/Kult_Robe",
+				"kapa/Kult_Pendant"
+			],
+			"colors": {
+				"Kult_Robe": "#2a1748",
+				"Kult_DarkBrown": "#5a3a9a",
+				"Kult_Black": "#140c22",
+				"Kult_LightBrown": "#24163c",
+				"Kult_Metal": "#3c2a66"
+			},
+			"emit": {
+				"Kult_Glow": "#9a6aff"
+			},
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"light": "#8a5aff",
+			"light_energy": 0.7,
 			"anims": {
-				"idle": "Sword_Idle",
+				"idle": "Staff_Idle",
 				"attack": [
-					"Sword_Attack"
+					"Spell_Simple_Shoot"
 				],
+				"cast": "Staff_Cast",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk"
+				"walk": "Walk_Loop"
 			}
 		},
 		"trophy": "rosary"
@@ -116,16 +165,51 @@
 		"visual": {
 			"model": "skelett",
 			"scale": 1.2,
+			"tint": "#a8b8d8",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"rustning/Tom_Helm",
+				"rustning/Tom_Breast",
+				"rustning/Tom_Fauld",
+				"rustning/Tom_Tassets",
+				"rustning/Tom_Pauldron_L",
+				"rustning/Tom_Pauldron_R",
+				"rustning/Tom_Rerebrace_L",
+				"rustning/Tom_Rerebrace_R",
+				"rustning/Tom_Vambrace_L",
+				"rustning/Tom_Vambrace_R",
+				"rustning/Tom_Cuisse_L",
+				"rustning/Tom_Cuisse_R",
+				"rustning/Tom_Greave_L",
+				"rustning/Tom_Greave_R"
+			],
+			"colors": {
+				"Tom_Steel": "#7c8696",
+				"Tom_Edge": "#4a5260",
+				"Tom_Guard": "#5a6270",
+				"Vapen_Wood": "#3a4250"
+			},
+			"weapons": {
+				"grip_r": "Mace",
+				"grip_l": "Shield"
+			},
 			"anims": {
-				"idle": "Sword_Idle",
+				"idle": "Shield_Idle",
 				"attack": [
-					"Sword_Attack"
+					"Shield_Attack",
+					"Shield_Attack_B"
 				],
+				"block": "Shield_Block",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk"
-			},
-			"tint": "#a8b8d8"
+				"walk": "Walk_Loop"
+			}
 		}
 	},
 	"ember_skeleton": {
@@ -148,17 +232,40 @@
 		"visual": {
 			"model": "skelett",
 			"scale": 1.0,
+			"tint": "#ffb070",
+			"glow": "#a03a00",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"colors": {
+				"Ske_Bone": "#4a2a1a",
+				"Ske_BoneDark": "#2a1408"
+			},
+			"emit": {
+				"Ske_Bone": "#ff5a10",
+				"Ske_Eye": "#ffd040",
+				"Ske_Void": "#ff8a20",
+				"Vapen_Steel": "#ff7a20"
+			},
+			"weapons": {
+				"grip_r": "Greataxe"
+			},
+			"light": "#ff6a20",
+			"light_energy": 1.4,
 			"anims": {
-				"idle": "Sword_Idle",
+				"idle": "TwoHand_Idle",
 				"attack": [
-					"Sword_Attack"
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk"
-			},
-			"tint": "#ffb070",
-			"glow": "#a03a00"
+				"walk": "Walk_Loop"
+			}
 		}
 	},
 	"bone_lich": {
@@ -189,17 +296,52 @@
 		"visual": {
 			"model": "skelett",
 			"scale": 2.0,
+			"tint": "#d9c8ff",
+			"glow": "#5a3a9a",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"kapa/Kult_Robe",
+				"rustning/Tom_Pauldron_L",
+				"rustning/Tom_Pauldron_R",
+				"rustning/Tom_Rerebrace_L",
+				"rustning/Tom_Rerebrace_R"
+			],
+			"crown": "#e0b24a",
+			"colors": {
+				"Kult_Robe": "#1a1028",
+				"Kult_DarkBrown": "#6a2a9a",
+				"Kult_Black": "#0c0814",
+				"Kult_LightBrown": "#1a1028",
+				"Kult_Metal": "#3c2a66",
+				"Tom_Steel": "#3a3044",
+				"Tom_Edge": "#9a6ad0",
+				"Tom_Guard": "#2a2234"
+			},
+			"emit": {
+				"Kult_Glow": "#b07aff",
+				"Ske_Eye": "#c08aff"
+			},
+			"weapons": {
+				"grip_r": "Greatsword"
+			},
+			"light": "#9a6aff",
+			"light_energy": 1.6,
 			"anims": {
-				"idle": "Sword_Idle",
+				"idle": "TwoHand_Idle",
 				"attack": [
-					"Sword_Attack"
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk"
-			},
-			"tint": "#d9c8ff",
-			"glow": "#5a3a9a"
+				"walk": "Walk_Loop"
+			}
 		}
 	}
 }
