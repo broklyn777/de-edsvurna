@@ -5,8 +5,8 @@
 		"max_hp": 640,
 		"speed": 9,
 		"attack": [
-			215,
-			260
+			161,
+			195
 		],
 		"crit_chance": 0.05,
 		"attack_ability": "bone_slash",
@@ -22,7 +22,8 @@
 				"death": "Death01",
 				"walk": "Walk"
 			}
-		}
+		},
+		"trophy": "bone_finger"
 	},
 	"skeleton_archer": {
 		"name": "Skelettbågskytt",
@@ -30,8 +31,8 @@
 		"max_hp": 440,
 		"speed": 13,
 		"attack": [
-			175,
-			210
+			131,
+			158
 		],
 		"crit_chance": 0.08,
 		"attack_ability": "bone_arrow",
@@ -48,7 +49,13 @@
 				"death": "Death01",
 				"walk": "Walk"
 			}
-		}
+		},
+		"trophy": "bow_sinew",
+		"rules": [
+			{
+				"ability": "aimed_shot"
+			}
+		]
 	},
 	"grave_priest": {
 		"name": "Gravpräst",
@@ -56,8 +63,8 @@
 		"max_hp": 460,
 		"speed": 8,
 		"attack": [
-			105,
-			125
+			79,
+			94
 		],
 		"crit_chance": 0.05,
 		"attack_ability": "shadow_bolt",
@@ -83,6 +90,116 @@
 				"death": "Death01",
 				"walk": "Walk"
 			}
+		},
+		"trophy": "rosary"
+	},
+	"grave_warden": {
+		"name": "Gravväktare",
+		"color": "#9fb4d8",
+		"max_hp": 900,
+		"speed": 6,
+		"attack": [
+			118,
+			144
+		],
+		"crit_chance": 0.05,
+		"attack_ability": "shield_bash",
+		"trophy": "warden_helm",
+		"rules": [
+			{
+				"ability": "warden_provoke",
+				"if": {
+					"ally_hp_below": 0.75
+				}
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.2,
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"tint": "#a8b8d8"
+		}
+	},
+	"ember_skeleton": {
+		"name": "Glödskelett",
+		"color": "#ff8a2a",
+		"max_hp": 480,
+		"speed": 11,
+		"attack": [
+			103,
+			126
+		],
+		"crit_chance": 0.08,
+		"attack_ability": "ember_bolt",
+		"trophy": "ember_jaw",
+		"rules": [
+			{
+				"ability": "ember_burst"
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.0,
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"tint": "#ffb070",
+			"glow": "#a03a00"
+		}
+	},
+	"bone_lich": {
+		"name": "Benfursten",
+		"boss": true,
+		"color": "#cbbfe6",
+		"max_hp": 2000,
+		"speed": 9,
+		"attack": [
+			112,
+			135
+		],
+		"crit_chance": 0.05,
+		"attack_ability": "lich_touch",
+		"trophy": "lich_crown",
+		"boss_text": "Väcker en fallen skelett var tredje tur och sveper hela sällskapet med Benstorm.",
+		"rules": [
+			{
+				"ability": "raise_dead",
+				"if": {
+					"dead_ally": true
+				}
+			},
+			{
+				"ability": "bone_storm"
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 2.0,
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"tint": "#d9c8ff",
+			"glow": "#5a3a9a"
 		}
 	}
 }

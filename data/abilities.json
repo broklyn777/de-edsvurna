@@ -1,45 +1,350 @@
 {
-	"strike": {"name": "Svärdshugg", "target": "enemy", "melee": true, "sound": "k_hero_hit",
-		"effects": [{"type": "damage", "power": 1.0}]},
-	"holy_smite": {"name": "Rättfärdigt slag", "target": "enemy", "melee": true, "school": "holy", "cooldown": 2,
-		"icon": "cross", "button_color": "#f2c85b", "sound": "pyro_impact",
+	"strike": {
+		"name": "Svärdshugg",
+		"target": "enemy",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"holy_smite": {
+		"name": "Rättfärdigt slag",
+		"target": "enemy",
+		"melee": true,
+		"school": "holy",
+		"cooldown": 2,
+		"icon": "cross",
+		"button_color": "#f2c85b",
+		"sound": "pyro_impact",
 		"text": "Helig skada (160 %).",
-		"effects": [{"type": "damage", "power": 1.6}]},
-	"axe_chop": {"name": "Yxhugg", "target": "enemy", "melee": true, "sound": "k_hero_hit",
-		"effects": [{"type": "damage", "power": 1.0}]},
-	"challenge": {"name": "Utmana", "target": "self", "cooldown": 3, "icon": "shield", "button_color": "#8d9bb0",
-		"text": "Fienderna anfaller Brokk nästa runda, och han försvarar sig.",
-		"effects": [{"type": "aura", "aura": "taunt"}, {"type": "aura", "aura": "defend"}]},
-	"holy_bolt": {"name": "Ljusstråle", "target": "enemy", "school": "holy", "travel": 0.3, "sound": "heal",
-		"effects": [{"type": "damage", "power": 1.0}]},
-	"healing_light": {"name": "Helande ljus", "target": "ally", "school": "holy", "cooldown": 1,
-		"icon": "cross", "button_color": "#5dff73", "sound": "heal",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.6
+			}
+		]
+	},
+	"axe_chop": {
+		"name": "Yxhugg",
+		"target": "enemy",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"holy_bolt": {
+		"name": "Ljusstråle",
+		"target": "enemy",
+		"school": "holy",
+		"travel": 0.3,
+		"sound": "heal",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"healing_light": {
+		"name": "Helande ljus",
+		"target": "ally",
+		"school": "holy",
+		"cooldown": 1,
+		"icon": "cross",
+		"button_color": "#5dff73",
+		"sound": "heal",
 		"text": "Helar en allierad (300 % av kraften).",
-		"effects": [{"type": "heal", "power": 3.0}]},
-	"arrow": {"name": "Pil", "target": "enemy", "travel": 0.25, "sound": "k_hero_hit",
-		"effects": [{"type": "damage", "power": 1.0}]},
-	"hunters_mark": {"name": "Märk byte", "target": "enemy", "travel": 0.25, "cooldown": 2,
-		"icon": "bolt", "button_color": "#e9cf3f", "sound": "k_hero_crit",
+		"effects": [
+			{
+				"type": "heal",
+				"power": 3.0
+			}
+		],
+		"kind": "spell"
+	},
+	"arrow": {
+		"name": "Pil",
+		"target": "enemy",
+		"travel": 0.25,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"hunters_mark": {
+		"name": "Märk byte",
+		"target": "enemy",
+		"travel": 0.25,
+		"cooldown": 2,
+		"icon": "bolt",
+		"button_color": "#e9cf3f",
+		"sound": "k_hero_crit",
 		"text": "Märker målet i 3 turer (tar 20 % mer skada) och skjuter för 60 %.",
-		"effects": [{"type": "aura", "aura": "marked"}, {"type": "damage", "power": 0.6}]},
-	"fire_bolt": {"name": "Eldklot", "target": "enemy", "school": "fire", "travel": 0.35, "sound": "pyro_impact",
-		"effects": [{"type": "damage", "power": 1.0}]},
-	"flame_wave": {"name": "Eldvåg", "target": "all_enemies", "school": "fire", "cooldown": 2,
-		"icon": "flame", "button_color": "#ff8a2a", "sound": "pyro_impact",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "marked"
+			},
+			{
+				"type": "damage",
+				"power": 0.6
+			}
+		]
+	},
+	"fire_bolt": {
+		"name": "Eldklot",
+		"target": "enemy",
+		"school": "fire",
+		"travel": 0.35,
+		"sound": "pyro_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"flame_wave": {
+		"name": "Eldvåg",
+		"target": "all_enemies",
+		"school": "fire",
+		"cooldown": 2,
+		"icon": "flame",
+		"button_color": "#ff8a2a",
+		"sound": "pyro_impact",
 		"text": "Eldskada på alla fiender (70 %).",
-		"effects": [{"type": "damage", "power": 0.7}]},
-	"defend": {"name": "Försvara", "target": "self", "icon": "shield", "button_color": "#6f7f99", "sound": "k_shield_wall",
-		"text": "Halverar skadan fram till din nästa tur.",
-		"effects": [{"type": "aura", "aura": "defend"}]},
-
-	"bone_slash": {"name": "Benhugg", "target": "enemy", "pick": "random", "melee": true, "sound": "k_boss_hit",
-		"effects": [{"type": "damage", "power": 1.0}]},
-	"bone_arrow": {"name": "Benpil", "target": "enemy", "pick": "lowest", "travel": 0.25, "sound": "k_hero_hit",
-		"effects": [{"type": "damage", "power": 1.0}]},
-	"shadow_bolt": {"name": "Skuggblixt", "target": "enemy", "pick": "random", "school": "shadow", "travel": 0.35,
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.7
+			}
+		],
+		"kind": "spell"
+	},
+	"defend": {
+		"name": "Försvara",
+		"target": "self",
+		"icon": "shield",
+		"button_color": "#6f7f99",
+		"sound": "k_shield_wall",
+		"text": "Tar 35 % mindre skada till din nästa tur.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defend"
+			}
+		]
+	},
+	"bone_slash": {
+		"name": "Benhugg",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"bone_arrow": {
+		"name": "Benpil",
+		"target": "enemy",
+		"pick": "lowest",
+		"travel": 0.25,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"shadow_bolt": {
+		"name": "Skuggblixt",
+		"target": "enemy",
+		"pick": "random",
+		"school": "shadow",
+		"travel": 0.35,
 		"sound": "volley_impact",
-		"effects": [{"type": "damage", "power": 1.0}]},
-	"grave_mend": {"name": "Gravens lagning", "target": "ally", "pick": "lowest", "school": "shadow", "cooldown": 2,
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"grave_mend": {
+		"name": "Gravens lagning",
+		"target": "ally",
+		"pick": "lowest",
+		"school": "shadow",
+		"cooldown": 2,
 		"sound": "renew",
-		"effects": [{"type": "heal", "min": 170, "max": 200}]}
+		"effects": [
+			{
+				"type": "heal",
+				"min": 170,
+				"max": 200
+			}
+		],
+		"kind": "spell"
+	},
+	"provoke": {
+		"name": "Provocera",
+		"target": "self",
+		"icon": "skull",
+		"button_color": "#b0503a",
+		"sound": "k_shield_wall",
+		"text": "Alla fiender måste anfalla dig till din nästa tur, men du tar 30 % mer skada.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "provoke"
+			}
+		]
+	},
+	"stone_wall": {
+		"name": "Stenmur",
+		"target": "self",
+		"cooldown": 3,
+		"icon": "shield",
+		"button_color": "#8d9bb0",
+		"sound": "k_shield_wall",
+		"text": "Brokk försvarar sig och hela sällskapet tar 25 % mindre skada till hans nästa tur.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defend"
+			}
+		]
+	},
+	"aimed_shot": {
+		"name": "Siktat skott",
+		"target": "enemy",
+		"pick": "lowest",
+		"travel": 0.3,
+		"cooldown": 3,
+		"sound": "k_hero_crit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 2.0
+			}
+		]
+	},
+	"shield_bash": {
+		"name": "Sköldslag",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"warden_provoke": {
+		"name": "Väktarens utmaning",
+		"target": "self",
+		"cooldown": 3,
+		"sound": "k_shield_wall",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "provoke"
+			},
+			{
+				"type": "aura",
+				"aura": "defend"
+			}
+		]
+	},
+	"ember_bolt": {
+		"name": "Glödpil",
+		"target": "enemy",
+		"pick": "random",
+		"school": "fire",
+		"travel": 0.3,
+		"sound": "pyro_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"ember_burst": {
+		"name": "Glödregn",
+		"target": "all_enemies",
+		"school": "fire",
+		"kind": "spell",
+		"cooldown": 3,
+		"sound": "pyro_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.55
+			},
+			{
+				"type": "aura",
+				"aura": "burning"
+			}
+		]
+	},
+	"lich_touch": {
+		"name": "Dödens beröring",
+		"target": "enemy",
+		"pick": "random",
+		"school": "shadow",
+		"travel": 0.35,
+		"sound": "volley_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"bone_storm": {
+		"name": "Benstorm",
+		"target": "all_enemies",
+		"school": "shadow",
+		"kind": "spell",
+		"cooldown": 3,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.5
+			}
+		]
+	},
+	"raise_dead": {
+		"name": "Väck de döda",
+		"target": "dead_ally",
+		"kind": "spell",
+		"cooldown": 3,
+		"sound": "renew",
+		"effects": [
+			{
+				"type": "revive",
+				"pct": 0.6
+			}
+		]
+	}
 }

@@ -36,6 +36,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 
 ## Struktur
 
+- `src/game/run_state.gd` – en körning: Ed, sällskap, våning (`FLOORS`), troféer och vem som bär dem.
+  `scripts/game/run.gd` är autoloaden `Run` som byter scen (start → strid → läger → … ) och sparar
+  samlingen i `user://progress.cfg`. Skärmar i `scripts/screens/` (start, läger); val reagerar vid släpp.
 - `src/combat/` – `CombatSim` (turordning, ren logik, händelselista), `CombatUnit`, `GameData`.
   Flöde: `begin()`, sedan `act(action, target)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
 - `data/*.json` – förmågor (`power` = andel av enhetens attack, `cooldown` i egna turer), auror
@@ -67,7 +70,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - `tools/gen_sfx.py` – syntetiserar egna ljud och kryptstämningen till `assets/audio/`.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/AUTO/GOOD) för balanstester.
 
-Balansmål för första kryptstriden: BASIC (bara Anfall) förlorar nästan alltid, AUTO ~95 %, ~7 rundor.
+Balansmål (utan troféer): AUTO vinner ~95 % på våning 1, ~70 % på våning 2, ~60 % mot Benfursten;
+BASIC (bara Anfall) förlorar. Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
 
 ## Kommandon
 
@@ -78,17 +82,20 @@ godot --headless --path . --script res://tests/run_tests.gd
 # Starta spelet
 godot --path .
 
-# Balansrapport (200 strider per spelarnivå)
+# Balansrapport per våning (100 strider per spelarnivå)
 godot --headless --path . --script res://tests/balance_report.gd
 
 # Skärmdump av spelet (sparas efter 30 bildrutor, sedan avslut)
 godot --path . -- --screenshot=/tmp/shot.png --frames=30
 
-# Låt AI:n spela, spola fram 10 turer, fast slumpfrö
-godot --path . -- --demo --turns=10 --seed=5
+# Starta direkt i en strid (våning 0–2), låt AI:n spela, spola fram 10 turer, fast slumpfrö
+godot --path . -- --floor=2 --demo --turns=10 --seed=5
+
+# Visa lägret mellan striderna direkt
+godot --path . -- --camp
 
 # Spela in bildsekvens (PNG) för att granska rörelser
-godot --path . --write-movie /tmp/mov/f.png --fixed-fps 20 --quit-after 200 -- --demo --seed=3
+godot --path . --write-movie /tmp/mov/f.png --fixed-fps 20 --quit-after 200 -- --floor=0 --demo --seed=3
 
 # Animationslabb: filma en figur på nära håll (se tools/anim_lab.gd för steg)
 godot --path . res://tools/anim_lab.tscn --write-movie /tmp/lab/f.png --fixed-fps 20 --quit-after 50 -- --unit=eira --seq=idle:0.2,attack:1.2

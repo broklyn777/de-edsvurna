@@ -1,7 +1,46 @@
 {
 	"crypt_1": {
 		"name": "Benkryptan",
-		"party": ["paladin", "brokk", "alva", "eira"],
-		"enemies": ["skeleton_warrior", "skeleton_warrior", "skeleton_archer", "grave_priest"]
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"skeleton_warrior",
+			"skeleton_warrior",
+			"skeleton_archer",
+			"grave_priest"
+		]
+	},
+	"crypt_2": {
+		"name": "Glödgraven",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_warden",
+			"ember_skeleton",
+			"ember_skeleton",
+			"skeleton_archer"
+		]
+	},
+	"crypt_3": {
+		"name": "Benfurstens sal",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bone_lich",
+			"skeleton_warrior",
+			"skeleton_warrior"
+		]
 	}
 }

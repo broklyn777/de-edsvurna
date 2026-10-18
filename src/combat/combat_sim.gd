@@ -11,8 +11,13 @@ extends RefCounted
 ##   round_start {round, order}
 ##   turn_start {unit}
 ##   action {unit, action, ability, targets}
-##   damage {source, target, amount, crit, school, ability, direct}
+##   damage {source, target, amount, crit, school, kind, ability, direct}
 ##   heal {source, target, amount, effective, overheal, crit, ability}
+##   revive {unit}
+##   limit {unit, kind} – en egenskap stoppades av gränsen per tur
+##
+## Skada har en typ ("kind": attack, spell, indirect) skild från skolan (physical, holy, fire,
+## shadow). Ett följdanfall från en egenskap är en attack om inget annat sägs.
 ##   aura_applied {unit, aura, refreshed} / aura_removed {unit, aura}
 ##   death {unit}
 ##   trait {unit, trait} – en egenskap slog till (händelser den orsakar bär fältet "trait")
@@ -20,9 +25,13 @@ extends RefCounted
 ##   outcome {result: victory|defeat}
 
 const CRIT_MULT := 1.5
-## Hur många egenskaper som kan sätta igång varandra i en kedja.
-const MAX_TRAIT_CHAIN := 4
-const ACTIONS := ["attack", "signature", "defend"]
+## Säkerhetsgräns för hur djupt egenskaper kan sätta igång varandra.
+const MAX_TRAIT_CHAIN := 10
+## Som i Siralim: per figur och pågående tur får egenskaper utlösa högst så många attacker,
+## besvärjelser och mottagna helningar, plus en övergripande gräns.
+const TURN_LIMIT := 5
+const TURN_PROC_LIMIT := 60
+const ACTIONS := ["attack", "signature", "defend", "provoke"]
 ## Platser på slagfältet (sim-enheter, se UnitModel.to_world). Bara utseende.
 const HERO_SLOTS := [Vector2(-95, 10), Vector2(-150, -75), Vector2(-165, 95), Vector2(-230, 15),
 		Vector2(-240, -110), Vector2(-250, 130)]
@@ -49,6 +58,11 @@ var _trait_ctx := ""
 var _trait_depth := 0
 ## Medan en förmåga förbrukar laddningar: {unit, ability, mult} för skadebonusen.
 var _release_bonus := {}
+## unit_id -> {attack, spell, heal} under den pågående turen.
+var _turn_counts := {}
+var _turn_procs := 0
+## Vad varje egenskap har gjort i striden (för kvittot): trait_id -> {unit, procs, damage, heal}.
+var trait_stats := {}
 
 
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
@@ -65,6 +79,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		hero.position = HERO_SLOTS[i]
 		if traits.has(hero.id):
 			hero.traits = traits[hero.id].duplicate()
+		hero.traits = expand_traits(game_data, hero.traits)
 		sim._add(hero)
 		sim.heroes.append(hero)
 	var counts := {}
@@ -74,12 +89,22 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		var e := CombatUnit.from_data("%s_%d" % [kind, counts[kind]], game_data.enemies[kind], 1)
 		e.kind = kind
 		e.position = ENEMY_SLOTS[i]
+		e.traits = expand_traits(game_data, e.traits)
 		sim._add(e)
 		sim.enemies.append(e)
 	return sim
 
 
 # --- Publikt API ------------------------------------------------------------
+
+## Lägger till dolda delar ("parts") av egenskaper, t.ex. en kronas nackdel.
+static func expand_traits(game_data: Dictionary, list: Array) -> Array:
+	var out := []
+	for trait_id in list:
+		out.append(trait_id)
+		for part in game_data.traits[trait_id].get("parts", []):
+			out.append(part)
+	return out
 
 func begin() -> void:
 	_start_round()
@@ -110,6 +135,8 @@ func action_ability(u: CombatUnit, action: String) -> String:
 			return u.attack_ability
 		"signature":
 			return u.signature
+		"provoke":
+			return "provoke"
 	return "defend"
 
 
@@ -130,7 +157,7 @@ func valid_targets(u: CombatUnit, action: String) -> Array[String]:
 	var out: Array[String] = []
 	match ability(action_ability(u, action)).get("target", "self"):
 		"enemy":
-			for x in _enemies(u):
+			for x in _taunting_enemies(u):
 				out.append(x.id)
 		"ally":
 			for x in _allies(u):
@@ -173,7 +200,7 @@ func charge_info(u: CombatUnit, ability_id: String) -> Dictionary:
 	for trait_id in u.traits:
 		var t: Dictionary = data.traits[trait_id]
 		var release: Dictionary = t.get("release", {})
-		if release.get("ability", "") != ability_id:
+		if release.is_empty() or not _release_matches(u, release, ability_id):
 			continue
 		var cap := 0.0
 		for effect in t.get("effects", []):
@@ -233,6 +260,8 @@ func _next_turn() -> void:
 			continue
 		current = u
 		turn_no += 1
+		_turn_counts.clear()
+		_turn_procs = 0
 		_emit({"type": "turn_start", "unit": u.id})
 		_tick_turn_start(u)
 		_check_outcome()
@@ -251,7 +280,7 @@ func _tick_turn_start(u: CombatUnit) -> void:
 		if a.hot > 0.0:
 			_heal(source if source else u, u, a.hot, aura_id, false)
 		if a.dot > 0.0:
-			_deal_damage(source if source else u, u, a.dot, a.school, aura_id, false)
+			_deal_damage(source if source else u, u, a.dot, a.school, aura_id, false, false, "indirect")
 		if not u.alive:
 			return
 		if a.duration > 0.0:
@@ -321,6 +350,8 @@ func _rule_matches(u: CombatUnit, rule: Dictionary) -> bool:
 		return false
 	if condition.has("enemies_at_least") and _enemies(u).size() < condition.enemies_at_least:
 		return false
+	if condition.get("dead_ally", false) and _pick_targets(u, {"target": "dead_ally"}).is_empty():
+		return false
 	return true
 
 
@@ -337,8 +368,12 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 
 
 func _targets_for(u: CombatUnit, ab: Dictionary, target_id: String) -> Array:
+	if ab.get("target", "") == "dead_ally":
+		return _pick_targets(u, ab)
 	var chosen := unit(target_id) if target_id != "" else null
 	var kind: String = ab.get("target", "self")
+	if kind == "enemy" and chosen and not _taunting_enemies(u).has(chosen):
+		chosen = null  # en provocerande fiende måste anfallas först
 	if chosen and chosen.alive and ((kind == "enemy" and chosen.team != u.team) or (kind == "ally" and chosen.team == u.team)):
 		return [chosen.id]
 	return _pick_targets(u, ab)
@@ -351,16 +386,18 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 	for effect in ab.get("effects", []):
 		for target_id in targets:
 			var t := unit(target_id)
-			if t == null or not t.alive:
+			if t == null or (not t.alive and effect.type != "revive"):
 				continue
 			match effect.type:
 				"damage":
 					_deal_damage(caster, t, _roll_power(caster, effect), effect.get("school", ab.get("school", "physical")),
-							ability_id, can_crit, true)
+							ability_id, can_crit, true, ab.get("kind", "attack"))
 				"heal":
 					_heal(caster, t, _roll_power(caster, effect), ability_id, can_crit)
 				"aura":
 					_add_aura(caster, t, effect.aura, float(effect.get("duration", 0.0)))
+				"revive":
+					_revive(t, float(effect.get("pct", 0.5)))
 	_release_bonus = {}
 	for r in releases:
 		_run_release(caster, r, targets)
@@ -373,14 +410,17 @@ func _roll_power(u: CombatUnit, effect: Dictionary) -> float:
 
 
 func _deal_damage(src: CombatUnit, tgt: CombatUnit, base: float, school: String,
-		ability_id: String, can_crit: bool, direct := false) -> void:
+		ability_id: String, can_crit: bool, direct := false, kind := "attack") -> void:
 	if not tgt.alive:
 		return
-	var probe := {"source": src.id, "target": tgt.id, "ability": ability_id, "school": school, "direct": direct}
+	var probe := {"source": src.id, "target": tgt.id, "ability": ability_id, "school": school,
+			"direct": direct, "kind": kind, "from_trait": _trait_ctx != ""}
+	_convert(src, probe)
 	var mult := 1.0
 	if direct:
 		mult *= _consume_empower(src, probe)
-		school = probe.school
+	school = probe.school
+	kind = probe.kind
 	var crit: bool = can_crit and (rng.randf() < src.crit_chance or _modify(src, "modify_damage", probe, "force_crit", false))
 	if crit:
 		mult *= CRIT_MULT
@@ -391,7 +431,7 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, base: float, school: String,
 	var amount := maxf(1.0, roundf(base * mult * tgt.damage_taken()))
 	tgt.hp = maxf(0.0, tgt.hp - amount)
 	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": amount, "crit": crit,
-			"school": school, "ability": ability_id, "direct": direct})
+			"school": school, "kind": kind, "ability": ability_id, "direct": direct})
 	if tgt.hp <= 0.0:
 		_kill(tgt)
 
@@ -409,6 +449,24 @@ func _consume_empower(src: CombatUnit, probe: Dictionary) -> float:
 		src.auras.erase(aura_id)
 		_emit({"type": "aura_removed", "unit": src.id, "aura": aura_id})
 	return mult
+
+
+## Egenskaper som ändrar vad skadan räknas som ("convert_damage"), t.ex. följdanfall → Heliga besvärjelser.
+func _convert(src: CombatUnit, probe: Dictionary) -> void:
+	for trait_id in src.traits:
+		var t: Dictionary = data.traits[trait_id]
+		if t.trigger == "convert_damage" and _when(src, t.get("when", {}), probe):
+			for key in t.convert:
+				probe[key] = t.convert[key]
+
+
+func _revive(u: CombatUnit, pct: float) -> void:
+	if u.alive:
+		return
+	u.alive = true
+	u.hp = roundf(u.max_hp * pct)
+	u.charges.clear()
+	_emit({"type": "revive", "unit": u.id})
 
 
 func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String, can_crit: bool) -> void:
@@ -462,7 +520,8 @@ func _emit(e: Dictionary) -> void:
 	if _trait_ctx != "":
 		e.trait = _trait_ctx
 	events.append(e)
-	if _trait_depth >= MAX_TRAIT_CHAIN or outcome != "":
+	_count_stats(e)
+	if _trait_depth >= MAX_TRAIT_CHAIN or outcome != "" or _turn_procs >= TURN_PROC_LIMIT:
 		return
 	for owner in units:
 		if not owner.alive:
@@ -475,15 +534,49 @@ func _emit(e: Dictionary) -> void:
 				continue
 			if t.has("chance") and rng.randf() >= float(t.chance):
 				continue
-			owner.trait_ready[trait_id] = {"turn": turn_no, "round": round + int(t.get("internal_cooldown", 0))}
+			var last: Dictionary = owner.trait_ready.get(trait_id, {})
+			var count: int = last.count + 1 if last.get("turn", -1) == turn_no else 1
+			owner.trait_ready[trait_id] = {"turn": turn_no, "count": count,
+					"round": round + int(t.get("internal_cooldown", 0))}
+			_turn_procs += 1
 			_run_trait(owner, trait_id, t, e)
+
+
+func _count_stats(e: Dictionary) -> void:
+	var trait_id: String = e.get("trait", "")
+	if trait_id == "":
+		return
+	var st: Dictionary = trait_stats.get(trait_id, {"unit": "", "procs": 0, "damage": 0.0, "heal": 0.0})
+	match e.type:
+		"trait", "release":
+			st.procs += 1
+			st.unit = e.unit
+		"damage":
+			st.damage += e.amount
+		"heal":
+			st.heal += e.effective
+	trait_stats[trait_id] = st
+
+
+## Siralims gräns: räknar egenskapsutlösta attacker/besvärjelser per figur och mottagna helningar.
+## Sant om det får ske.
+func _within_limit(u: CombatUnit, kind: String) -> bool:
+	var counts: Dictionary = _turn_counts.get(u.id, {})
+	var n: int = counts.get(kind, 0)
+	if n >= TURN_LIMIT:
+		_emit({"type": "limit", "unit": u.id, "kind": kind})
+		return false
+	counts[kind] = n + 1
+	_turn_counts[u.id] = counts
+	return true
 
 
 func _trait_ready(owner: CombatUnit, trait_id: String, t: Dictionary) -> bool:
 	var last: Dictionary = owner.trait_ready.get(trait_id, {})
 	if last.is_empty():
 		return true
-	if t.get("once_per_turn", false) and last.turn == turn_no:
+	var per_turn := 1 if t.get("once_per_turn", false) else int(t.get("max_per_turn", 0))
+	if per_turn > 0 and last.turn == turn_no and last.count >= per_turn:
 		return false
 	return round >= last.round
 
@@ -538,9 +631,14 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 		amount = _roll_power(owner, effect)
 	match effect.type:
 		"damage":
+			var kind: String = effect.get("kind", "attack")
+			if kind != "indirect" and not _within_limit(owner, kind):
+				return
 			_deal_damage(owner, tgt, amount, effect.get("school", "physical"), trait_id,
-					not effect.get("no_crit", false), false)
+					not effect.get("no_crit", false), false, kind)
 		"heal":
+			if not _within_limit(tgt, "heal"):
+				return
 			_heal(owner, tgt, amount, trait_id, false)
 		"aura":
 			_add_aura(owner, tgt, effect.aura, float(effect.get("duration", 0.0)))
@@ -587,6 +685,12 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 			"min_amount":
 				if float(e.get("amount", 0.0)) < want:
 					return false
+			"min_effective":
+				if float(e.get("effective", 0.0)) < want:
+					return false
+			"action_in":
+				if not want.has(e.get("action", "")):
+					return false
 			_:
 				if not e.has(key):
 					return false
@@ -632,7 +736,7 @@ func _take_releases(caster: CombatUnit, ability_id: String) -> Array[Dictionary]
 	for trait_id in caster.traits:
 		var release: Dictionary = data.traits[trait_id].get("release", {})
 		var amount: float = caster.charges.get(release.get("charge", ""), 0.0)
-		if release.get("ability", "") != ability_id or amount <= 0.0:
+		if not _release_matches(caster, release, ability_id) or amount <= 0.0:
 			continue
 		caster.charges[release.charge] = 0.0
 		mult *= 1.0 + float(release.get("damage_mult_per", 0.0)) * amount
@@ -641,12 +745,19 @@ func _take_releases(caster: CombatUnit, ability_id: String) -> Array[Dictionary]
 	return out
 
 
+## En förlösning gäller en viss förmåga ("ability") eller bärarens signatur ("action": "signature").
+func _release_matches(u: CombatUnit, release: Dictionary, ability_id: String) -> bool:
+	if release.get("action", "") == "signature":
+		return ability_id == u.signature
+	return release.get("ability", "") == ability_id and ability_id != ""
+
+
 func _run_release(caster: CombatUnit, r: Dictionary, ability_targets: Array) -> void:
 	var outer := _trait_ctx
 	_trait_ctx = r.trait
 	_trait_depth += 1
 	_emit({"type": "release", "unit": caster.id, "trait": r.trait, "charge": r.release.charge,
-			"amount": r.amount, "ability": r.release.ability})
+			"amount": r.amount})
 	for effect in r.release.get("effects", []):
 		var scaled: Dictionary = effect.duplicate()
 		if effect.get("per_charge", false):
@@ -664,6 +775,16 @@ func _run_release(caster: CombatUnit, r: Dictionary, ability_targets: Array) -> 
 func _add(u: CombatUnit) -> void:
 	units.append(u)
 	_by_id[u.id] = u
+
+
+## Fiender som får anfallas med enkelmål: de som provocerar, annars alla.
+func _taunting_enemies(u: CombatUnit) -> Array[CombatUnit]:
+	var all := _enemies(u)
+	var taunting: Array[CombatUnit] = []
+	for x in all:
+		if x.auras.keys().any(func(a: String) -> bool: return data.auras[a].get("taunt", false)):
+			taunting.append(x)
+	return taunting if not taunting.is_empty() else all
 
 
 func _allies(u: CombatUnit) -> Array[CombatUnit]:
@@ -689,6 +810,11 @@ func _pick_targets(caster: CombatUnit, ab: Dictionary) -> Array:
 	match kind:
 		"self":
 			return [caster.id]
+		"dead_ally":
+			for x in units:
+				if not x.alive and x.team == caster.team:
+					return [x.id]
+			return []
 		"all_enemies":
 			return _enemies(caster).map(func(x: CombatUnit) -> String: return x.id)
 		"all_allies":

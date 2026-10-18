@@ -10,13 +10,14 @@ extends Node
 ##   --turns=<n>   spola fram så många turer innan bilden visas
 ##   --seed=<n>    fast slumpfrö
 
-const ENCOUNTER := "crypt_1"
 ## Hur länge en tur får verka efter sista effekten innan nästa tur börjar (sekunder).
 const BEAT := 0.45
 ## Extra tid mellan effekter i en kedja, så att man hinner se dem i ordning.
 const CHAIN_STEP := 0.22
 const ERROR_TEXT := {"cooldown": "Inte redo än", "dead": "Hjälten har stupat", "none": "Ingen sådan förmåga"}
 
+## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
+var run: Node
 var data: Dictionary
 var sim: CombatSim
 var sfx: Sfx
@@ -46,6 +47,7 @@ var _center := {}
 
 
 func _ready() -> void:
+	run = get_node("/root/Run")
 	Engine.time_scale = 1.0
 	data = GameData.load_all()
 	var seed_value := randi()
@@ -58,7 +60,8 @@ func _ready() -> void:
 			warp_turns = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--seed="):
 			seed_value = int(arg.get_slice("=", 1))
-	sim = CombatSim.create(data, ENCOUNTER, seed_value)
+	var state: RunState = run.state
+	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data))
 	sim.auto = demo
 	_build_scene()
 	_build_ui()
@@ -143,7 +146,7 @@ func _build_ui() -> void:
 	speed_chip.pressed.connect(_toggle_speed)
 	ui.add_child(speed_chip)
 	overlay = BattleOverlay.new()
-	overlay.restart_requested.connect(_restart)
+	overlay.restart_requested.connect(_continue)
 	ui.add_child(overlay)
 	overlay.mode = "countdown"
 
@@ -218,7 +221,7 @@ func _update_frames() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
-			KEY_1, KEY_2, KEY_3:
+			KEY_1, KEY_2, KEY_3, KEY_4:
 				if action_bar.visible:
 					_on_action_chosen(CombatSim.ACTIONS[event.keycode - KEY_1])
 			KEY_ENTER, KEY_KP_ENTER:
@@ -303,6 +306,37 @@ func _restart() -> void:
 	get_tree().reload_current_scene()
 
 
+## Efter resultatet: vidare till lägret (seger) eller tillbaka till start (förlust).
+func _continue() -> void:
+	Engine.time_scale = 1.0
+	run.battle_finished(sim.outcome == "victory", receipt())
+
+
+## Högst tre rader om vad som avgjorde striden, från vad egenskaperna faktiskt gjorde.
+func receipt() -> Array[String]:
+	var rows: Array = []
+	for trait_id in sim.trait_stats:
+		var st: Dictionary = sim.trait_stats[trait_id]
+		var t: Dictionary = data.traits[trait_id]
+		if st.procs == 0 or t.get("hidden", false) and not t.has("name"):
+			continue
+		rows.append({"id": trait_id, "score": st.damage + st.heal * 1.2 + st.procs * 5.0, "st": st})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.score > b.score)
+	var out: Array[String] = []
+	for row in rows.slice(0, 3):
+		var st: Dictionary = row.st
+		var t: Dictionary = data.traits[row.id]
+		var who: String = sim.unit(st.unit).name if sim.unit(st.unit) else ""
+		var what: Array[String] = []
+		if st.damage > 0:
+			what.append("%d skada" % int(st.damage))
+		if st.heal > 0:
+			what.append("%d helning" % int(st.heal))
+		out.append("%s (%s): slog till %d gånger%s" % [t.name, who, st.procs,
+				(" – " + ", ".join(what)) if not what.is_empty() else ""])
+	return out
+
+
 func _exit_tree() -> void:
 	UnitModel.free_shared()
 
@@ -339,6 +373,8 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e), _on_release.bind(e))
 		"death":
 			_after(_cursor + 0.05, _on_death.bind(e.unit))
+		"revive":
+			_after(_cursor + 0.1, _on_revive.bind(e.unit))
 		"outcome":
 			_after(_cursor + 0.6, _on_outcome.bind(e.result))
 
@@ -460,6 +496,13 @@ func _on_death(unit_id: String) -> void:
 	_hitstop(50)
 
 
+func _on_revive(unit_id: String) -> void:
+	models[unit_id].revive()
+	sfx.play("renew", -2.0, 0.0)
+	_float(unit_id, "VÄCKT!", Color("#c9b8ff"), 24, true)
+	fx_layer.add_child(_at(Fx.Ring.new(Color("#c9b8ff"), 10, 110, 0.6, 6.0, true), _pos(unit_id)))
+
+
 func _on_outcome(result: String) -> void:
 	action_bar.visible = false
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
@@ -467,7 +510,9 @@ func _on_outcome(result: String) -> void:
 		_slowmo_until = Time.get_ticks_msec() + 1200
 		sfx.play("victory", 0.0, 0.0)
 		world.add_shake(10.0)
-		overlay.set_result("victory", "Runda %d   ·   %d av %d står kvar" % [sim.round, alive, sim.heroes.size()])
+		var title := "KRYPTAN RENSAD!" if run.state.is_last_floor() else "SEGER!"
+		overlay.set_result("victory", "Runda %d   ·   %d av %d står kvar" % [sim.round, alive, sim.heroes.size()], title)
+		overlay.lines = receipt()
 	else:
 		sfx.play("defeat", 0.0, 0.0)
 		overlay.set_result("defeat", "Sällskapet föll i runda %d" % sim.round)

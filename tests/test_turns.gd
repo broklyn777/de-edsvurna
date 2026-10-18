@@ -62,24 +62,26 @@ func test_signature_cooldown_counts_own_turns() -> void:
 	assert_eq(sim.can_act(sim.current, "signature"), "")
 
 
-func test_defend_halves_damage_until_next_turn() -> void:
+func test_defend_reduces_damage_until_next_turn() -> void:
 	var sim := _sim()
-	var brokk := sim.unit("brokk")
-	var normal := brokk.damage_taken()
-	_until_hero(sim, "brokk")
+	var eira := sim.unit("eira")
+	var normal := eira.damage_taken()
 	sim.act("defend")
-	assert_near(brokk.damage_taken(), normal * 0.5)
-	_until_hero(sim, "brokk")
-	assert_near(brokk.damage_taken(), normal)
+	assert_near(eira.damage_taken(), normal * 0.65)
+	_until_hero(sim, "eira")
+	assert_near(eira.damage_taken(), normal)
 
 
-func test_challenge_redirects_enemy_intents() -> void:
+func test_provoke_redirects_enemy_intents_and_restricts_targets() -> void:
 	var sim := _sim()
-	_until_hero(sim, "brokk")
-	sim.act("signature")
+	sim.act("provoke")
 	for e in sim.enemies:
 		if e.alive and sim.ability(e.intent.ability).target == "enemy":
-			assert_eq(e.intent.targets, ["brokk"])
+			assert_eq(e.intent.targets, ["eira"])
+	var warden := sim.unit("skeleton_warrior_1")
+	sim._add_aura(warden, warden, "provoke")
+	_until_hero(sim, "paladin")
+	assert_eq(sim.valid_targets(sim.current, "attack"), ["skeleton_warrior_1"], "en provocerande fiende måste anfallas")
 
 
 func test_vengeance_strikes_back_when_ally_hit() -> void:
@@ -119,9 +121,56 @@ func test_eira_follows_up_on_marked() -> void:
 	assert_eq(follow.size(), 1)
 
 
-func test_auto_party_beats_crypt() -> void:
+func test_auto_party_usually_beats_first_floor() -> void:
 	var wins := 0
 	for seed_value in range(1, 21):
 		if Bot.run_fight(_data, seed_value, Bot.Skill.AUTO).outcome == "victory":
 			wins += 1
 	assert_true(wins >= 10, "auto-sällskapet ska vinna minst hälften (vann %d/20)" % wins)
+
+
+func test_turn_limit_stops_endless_follow_ups() -> void:
+	var sim := _sim()
+	var eira := sim.unit("eira")
+	for i in CombatSim.TURN_LIMIT:
+		assert_true(sim._within_limit(eira, "attack"))
+	assert_true(not sim._within_limit(eira, "attack"), "sjätte attacken samma tur stoppas")
+	assert_true(sim._within_limit(eira, "spell"), "besvärjelser räknas för sig")
+
+
+func test_lich_crown_turns_follow_ups_into_holy_spells() -> void:
+	var sim := _sim()
+	var eira := sim.unit("eira")
+	eira.traits = CombatSim.expand_traits(_data, ["eira_followup", "lich_crown"])
+	sim._add_aura(eira, sim.unit("skeleton_warrior_1"), "marked")
+	sim.drain_events()
+	sim.act("attack", "skeleton_warrior_1")
+	var follow: Dictionary = sim.drain_events().filter(func(e: Dictionary) -> bool:
+		return e.type == "damage" and e.ability == "eira_followup")[0]
+	assert_eq(follow.school, "holy")
+	assert_eq(follow.kind, "spell")
+
+
+func test_run_offers_trophies_from_defeated_monsters() -> void:
+	var state := RunState.new()
+	var rng := RandomNumberGenerator.new()
+	var offer := state.trophy_offer(_data, rng)
+	assert_eq(offer.size(), 3)
+	assert_true(offer.has("bone_finger") and offer.has("rosary"))
+	state.take_trophy("rosary")
+	state.equip("alva", "rosary")
+	state.equip("eira", "rosary")
+	assert_eq(state.wearer("rosary"), "eira", "en trofé bärs av en hjälte i taget")
+	assert_true(state.hero_traits(_data).eira.has("rosary"))
+
+
+func test_lich_raises_dead_skeleton() -> void:
+	var sim := CombatSim.create(_data, "crypt_3", 3)
+	sim.begin()
+	var skel := sim.unit("skeleton_warrior_1")
+	sim._kill(skel)
+	var lich := sim.unit("bone_lich_1")
+	sim._choose_intent(lich)
+	assert_eq(lich.intent.ability, "raise_dead")
+	sim._perform(lich, "raise_dead", "intent", "")
+	assert_true(skel.alive, "skelettet ska vara väckt")

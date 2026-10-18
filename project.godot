@@ -8,13 +8,14 @@ config_version=5
 
 config/name="rpg007"
 config/description="Party-RPG: WoW-känsla, PoE-byggen, Dragon Age-taktik."
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/start.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
 DevTools="*res://scripts/dev/dev_tools.gd"
+Run="*res://scripts/game/run.gd"
 
 [display]
 

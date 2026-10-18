@@ -14,6 +14,8 @@ var _announce_t := 0.0
 var _message := ""
 var _message_t := 0.0
 var _t := 0.0
+## Extra rader under resultatet (kvittot).
+var lines: Array[String] = []
 
 
 func _ready() -> void:
@@ -36,9 +38,9 @@ func message(text: String) -> void:
 	_message_t = 1.4
 
 
-func set_result(result: String, sub: String) -> void:
+func set_result(result: String, sub: String, title := "") -> void:
 	mode = result
-	show_big("SEGER!" if result == "victory" else "PARTYT HAR STUPAT", sub)
+	show_big(title if title != "" else ("SEGER!" if result == "victory" else "SÄLLSKAPET HAR STUPAT"), sub)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
@@ -77,9 +79,12 @@ func _draw() -> void:
 		if sub_text != "":
 			UiStyle.text(self, Vector2(0, h * 0.45 + 50), sub_text, 22, Color(1, 1, 1, 0.85 * a),
 					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
+		for i in lines.size():
+			UiStyle.text(self, Vector2(0, h * 0.45 + 90 + i * 26), lines[i], 18, Color(UiStyle.TRAIT_GOLD, a),
+					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 		if mode in ["victory", "defeat"] and _big_t > 1.0:
 			var blink := 0.6 + 0.4 * sin(_t * 4.0)
-			UiStyle.text(self, Vector2(0, h * 0.45 + 95), "Tryck för att köra igen", 20, Color(1, 1, 1, blink),
+			UiStyle.text(self, Vector2(0, h - 40), "Tryck för att fortsätta", 20, Color(1, 1, 1, blink),
 					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 	if _announce_t > 0.0:
 		var a := minf(1.0, _announce_t)

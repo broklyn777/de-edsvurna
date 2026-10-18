@@ -5,7 +5,7 @@ extends Control
 
 signal tapped(unit_id: String)
 
-const AURA_PIPS := {"defend": Color("#9fb4d8"), "taunt": Color("#ff6a4a"), "inspired": Color("#ffd75e"),
+const AURA_PIPS := {"defend": Color("#9fb4d8"), "provoke": Color("#ff6a4a"), "warded": Color("#bcd2ff"), "inspired": Color("#ffd75e"),
 		"blessing": Color("#fff2b0"), "marked": Color("#e9cf3f"), "burning": Color("#ff8a2a")}
 
 var unit: CombatUnit
@@ -98,7 +98,8 @@ func _draw() -> void:
 			px += 14.0
 
 	if not unit.traits.is_empty():
-		var trait_name := " · ".join(unit.traits.map(func(t: String) -> String: return sim.data.traits[t].name))
+		var shown := unit.traits.filter(func(t: String) -> bool: return not sim.data.traits[t].get("hidden", false))
+		var trait_name := " · ".join(shown.map(func(t: String) -> String: return sim.data.traits[t].name))
 		var col := Color(UiStyle.TRAIT_GOLD, 0.6).lerp(Color.WHITE, _trait_flash * 0.8)
 		if _trait_flash > 0.0:
 			draw_rect(Rect2(6, 58, size.x - 12, 14), Color(UiStyle.TRAIT_GOLD, 0.25 * _trait_flash))

@@ -227,6 +227,12 @@ func die() -> void:
 	stop_cast_sound()
 
 
+func revive() -> void:
+	_dead = false
+	_oneshot = false
+	_idle(0.2)
+
+
 func start_cast_sound(s: AudioStream) -> void:
 	if s == null:
 		return
@@ -305,7 +311,7 @@ func _update_auras(delta: float) -> void:
 		(_shield.material_override as StandardMaterial3D).albedo_color = Color(0.6, 0.78, 1.0, 0.16 + 0.08 * p)
 	_renew.visible = unit.auras.has("inspired") or unit.auras.has("blessing")
 	_renew.rotation.y += delta * 2.0
-	_lust.visible = unit.auras.has("marked") or unit.auras.has("taunt")
+	_lust.visible = unit.auras.has("marked") or unit.auras.has("provoke")
 	if _lust.visible:
 		_lust.rotation.y -= delta * 3.0
 		var s := 1.0 + 0.06 * sin(_t * 20.0)

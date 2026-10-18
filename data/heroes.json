@@ -6,18 +6,44 @@
 		"color": "#f2c85b",
 		"max_hp": 900,
 		"speed": 10,
-		"attack": [70, 90],
+		"attack": [
+			70,
+			90
+		],
 		"crit_chance": 0.1,
 		"attack_ability": "strike",
 		"signature": "holy_smite",
-		"traits": ["oath_vengeance"],
-		"rules": [{"action": "signature"}],
+		"traits": [
+			"oath_vengeance"
+		],
+		"rules": [
+			{
+				"action": "signature"
+			}
+		],
 		"visual": {
 			"model": "torvald",
-			"weapons": {"grip_r": "Longsword", "grip_l": "Shield"},
-			"anims": {"idle": "Shield_Idle", "attack": ["Shield_Attack", "Shield_Attack_B"], "hit": "Hit_Chest",
-				"death": "Death01", "block": "Shield_Block", "run": "Run", "walk": "Walk"}
-		}
+			"weapons": {
+				"grip_r": "Longsword",
+				"grip_l": "Shield"
+			},
+			"anims": {
+				"idle": "Shield_Idle",
+				"attack": [
+					"Shield_Attack",
+					"Shield_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run",
+				"walk": "Walk"
+			}
+		},
+		"oath_options": [
+			"oath_vengeance",
+			"oath_challenger"
+		]
 	},
 	"brokk": {
 		"name": "Brokk",
@@ -26,19 +52,40 @@
 		"color": "#c69b6d",
 		"max_hp": 1150,
 		"speed": 7,
-		"attack": [55, 70],
+		"attack": [
+			55,
+			70
+		],
 		"crit_chance": 0.08,
 		"attack_ability": "axe_chop",
-		"signature": "challenge",
-		"traits": ["brokk_bulwark"],
-		"rules": [{"action": "signature"}],
+		"signature": "stone_wall",
+		"traits": [
+			"brokk_bulwark"
+		],
+		"rules": [
+			{
+				"action": "signature"
+			}
+		],
 		"visual": {
 			"model": "torvald",
 			"scale": 0.86,
 			"tint": "#b08060",
-			"weapons": {"grip_r": "Greataxe"},
-			"anims": {"idle": "TwoHand_Idle", "attack": ["TwoHand_Attack", "TwoHand_Attack_B"], "hit": "Hit_Chest",
-				"death": "Death01", "block": "Shield_Block", "run": "TwoHand_Run", "walk": "TwoHand_Walk"}
+			"weapons": {
+				"grip_r": "Greataxe"
+			},
+			"anims": {
+				"idle": "TwoHand_Idle",
+				"attack": [
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "TwoHand_Run",
+				"walk": "TwoHand_Walk"
+			}
 		}
 	},
 	"alva": {
@@ -48,17 +95,41 @@
 		"color": "#f4f4f4",
 		"max_hp": 700,
 		"speed": 11,
-		"attack": [45, 55],
+		"attack": [
+			45,
+			55
+		],
 		"crit_chance": 0.08,
 		"attack_ability": "holy_bolt",
 		"signature": "healing_light",
-		"traits": ["alva_blessing"],
-		"rules": [{"action": "signature", "if": {"ally_hp_below": 0.65}}],
+		"traits": [
+			"alva_blessing"
+		],
+		"rules": [
+			{
+				"action": "signature",
+				"if": {
+					"ally_hp_below": 0.65
+				}
+			}
+		],
 		"visual": {
 			"model": "sigrun",
-			"weapons": {"grip_r": "Mace"},
-			"anims": {"idle": "OneHand_Idle", "attack": ["Spell_Simple_Shoot"], "cast": "Spell_Simple_Shoot",
-				"hit": "Hit_Chest", "death": "Death01", "block": "Shield_Block", "run": "Run", "walk": "Walk"}
+			"weapons": {
+				"grip_r": "Mace"
+			},
+			"anims": {
+				"idle": "OneHand_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"cast": "Spell_Simple_Shoot",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run",
+				"walk": "Walk"
+			}
 		}
 	},
 	"eira": {
@@ -68,17 +139,37 @@
 		"color": "#7fe05a",
 		"max_hp": 650,
 		"speed": 14,
-		"attack": [65, 85],
+		"attack": [
+			65,
+			85
+		],
 		"crit_chance": 0.15,
 		"attack_ability": "arrow",
 		"signature": "hunters_mark",
-		"traits": ["eira_followup"],
-		"rules": [{"action": "signature"}],
+		"traits": [
+			"eira_followup"
+		],
+		"rules": [
+			{
+				"action": "signature"
+			}
+		],
 		"visual": {
 			"model": "liria",
-			"weapons": {"grip_l": "Longbow"},
-			"anims": {"idle": "Bow_Idle", "attack": ["Bow_Shoot"], "hit": "Hit_Chest", "death": "Death01",
-				"block": "Shield_Block", "run": "Run", "walk": "Walk"}
+			"weapons": {
+				"grip_l": "Longbow"
+			},
+			"anims": {
+				"idle": "Bow_Idle",
+				"attack": [
+					"Bow_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run",
+				"walk": "Walk"
+			}
 		}
 	},
 	"solveig": {
@@ -88,17 +179,39 @@
 		"color": "#ff8a2a",
 		"max_hp": 600,
 		"speed": 12,
-		"attack": [60, 75],
+		"attack": [
+			60,
+			75
+		],
 		"crit_chance": 0.12,
 		"attack_ability": "fire_bolt",
 		"signature": "flame_wave",
-		"traits": ["solveig_kindle"],
-		"rules": [{"action": "signature", "if": {"enemies_at_least": 2}}],
+		"traits": [
+			"solveig_kindle"
+		],
+		"rules": [
+			{
+				"action": "signature",
+				"if": {
+					"enemies_at_least": 2
+				}
+			}
+		],
 		"visual": {
 			"model": "solveig",
-			"weapons": {"grip_r": "Staff"},
-			"anims": {"idle": "Staff_Idle", "attack": ["Spell_Simple_Shoot"], "hit": "Hit_Chest", "death": "Death01",
-				"run": "Staff_Run", "walk": "Staff_Walk"}
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"run": "Staff_Run",
+				"walk": "Staff_Walk"
+			}
 		}
 	}
 }

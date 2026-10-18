@@ -4,27 +4,54 @@
 		"text": "När en annan i sällskapet tar direkt skada från en fiende slår Paladinen tillbaka för 40 % (en gång per tur).",
 		"trigger": "damage",
 		"once_per_turn": true,
-		"when": {"target": "ally", "target_not_self": true, "source": "enemy", "direct": true},
+		"when": {
+			"target": "ally",
+			"target_not_self": true,
+			"source": "enemy",
+			"direct": true
+		},
 		"effects": [
-			{"type": "damage", "power": 0.4, "school": "holy", "target": "source"}
+			{
+				"type": "damage",
+				"power": 0.4,
+				"school": "holy",
+				"target": "source"
+			}
 		]
 	},
 	"brokk_bulwark": {
 		"name": "Stenhård",
 		"text": "När Brokk försvarar sig får hela sällskapet Styrka: nästa anfall gör 30 % mer skada.",
 		"trigger": "aura_applied",
-		"when": {"unit": "self", "aura": "defend"},
+		"when": {
+			"unit": "self",
+			"aura": "defend"
+		},
 		"effects": [
-			{"type": "aura", "aura": "inspired", "target": "allies"}
+			{
+				"type": "aura",
+				"aura": "inspired",
+				"target": "allies"
+			}
+		],
+		"parts": [
+			"brokk_wall"
 		]
 	},
 	"alva_blessing": {
 		"name": "Välsignande hand",
 		"text": "När Alva helar en allierad får målet Välsignelse: nästa anfall gör 25 % mer skada och blir Heligt.",
 		"trigger": "heal",
-		"when": {"source": "self", "ability": "healing_light"},
+		"when": {
+			"source": "self",
+			"ability": "healing_light"
+		},
 		"effects": [
-			{"type": "aura", "aura": "blessing", "target": "target"}
+			{
+				"type": "aura",
+				"aura": "blessing",
+				"target": "target"
+			}
 		]
 	},
 	"eira_followup": {
@@ -32,9 +59,17 @@
 		"text": "När Eira träffar ett märkt mål skjuter hon en pil till för 50 % (en gång per tur).",
 		"trigger": "damage",
 		"once_per_turn": true,
-		"when": {"source": "self", "direct": true, "target_has_aura": "marked"},
+		"when": {
+			"source": "self",
+			"direct": true,
+			"target_has_aura": "marked"
+		},
 		"effects": [
-			{"type": "damage", "pct_of_event": 0.5, "target": "target"}
+			{
+				"type": "damage",
+				"pct_of_event": 0.5,
+				"target": "target"
+			}
 		]
 	},
 	"solveig_kindle": {
@@ -42,9 +77,200 @@
 		"text": "Solveigs direkta eldträffar har 50 % chans att sätta fyr på målet (25 skada per tur i 2 turer).",
 		"trigger": "damage",
 		"chance": 0.5,
-		"when": {"source": "self", "direct": true, "school": "fire"},
+		"when": {
+			"source": "self",
+			"direct": true,
+			"school": "fire"
+		},
 		"effects": [
-			{"type": "aura", "aura": "burning", "target": "target"}
+			{
+				"type": "aura",
+				"aura": "burning",
+				"target": "target"
+			}
 		]
+	},
+	"brokk_wall": {
+		"name": "Stenmur",
+		"hidden": true,
+		"text": "",
+		"trigger": "action",
+		"when": {
+			"unit": "self",
+			"ability": "stone_wall"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "warded",
+				"target": "other_allies"
+			}
+		]
+	},
+	"oath_challenger": {
+		"name": "Utmanarens ed",
+		"text": "När Paladinen Provocerar försvarar hen sig också, och slår tillbaka med Helig kraft (50 %) när fiender träffar hen, högst två gånger per fiendetur.",
+		"trigger": "aura_applied",
+		"when": {
+			"unit": "self",
+			"aura": "provoke"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defend",
+				"target": "self"
+			}
+		],
+		"parts": [
+			"oath_challenger_strike"
+		]
+	},
+	"oath_challenger_strike": {
+		"name": "Utmanarens ed",
+		"hidden": true,
+		"text": "",
+		"trigger": "damage",
+		"max_per_turn": 2,
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"self_has_aura": "provoke"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.5,
+				"school": "holy",
+				"target": "source"
+			}
+		]
+	},
+	"bone_finger": {
+		"name": "Skelettets fingerled",
+		"trophy": true,
+		"text": "Efter en kritisk direkt attack gör bäraren ett följdanfall för 40 % (en gång per tur).",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"when": {
+			"source": "self",
+			"crit": true,
+			"direct": true,
+			"kind": "attack"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"pct_of_event": 0.4,
+				"target": "target"
+			}
+		]
+	},
+	"bow_sinew": {
+		"name": "Benbågens sena",
+		"trophy": true,
+		"text": "Bärarens attacker mot märkta mål är alltid kritiska.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_has_aura": "marked",
+			"kind": "attack"
+		},
+		"modify": {
+			"force_crit": true
+		}
+	},
+	"rosary": {
+		"name": "Gravprästens radband",
+		"trophy": true,
+		"text": "Bärarens Heliga skada helar den svagaste i sällskapet för 25 % av skadan.",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"school": "holy"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_of_event": 0.25,
+				"target": "weakest_ally"
+			}
+		]
+	},
+	"warden_helm": {
+		"name": "Väktarens hjälm",
+		"trophy": true,
+		"text": "När bäraren Försvarar eller Provocerar helas den svagaste i sällskapet för 120.",
+		"trigger": "action",
+		"when": {
+			"unit": "self",
+			"action_in": [
+				"defend",
+				"provoke"
+			]
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"min": 110,
+				"max": 130,
+				"target": "weakest_ally"
+			}
+		]
+	},
+	"ember_jaw": {
+		"name": "Glödkäken",
+		"trophy": true,
+		"text": "När någon i sällskapet helas får bäraren en Glöd (högst 5). Bärarens förmåga förbrukar dem: +15 % skada per Glöd.",
+		"trigger": "heal",
+		"quiet": true,
+		"when": {
+			"target": "ally",
+			"min_effective": 1
+		},
+		"effects": [
+			{
+				"type": "charge",
+				"charge": "glod",
+				"max": 5,
+				"target": "self"
+			}
+		],
+		"release": {
+			"action": "signature",
+			"charge": "glod",
+			"damage_mult_per": 0.15
+		}
+	},
+	"lich_crown": {
+		"name": "Benfurstens krona",
+		"trophy": true,
+		"text": "Bärarens följdanfall räknas som Heliga besvärjelser, men bärarens direkta besvärjelser gör 20 % mindre skada.",
+		"trigger": "convert_damage",
+		"when": {
+			"from_trait": true,
+			"kind": "attack",
+			"source": "self"
+		},
+		"convert": {
+			"school": "holy",
+			"kind": "spell"
+		},
+		"parts": [
+			"lich_crown_penalty"
+		]
+	},
+	"lich_crown_penalty": {
+		"name": "Benfurstens krona",
+		"hidden": true,
+		"text": "",
+		"trigger": "modify_damage",
+		"when": {
+			"direct": true,
+			"kind": "spell"
+		},
+		"modify": {
+			"damage_mult": 0.8
+		}
 	}
 }
