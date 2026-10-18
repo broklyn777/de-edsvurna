@@ -1,6 +1,7 @@
-extends Node2D
-## Den första striden. Kopplar ihop stridslogiken (CombatSim) med grafik, ljud och knappar.
-## All "juice" – hitstop, skakningar, siffror, ljud – styrs härifrån utifrån simulatorns händelser.
+extends Node
+## Den första striden. Kopplar ihop stridslogiken (CombatSim) med 3D-scenen, ljud och knappar.
+## All "juice" – animationer, hitstop, skakningar, siffror, ljud – styrs härifrån utifrån
+## simulatorns händelser.
 ##
 ## Utvecklarargument (efter `--`):
 ##   --demo        en inbyggd bot spelar striden
@@ -15,16 +16,13 @@ const ERROR_TEXT := {
 	"nothing_to_interrupt": "Inget att avbryta",
 }
 const BOT_PATH := "res://tests/combat_bot.gd"
-## Förstoring av spelplanen så att figurerna syns ordentligt på en telefon.
-const WORLD_SCALE := 1.3
 
 var data: Dictionary
 var sim: CombatSim
 var sfx: Sfx
-var world: Node2D
-var units_layer: Node2D
+var world: CryptWorld
 var fx_layer: Node2D
-var views := {}
+var models := {}
 var frames := {}
 var buttons: Array[AbilityButton] = []
 var boss_frame: BossFrame
@@ -36,7 +34,6 @@ var paused := false
 var started := false
 var _countdown := 3.0
 var _last_count := 4
-var _shake := 0.0
 var _hitstop_until := 0
 var _slowmo_until := 0
 var _last_usec := 0
@@ -72,32 +69,37 @@ func _ready() -> void:
 			sim.advance(1.0 / 30.0)
 			_demo_act()
 			sim.drain_events()
+		_sync_models_after_warp()
 	_last_usec = Time.get_ticks_usec()
 
 
 func _build_scene() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
-	world = Node2D.new()
-	world.scale = Vector2.ONE * WORLD_SCALE
+	world = CryptWorld.new()
 	add_child(world)
-	world.add_child(preload("res://scripts/battle/arena.gd").new())
-	units_layer = Node2D.new()
-	units_layer.y_sort_enabled = true
-	world.add_child(units_layer)
-	fx_layer = Node2D.new()
-	fx_layer.z_index = 10
-	world.add_child(fx_layer)
 	for u in sim.units:
-		var v := UnitView.new()
-		v.setup(u, sim)
-		units_layer.add_child(v)
-		views[u.id] = v
-	world.add_child(Fx.HealBeams.new(sim, views))
+		var vis: Dictionary = (data.heroes if u.team == 0 else data.bosses)[u.id].visual
+		var m := UnitModel.new()
+		world.add_child(m)
+		m.setup(u, sim, vis)
+		models[u.id] = m
+	for u in sim.units:
+		var target := sim.boss if u.team == 0 else sim.threat_target()
+		models[u.id].face(models[target.id].global_position)
+
+	var fx_canvas := CanvasLayer.new()
+	fx_canvas.layer = 0
+	add_child(fx_canvas)
+	fx_layer = Node2D.new()
+	fx_canvas.add_child(fx_layer)
+	fx_layer.add_child(Fx.Overheads.new(sim, world, models))
+	fx_layer.add_child(Fx.HealBeams.new(sim, world, models))
 
 
 func _build_ui() -> void:
 	var ui := CanvasLayer.new()
+	ui.layer = 1
 	add_child(ui)
 	boss_frame = BossFrame.new()
 	boss_frame.setup(sim)
@@ -128,7 +130,7 @@ func _build_ui() -> void:
 
 
 func _layout() -> void:
-	var vs := get_viewport_rect().size
+	var vs := get_viewport().get_visible_rect().size
 	boss_frame.position = Vector2((vs.x - boss_frame.size.x) / 2.0, 10)
 	var y := 12.0
 	for h in sim.heroes:
@@ -154,6 +156,8 @@ func _process(_delta: float) -> void:
 	var now := Time.get_ticks_usec()
 	var real_dt := minf((now - _last_usec) / 1_000_000.0, 0.1)
 	_last_usec = now
+	if Engine.get_write_movie_path() != "":
+		real_dt = _delta / maxf(Engine.time_scale, 0.0001)  # inspelning: fast bildtakt, inte väggklocka
 	var now_ms := now / 1000
 	if now_ms < _hitstop_until:
 		Engine.time_scale = 0.04
@@ -169,17 +173,9 @@ func _process(_delta: float) -> void:
 		_demo_act()
 	for e in sim.drain_events():
 		_handle(e)
+	_update_facing()
 	_update_hints()
 	_update_telegraphs()
-
-	_shake = maxf(0.0, _shake - real_dt * 40.0)
-	var vs := get_viewport_rect().size
-	world.position = Vector2(vs.x * 0.5 + 40, vs.y * 0.5 + 35) + Vector2(randf_range(-1, 1), randf_range(-1, 1)) * _shake
-	queue_redraw()
-
-
-func _draw() -> void:
-	draw_rect(get_viewport_rect(), Color(0.035, 0.03, 0.05))
 
 
 func _tick_countdown(dt: float) -> void:
@@ -193,6 +189,17 @@ func _tick_countdown(dt: float) -> void:
 		started = true
 		overlay.show_big("KÖR!")
 		sfx.play("go", -2.0, 0.0)
+
+
+func _update_facing() -> void:
+	var tank := sim.threat_target()
+	if tank:
+		models[sim.boss.id].face(models[tank.id].global_position)
+	for h in sim.heroes:
+		if h.is_casting() and not h.cast.targets.is_empty():
+			models[h.id].face(models[h.cast.targets[0]].global_position)
+		else:
+			models[h.id].face(models[sim.boss.id].global_position)
 
 
 func _update_hints() -> void:
@@ -217,14 +224,23 @@ func _update_telegraphs() -> void:
 	if boss.is_casting() and sim.ability(boss.cast.ability).get("telegraph", false):
 		for target_id in boss.cast.targets:
 			if not telegraphs.has(target_id):
-				var t := Fx.Telegraph.new(78.0)
-				world.add_child(t)
-				world.move_child(t, 1)
-				telegraphs[target_id] = t
+				telegraphs[target_id] = world.make_telegraph(1.1)
 	for unit_id in telegraphs.keys():
-		var t: Fx.Telegraph = telegraphs[unit_id]
-		t.position = views[unit_id].position
-		t.progress = sim.boss.cast_progress() if sim.boss.is_casting() else 1.0
+		var t: Node3D = telegraphs[unit_id]
+		t.position = Vector3(models[unit_id].global_position.x, 0.03, models[unit_id].global_position.z)
+		var k := boss.cast_progress() if boss.is_casting() else 1.0
+		var fill: Node3D = t.get_node("Fill")
+		fill.scale = Vector3(maxf(k, 0.02), 1, maxf(k, 0.02))
+
+
+func _sync_models_after_warp() -> void:
+	for u in sim.units:
+		var m: UnitModel = models[u.id]
+		if not u.alive:
+			m.die()
+		elif u.is_casting():
+			m.start_cast(sim.ability(u.cast.ability).get("school", "physical"), sim.ability(u.cast.ability).get("melee", false))
+		m.set_blocking(u.auras.has("shield_wall"))
 
 
 # --- Inmatning --------------------------------------------------------------
@@ -264,10 +280,14 @@ func _toggle_pause() -> void:
 	paused = not paused
 	overlay.paused = paused
 	pause_button.paused = paused
-	for v in views.values():
-		v.process_mode = Node.PROCESS_MODE_DISABLED if paused else Node.PROCESS_MODE_INHERIT
-		if paused:
-			v.stop_cast_sound()
+	world.process_mode = Node.PROCESS_MODE_DISABLED if paused else Node.PROCESS_MODE_INHERIT
+	if paused:
+		for m in models.values():
+			m.stop_cast_sound()
+
+
+func _exit_tree() -> void:
+	UnitModel.free_shared()
 
 
 func _restart() -> void:
@@ -289,26 +309,27 @@ func _handle(e: Dictionary) -> void:
 			var ab := sim.ability(e.ability)
 			var color := UiStyle.school_color(ab.get("school", "physical"))
 			var big: bool = e.ability == "pyroblast"
-			var p := Fx.Projectile.new(_pos(e.source) + Vector2(0, -10), _pos(e.target), e.travel, color, 14.0 if big else 7.0)
-			fx_layer.add_child(p)
+			fx_layer.add_child(Fx.Projectile.new(_pos(e.source), _pos(e.target), e.travel, color, 14.0 if big else 7.0))
 		"swing":
-			var src: UnitView = views[e.unit]
-			src.lunge(_pos(e.target), 26.0 if e.unit == sim.boss.id else 16.0)
+			models[e.unit].attack(models[e.target].global_position, 0.35 if e.unit == sim.boss.id else 0.25)
 		"damage":
 			_on_damage(e)
 		"heal":
 			_on_heal(e)
 		"aura_applied":
-			if e.aura == "frenzy":
+			if e.aura == "shield_wall":
+				models[e.unit].set_blocking(true)
+			elif e.aura == "frenzy":
 				sfx.play("frenzy", 0.0, 0.0)
-				_add_shake(10.0)
+				world.add_shake(10.0)
+		"aura_removed":
+			if e.aura == "shield_wall":
+				models[e.unit].set_blocking(false)
 		"death":
 			sfx.play("death", -2.0)
 			_float(e.unit, "DÖD", Color(0.8, 0.8, 0.8), 26, false)
-			views[e.unit].stop_cast_sound()
+			models[e.unit].die()
 			_hitstop(70)
-		"queued":
-			pass
 		"error":
 			for b in buttons:
 				if b.ability_id == e.ability:
@@ -323,15 +344,18 @@ func _handle(e: Dictionary) -> void:
 
 func _on_cast_start(e: Dictionary) -> void:
 	var ab := sim.ability(e.ability)
-	var v: UnitView = views[e.unit]
-	v.start_cast_sound(sfx.stream("cast_" + ab.get("school", "physical")))
+	var m: UnitModel = models[e.unit]
+	var school: String = ab.get("school", "physical")
+	m.start_cast(school, ab.get("melee", false))
+	m.start_cast_sound(sfx.stream("cast_" + school))
 	if e.unit == sim.boss.id:
-		_add_shake(3.0)
+		world.add_shake(3.0)
 
 
 func _on_cast_end(e: Dictionary) -> void:
-	var v: UnitView = views[e.unit]
-	v.stop_cast_sound()
+	var m: UnitModel = models[e.unit]
+	m.stop_cast_sound()
+	m.end_cast(e.result == "success")
 	if e.unit == sim.boss.id and e.result != "success":
 		_clear_telegraphs()
 	if e.result == "interrupted":
@@ -342,8 +366,9 @@ func _on_cast_end(e: Dictionary) -> void:
 		fx_layer.add_child(_at(Fx.Sparks.new(Color("#d6b4ff"), 22, 380.0, 0.5), p))
 		fx_layer.add_child(_at(Fx.Ring.new(Color("#ffe066"), 30, 140, 0.4, 8.0), p))
 		_float(e.unit, "AVBRUTEN!", Color("#ffe066"), 34, true)
+		m.hit(1.5)
 		_hitstop(90)
-		_add_shake(6.0)
+		world.add_shake(6.0)
 
 
 func _on_ability_used(e: Dictionary) -> void:
@@ -352,40 +377,38 @@ func _on_ability_used(e: Dictionary) -> void:
 	match e.ability:
 		"shield_wall":
 			sfx.play("shield_wall", 0.0)
-			fx_layer.add_child(_at(Fx.Ring.new(Color("#bcd2ff"), 20, 90, 0.45, 8.0, true), p))
-			_add_shake(4.0)
+			fx_layer.add_child(_at(Fx.Ring.new(Color("#bcd2ff"), 20, 110, 0.45, 8.0, true), p))
+			world.add_shake(4.0)
 		"bloodlust":
 			sfx.play("bloodlust", 0.0, 0.0)
 			for h in sim.heroes:
 				if h.alive:
-					fx_layer.add_child(_at(Fx.Ring.new(Color("#ff5a2a"), 10, 70, 0.6, 7.0, true), _pos(h.id)))
+					fx_layer.add_child(_at(Fx.Ring.new(Color("#ff5a2a"), 10, 80, 0.6, 7.0, true), _pos(h.id)))
 			overlay.announce("BLOODLUST!")
-			_add_shake(7.0)
+			world.add_shake(7.0)
 		"kick":
 			sfx.play("kick", 0.0)
-			views[e.unit].lunge(_pos(e.targets[0]), 22.0)
+			models[e.unit].attack(models[e.targets[0]].global_position, 0.4)
 		"renew":
 			sfx.play("renew", -10.0)
-			fx_layer.add_child(_at(Fx.Ring.new(UiStyle.school_color("heal"), 8, 40, 0.4, 4.0), _pos(e.targets[0])))
+			fx_layer.add_child(_at(Fx.Ring.new(UiStyle.school_color("heal"), 8, 46, 0.4, 4.0), _pos(e.targets[0])))
 		_:
 			if ab.get("melee", false) and not e.targets.is_empty():
-				views[e.unit].lunge(_pos(e.targets[0]), 20.0)
+				models[e.unit].attack(models[e.targets[0]].global_position, 0.3)
 
 
 func _on_damage(e: Dictionary) -> void:
-	var target: UnitView = views[e.target]
-	var src_pos := _pos(e.source)
+	var target: UnitModel = models[e.target]
 	var p := _pos(e.target)
 	var crit: bool = e.crit
 	var heavy: bool = e.ability in ["bone_crush", "pyroblast"]
-	target.hit(2.0 if heavy else (1.4 if crit else 1.0), src_pos)
+	target.hit(2.0 if heavy else (1.4 if crit else 1.0), models[e.source].global_position)
 	var color := UiStyle.school_color(e.school)
 	var on_hero: bool = sim.unit(e.target).team == 0
 	if on_hero:
 		color = Color("#ff5a4a") if e.school == "physical" else color.lerp(Color("#ff5a4a"), 0.3)
 	var size := 34 if heavy else (32 if crit else (20 if on_hero else 24))
-	var label := str(int(e.amount)) + ("!" if crit else "")
-	_float(e.target, label, color, size, crit or heavy)
+	_float(e.target, str(int(e.amount)) + ("!" if crit else ""), color, size, crit or heavy)
 
 	if on_hero:
 		frames[e.target].on_damage(e.amount)
@@ -396,21 +419,22 @@ func _on_damage(e: Dictionary) -> void:
 		"melee":
 			if e.source == sim.boss.id:
 				sfx.play("boss_swing", -3.0)
+				world.add_shake(2.0)
 			else:
 				sfx.play("melee_crit" if crit else "melee_hit", -9.0 if not crit else -4.0, 0.1)
 		"bone_crush":
 			sfx.play("bone_crush", 2.0, 0.0)
-			fx_layer.add_child(_at(Fx.Ring.new(Color("#ff3b2e"), 20, 160, 0.5, 12.0, true), p))
+			fx_layer.add_child(_at(Fx.Ring.new(Color("#ff3b2e"), 20, 170, 0.5, 12.0, true), p))
 			fx_layer.add_child(_at(Fx.Sparks.new(Color("#e8dcc8"), 26, 420.0, 0.55), p))
 			_clear_telegraphs()
 			_hitstop(130)
-			_add_shake(18.0)
+			world.add_shake(18.0)
 		"pyroblast":
 			sfx.play("pyro_impact", 1.0)
-			fx_layer.add_child(_at(Fx.Ring.new(Color("#ff8a2a"), 20, 150, 0.5, 10.0, true), p))
+			fx_layer.add_child(_at(Fx.Ring.new(Color("#ff8a2a"), 20, 160, 0.5, 10.0, true), p))
 			fx_layer.add_child(_at(Fx.Sparks.new(Color("#ffb347"), 30, 460.0, 0.6), p))
 			_hitstop(110 if crit else 70)
-			_add_shake(12.0 if crit else 8.0)
+			world.add_shake(12.0 if crit else 8.0)
 		_:
 			var ab := sim.ability(e.ability)
 			sfx.play(ab.get("sound", "melee_hit"), -6.0 if not crit else -1.0, 0.08)
@@ -419,7 +443,7 @@ func _on_damage(e: Dictionary) -> void:
 				fx_layer.add_child(_at(Fx.Sparks.new(color, 8, 220.0, 0.3), p))
 	if crit and not heavy:
 		_hitstop(45)
-		_add_shake(3.0)
+		world.add_shake(3.0)
 
 
 func _on_heal(e: Dictionary) -> void:
@@ -432,20 +456,21 @@ func _on_heal(e: Dictionary) -> void:
 	frames[e.target].on_heal()
 	if not is_hot:
 		sfx.play("heal", -5.0, 0.03)
-		views[e.target].flash_color(UiStyle.school_color("heal"))
-		fx_layer.add_child(_at(Fx.Ring.new(UiStyle.school_color("heal"), 10, 60, 0.45, 5.0, true), p))
+		models[e.target].flash_color(UiStyle.school_color("heal"))
+		fx_layer.add_child(_at(Fx.Ring.new(UiStyle.school_color("heal"), 10, 70, 0.45, 5.0, true), p))
 		fx_layer.add_child(_at(Fx.Sparks.new(Color("#b8ffbf"), 10, 140.0, 0.5), p))
 
 
 func _on_outcome(result: String) -> void:
-	for v in views.values():
-		v.stop_cast_sound()
+	for m in models.values():
+		m.stop_cast_sound()
+		m.end_cast(false)
 	_clear_telegraphs()
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
 	if result == "victory":
 		_slowmo_until = Time.get_ticks_msec() + 1600
 		sfx.play("victory", 0.0, 0.0)
-		_add_shake(14.0)
+		world.add_shake(14.0)
 		var p := _pos(sim.boss.id)
 		fx_layer.add_child(_at(Fx.Ring.new(Color("#cbbfe6"), 40, 320, 1.2, 14.0, true), p))
 		fx_layer.add_child(_at(Fx.Sparks.new(Color("#e8dcc8"), 40, 520.0, 1.0), p))
@@ -457,8 +482,9 @@ func _on_outcome(result: String) -> void:
 
 # --- Hjälpfunktioner --------------------------------------------------------
 
+## Skärmposition för en enhets bröst (där siffror, projektiler och ringar utgår).
 func _pos(unit_id: String) -> Vector2:
-	return views[unit_id].position
+	return world.project(models[unit_id].chest_position())
 
 
 func _at(node: Node2D, p: Vector2) -> Node2D:
@@ -467,17 +493,14 @@ func _at(node: Node2D, p: Vector2) -> Node2D:
 
 
 func _float(unit_id: String, text: String, color: Color, size: int, big: bool) -> void:
-	var u := sim.unit(unit_id)
-	var p := _pos(unit_id) + Vector2(randf_range(-14, 14), -u.radius - 22)
+	# Bossen är så lång att huvudet hamnar vid bossramen – siffrorna utgår från bröstet i stället.
+	var anchor: Vector3 = models[unit_id].chest_position() if unit_id == sim.boss.id else models[unit_id].head_position()
+	var p := world.project(anchor) + Vector2(randf_range(-14, 14), -30)
 	fx_layer.add_child(_at(Fx.FloatingText.new(text, color, size, big, 1.1 if big else 0.9), p))
 
 
 func _hitstop(ms: int) -> void:
 	_hitstop_until = maxi(_hitstop_until, Time.get_ticks_msec() + ms)
-
-
-func _add_shake(amount: float) -> void:
-	_shake = minf(24.0, maxf(_shake, amount))
 
 
 func _clear_telegraphs() -> void:

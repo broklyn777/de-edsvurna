@@ -24,8 +24,16 @@ Inga talangträd, ingen loot, inga nya klasser förrän den första striden (4 h
 
 - `src/combat/` – `CombatSim` (ren logik, fast tidssteg 0,05 s, händelselista), `CombatUnit`, `GameData`.
 - `data/*.json` – förmågor, auror, hjältar (med AI-regler), bossar (timers, faser), möten (party + knappar).
-- `scripts/battle/` – grafik och känsla. `battle.gd` översätter simulatorns händelser till ljud, siffror,
-  hitstop (`Engine.time_scale`), skakningar och effekter. Knappar reagerar på tryck, inte släpp.
+- `scripts/battle/` – grafik och känsla. `battle.gd` översätter simulatorns händelser till animationer,
+  ljud, siffror, hitstop (`Engine.time_scale`), skakningar och effekter. Knappar reagerar på tryck, inte släpp.
+  - `crypt_world.gd` – 3D-kryptan (golv, pelare, facklor, ljus, kamera, varningscirklar), byggd i kod.
+  - `unit_model.gd` – 3D-figur: laddar `assets/models/<model>.glb`, hänger vapen från `vapen.glb` i
+    `grip_r`/`grip_l`, spelar animationer enligt `visual.anims` i heroes.json/bosses.json.
+    Bossens närstridskast (windup) håller vapnet högt tills slaget faller.
+  - 2D-lager ovanpå 3D: siffror, projektiler, ringar, healstrålar och hälsomätare projiceras från 3D.
+- `assets/models/` – Quaternius-figurer från Drakvalvet, uppackade med
+  `node ~/.npm/_npx/425967af1abfabd4/node_modules/@gltf-transform/cli/bin/cli.js dequantize in.glb ut.glb`
+  (Godot läser inte meshopt/kvantisering). Se `assets/models/LICENSE.md`.
 - `tools/gen_sfx.py` – syntetiserar platshållarljud till `assets/audio/` (kör om efter ändringar).
 - `tests/combat_bot.gd` – simulerade spelare (NONE/SLOPPY/GOOD) för balanstester.
 
@@ -48,6 +56,9 @@ godot --path . -- --screenshot=/tmp/shot.png --frames=30
 
 # Låt en bot spela, spola fram 16 s, fast slumpfrö
 godot --path . -- --demo --warp=16 --seed=5
+
+# Spela in bildsekvens (PNG) för att granska rörelser
+godot --path . --write-movie /tmp/mov/f.png --fixed-fps 20 --quit-after 70 -- --demo --warp=8 --seed=5
 
 # Bygg debug-APK och installera på ansluten Android-telefon
 godot --headless --path . --export-debug Android export/rpg007.apk

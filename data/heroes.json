@@ -20,7 +20,25 @@
 			{
 				"ability": "shield_slam"
 			}
-		]
+		],
+		"visual": {
+			"model": "torvald",
+			"scale": 1.0,
+			"weapons": {
+				"grip_r": "Longsword",
+				"grip_l": "Shield"
+			},
+			"anims": {
+				"idle": "Shield_Idle",
+				"attack": [
+					"Shield_Attack",
+					"Shield_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block"
+			}
+		}
 	},
 	"priest": {
 		"name": "Priest",
@@ -47,7 +65,21 @@
 					"target_missing_aura": "renew"
 				}
 			}
-		]
+		],
+		"visual": {
+			"model": "sigrun",
+			"scale": 1.0,
+			"weapons": {
+				"grip_r": "Mace"
+			},
+			"anims": {
+				"idle": "OneHand_Idle",
+				"cast": "OneHand_Idle",
+				"release": "Spell_Simple_Shoot",
+				"hit": "Hit_Chest",
+				"death": "Death01"
+			}
+		}
 	},
 	"mage": {
 		"name": "Mage",
@@ -63,7 +95,21 @@
 			{
 				"ability": "frostbolt"
 			}
-		]
+		],
+		"visual": {
+			"model": "solveig",
+			"scale": 1.0,
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"anims": {
+				"idle": "Staff_Idle",
+				"cast": "Staff_Cast",
+				"release": "Spell_Simple_Shoot",
+				"hit": "Hit_Chest",
+				"death": "Death01"
+			}
+		}
 	},
 	"rogue": {
 		"name": "Rogue",
@@ -84,6 +130,22 @@
 			{
 				"ability": "sinister_strike"
 			}
-		]
+		],
+		"visual": {
+			"model": "liria",
+			"scale": 1.0,
+			"weapons": {
+				"grip_r": "Shortsword"
+			},
+			"anims": {
+				"idle": "OneHand_Idle",
+				"attack": [
+					"OneHand_Attack",
+					"OneHand_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01"
+			}
+		}
 	}
 }

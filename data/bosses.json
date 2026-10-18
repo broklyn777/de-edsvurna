@@ -33,6 +33,20 @@
 				"aura": "frenzy",
 				"text": "Bone Lich blir rasande!"
 			}
-		]
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 2.3,
+			"tint": "#d9c8ff",
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"windup": "Sword_Attack"
+			}
+		}
 	}
 }

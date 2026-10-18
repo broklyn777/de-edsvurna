@@ -67,7 +67,7 @@ func _draw() -> void:
 		border = Color(1, 0.2, 0.15, 0.6 + 0.4 * sin(_t * 10.0))
 	draw_rect(r, border, false, border_w)
 
-	Glyphs.draw(self, UnitView.GLYPHS.get(unit.id, "diamond"), Vector2(19, 15), 8.0, unit.color)
+	Glyphs.draw(self, UiStyle.GLYPHS.get(unit.id, "diamond"), Vector2(19, 15), 8.0, unit.color)
 	UiStyle.text(self, Vector2(32, 21), unit.name, 17, unit.color)
 	var hp_text := "DÖD" if not unit.alive else str(int(unit.hp))
 	UiStyle.text(self, Vector2(10, 21), hp_text, 15, Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_RIGHT, size.x - 20)

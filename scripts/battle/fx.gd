@@ -142,15 +142,17 @@ class FloatingText extends Node2D:
 
 
 ## Ljusstråle från healern till målet medan healingen laddas, så att man ser vem som får den.
+## Ritas i skärmkoordinater ovanpå 3D-scenen.
 class HealBeams extends Node2D:
 	var sim: CombatSim
-	var views: Dictionary
+	var world: CryptWorld
+	var models: Dictionary
 	var _t := 0.0
 
-	func _init(s: CombatSim, unit_views: Dictionary) -> void:
+	func _init(s: CombatSim, w: CryptWorld, unit_models: Dictionary) -> void:
 		sim = s
-		views = unit_views
-		z_index = 5
+		world = w
+		models = unit_models
 
 	func _process(delta: float) -> void:
 		_t += delta
@@ -161,39 +163,44 @@ class HealBeams extends Node2D:
 		for h in sim.heroes:
 			if not h.is_casting() or not CombatSim.is_heal(sim.ability(h.cast.ability)):
 				continue
-			var from: Vector2 = views[h.id].position + Vector2(0, -6)
 			var target_id: String = h.cast.targets[0]
-			var to: Vector2 = views[target_id].position
+			var from := world.project(models[h.id].chest_position())
+			var to := world.project(models[target_id].chest_position())
 			var k := h.cast_progress()
 			var pulse := 0.5 + 0.5 * sin(_t * 12.0)
 			if target_id != h.id:
-				draw_line(from, to, Color(c, 0.18 + 0.15 * pulse), 10.0, true)
-				draw_line(from, from.lerp(to, k), Color(1, 1, 0.8, 0.7), 3.0, true)
-			var r: float = sim.unit(target_id).radius + 10.0
-			draw_set_transform(to + Vector2(0, r * 0.55), 0, Vector2(1, 0.4))
-			draw_arc(Vector2.ZERO, r + 4.0 * pulse, 0, TAU, 40, Color(c, 0.9), 5.0, true)
+				draw_line(from, to, Color(c, 0.18 + 0.15 * pulse), 12.0, true)
+				draw_line(from, from.lerp(to, k), Color(1, 1, 0.8, 0.75), 3.5, true)
+			var feet := world.project(models[target_id].global_position)
+			draw_set_transform(feet, 0, Vector2(1, 0.45))
+			draw_arc(Vector2.ZERO, 44.0 + 5.0 * pulse, 0, TAU, 40, Color(c, 0.9), 5.0, true)
 			draw_set_transform(Vector2.ZERO)
-			draw_arc(to, r, -PI / 2, -PI / 2 + TAU * k, 40, Color(c, 0.95), 4.0, true)
+			draw_arc(to, 34.0, -PI / 2, -PI / 2 + TAU * k, 40, Color(c, 0.95), 4.0, true)
 
 
-## Röd varningscirkel under målet för en tung attack, fylls i takt med bossens kast.
-class Telegraph extends Node2D:
-	var radius := 60.0
-	var progress := 0.0
-	var _t := 0.0
+## Hälsomätare, kastmätare och namn ovanför hjältarnas huvuden.
+class Overheads extends Node2D:
+	var sim: CombatSim
+	var world: CryptWorld
+	var models: Dictionary
 
-	func _init(r: float) -> void:
-		radius = r
-		z_index = 0
+	func _init(s: CombatSim, w: CryptWorld, unit_models: Dictionary) -> void:
+		sim = s
+		world = w
+		models = unit_models
 
-	func _process(delta: float) -> void:
-		_t += delta
+	func _process(_delta: float) -> void:
 		queue_redraw()
 
 	func _draw() -> void:
-		var pulse := 0.5 + 0.5 * sin(_t * 14.0)
-		draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.55))
-		draw_circle(Vector2.ZERO, radius, Color(1, 0.1, 0.05, 0.12 + 0.08 * pulse))
-		draw_circle(Vector2.ZERO, radius * progress, Color(1, 0.15, 0.05, 0.35))
-		draw_arc(Vector2.ZERO, radius, 0, TAU, 64, Color(1, 0.25, 0.1, 0.7 + 0.3 * pulse), 4, true)
-		draw_set_transform(Vector2.ZERO)
+		for h in sim.heroes:
+			var head := world.project(models[h.id].head_position())
+			var name_color := h.color if h.alive else Color(0.55, 0.55, 0.55)
+			UiStyle.text(self, head + Vector2(-80, -22), h.name, 15, name_color, HORIZONTAL_ALIGNMENT_CENTER, 160, 4)
+			if not h.alive:
+				continue
+			var c := UiStyle.HP_GREEN if h.hp_pct() > 0.35 else Color("#e0412e")
+			UiStyle.bar(self, Rect2(head + Vector2(-30, -14), Vector2(60, 7)), h.hp_pct(), c)
+			if h.is_casting():
+				var school: String = sim.ability(h.cast.ability).get("school", "physical")
+				UiStyle.bar(self, Rect2(head + Vector2(-30, -5), Vector2(60, 5)), h.cast_progress(), UiStyle.school_color(school))
