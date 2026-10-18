@@ -8,14 +8,20 @@ klädda och beväpnade i Blender för Drakvalvet:
 
 | Fil | Källa | Roll i rpg007 |
 |---|---|---|
-| torvald.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq) | Warrior |
-| sigrun.glb | Quaternius "Animated Woman" (poly.pizza/m/qJ2gsTUBHL) | Priest |
-| solveig.glb | Quaternius "Animated Woman" (poly.pizza/m/qJ2gsTUBHL) | Mage |
-| liria.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R) | Rogue |
-| skelett.glb | Troligen Quaternius (skelett) – **källa ej bekräftad, kontrollera före release** | Bone Lich |
+| torvald.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq) | Paladinen (omfärgad) |
+| sigrun.glb | Quaternius "Animated Woman" (poly.pizza/m/qJ2gsTUBHL) | Lånar ut mantel, solmärke och hjälm (Paladinen, Brokk) |
+| solveig.glb | Quaternius "Animated Woman" (poly.pizza/m/qJ2gsTUBHL) | Solveig |
+| liria.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R) | Jägaren Eira (och koger åt skelettbågskytten) |
+| skelett.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq) utan kropp; benen är stela delar byggda i Blender (Drakvalvet `Monster/skelett.py`) | Alla skelettfiender och Benfursten |
+| brokk.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), omformad till dvärg med skägg i Blender (Drakvalvet `qt-hjalte-dwarf-m.glb`) | Brokk |
+| alva.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R) med kåpa och huva (Drakvalvet `qt-akolyt.glb`) | Syster Alva |
+| kapa.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), bara kåpan och hänget kvar (Drakvalvet `qt-kultist.glb`, kropp och animationer bortskurna med gltf-transform) | Kåpa åt gravprästen och Benfursten |
+| rustning.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq) utan kropp, med plåtrustning (Drakvalvet `qt-tom_rustning.glb`) | Rustning åt gravväktaren och axelskydd åt Benfursten |
 | vapen.glb | Vapen från Drakvalvet – **källa ej bekräftad, kontrollera före release** | Vapen i händerna |
 
-Animationerna kommer från Quaternius "Universal Animation Library" (CC0).
+Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla figurer har samma rigg
+(`CharacterArmature`), så `unit_model.gd` kan låna animationer och delar mellan dem (se "visual" i
+`data/heroes.json` och `data/enemies.json`). Benfurstens krona byggs i kod.
 
 # Ljud
 

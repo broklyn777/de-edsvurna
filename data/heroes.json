@@ -27,6 +27,34 @@
 				"grip_r": "Longsword",
 				"grip_l": "Shield"
 			},
+			"parts": [
+				"sigrun/Sigrun_Cape",
+				"sigrun/Sigrun_SunEmblem",
+				"sigrun/Sigrun_SunRay_0",
+				"sigrun/Sigrun_SunRay_1",
+				"sigrun/Sigrun_SunRay_2",
+				"sigrun/Sigrun_SunRay_3",
+				"sigrun/Sigrun_SunRay_4",
+				"sigrun/Sigrun_SunRay_5",
+				"sigrun/Sigrun_SunRay_6",
+				"sigrun/Sigrun_SunRay_7"
+			],
+			"colors": {
+				"Torvald_Iron": "#c9ced6",
+				"Torvald_Edge": "#e0b24a",
+				"Torvald_Red": "#2a55b8",
+				"Green.001": "#8c929e",
+				"Brown2.001": "#5a6070",
+				"Brown.002": "#3a3f4e",
+				"Vapen_Wood": "#2a55b8",
+				"Vapen_Iron": "#e0b24a",
+				"Paladin_Cape": "#2a55b8",
+				"Paladin_Gold": "#ffd36a",
+				"Paladin_Sun": "#ffd36a"
+			},
+			"emit": {
+				"Paladin_Sun": "#d9a030"
+			},
 			"anims": {
 				"idle": "Shield_Idle",
 				"attack": [
@@ -36,8 +64,8 @@
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"block": "Shield_Block",
-				"run": "Run",
-				"walk": "Walk"
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
 			}
 		},
 		"oath_options": [
@@ -68,9 +96,28 @@
 			}
 		],
 		"visual": {
-			"model": "torvald",
-			"scale": 0.86,
-			"tint": "#b08060",
+			"model": "brokk",
+			"parts": [
+				{
+					"part": "sigrun/Sigrun_Helm",
+					"scale": 1.15
+				},
+				{
+					"part": "sigrun/Sigrun_HelmBand",
+					"scale": 1.15
+				},
+				{
+					"part": "sigrun/Sigrun_Nasal",
+					"scale": 1.15
+				}
+			],
+			"colors": {
+				"Hjalte_Cloth": "#7a2418",
+				"Dvm_Hair": "#c4561c",
+				"Hjalte_Metal": "#9a6a3a",
+				"Paladin_Steel": "#8a8f98",
+				"Paladin_Gold": "#b07a30"
+			},
 			"weapons": {
 				"grip_r": "Greataxe"
 			},
@@ -114,10 +161,23 @@
 			}
 		],
 		"visual": {
-			"model": "sigrun",
+			"model": "alva",
+			"anims_from": [
+				"sigrun"
+			],
+			"hide": [
+				"Ako_Staff"
+			],
+			"colors": {
+				"Ako_Robe": "#f2eee4",
+				"Ako_Cord": "#e0b24a",
+				"Ako_Gold": "#e0b24a"
+			},
 			"weapons": {
 				"grip_r": "Mace"
 			},
+			"light": "#ffe7a0",
+			"light_energy": 0.6,
 			"anims": {
 				"idle": "OneHand_Idle",
 				"attack": [
@@ -127,8 +187,8 @@
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"block": "Shield_Block",
-				"run": "Run",
-				"walk": "Walk"
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
 			}
 		}
 	},
@@ -159,6 +219,9 @@
 			"weapons": {
 				"grip_l": "Longbow"
 			},
+			"colors": {
+				"Ranger_Cloak": "#2f7a3a"
+			},
 			"anims": {
 				"idle": "Bow_Idle",
 				"attack": [
@@ -167,8 +230,8 @@
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"block": "Shield_Block",
-				"run": "Run",
-				"walk": "Walk"
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
 			}
 		}
 	},
@@ -202,6 +265,17 @@
 			"weapons": {
 				"grip_r": "Staff"
 			},
+			"colors": {
+				"Solveig_Robe": "#7a1a0c",
+				"White.001": "#8a2410",
+				"Orange": "#4a1008",
+				"Solveig_Cloak": "#1c1416"
+			},
+			"emit": {
+				"Solveig_Ember": "#ff6a10"
+			},
+			"light": "#ff7a30",
+			"light_energy": 0.8,
 			"anims": {
 				"idle": "Staff_Idle",
 				"attack": [

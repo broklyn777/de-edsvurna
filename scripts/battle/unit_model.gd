@@ -2,6 +2,11 @@ class_name UnitModel
 extends Node3D
 ## En hjälte eller bossen i 3D: modell, vapen i händerna och animationer som följer striden.
 ## Rörelserna styrs av battle.gd utifrån simulatorns händelser (attack, kast, träff, död …).
+##
+## Utseendet ("visual" i data): model, scale, weapons {grepp: vapen}, anims, och för att skilja
+## figurer åt som delar modell: anims_from [modeller att låna animationer av], hide [noder],
+## parts ["modell/Nod" eller {part, offset, rot, scale}] som hängs på samma ben, colors och
+## emit {material: färg}, tint, glow, light (färgat sken), crown (krona, färg).
 
 const WORLD_SCALE := 1.0 / 55.0
 const BLEND := 0.12
@@ -14,6 +19,10 @@ const ATTACK_SPEED := 1.25
 const KICK_IMPACT_AT := 0.3
 
 static var _weapon_kit: Node3D
+## Figurer som andra lånar delar, grepp och animationer av (modellnamn → instans).
+static var _donors := {}
+## Metall speglar bara den mörka kryptan och blir svart; dämpa så att färgerna syns.
+const MAX_METALLIC := 0.35
 
 var unit: CombatUnit
 ## Sätts av battle.gd; används för fotsteg.
@@ -70,14 +79,32 @@ func setup(u: CombatUnit, s: CombatSim, vis: Dictionary) -> void:
 	_model.scale = Vector3.ONE * model_scale
 	_body.add_child(_model)
 	_player = _model.find_children("*", "AnimationPlayer", true, false)[0]
+	for donor in vis.get("anims_from", []):
+		_borrow_anims(donor)
 	ProceduralAnims.add_to(_player, vis.get("procedural", []))
 	for loop_anim in [anims.get("idle", ""), anims.get("cast", ""), anims.get("block", ""),
 			anims.get("run", ""), anims.get("walk", "")]:
 		if _player.has_animation(loop_anim):
 			_player.get_animation(loop_anim).loop_mode = Animation.LOOP_LINEAR
+	for part_name in vis.get("hide", []):
+		var hidden := _model.find_child(part_name, true, false)
+		if hidden:
+			hidden.queue_free()
+	for part in vis.get("parts", []):
+		_attach_part(part if part is Dictionary else {"part": part})
 	_attach_weapons(vis.get("weapons", {}))
+	if vis.has("crown"):
+		_build_crown(Color(vis.crown))
 	_setup_materials(vis)
 	_build_aura_meshes()
+
+	if vis.has("light"):
+		var glow_light := OmniLight3D.new()
+		glow_light.light_color = Color(vis.light)
+		glow_light.position = Vector3(0, 0.6 * model_scale, 0.3 * model_scale)
+		glow_light.omni_range = 1.6 * model_scale
+		glow_light.light_energy = vis.get("light_energy", 1.2)
+		_body.add_child(glow_light)
 
 	_cast_light = OmniLight3D.new()
 	_cast_light.position = Vector3(0, 1.3 * model_scale, 0.4 * model_scale)
@@ -93,11 +120,14 @@ static func to_world(p: Vector2) -> Vector3:
 	return Vector3(p.x * WORLD_SCALE, 0, p.y * WORLD_SCALE)
 
 
-## Frigör den delade vapenmodellen när striden stängs.
+## Frigör den delade vapenmodellen och lånade figurer när striden stängs.
 static func free_shared() -> void:
 	if _weapon_kit:
 		_weapon_kit.free()
 		_weapon_kit = null
+	for donor in _donors.values():
+		donor.free()
+	_donors.clear()
 
 
 func head_position() -> Vector3:
@@ -362,9 +392,116 @@ func _attach_weapons(weapons: Dictionary) -> void:
 		_weapon_kit = load("res://assets/models/vapen.glb").instantiate()
 	for grip in weapons:
 		var at := _model.find_child(grip, true, false)
+		if at == null:
+			# Figurer utan grepp (skelettet) får samma grepp som Torvald, på samma ben.
+			at = _attach_part({"part": "torvald/" + grip})
 		var part := _weapon_kit.find_child(weapons[grip], true, false)
 		if at and part:
 			at.add_child(part.duplicate())
+
+
+static func _donor(model_name: String) -> Node:
+	if not _donors.has(model_name):
+		_donors[model_name] = load("res://assets/models/%s.glb" % model_name).instantiate()
+	return _donors[model_name]
+
+
+## Lånar animationer från en annan figur med samma rigg. Spåren pekar på figurens rotnod
+## ("Torvald/CharacterArmature/Skeleton3D:Hips"), så rotnamnet byts ut.
+func _borrow_anims(model_name: String) -> void:
+	var donor := _donor(model_name)
+	var from: AnimationPlayer = donor.find_children("*", "AnimationPlayer", true, false)[0]
+	var own_path := String(_player.get_animation(_player.get_animation_list()[0]).track_get_path(0))
+	var to_root := own_path.get_slice("/", 0)
+	var lib := _player.get_animation_library("")
+	for anim_name in from.get_animation_list():
+		if _player.has_animation(anim_name):
+			continue
+		var anim: Animation = from.get_animation(anim_name).duplicate()
+		for t in anim.get_track_count():
+			var path := String(anim.track_get_path(t))
+			anim.track_set_path(t, NodePath(to_root + path.substr(path.find("/"))))
+		lib.add_animation(anim_name, anim)
+
+
+## Hänger en del från en annan figur ("sigrun/Sigrun_Cape") på samma ben i den här figuren.
+## Valfritt: offset (i benets rum), scale, rot (grader). Returnerar den nya delen.
+func _attach_part(def: Dictionary) -> Node3D:
+	var donor_name := String(def.part).get_slice("/", 0)
+	var src := _donor(donor_name).find_child(String(def.part).get_slice("/", 1), true, false) as Node3D
+	var skeleton := _model.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
+	if src == null:
+		push_warning("Hittar ingen del " + def.part)
+		return null
+	var copy := src.duplicate() as Node3D
+	if src.get_parent() is BoneAttachment3D:
+		var bone: String = src.get_parent().bone_name
+		var attach: BoneAttachment3D = null
+		for c in skeleton.get_children():
+			if c is BoneAttachment3D and c.bone_name == bone:
+				attach = c
+		if attach == null:
+			attach = BoneAttachment3D.new()
+			attach.bone_name = bone
+			skeleton.add_child(attach)
+		attach.add_child(copy)
+	else:
+		# Hudbunden del (mantel, kåpa): följer det här skelettet via benens namn.
+		skeleton.add_child(copy)
+		if copy is MeshInstance3D:
+			(copy as MeshInstance3D).skeleton = NodePath("..")
+	copy.position += _vec3(def.get("offset", [0, 0, 0]))
+	copy.rotation_degrees += _vec3(def.get("rot", [0, 0, 0]))
+	copy.scale *= def.get("scale", 1.0)
+	return copy
+
+
+## Taggig krona på huvudet (bossen), byggd efter huvudets storlek.
+func _build_crown(color: Color) -> void:
+	var head: MeshInstance3D = null
+	for m in _model.find_children("*", "MeshInstance3D", true, false):
+		if m.get_parent() is BoneAttachment3D and m.get_parent().bone_name == "Head" and m.skin == null:
+			head = m
+			break
+	if head == null:
+		return
+	var box := head.transform * head.get_aabb()
+	var r := maxf(box.size.x, box.size.z) * 0.42
+	var crown := Node3D.new()
+	crown.position = Vector3(box.get_center().x, box.end.y - box.size.y * 0.12, box.get_center().z)
+	head.get_parent().add_child(crown)
+	var mat := StandardMaterial3D.new()
+	mat.resource_name = "Crown"
+	mat.albedo_color = color
+	mat.metallic = 0.3
+	mat.roughness = 0.4
+	mat.emission_enabled = true
+	mat.emission = color * 0.35
+	var band := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = r * 1.08
+	cyl.bottom_radius = r
+	cyl.height = r * 0.45
+	cyl.radial_segments = 10
+	cyl.material = mat
+	band.mesh = cyl
+	crown.add_child(band)
+	for i in 7:
+		var spike := MeshInstance3D.new()
+		var cone := CylinderMesh.new()
+		cone.top_radius = 0.0
+		cone.bottom_radius = r * 0.22
+		cone.height = r * (0.9 if i % 2 == 0 else 0.6)
+		cone.radial_segments = 5
+		cone.material = mat
+		spike.mesh = cone
+		var a := TAU * i / 7.0
+		spike.position = Vector3(cos(a) * r * 1.02, r * 0.2 + cone.height * 0.5, sin(a) * r * 1.02)
+		crown.add_child(spike)
+
+
+static func _vec3(v: Array) -> Vector3:
+	return Vector3(v[0], v[1], v[2])
 
 
 func _setup_materials(vis: Dictionary) -> void:
@@ -372,20 +509,34 @@ func _setup_materials(vis: Dictionary) -> void:
 	_overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_overlay.albedo_color = Color(1, 1, 1, 0)
 	var tint := Color(vis.get("tint", "#ffffff"))
+	var colors: Dictionary = vis.get("colors", {})
+	var emits: Dictionary = vis.get("emit", {})
+	var done := {}
 	for m in _model.find_children("*", "MeshInstance3D", true, false):
 		var mesh := m as MeshInstance3D
 		mesh.material_overlay = _overlay
-		if tint != Color.WHITE:
-			for i in mesh.get_surface_override_material_count():
-				var base := mesh.mesh.surface_get_material(i)
-				if base is StandardMaterial3D:
-					var mat: StandardMaterial3D = base.duplicate()
+		for i in mesh.get_surface_override_material_count():
+			var base := mesh.mesh.surface_get_material(i)
+			if not base is StandardMaterial3D:
+				continue
+			if not done.has(base):
+				var mat: StandardMaterial3D = base.duplicate()
+				var key := mat.resource_name
+				if colors.has(key):
+					mat.albedo_color = Color(colors[key])
+				elif tint != Color.WHITE:
 					mat.albedo_color = mat.albedo_color * tint
-					if vis.has("glow"):
-						mat.emission_enabled = true
-						mat.emission = Color(vis.glow)
-						mat.emission_energy_multiplier = 0.3
-					mesh.set_surface_override_material(i, mat)
+				mat.metallic = minf(mat.metallic, MAX_METALLIC)
+				if emits.has(key):
+					mat.emission_enabled = true
+					mat.emission = Color(emits[key])
+					mat.emission_energy_multiplier = 1.0
+				elif vis.has("glow") and tint != Color.WHITE:
+					mat.emission_enabled = true
+					mat.emission = Color(vis.glow)
+					mat.emission_energy_multiplier = 0.3
+				done[base] = mat
+			mesh.set_surface_override_material(i, done[base])
 
 
 func _build_aura_meshes() -> void:
