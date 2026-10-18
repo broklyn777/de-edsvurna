@@ -34,7 +34,17 @@ godot --path . -- --screenshot=/tmp/shot.png --frames=30
 
 # Bygg debug-APK och installera på ansluten Android-telefon
 godot --headless --path . --export-debug Android export/rpg007.apk
-adb install -r export/rpg007.apk
+~/Library/Android/sdk/platform-tools/adb install -r export/rpg007.apk
 ```
+
+## Verktygskedja (iMac 2017, macOS 13)
+
+Homebrew bygger inte längre färdiga paket för macOS 13 – installera inte Java/Android via brew (kompilerar i timmar).
+
+- Godot 4.7.2: `/Applications/Godot.app`, `godot` i PATH. Exportmallar i `~/Library/Application Support/Godot/export_templates/4.7.2.stable/`.
+- JDK 17 (Temurin): `~/Library/Java/JavaVirtualMachines/jdk-17.0.20.1+1/Contents/Home`
+- Android SDK: `~/Library/Android/sdk` (platform-tools, build-tools 36.1.0, platforms android-36)
+- Debug-nyckel: `~/.android/debug.keystore` (standard: android/androiddebugkey)
+- Exporten är utan Gradle (`gradle_build/use_gradle_build=false`), endast arm64-v8a.
 
 Tester: lägg `tests/test_*.gd` som ärver `res://tests/test_case.gd`, metoder som börjar på `test_`.
