@@ -46,7 +46,7 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Utlöses / slår till | trigger, `trait`-händelse | triggers | |
 | Kedja | chain, `_trait_depth` | – | |
 | Glöd (egenskapsstaplar) / förlösning | stack / release | – | Vår egen mekanik (kallades charge förut). Inte samma som Charges. |
-| Charges | charges | Charges | Användningar per förmåga, räcker hela körningen. |
+| Charges | charges | Charges | Användningar per förmåga, räcker hela körningen (fylls bara vid en ny körning). Siralim-nivå: starkare förmågor 5, medel 6–8 (`docs/research/siralim.md` §3b). Tillbaka bara via Eder, troféer och artefakter (t.ex. Vila upp). |
 | Regelbrytare | convert_damage, parts | t.ex. Outcast No Longer | |
 | Paladinen | `paladin` | spelaren (Siralim Mage) | Medveten avvikelse: Siralims spelare strider aldrig själv. |
 | Ed | oath (`data/oaths.json`, `Profile.oath`) | Specialization | En kärna som alltid verkar plus köpta perks. Hämndens ed ≈ Paladin (Retribution), Gryningens ed ≈ Cleric (Luminesce), Väktarens ed ≈ Siegemaster (Thorns). Bärs av Paladinen och slutar verka när hen stupar (vår avvikelse). |

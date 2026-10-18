@@ -3,9 +3,9 @@
 		"name": "Skelettkrigare",
 		"color": "#e8e0d0",
 		"stats": {
-			"health": 640,
-			"attack": 218,
-			"intelligence": 218,
+			"health": 576,
+			"attack": 174,
+			"intelligence": 174,
 			"defense": 20,
 			"speed": 9
 		},
@@ -30,9 +30,9 @@
 		"name": "Skelettbågskytt",
 		"color": "#d8cfb4",
 		"stats": {
-			"health": 440,
-			"attack": 185,
-			"intelligence": 185,
+			"health": 396,
+			"attack": 148,
+			"intelligence": 148,
 			"defense": 10,
 			"speed": 13
 		},
@@ -86,9 +86,9 @@
 		"name": "Gravpräst",
 		"color": "#b8a6e0",
 		"stats": {
-			"health": 460,
-			"attack": 127,
-			"intelligence": 127,
+			"health": 414,
+			"attack": 102,
+			"intelligence": 102,
 			"defense": 10,
 			"speed": 8
 		},
@@ -149,9 +149,9 @@
 		"name": "Gravväktare",
 		"color": "#9fb4d8",
 		"stats": {
-			"health": 900,
-			"attack": 171,
-			"intelligence": 171,
+			"health": 810,
+			"attack": 137,
+			"intelligence": 137,
 			"defense": 45,
 			"speed": 6
 		},
@@ -220,9 +220,9 @@
 		"name": "Glödskelett",
 		"color": "#ff8a2a",
 		"stats": {
-			"health": 480,
-			"attack": 155,
-			"intelligence": 155,
+			"health": 432,
+			"attack": 124,
+			"intelligence": 124,
 			"defense": 15,
 			"speed": 11
 		},
@@ -278,9 +278,9 @@
 		"boss": true,
 		"color": "#cbbfe6",
 		"stats": {
-			"health": 2000,
-			"attack": 164,
-			"intelligence": 164,
+			"health": 1620,
+			"attack": 118,
+			"intelligence": 118,
 			"defense": 20,
 			"speed": 9
 		},

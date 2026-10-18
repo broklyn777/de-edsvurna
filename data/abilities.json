@@ -26,7 +26,7 @@
 				"power": 1.6
 			}
 		],
-		"charges": 16
+		"charges": 8
 	},
 	"axe_chop": {
 		"name": "Yxhugg",
@@ -68,7 +68,7 @@
 			}
 		],
 		"kind": "spell",
-		"charges": 24
+		"charges": 5
 	},
 	"arrow": {
 		"name": "Pil",
@@ -100,7 +100,7 @@
 				"power": 0.6
 			}
 		],
-		"charges": 20
+		"charges": 8
 	},
 	"fire_bolt": {
 		"name": "Eldklot",
@@ -130,7 +130,7 @@
 			}
 		],
 		"kind": "spell",
-		"charges": 12,
+		"charges": 6,
 		"tier": "moderate"
 	},
 	"defend": {
@@ -230,7 +230,7 @@
 				"aura": "defend"
 			}
 		],
-		"charges": 12
+		"charges": 5
 	},
 	"aimed_shot": {
 		"name": "Siktat skott",
@@ -353,7 +353,7 @@
 		"target": "ally",
 		"kind": "spell",
 		"school": "holy",
-		"charges": 12,
+		"charges": 5,
 		"icon": "shield",
 		"button_color": "#f2c85b",
 		"sound": "shield_wall",
@@ -369,7 +369,7 @@
 		"name": "Krigsrop",
 		"target": "all_allies",
 		"kind": "spell",
-		"charges": 10,
+		"charges": 5,
 		"icon": "bolt",
 		"button_color": "#c69b6d",
 		"sound": "bloodlust",
@@ -386,7 +386,7 @@
 		"target": "ally",
 		"kind": "spell",
 		"school": "holy",
-		"charges": 20,
+		"charges": 6,
 		"icon": "drop",
 		"button_color": "#9ff0a8",
 		"sound": "renew",
@@ -404,7 +404,7 @@
 		"kind": "spell",
 		"school": "holy",
 		"travel": 0.3,
-		"charges": 12,
+		"charges": 8,
 		"icon": "cross",
 		"button_color": "#ffe48a",
 		"sound": "pyro_impact",
@@ -420,7 +420,7 @@
 	"arrow_rain": {
 		"name": "Pilregn",
 		"target": "all_enemies",
-		"charges": 10,
+		"charges": 6,
 		"icon": "daggers",
 		"button_color": "#7fe05a",
 		"sound": "k_hero_hit",
@@ -438,7 +438,7 @@
 		"kind": "spell",
 		"school": "fire",
 		"travel": 0.4,
-		"charges": 12,
+		"charges": 5,
 		"icon": "flame",
 		"button_color": "#ff5a2a",
 		"sound": "pyro_impact",

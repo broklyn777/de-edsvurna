@@ -133,7 +133,7 @@
 	"oath_dawn": {
 		"name": "Gryningens ed",
 		"original": "Cleric: Luminesce",
-		"text": "När någon i sällskapet helas får hen en Barriär för 60 % av helningen.",
+		"text": "När någon i sällskapet helas får hen en Barriär lika stor som helningen. Paladinens direkta träffar helar den svagaste i sällskapet för 30 % av skadan.",
 		"trigger": "heal",
 		"scope": "party",
 		"when": {
@@ -142,8 +142,28 @@
 		"effects": [
 			{
 				"type": "barrier",
-				"pct_of_event": 0.6,
+				"pct_of_event": 1.0,
 				"target": "self"
+			}
+		],
+		"parts": [
+			"oath_dawn_light"
+		]
+	},
+	"oath_dawn_light": {
+		"name": "Gryningens ed",
+		"hidden": true,
+		"text": "",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_of_event": 0.3,
+				"target": "weakest_ally"
 			}
 		]
 	},
@@ -227,7 +247,7 @@
 	"oath_ward": {
 		"name": "Väktarens ed",
 		"original": "Siegemaster: Thorns",
-		"text": "När någon i sällskapet träffas av en attack eller spell slår hen tillbaka för 50 % av sin Defense (indirekt skada).",
+		"text": "När någon i sällskapet träffas av en attack eller spell slår hen tillbaka för 70 % av sin Defense (indirekt skada).",
 		"trigger": "damage",
 		"scope": "party",
 		"when": {
@@ -239,7 +259,7 @@
 			{
 				"type": "damage",
 				"stat": "defense",
-				"pct": 0.5,
+				"pct": 0.7,
 				"kind": "indirect",
 				"target": "source"
 			}

@@ -4,11 +4,11 @@
 		"idea": "Slå tillbaka när sällskapet träffas.",
 		"perks": [
 			{
-				"id": "vengeance_zeal",
-				"cost": 50
+				"id": "vengeance_wrath",
+				"cost": 40
 			},
 			{
-				"id": "vengeance_wrath",
+				"id": "vengeance_zeal",
 				"cost": 50
 			},
 			{
@@ -35,15 +35,15 @@
 		"perks": [
 			{
 				"id": "dawn_anointment",
-				"cost": 40
-			},
-			{
-				"id": "dawn_guiding_light",
-				"cost": 50
+				"cost": 60
 			},
 			{
 				"id": "dawn_holy_might",
 				"cost": 60
+			},
+			{
+				"id": "dawn_guiding_light",
+				"cost": 80
 			},
 			{
 				"id": "dawn_revelation",
@@ -60,20 +60,20 @@
 		"idea": "Försvara, provocera och slå tillbaka med Defense.",
 		"perks": [
 			{
-				"id": "ward_rest_up",
+				"id": "ward_titanic_rage",
 				"cost": 50
 			},
 			{
-				"id": "ward_best_offense",
-				"cost": 60
-			},
-			{
 				"id": "ward_in_formation",
-				"cost": 60
+				"cost": 70
 			},
 			{
-				"id": "ward_titanic_rage",
-				"cost": 70
+				"id": "ward_best_offense",
+				"cost": 80
+			},
+			{
+				"id": "ward_rest_up",
+				"cost": 100
 			},
 			{
 				"id": "ward_war_machine",
