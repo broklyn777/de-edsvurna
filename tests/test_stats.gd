@@ -168,3 +168,21 @@ func test_heal_uses_intelligence() -> void:
 	var amount := sim._heal_amount(alva, _data.abilities.healing_light.effects[0])
 	var power: float = _data.abilities.healing_light.effects[0].power
 	assert_true(amount >= alva.intelligence * power * 0.9 and amount <= alva.intelligence * power * 1.1)
+
+
+func test_macro_conditions_on_stats() -> void:
+	var sim := _sim("crypt_2")
+	var paladin := sim.unit("paladin")
+	var line := {"subject": "any_enemy", "cond": "lowest_defense", "action": "attack", "target": "that"}
+	assert_eq(MacroRunner.match_line(sim, paladin, line), sim.unit("skeleton_archer_1"), "bågskytten har lägst Defense")
+	line.cond = "highest_defense"
+	assert_eq(MacroRunner.match_line(sim, paladin, line), sim.unit("grave_warden_1"))
+	line.subject = "any_ally"
+	line.cond = "highest_attack"
+	assert_eq(MacroRunner.match_line(sim, paladin, line), paladin)
+	var warden := sim.unit("grave_warden_1")
+	sim._add_aura(warden, warden, "provoke")
+	line = {"subject": "any_enemy", "cond": "highest_defense", "action": "attack", "target": "that"}
+	assert_near(warden.defense_now(), warden.defense * 0.65)
+	assert_eq(MacroRunner.match_line(sim, paladin, line), warden, "Provocera sänker Defense, men väktaren har fortfarande högst")
+	assert_eq(MacroRunner.condition_name(_data, "lowest_defense", 0), "har lägst Defense")

@@ -18,7 +18,8 @@ const TARGETS := ["that", "random_enemy", "random_ally", "self", "enemy_1", "ene
 ## Villkor. Värdet ("value") är procent, ett id (status/egenskap/förmåga) eller ett antal.
 const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_of_timeline",
 		"not_top_of_timeline", "bottom_of_timeline", "not_bottom_of_timeline", "has_trait", "lacks_trait",
-		"deaths_at_least", "revives_at_least", "is_alive", "highest_speed", "lowest_hp", "own_turn",
+		"deaths_at_least", "revives_at_least", "is_alive", "highest_speed", "lowest_hp", "lowest_defense",
+		"highest_defense", "highest_attack", "own_turn",
 		"has_charges", "has_artifact", "lacks_artifact"]
 
 
@@ -137,6 +138,13 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return _extreme(group, x, func(a: CombatUnit) -> float: return a.speed, true)
 		"lowest_hp":
 			return _extreme(group, x, func(a: CombatUnit) -> float: return a.hp_pct(), false)
+		# Siralim 3 hade "has the lowest Defense"; Defense räknas med Försvara/Provocera just nu.
+		"lowest_defense":
+			return _extreme(group, x, func(a: CombatUnit) -> float: return a.defense_now(), false)
+		"highest_defense":
+			return _extreme(group, x, func(a: CombatUnit) -> float: return a.defense_now(), true)
+		"highest_attack":
+			return _extreme(group, x, func(a: CombatUnit) -> float: return a.attack, true)
 		"own_turn":
 			return x.turns_taken == int(v)
 		"has_charges":
@@ -269,9 +277,15 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 		"is_alive":
 			return "lever"
 		"highest_speed":
-			return "har högst snabbhet"
+			return "har högst Speed"
 		"lowest_hp":
 			return "har lägst liv"
+		"lowest_defense":
+			return "har lägst Defense"
+		"highest_defense":
+			return "har högst Defense"
+		"highest_attack":
+			return "har högst Attack"
 		"own_turn":
 			return "är på sin tur %d" % int(value)
 		"has_charges":
