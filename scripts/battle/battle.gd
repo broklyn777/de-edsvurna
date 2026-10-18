@@ -431,7 +431,7 @@ func _on_ability_used(e: Dictionary) -> void:
 			world.add_shake(7.0)
 		"kick":
 			sfx.play("kick", 0.0)
-			models[e.unit].attack(models[e.targets[0]].global_position, 0.4)
+			models[e.unit].kick(models[e.targets[0]].global_position)
 		"renew":
 			sfx.play("renew", -10.0)
 			fx_layer.add_child(_at(Fx.Ring.new(UiStyle.school_color("heal"), 8, 46, 0.4, 4.0), _pos(e.targets[0])))

@@ -36,10 +36,13 @@
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"block": "Shield_Block",
+				"block": "Shield_Wall",
 				"run": "Run",
 				"walk": "Walk"
-			}
+			},
+			"procedural": [
+				"Shield_Wall"
+			]
 		}
 	},
 	"priest": {
@@ -76,13 +79,16 @@
 			},
 			"anims": {
 				"idle": "OneHand_Idle",
-				"cast": "OneHand_Idle",
+				"cast": "Cast_Channel_Priest",
 				"release": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"run": "Run",
 				"walk": "Walk"
-			}
+			},
+			"procedural": [
+				"Cast_Channel_Priest"
+			]
 		}
 	},
 	"mage": {
@@ -108,13 +114,16 @@
 			},
 			"anims": {
 				"idle": "Staff_Idle",
-				"cast": "Staff_Cast",
+				"cast": "Cast_Channel_Mage",
 				"release": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"run": "Staff_Run",
 				"walk": "Staff_Walk"
-			}
+			},
+			"procedural": [
+				"Cast_Channel_Mage"
+			]
 		}
 	},
 	"rogue": {
@@ -152,8 +161,12 @@
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"run": "Run",
-				"walk": "Walk"
-			}
+				"walk": "Walk",
+				"kick": "Kick"
+			},
+			"procedural": [
+				"Kick"
+			]
 		}
 	}
 }

@@ -11,6 +11,7 @@ const WINDUP_HOLD := 0.09
 ## Vapnet träffar ungefär så här långt in i attackanimationerna (uppmätt på armarnas rotationsfart).
 const IMPACT_AT := 0.2
 const ATTACK_SPEED := 1.25
+const KICK_IMPACT_AT := 0.3
 
 static var _weapon_kit: Node3D
 
@@ -66,6 +67,7 @@ func setup(u: CombatUnit, s: CombatSim, vis: Dictionary) -> void:
 	_model.scale = Vector3.ONE * model_scale
 	_body.add_child(_model)
 	_player = _model.find_children("*", "AnimationPlayer", true, false)[0]
+	ProceduralAnims.add_to(_player, vis.get("procedural", []))
 	for loop_anim in [anims.get("idle", ""), anims.get("cast", ""), anims.get("block", ""),
 			anims.get("run", ""), anims.get("walk", "")]:
 		if _player.has_animation(loop_anim):
@@ -119,6 +121,18 @@ func attack(toward: Vector3, lunge := 0.25) -> void:
 		_play_oneshot(anim_name, 0.06, ATTACK_SPEED)
 		last_impact_delay = _player.get_animation(anim_name).length * IMPACT_AT / (ATTACK_SPEED * unit.haste())
 	_push_delayed((toward - global_position).normalized() * lunge * model_scale, last_impact_delay * 0.6)
+
+
+## Spark (Rogue: Kick). Använder animationen "kick" om figuren har en, annars en vanlig attack.
+func kick(toward: Vector3) -> void:
+	if _dead:
+		return
+	if not anims.has("kick"):
+		attack(toward, 0.4)
+		return
+	_play_oneshot(anims.kick, 0.05, 1.0)
+	last_impact_delay = _player.get_animation(anims.kick).length * KICK_IMPACT_AT
+	_push_delayed((toward - global_position).normalized() * 0.45 * model_scale, last_impact_delay * 0.6)
 
 
 ## Startar kaströrelsen. Närstridsslag (windup) lyfter vapnet och håller det tills slaget faller.

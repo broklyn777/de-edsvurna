@@ -30,6 +30,10 @@ Inga talangträd, ingen loot, inga nya klasser förrän den första striden (4 h
   - `unit_model.gd` – 3D-figur: laddar `assets/models/<model>.glb`, hänger vapen från `vapen.glb` i
     `grip_r`/`grip_l`, spelar animationer enligt `visual.anims` i heroes.json/bosses.json.
     Bossens närstridskast (windup) håller vapnet högt tills slaget faller.
+  - `procedural_anims.gd` – egna animationer byggda i kod (Kick, Shield_Wall, Cast_Channel_*):
+    vridningar per ben i grader ovanpå en baspose. Fotbenen är egna IK-ben i riggen och flyttas
+    automatiskt med benet. Axlar: UpperLeg X− = benet framåt; Torso X+ = framåtlutning;
+    UpperArm.R Z+ / UpperArm.L Z− = armen framåt/upp; UpperArm X− = armen ut åt sidan.
   - 2D-lager ovanpå 3D: siffror, projektiler, ringar, healstrålar och hälsomätare projiceras från 3D.
 - `assets/models/` – Quaternius-figurer från Drakvalvet, uppackade med
   `node ~/.npm/_npx/425967af1abfabd4/node_modules/@gltf-transform/cli/bin/cli.js dequantize in.glb ut.glb`
@@ -59,6 +63,9 @@ godot --path . -- --demo --warp=16 --seed=5
 
 # Spela in bildsekvens (PNG) för att granska rörelser
 godot --path . --write-movie /tmp/mov/f.png --fixed-fps 20 --quit-after 70 -- --demo --warp=8 --seed=5
+
+# Animationslabb: filma en figur på nära håll (se tools/anim_lab.gd för steg)
+godot --path . res://tools/anim_lab.tscn --write-movie /tmp/lab/f.png --fixed-fps 20 --quit-after 50 -- --unit=rogue --seq=idle:0.2,kick:1.2
 
 # Bygg debug-APK och installera på ansluten Android-telefon
 godot --headless --path . --export-debug Android export/rpg007.apk
