@@ -10,6 +10,7 @@ const LUNGE_BACK := 0.2
 var unit: CombatUnit
 var sim: CombatSim
 var flash := 0.0
+var _flash_color := Color.WHITE
 var _lunge_dir := Vector2.ZERO
 var _lunge_t := 1.0
 var _lunge_dist := 16.0
@@ -31,8 +32,15 @@ func setup(u: CombatUnit, s: CombatSim) -> void:
 
 func hit(strength := 1.0, from := Vector2.ZERO) -> void:
 	flash = minf(1.0, 0.6 + 0.4 * strength)
+	_flash_color = Color.WHITE
 	var dir := (position - from).normalized() if from != Vector2.ZERO else Vector2.ZERO
 	_recoil = dir * 7.0 * strength
+
+
+## Färgad blink, t.ex. grön när enheten blir healad.
+func flash_color(c: Color) -> void:
+	flash = 1.0
+	_flash_color = c
 
 
 func lunge(toward: Vector2, dist := 16.0) -> void:
@@ -94,7 +102,7 @@ func _draw() -> void:
 	var base := unit.color
 	if not unit.alive:
 		base = base.lerp(Color(0.25, 0.25, 0.28), 0.85)
-	var body := base.lerp(Color.WHITE, flash * 0.85)
+	var body := base.lerp(_flash_color, flash * 0.85)
 	draw_set_transform(off + Vector2(0, r * 0.5 * _death_k), 0, Vector2(1.0 + 0.2 * _death_k, 1.0 - 0.5 * _death_k))
 	draw_circle(Vector2.ZERO, r, body.darkened(0.5))
 	draw_circle(Vector2(-r * 0.12, -r * 0.14), r * 0.84, body.darkened(0.1))
@@ -111,6 +119,9 @@ func _draw() -> void:
 		_draw_casting(off, r)
 	if unit.team == 0 and unit.alive:
 		_draw_overhead(r)
+	if unit.team == 0:
+		var name_color := unit.color if unit.alive else Color(0.5, 0.5, 0.5)
+		UiStyle.text(self, Vector2(-80, r + 34), unit.name, 15, name_color, HORIZONTAL_ALIGNMENT_CENTER, 160, 4)
 
 
 func _draw_boss_face(r: float) -> void:

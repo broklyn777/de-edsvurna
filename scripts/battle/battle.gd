@@ -93,6 +93,7 @@ func _build_scene() -> void:
 		v.setup(u, sim)
 		units_layer.add_child(v)
 		views[u.id] = v
+	world.add_child(Fx.HealBeams.new(sim, views))
 
 
 func _build_ui() -> void:
@@ -103,7 +104,7 @@ func _build_ui() -> void:
 	ui.add_child(boss_frame)
 	for h in sim.heroes:
 		var f := PartyFrame.new()
-		f.setup(h)
+		f.setup(h, sim)
 		f.tapped.connect(_on_frame_tapped)
 		ui.add_child(f)
 		frames[h.id] = f
@@ -431,6 +432,7 @@ func _on_heal(e: Dictionary) -> void:
 	frames[e.target].on_heal()
 	if not is_hot:
 		sfx.play("heal", -5.0, 0.03)
+		views[e.target].flash_color(UiStyle.school_color("heal"))
 		fx_layer.add_child(_at(Fx.Ring.new(UiStyle.school_color("heal"), 10, 60, 0.45, 5.0, true), p))
 		fx_layer.add_child(_at(Fx.Sparks.new(Color("#b8ffbf"), 10, 140.0, 0.5), p))
 

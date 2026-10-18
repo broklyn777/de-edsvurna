@@ -68,6 +68,21 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1)
 
 # --- Publikt API ------------------------------------------------------------
 
+static func is_heal(ab: Dictionary) -> bool:
+	return ab.get("effects", []).any(func(e: Dictionary) -> bool: return e.type == "heal")
+
+
+## Summan av genomsnittlig healing som just nu laddas mot enheten (för raidramarnas prognos).
+func incoming_heal(unit_id: String) -> float:
+	var total := 0.0
+	for h in heroes:
+		if h.alive and h.is_casting() and h.cast.targets.has(unit_id):
+			for e in ability(h.cast.ability).get("effects", []):
+				if e.type == "heal":
+					total += (e.min + e.max) / 2.0
+	return total
+
+
 func ability(ability_id: String) -> Dictionary:
 	return data.abilities[ability_id]
 

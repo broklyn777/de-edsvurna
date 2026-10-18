@@ -141,6 +141,41 @@ class FloatingText extends Node2D:
 				HORIZONTAL_ALIGNMENT_CENTER, 300, 7 if big else 5)
 
 
+## Ljusstråle från healern till målet medan healingen laddas, så att man ser vem som får den.
+class HealBeams extends Node2D:
+	var sim: CombatSim
+	var views: Dictionary
+	var _t := 0.0
+
+	func _init(s: CombatSim, unit_views: Dictionary) -> void:
+		sim = s
+		views = unit_views
+		z_index = 5
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		var c := UiStyle.school_color("heal")
+		for h in sim.heroes:
+			if not h.is_casting() or not CombatSim.is_heal(sim.ability(h.cast.ability)):
+				continue
+			var from: Vector2 = views[h.id].position + Vector2(0, -6)
+			var target_id: String = h.cast.targets[0]
+			var to: Vector2 = views[target_id].position
+			var k := h.cast_progress()
+			var pulse := 0.5 + 0.5 * sin(_t * 12.0)
+			if target_id != h.id:
+				draw_line(from, to, Color(c, 0.18 + 0.15 * pulse), 10.0, true)
+				draw_line(from, from.lerp(to, k), Color(1, 1, 0.8, 0.7), 3.0, true)
+			var r: float = sim.unit(target_id).radius + 10.0
+			draw_set_transform(to + Vector2(0, r * 0.55), 0, Vector2(1, 0.4))
+			draw_arc(Vector2.ZERO, r + 4.0 * pulse, 0, TAU, 40, Color(c, 0.9), 5.0, true)
+			draw_set_transform(Vector2.ZERO)
+			draw_arc(to, r, -PI / 2, -PI / 2 + TAU * k, 40, Color(c, 0.95), 4.0, true)
+
+
 ## Röd varningscirkel under målet för en tung attack, fylls i takt med bossens kast.
 class Telegraph extends Node2D:
 	var radius := 60.0
