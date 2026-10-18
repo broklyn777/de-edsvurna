@@ -69,7 +69,9 @@ func _ready() -> void:
 	var state: RunState = run.state
 	if state.charges.is_empty():
 		state.fill_charges(data)
-	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges)
+	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
+			state.artifacts)
+	data = sim.data  # med artefakternas egenskaper
 	_auto = demo
 	_build_scene()
 	_build_ui()
@@ -353,12 +355,13 @@ func _restart() -> void:
 	get_tree().reload_current_scene()
 
 
-## Efter resultatet: vidare till lägret (seger) eller tillbaka till start (förlust).
+## Efter resultatet: vidare till lägret (seger), hem till basen (förlust) eller tillbaka till
+## Övningsgården med makrologgen.
 func _continue() -> void:
 	Engine.time_scale = 1.0
-	if sim.outcome == "victory":
+	if sim.outcome == "victory" and not run.state.practice:
 		run.state.store_charges(sim)
-	run.battle_finished(sim.outcome == "victory", receipt())
+	run.battle_finished(sim.outcome == "victory", receipt(), macro_log.entries)
 
 
 ## Högst tre rader om vad som avgjorde striden, från vad egenskaperna faktiskt gjorde.
@@ -462,7 +465,7 @@ func _on_action(e: Dictionary) -> void:
 	else:
 		m.attack(target_pos, 0.1)
 		_cursor = maxf(m.last_impact_delay, 0.25)
-	if e.action == "ability" or (e.action == "intent" and e.ability != sim.unit(e.unit).attack_ability):
+	if e.action in ["ability", "artifact"] or (e.action == "intent" and e.ability != sim.unit(e.unit).attack_ability):
 		_float(e.unit, ab.name.to_upper(), UiStyle.GOLD if sim.unit(e.unit).team == 0 else Color("#ffb347"), 20, false)
 
 
@@ -560,6 +563,8 @@ func _on_outcome(result: String) -> void:
 		sfx.play("victory", 0.0, 0.0)
 		world.add_shake(10.0)
 		var title := "KRYPTAN RENSAD!" if run.state.is_last_floor() else "SEGER!"
+		if run.state.practice:
+			title = "ÖVNINGEN VUNNEN"
 		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
 		overlay.lines = receipt()
 	else:

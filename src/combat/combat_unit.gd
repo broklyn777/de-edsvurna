@@ -26,6 +26,8 @@ var position := Vector2.ZERO
 ## Fiender: [{ability, if}] för att välja avsikt (hjältar styrs av makron).
 var rules: Array = []
 var traits: Array = []
+## Artefakten hjälten bär: {type, ability} (tom = ingen). Se CombatSim.equip_artifact.
+var artifact := {}
 ## trait_id -> {turn, count, ready_at} då egenskapen senast slog till.
 var trait_ready := {}
 ## Uppladdade staplar från egenskaper: stack -> mängd, och räknare för "var n:e"-staplar.

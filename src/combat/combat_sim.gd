@@ -24,6 +24,12 @@ extends RefCounted
 ##   trait {unit, trait} – en egenskap slog till (händelser den orsakar bär fältet "trait")
 ##   release {unit, trait, stack, amount} – en förmåga förbrukade en egenskaps uppladdade staplar
 ##   outcome {result: victory|defeat}
+##   acted {unit, action, ability, targets} – efter att handlingen verkat (artefakter lyssnar på den)
+##
+## Artefakter (som i Siralim): en per hjälte. Typen höjer en stat och avgör när förmågan i den slår
+## till: svärd vid Anfall, stav vid Förmåga, sköld vid Försvara, hjälm vid Provocera, stövlar i
+## början av turen. Byggs som en egenskap ("artifact_<hjälte>") med effekten "cast", som kastar
+## förmågan utan att kosta Charges. Händelsen har action "artifact".
 
 const CRIT_MULT := 1.5
 ## Säkerhetsgräns för hur djupt egenskaper kan sätta igång varandra.
@@ -67,11 +73,16 @@ var trait_stats := {}
 
 
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
-## hjältens förvalda egenskaper; charges: hero_id -> {ability_id: kvar} (annars fulla).
+## hjältens förvalda egenskaper; charges: hero_id -> {ability_id: kvar} (annars fulla);
+## artifacts: hero_id -> {type, ability}.
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
-		party: Array = [], traits := {}, charges := {}) -> CombatSim:
+		party: Array = [], traits := {}, charges := {}, artifacts := {}) -> CombatSim:
 	var sim := CombatSim.new()
 	sim.data = game_data
+	if not artifacts.is_empty():
+		# Artefakternas egenskaper skapas för den här striden, utan att röra den delade datan.
+		sim.data = game_data.duplicate()
+		sim.data.traits = game_data.traits.duplicate()
 	sim.rng.seed = seed_value
 	var enc: Dictionary = game_data.encounters[encounter_id]
 	var hero_ids: Array = party if not party.is_empty() else enc.party
@@ -84,6 +95,8 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		for ability_id in hero.abilities:
 			var full := int(game_data.abilities[ability_id].get("charges", 0))
 			hero.charges[ability_id] = int(charges.get(hero.id, {}).get(ability_id, full))
+		if artifacts.has(hero.id):
+			sim.equip_artifact(hero, artifacts[hero.id])
 		sim._add(hero)
 		sim.heroes.append(hero)
 	var counts := {}
@@ -109,6 +122,46 @@ static func expand_traits(game_data: Dictionary, list: Array) -> Array:
 		for part in game_data.traits[trait_id].get("parts", []):
 			out.append(part)
 	return out
+
+## Ger hjälten artefakten: typens stat och en egenskap som kastar förmågan när handlingen görs.
+## Anropas före begin().
+func equip_artifact(hero: CombatUnit, art: Dictionary) -> void:
+	var kind: Dictionary = data.artifacts.get(art.get("type", ""), {})
+	if kind.is_empty():
+		return
+	hero.artifact = {"type": art.type, "ability": art.get("ability", "")}
+	match kind.stat:
+		"attack":
+			hero.attack_min *= kind.stat_mult
+			hero.attack_max *= kind.stat_mult
+		"defense":
+			hero.damage_taken_mult *= kind.stat_mult
+		"health":
+			hero.max_hp = roundf(hero.max_hp * kind.stat_mult)
+			hero.hp = hero.max_hp
+		"speed":
+			hero.speed += float(kind.stat_add)
+		"power":
+			var id := "artifact_%s_power" % hero.id
+			data.traits[id] = {"name": kind.name, "hidden": true, "trigger": "modify_damage",
+					"when": {"kind": "spell"}, "modify": {"damage_mult": kind.stat_mult}}
+			data.traits[id + "_heal"] = {"name": kind.name, "hidden": true, "trigger": "modify_heal",
+					"modify": {"heal_mult": kind.stat_mult}}
+			hero.traits.append_array([id, id + "_heal"])
+	var ability_id: String = hero.artifact.ability
+	if ability_id == "" or not data.abilities.has(ability_id):
+		return
+	var trait_id := "artifact_" + hero.id
+	var when := {"unit": "self"}
+	var trigger := "turn_start"
+	if kind.trigger != "turn_start":
+		trigger = "acted"
+		when.action = kind.trigger
+	data.traits[trait_id] = {"name": "%s: %s" % [kind.name, data.abilities[ability_id].name], "hidden": true,
+			"artifact": true, "trigger": trigger, "chance": kind.chance, "when": when,
+			"effects": [{"type": "cast", "ability": ability_id}]}
+	hero.traits.append(trait_id)
+
 
 func begin() -> void:
 	var alive: Array[CombatUnit] = units.duplicate()
@@ -376,6 +429,19 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 		u.cooldowns[ability_id] = cooldown + 1.0  # räknas ned i början av egna turer
 	_emit({"type": "action", "unit": u.id, "action": action, "ability": ability_id, "targets": targets})
 	_apply_effects(u, ability_id, targets)
+	if u.alive:
+		_emit({"type": "acted", "unit": u.id, "action": action, "ability": ability_id, "targets": targets})
+
+
+## En förmåga som kastas automatiskt (artefakt): kostar inga Charges och sätter ingen nedkylning,
+## men räknas mot gränsen per tur. VAL: inget giltigt mål = inget kast.
+func _auto_cast(u: CombatUnit, ability_id: String) -> void:
+	var ab := ability(ability_id)
+	var targets := _pick_targets(u, ab)
+	if targets.is_empty() or not _within_limit(u, "spell"):
+		return
+	_emit({"type": "action", "unit": u.id, "action": "artifact", "ability": ability_id, "targets": targets})
+	_apply_effects(u, ability_id, targets)
 
 
 func _targets_for(u: CombatUnit, ab: Dictionary, target_id: String) -> Array:
@@ -464,6 +530,8 @@ func _consume_empower(src: CombatUnit, probe: Dictionary) -> float:
 
 ## Egenskaper som ändrar vad skadan räknas som ("convert_damage"), t.ex. följdanfall → Heliga besvärjelser.
 func _convert(src: CombatUnit, probe: Dictionary) -> void:
+	if not src.alive:
+		return
 	for trait_id in src.traits:
 		var t: Dictionary = data.traits[trait_id]
 		if t.trigger == "convert_damage" and _when(src, t.get("when", {}), probe):
@@ -660,11 +728,15 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_add_aura(owner, tgt, effect.aura, float(effect.get("duration", 0.0)))
 		"stack":
 			_add_stack(tgt, effect, e)
+		"cast":
+			_auto_cast(owner, effect.ability)
 
 
 ## Samlar ihop en egenskapsmodifierare: multiplicerar tal, eller sant om någon egenskap säger sant.
 func _modify(owner: CombatUnit, trigger: String, probe: Dictionary, key: String, base: Variant) -> Variant:
 	var result: Variant = base
+	if not owner.alive:  # en död figurs egenskaper verkar inte (t.ex. brinnande sår från en död)
+		return result
 	for trait_id in owner.traits:
 		var t: Dictionary = data.traits[trait_id]
 		if t.trigger != trigger or not t.get("modify", {}).has(key) or not _when(owner, t.get("when", {}), probe):

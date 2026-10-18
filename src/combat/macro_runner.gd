@@ -19,7 +19,7 @@ const TARGETS := ["that", "random_enemy", "random_ally", "self", "enemy_1", "ene
 const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_of_timeline",
 		"not_top_of_timeline", "bottom_of_timeline", "not_bottom_of_timeline", "has_trait", "lacks_trait",
 		"deaths_at_least", "revives_at_least", "is_alive", "highest_speed", "lowest_hp", "own_turn",
-		"has_charges"]
+		"has_charges", "has_artifact", "lacks_artifact"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -141,6 +141,10 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return x.turns_taken == int(v)
 		"has_charges":
 			return x.charges.get(v, 0) > 0
+		"has_artifact":
+			return x.artifact.get("type", "") == v
+		"lacks_artifact":
+			return x.artifact.get("type", "") != v
 	return false
 
 
@@ -272,6 +276,10 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "är på sin tur %d" % int(value)
 		"has_charges":
 			return "har Charges kvar på %s" % data.abilities.get(value, {}).get("name", str(value))
+		"has_artifact":
+			return "bär %s" % data.get("artifacts", {}).get(value, {}).get("name", str(value)).to_lower()
+		"lacks_artifact":
+			return "bär inte %s" % data.get("artifacts", {}).get(value, {}).get("name", str(value)).to_lower()
 	return cond
 
 

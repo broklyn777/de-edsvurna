@@ -20,6 +20,35 @@ var equipped := {}
 ## hero_id -> {ability_id: Charges kvar}. Fylls vid ny körning och räcker hela körningen
 ## (som Siralims Charges, som fylls först vid nästa Realm).
 var charges := {}
+## hero_id -> {type, ability}: artefakterna från Smeden (Profile.artifacts).
+var artifacts := {}
+## Övningsgården (Siralims Arena): en enda strid utan risk mot valfritt möte.
+var practice := false
+var practice_encounter := ""
+
+
+## En ny körning från basen: Eden och sällskapet från Kryptporten, artefakterna från Smeden.
+static func new_run(profile: Profile, data: Dictionary) -> RunState:
+	var s := RunState.new()
+	s.oath = profile.oath
+	s.party = profile.party.duplicate()
+	s.artifacts = profile.artifacts.duplicate(true)
+	s.fill_charges(data)
+	return s
+
+
+## En strid i Övningsgården: samma sällskap, makron och artefakter, troféer ur samlingen och fulla
+## Charges. Inget förloras och inget vinns.
+static func new_practice(profile: Profile, data: Dictionary, encounter_id: String) -> RunState:
+	var s := new_run(profile, data)
+	s.practice = true
+	s.practice_encounter = encounter_id
+	for hero_id in profile.practice_equipped:
+		var trophy_id: String = profile.practice_equipped[hero_id]
+		if s.party.has(hero_id) and profile.collection.has(trophy_id):
+			s.take_trophy(trophy_id)
+			s.equip(hero_id, trophy_id)
+	return s
 
 
 func fill_charges(data: Dictionary) -> void:
@@ -38,11 +67,11 @@ func store_charges(sim: CombatSim) -> void:
 
 
 func encounter() -> String:
-	return FLOORS[floor]
+	return practice_encounter if practice else FLOORS[floor]
 
 
 func is_last_floor() -> bool:
-	return floor >= FLOORS.size() - 1
+	return practice or floor >= FLOORS.size() - 1
 
 
 ## Egenskaper per hjälte för striden: Paladinens Ed ersätter hens förvalda, och troféer läggs till.
