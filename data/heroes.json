@@ -16,6 +16,7 @@
 			"min": 55,
 			"max": 75
 		},
+		"traits": ["retaliation"],
 		"rules": [
 			{
 				"ability": "shield_slam"
@@ -57,6 +58,7 @@
 			-200,
 			-70
 		],
+		"traits": ["lightbringer"],
 		"rules": [
 			{
 				"ability": "heal",
@@ -101,6 +103,7 @@
 			-170,
 			95
 		],
+		"traits": ["kindling"],
 		"rules": [
 			{
 				"ability": "frostbolt"
@@ -141,6 +144,7 @@
 			"min": 42,
 			"max": 58
 		},
+		"traits": ["expose"],
 		"rules": [
 			{
 				"ability": "sinister_strike"

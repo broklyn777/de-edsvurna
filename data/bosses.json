@@ -2,7 +2,7 @@
 	"bone_lich": {
 		"name": "Bone Lich",
 		"color": "#cbbfe6",
-		"max_hp": 26000,
+		"max_hp": 30500,
 		"radius": 64,
 		"crit_chance": 0.05,
 		"pos": [

@@ -264,6 +264,8 @@ func _update_hints() -> void:
 				b.hint = someone_low
 			"bloodlust":
 				b.hint = started and sim.time < 15.0
+			"pyroblast":
+				b.hint = boss.auras.has("exposed")
 
 
 func _update_telegraphs() -> void:
@@ -371,6 +373,8 @@ func _handle(e: Dictionary) -> void:
 		"aura_applied":
 			if e.aura == "shield_wall":
 				models[e.unit].set_blocking(true)
+			elif e.aura == "exposed":
+				_after(_pending_delay() + 0.1, _on_exposed.bind(e.unit))
 			elif e.aura == "frenzy":
 				sfx.play("frenzy", 0.0, 0.0)
 				world.add_shake(10.0)
@@ -387,6 +391,9 @@ func _handle(e: Dictionary) -> void:
 			overlay.message(ERROR_TEXT.get(e.reason, e.reason))
 		"announce":
 			overlay.announce(e.text)
+		"trait":
+			# Efter vapenträffen som satte igång egenskapen, inte före.
+			_after(_pending_delay(), _on_trait.bind(e))
 		"outcome":
 			_after(_pending_delay(), _on_outcome.bind(e.result))
 
@@ -494,7 +501,7 @@ func _on_damage(e: Dictionary) -> void:
 			_hitstop(110 if crit else 70)
 			world.add_shake(12.0 if crit else 8.0)
 		_:
-			var ab := sim.ability(e.ability)
+			var ab: Dictionary = data.abilities.get(e.ability, {})
 			sfx.play(ab.get("sound", "k_hero_hit"), -6.0 if not crit else -1.0, 0.08)
 			fx_layer.add_child(_at(Fx.Ring.new(color, 6, 46 if crit else 32, 0.3, 5.0), p))
 			if ab.get("melee", false):
@@ -517,6 +524,24 @@ func _on_heal(e: Dictionary) -> void:
 		models[e.target].flash_color(UiStyle.school_color("heal"))
 		fx_layer.add_child(_at(Fx.Ring.new(UiStyle.school_color("heal"), 10, 70, 0.45, 5.0, true), p))
 		fx_layer.add_child(_at(Fx.Sparks.new(Color("#b8ffbf"), 10, 140.0, 0.5), p))
+
+
+## En egenskap slog till: namnet lyser upp över hjälten och i raidramen.
+func _on_trait(e: Dictionary) -> void:
+	var t: Dictionary = data.traits[e.trait]
+	frames[e.unit].on_trait()
+	if t.get("quiet", false):
+		return
+	_float(e.unit, t.name.to_upper(), UiStyle.TRAIT_GOLD, 22, true)
+	sfx.play("k_ready", -4.0, 0.1)
+	fx_layer.add_child(_at(Fx.Ring.new(UiStyle.TRAIT_GOLD, 12, 70, 0.4, 5.0), _pos(e.unit)))
+
+
+func _on_exposed(unit_id: String) -> void:
+	var p := _pos(unit_id)
+	fx_layer.add_child(_at(Fx.Ring.new(UiStyle.TRAIT_GOLD, 30, 190, 0.55, 9.0), p))
+	fx_layer.add_child(_at(Fx.Sparks.new(UiStyle.TRAIT_GOLD, 18, 320.0, 0.5), p))
+	_after(0.6, _float.bind(unit_id, "BLOTTAD!", UiStyle.TRAIT_GOLD, 30, true))
 
 
 func _on_death(unit_id: String) -> void:
@@ -569,7 +594,7 @@ func _float(unit_id: String, text: String, color: Color, size: int, big: bool) -
 func _impact_delay(e: Dictionary) -> float:
 	if e.ability == "bone_crush":
 		return 0.08
-	var melee: bool = e.ability == "melee" or sim.ability(e.ability).get("melee", false)
+	var melee: bool = e.ability == "melee" or data.abilities.get(e.ability, {}).get("melee", false)
 	return models[e.source].last_impact_delay if melee else 0.0
 
 

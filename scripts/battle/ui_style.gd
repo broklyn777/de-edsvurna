@@ -16,6 +16,7 @@ const PANEL := Color(0.05, 0.045, 0.07, 0.86)
 const CAST_INTERRUPTIBLE := Color("#ffb21e")
 const CAST_UNSTOPPABLE := Color("#d23a3a")
 const GOLD := Color("#f2c85b")
+const TRAIT_GOLD := Color("#ffd75e")
 const GLYPHS := {"warrior": "shield", "priest": "cross", "mage": "diamond", "rogue": "daggers"}
 
 static var _bold: Font

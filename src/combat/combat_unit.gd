@@ -21,6 +21,9 @@ var crit_chance := 0.1
 var swing := {}
 var swing_timer := 0.0
 var rules: Array = []
+var traits: Array = []
+## trait_id -> tidpunkt då egenskapen får slå till igen (inre nedkylning).
+var trait_ready := {}
 var alive := true
 var gcd := 0.0
 ## Sant när den pågående GCD:n startades av AI:n; spelarens order får då gå före.
@@ -55,6 +58,7 @@ static func from_data(unit_id: String, d: Dictionary, unit_team: int) -> CombatU
 	u.swing = d.get("swing", {})
 	u.swing_timer = u.swing.get("interval", 2.0) * d.get("first_swing", 0.5)
 	u.rules = d.get("rules", [])
+	u.traits = d.get("traits", [])
 	return u
 
 

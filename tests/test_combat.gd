@@ -94,3 +94,50 @@ func test_good_player_wins() -> void:
 		if Bot.run_fight(_data, seed_value, Bot.Skill.GOOD).outcome == "victory":
 			wins += 1
 	assert_true(wins >= 9, "en bra spelare ska nästan alltid vinna (vann %d/10)" % wins)
+
+
+func test_kick_exposes_boss() -> void:
+	var sim := _sim()
+	var boss := sim.boss
+	assert_true(_advance_until(sim, func() -> bool: return boss.is_casting() and boss.cast.ability == "shadow_bolt_volley"))
+	sim.drain_events()
+	sim.player_use("kick")
+	assert_true(boss.auras.has("exposed"), "Blottlägg ska ge bossen Blottad")
+	var procced := sim.drain_events().any(func(e: Dictionary) -> bool:
+		return e.type == "trait" and e.trait == "expose")
+	assert_true(procced, "trait-händelse saknas")
+
+
+func test_mage_always_crits_exposed_target() -> void:
+	var sim := _sim()
+	sim.boss.auras["exposed"] = {"remaining": 99.0, "duration": 99.0, "haste": 0.0,
+			"damage_taken_mult": 1.0, "hot": 0.0, "tick": 1.0, "source": "rogue"}
+	sim.advance(12.0)
+	var mage_hits := sim.drain_events().filter(func(e: Dictionary) -> bool:
+		return e.type == "damage" and e.source == "mage")
+	assert_true(mage_hits.size() >= 3, "Mage borde ha träffat flera gånger")
+	assert_true(mage_hits.all(func(e: Dictionary) -> bool: return e.crit), "alla Mage-träffar ska vara kritiska")
+
+
+func test_retaliation_only_under_shield_wall() -> void:
+	var sim := _sim()
+	sim.advance(6.0)
+	var before := sim.drain_events().any(func(e: Dictionary) -> bool: return e.get("ability", "") == "retaliation")
+	assert_true(not before, "Vedergällning ska inte slå till utan Shield Wall")
+	sim.player_use("shield_wall")
+	sim.advance(6.0)
+	var after := sim.drain_events().any(func(e: Dictionary) -> bool:
+		return e.type == "damage" and e.ability == "retaliation" and e.target == "bone_lich")
+	assert_true(after, "Vedergällning ska slå tillbaka mot bossen")
+
+
+func test_crit_gives_priest_mana() -> void:
+	var sim := _sim()
+	var priest := sim.unit("priest")
+	priest.mana = 1000.0
+	priest.mana_regen = 0.0
+	sim._deal_damage(sim.unit("rogue"), sim.boss, 10.0, "physical", "melee", true, false)
+	assert_near(priest.mana, 1000.0)
+	sim.unit("rogue").crit_chance = 1.0
+	sim._deal_damage(sim.unit("rogue"), sim.boss, 10.0, "physical", "melee", true, true)
+	assert_near(priest.mana, 1030.0)

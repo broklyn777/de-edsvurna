@@ -13,13 +13,17 @@ var _ghost_hold := 0.0
 var _hit_flash := 0.0
 var _heal_flash := 0.0
 var _press := 0.0
+var _trait_flash := 0.0
+var _trait_name := ""
 var _t := 0.0
 
 
 func setup(u: CombatUnit, s: CombatSim) -> void:
 	unit = u
 	sim = s
-	size = Vector2(236, 66)
+	size = Vector2(236, 82)
+	if not u.traits.is_empty():
+		_trait_name = s.data.traits[u.traits[0]].name
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
@@ -30,6 +34,10 @@ func on_damage(amount: float) -> void:
 
 func on_heal() -> void:
 	_heal_flash = 1.0
+
+
+func on_trait() -> void:
+	_trait_flash = 1.0
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -44,6 +52,7 @@ func _process(delta: float) -> void:
 	_hit_flash = maxf(0.0, _hit_flash - delta * 4.0)
 	_heal_flash = maxf(0.0, _heal_flash - delta * 3.0)
 	_press = maxf(0.0, _press - delta * 6.0)
+	_trait_flash = maxf(0.0, _trait_flash - delta * 2.0)
 	var pct := unit.hp_pct()
 	if pct >= _ghost:
 		_ghost = pct
@@ -95,6 +104,13 @@ func _draw() -> void:
 		UiStyle.bar(self, Rect2(10, 51, size.x - 20, 6), unit.mana / unit.max_mana, UiStyle.MANA_BLUE)
 	if unit.is_casting():
 		UiStyle.bar(self, Rect2(10, 59, size.x - 20, 4), unit.cast_progress(), UiStyle.GOLD)
+
+	if _trait_name != "":
+		var col := Color(UiStyle.TRAIT_GOLD, 0.55).lerp(Color.WHITE, _trait_flash * 0.8)
+		if _trait_flash > 0.0:
+			draw_rect(Rect2(6, 66, size.x - 12, 13), Color(UiStyle.TRAIT_GOLD, 0.25 * _trait_flash))
+		Glyphs.draw(self, "diamond", Vector2(16, 72.5), 4.0, col)
+		UiStyle.text(self, Vector2(26, 78), _trait_name, 13, col)
 
 	if not unit.alive:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55))

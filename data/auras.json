@@ -2,5 +2,6 @@
 	"shield_wall": {"name": "Shield Wall", "duration": 8, "damage_taken_mult": 0.35},
 	"bloodlust": {"name": "Bloodlust", "duration": 20, "haste": 0.3},
 	"renew": {"name": "Renew", "duration": 12, "hot": 45},
-	"frenzy": {"name": "Frenzy", "duration": -1, "haste": 0.35}
+	"frenzy": {"name": "Frenzy", "duration": -1, "haste": 0.35},
+	"exposed": {"name": "Blottad", "duration": 8, "damage_taken_mult": 1.15}
 }

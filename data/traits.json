@@ -1,0 +1,37 @@
+{
+	"expose": {
+		"name": "Blottlägg",
+		"text": "När Rogue avbryter en besvärjelse blir fienden Blottad i 8 s (tar 15 % mer skada).",
+		"trigger": "cast_end",
+		"when": {"result": "interrupted", "by": "self"},
+		"effects": [
+			{"type": "aura", "aura": "exposed", "target": "unit"}
+		]
+	},
+	"kindling": {
+		"name": "Eldsjäl",
+		"text": "Mages träffar mot ett Blottat mål är alltid kritiska.",
+		"trigger": "modify_damage",
+		"when": {"target_has_aura": "exposed"},
+		"modify": {"force_crit": true}
+	},
+	"retaliation": {
+		"name": "Vedergällning",
+		"text": "När Warrior tar skada under Shield Wall slår han tillbaka för 90–110.",
+		"trigger": "damage",
+		"when": {"target": "self", "source": "enemy", "self_has_aura": "shield_wall"},
+		"effects": [
+			{"type": "damage", "min": 90, "max": 110, "school": "holy", "target": "source"}
+		]
+	},
+	"lightbringer": {
+		"name": "Ljusbringare",
+		"text": "När en hjälte gör en kritisk träff återfår Priest 30 mana.",
+		"quiet": true,
+		"trigger": "damage",
+		"when": {"crit": true, "source": "ally"},
+		"effects": [
+			{"type": "mana", "amount": 30, "target": "self"}
+		]
+	}
+}
