@@ -45,7 +45,9 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Ed | oath (`oath_options`) | Specialization (och dess Perks) | Hämndens ed ≈ Paladins Retribution. |
 | Följeslagare | hero / companion | Creature | Namngivna personer, inte varelser man samlar. |
 | Trofé | trophy | Trait Material (Masters) | Ger ett trait från ett besegrat monster; fyller den plats som Fusion har i Siralim. |
-| Artefakt | artifact | Artifact | En per figur; typen avgör när dess Spell Gem slår till (svärd vid Anfall, sköld vid Defend, hjälm vid Provoke …). Inte inbyggt än. |
+| Artefakt | artifact (`data/artifacts.json`, `equip_artifact`) | Artifact | En per hjälte, smids hos Smeden. Typen höjer en stat och avgör när förmågan i den slår till: svärd vid Anfall 25 %, stav vid Förmåga 25 %, sköld vid Försvara 50 %, hjälm vid Provocera 50 %, stövlar i början av turen 15 %. Automatiskt kast kostar inga Charges. |
+| Svärd / Stav / Sköld / Hjälm / Stövlar | sword / staff / shield / helm / boots | Sword / Staff / Shield / Helmet / Boots | Stat: anfall / besvärjelser och helning / mindre skada / liv / snabbhet (Siralim: Attack / Intelligence / Defense / Health / Speed). |
+| Automatiskt kast | `cast`-effekt, action `artifact`, händelsen `acted` | automatic cast | |
 | Samling | collection | Codex / Bestiary | Troféer man någonsin hittat. |
 | Sällskap | party | Party | |
 
@@ -55,7 +57,14 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 |---|---|---|---|
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
 | Våning | floor, `FLOORS` | Realm Depth | |
-| Lägret | camp | Castle (ungefär) | |
+| Lägret | camp | – (stunden mellan strider i en Realm) | Trofévalet efter varje våning. |
+| Basen | base (`base_screen`) | Castle | Mellan körningarna. Förlust och klarad krypta leder hit. |
+| Kryptporten | gate (`start_screen`) | Teleportation Shrine | Välj Ed, följeslagare och trofé; starta körningen. |
+| Övningsgården | practice (`RunState.practice`) | Arena | Strid mot valfritt möte utan risk; makrologgen finns kvar efteråt. |
+| Smeden | smith (`Profile.forge`) | Blacksmith | Smida artefakt (100 silver) eller byta förmåga (40). |
+| Biblioteket | library | Codex / Bestiary | Samlingen av troféer. |
+| Silver | silver (`Profile.silver`) | Brimstone m.fl. | Enda resursen. 25/35/50 per vunnen strid på våning 1/2/3. |
+| Profil | `Profile` | – | Det som sparas mellan körningar (`user://progress.cfg`). |
 | Kvitto | receipt | – | Vårt tillägg. Battle History är en händelselista utan förklaringar. |
 
 ## Fler Siralim-termer
@@ -90,6 +99,7 @@ Källa: `docs/research/siralim.md`.
 | Om denna hjälte / någon allierad / någon fiende / allierad N / alla allierade | subject: self / any_ally / any_enemy / ally_n / all_allies | If this creature / If any ally / If any enemy / If ally (N) / If ally (all) |
 | Villkor | condition | condition |
 | Pröva nästa rad | test_next_line | test next line |
+| Bär / bär inte (artefakt) | has_artifact / lacks_artifact | – (vårt tillägg) |
 | Hoppa över tur | skip | skip turn |
 | Den som matchade | that_unit | that creature |
 | Förklaring | macro log | – (vårt tillägg) |
