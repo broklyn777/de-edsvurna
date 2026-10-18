@@ -24,6 +24,9 @@ var rules: Array = []
 var traits: Array = []
 ## trait_id -> tidpunkt då egenskapen får slå till igen (inre nedkylning).
 var trait_ready := {}
+## Uppladdade resurser från egenskaper: charge -> mängd, och räknare för "var n:e"-laddningar.
+var charges := {}
+var charge_progress := {}
 var alive := true
 var gcd := 0.0
 ## Sant när den pågående GCD:n startades av AI:n; spelarens order får då gå före.

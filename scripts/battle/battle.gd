@@ -141,6 +141,7 @@ func _build_ui() -> void:
 		var b := AbilityButton.new()
 		var ab := sim.ability(ids[i])
 		b.setup(ids[i], ab, sim.unit(ab.owner), keys[i] if i < keys.size() else "")
+		b.sim = sim
 		b.activated.connect(_on_button)
 		b.became_ready.connect(func(_id: String) -> void: sfx.play("k_ready", -9.0, 0.0))
 		ui.add_child(b)
@@ -442,6 +443,8 @@ func _handle(e: Dictionary) -> void:
 		"trait":
 			# Efter vapenträffen som satte igång egenskapen, inte före.
 			_after(_pending_delay(), _on_trait.bind(e))
+		"release":
+			_after(_pending_delay(), _on_release.bind(e))
 		"outcome":
 			_after(_pending_delay(), _on_outcome.bind(e.result))
 
@@ -588,6 +591,19 @@ func _on_trait(e: Dictionary) -> void:
 	_float(e.unit, t.name.to_upper(), UiStyle.TRAIT_GOLD, 22, true)
 	sfx.play("k_ready", -4.0, 0.1)
 	fx_layer.add_child(_at(Fx.Ring.new(UiStyle.TRAIT_GOLD, 12, 70, 0.4, 5.0), _pos(e.unit)))
+
+
+## En förmåga förbrukade laddningar: stort guldnamn och laddningarna som siffra.
+func _on_release(e: Dictionary) -> void:
+	var t: Dictionary = data.traits[e.trait]
+	var amount: String = ("+%d" % int(e.amount)) if e.amount > 10.0 else ("×%d" % int(e.amount))
+	_float(e.unit, "%s %s" % [t.name.to_upper(), amount], UiStyle.TRAIT_GOLD, 26 + int(minf(e.amount, 5.0)) * 2, true)
+	frames[e.unit].on_trait()
+	sfx.play("k_ready", -1.0, 0.0)
+	var p := _pos(e.unit)
+	fx_layer.add_child(_at(Fx.Ring.new(UiStyle.TRAIT_GOLD, 16, 120, 0.5, 8.0, true), p))
+	fx_layer.add_child(_at(Fx.Sparks.new(UiStyle.TRAIT_GOLD, 14 + int(minf(e.amount, 5.0)) * 4, 300.0, 0.5), p))
+	world.add_shake(3.0 + minf(e.amount, 5.0))
 
 
 func _on_exposed(unit_id: String) -> void:

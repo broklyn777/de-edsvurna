@@ -17,7 +17,7 @@
 			"max": 75
 		},
 		"traits": ["retaliation"],
-		"trait_options": ["retaliation", "sunder", "unyielding"],
+		"trait_options": ["retaliation", "sunder", "righteous_fury"],
 		"rules": [
 			{
 				"ability": "shield_slam"
@@ -60,7 +60,7 @@
 			-70
 		],
 		"traits": ["lightbringer"],
-		"trait_options": ["lightbringer", "guardian_spirit", "mercy"],
+		"trait_options": ["lightbringer", "guardian_spirit", "dawn_miracle"],
 		"rules": [
 			{
 				"ability": "heal",
@@ -106,7 +106,7 @@
 			95
 		],
 		"traits": ["kindling"],
-		"trait_options": ["kindling", "combustion", "ice_barrier"],
+		"trait_options": ["kindling", "combustion", "ember_lore"],
 		"rules": [
 			{
 				"ability": "frostbolt"
@@ -148,7 +148,7 @@
 			"max": 58
 		},
 		"traits": ["expose"],
-		"trait_options": ["expose", "envenom", "quickstep"],
+		"trait_options": ["expose", "death_mark", "quickstep"],
 		"rules": [
 			{
 				"ability": "sinister_strike"

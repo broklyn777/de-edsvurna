@@ -137,8 +137,8 @@ class FloatingText extends Node2D:
 
 	func _draw() -> void:
 		var a := clampf((life - _t) / 0.35, 0.0, 1.0)
-		UiStyle.text(self, Vector2(-150, 0), text, font_size, Color(color, a),
-				HORIZONTAL_ALIGNMENT_CENTER, 300, 7 if big else 5)
+		UiStyle.text(self, Vector2(-300, 0), text, font_size, Color(color, a),
+				HORIZONTAL_ALIGNMENT_CENTER, 600, 7 if big else 5)
 
 
 ## Ljusstråle från healern till målet medan healingen laddas, så att man ser vem som får den.

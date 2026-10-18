@@ -17,6 +17,7 @@ extends RefCounted
 ##   announce {text}
 ##   outcome {result: victory|defeat}
 ##   trait {unit, trait} – en egenskap slog till (händelser den orsakar bär fältet "trait")
+##   release {unit, trait, charge, amount, ability} – en förmåga förbrukade laddningar
 
 const STEP := 0.05
 const BASE_GCD := 1.5
@@ -46,6 +47,8 @@ var _timers: Array[Dictionary] = []
 var _phases: Array = []
 var _trait_ctx := ""
 var _trait_depth := 0
+## Medan en förmåga förbrukar laddningar: {unit, ability, mult} för skadebonusen.
+var _release_bonus := {}
 
 
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1) -> CombatSim:
@@ -86,6 +89,21 @@ func incoming_heal(unit_id: String) -> float:
 				if e.type == "heal":
 					total += (e.min + e.max) / 2.0
 	return total
+
+
+## Laddningar som förmågan förbrukar när den används: {charge, value, max}, eller tom.
+func charge_info(u: CombatUnit, ability_id: String) -> Dictionary:
+	for trait_id in u.traits:
+		var t: Dictionary = data.traits[trait_id]
+		var release: Dictionary = t.get("release", {})
+		if release.get("ability", "") != ability_id:
+			continue
+		var cap := 0.0
+		for effect in t.get("effects", []):
+			if effect.type == "charge":
+				cap = _charge_cap(u, effect)
+		return {"charge": release.charge, "value": u.charges.get(release.charge, 0.0), "max": cap}
+	return {}
 
 
 func ability(ability_id: String) -> Dictionary:
@@ -358,6 +376,8 @@ func _resolve(caster: CombatUnit, ability_id: String, targets: Array) -> void:
 func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> void:
 	var ab := ability(ability_id)
 	var can_crit: bool = not ab.get("no_crit", false)
+	var releases := _take_releases(caster, ability_id)
+	var interrupted := false
 	for effect in ab.get("effects", []):
 		for target_id in targets:
 			var t := unit(target_id)
@@ -372,7 +392,13 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 				"aura":
 					_add_aura(caster, t, effect.aura)
 				"interrupt":
-					_interrupt(caster, t)
+					interrupted = _interrupt(caster, t) or interrupted
+	_release_bonus = {}
+	for r in releases:
+		if r.release.get("needs_interrupt", false) and not interrupted:
+			caster.charges[r.release.charge] = r.amount  # misslyckat avbrott: laddningarna finns kvar
+			continue
+		_run_release(caster, r, targets)
 	if caster.team == 0 and caster.alive:
 		threat[caster.id] += ab.get("threat_bonus", 0.0)
 
@@ -385,6 +411,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, base: float, school: String,
 	var crit: bool = can_crit and (rng.randf() < src.crit_chance or _modify(src, "modify_damage", probe, "force_crit", false))
 	var mult: float = (MELEE_CRIT if melee else SPELL_CRIT) if crit else 1.0
 	mult *= _modify(src, "modify_damage", probe, "damage_mult", 1.0)
+	if _release_bonus.get("unit", "") == src.id and _release_bonus.ability == ability_id:
+		mult *= _release_bonus.mult
 	mult *= _modify(tgt, "modify_damage_taken", probe, "damage_taken_mult", 1.0)
 	var amount := roundf(base * mult * tgt.damage_taken())
 	tgt.hp = maxf(0.0, tgt.hp - amount)
@@ -425,13 +453,14 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 	_emit({"type": "aura_applied", "unit": tgt.id, "aura": aura_id, "refreshed": refreshed})
 
 
-func _interrupt(src: CombatUnit, tgt: CombatUnit) -> void:
+func _interrupt(src: CombatUnit, tgt: CombatUnit) -> bool:
 	if not tgt.is_casting() or not ability(tgt.cast.ability).get("interruptible", false):
-		return
+		return false
 	var interrupted: String = tgt.cast.ability
 	tgt.cast = {}
 	_emit({"type": "cast_end", "unit": tgt.id, "ability": interrupted,
 			"result": "interrupted", "by": src.id})
+	return true
 
 
 func _kill(u: CombatUnit) -> void:
@@ -482,21 +511,35 @@ func _run_trait(owner: CombatUnit, trait_id: String, t: Dictionary, e: Dictionar
 	_trait_depth += 1
 	_emit({"type": "trait", "unit": owner.id, "trait": trait_id})
 	for effect in t.get("effects", []):
-		var where: String = effect.get("target", "self")
-		var targets: Array[CombatUnit] = []
-		if where == "self":
-			targets = [owner]
-		elif where == "allies":
-			targets = _allies(owner)
-		elif unit(e.get(where, "")) != null:
-			targets = [unit(e[where])]
-		for tgt in targets:
-			_run_trait_effect(owner, trait_id, effect, tgt)
+		for tgt in _trait_targets(owner, effect.get("target", "self"), e, []):
+			_run_trait_effect(owner, trait_id, effect, tgt, e)
 	_trait_depth -= 1
 	_trait_ctx = outer
 
 
-func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, tgt: CombatUnit) -> void:
+## self, allies, enemy, other_allies (alla utom förmågans mål) eller ett fält i händelsen (source, target …).
+func _trait_targets(owner: CombatUnit, where: String, e: Dictionary, ability_targets: Array) -> Array[CombatUnit]:
+	var out: Array[CombatUnit] = []
+	match where:
+		"self":
+			out = [owner]
+		"allies":
+			out = _allies(owner)
+		"other_allies":
+			for a in _allies(owner):
+				if not ability_targets.has(a.id):
+					out.append(a)
+		"enemy":
+			var enemies := _enemies(owner)
+			if not enemies.is_empty():
+				out = [enemies[0]]
+		_:
+			if unit(e.get(where, "")) != null:
+				out = [unit(e[where])]
+	return out
+
+
+func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, tgt: CombatUnit, e := {}) -> void:
 	match effect.type:
 		"damage":
 			_deal_damage(owner, tgt, _roll(effect), effect.get("school", "physical"), trait_id,
@@ -507,6 +550,65 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_add_aura(owner, tgt, effect.aura, float(effect.get("duration", 0.0)))
 		"mana":
 			tgt.mana = minf(tgt.max_mana, tgt.mana + float(effect.amount))
+		"charge":
+			_add_charge(tgt, effect, e)
+
+
+# --- Laddningar och förlösning ----------------------------------------------
+# En egenskap kan ladda upp en resurs ("charge"-effekt) och förbruka den när hjälten lyckas
+# med en viss förmåga ("release"). Förbrukningen sker när förmågan verkar – en avbruten cast
+# eller ett Kick utan något att avbryta behåller laddningarna.
+
+func _charge_cap(u: CombatUnit, effect: Dictionary) -> float:
+	if effect.has("max_pct_hp"):
+		return roundf(u.max_hp * float(effect.max_pct_hp))
+	return float(effect.get("max", 5))
+
+
+func _add_charge(u: CombatUnit, effect: Dictionary, e: Dictionary) -> void:
+	var charge: String = effect.charge
+	var every := int(effect.get("every", 1))
+	if every > 1:
+		u.charge_progress[charge] = u.charge_progress.get(charge, 0) + 1
+		if u.charge_progress[charge] < every:
+			return
+		u.charge_progress[charge] = 0
+	var amount := float(e.get(effect.amount_from, 0.0)) if effect.has("amount_from") else float(effect.get("amount", 1))
+	u.charges[charge] = minf(_charge_cap(u, effect), u.charges.get(charge, 0.0) + amount)
+
+
+## Plockar ut laddningarna som förmågan förbrukar och sätter skadebonusen för den här förmågan.
+func _take_releases(caster: CombatUnit, ability_id: String) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var mult := 1.0
+	for trait_id in caster.traits:
+		var release: Dictionary = data.traits[trait_id].get("release", {})
+		var amount: float = caster.charges.get(release.get("charge", ""), 0.0)
+		if release.get("ability", "") != ability_id or amount <= 0.0:
+			continue
+		caster.charges[release.charge] = 0.0
+		mult *= 1.0 + float(release.get("damage_mult_per", 0.0)) * amount
+		out.append({"trait": trait_id, "release": release, "amount": amount})
+	_release_bonus = {"unit": caster.id, "ability": ability_id, "mult": mult} if mult != 1.0 else {}
+	return out
+
+
+func _run_release(caster: CombatUnit, r: Dictionary, ability_targets: Array) -> void:
+	var outer := _trait_ctx
+	_trait_ctx = r.trait
+	_trait_depth += 1
+	_emit({"type": "release", "unit": caster.id, "trait": r.trait, "charge": r.release.charge,
+			"amount": r.amount, "ability": r.release.ability})
+	for effect in r.release.get("effects", []):
+		var scaled: Dictionary = effect.duplicate()
+		if effect.get("per_charge", false):
+			for key in ["min", "max", "duration"]:
+				if scaled.has(key):
+					scaled[key] = float(scaled[key]) * r.amount
+		for tgt in _trait_targets(caster, effect.get("target", "self"), {}, ability_targets):
+			_run_trait_effect(caster, r.trait, scaled, tgt)
+	_trait_depth -= 1
+	_trait_ctx = outer
 
 
 ## Villkor för en egenskap. Händelsefält jämförs med "self", "ally", "enemy" eller ett värde.

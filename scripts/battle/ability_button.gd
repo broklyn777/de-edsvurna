@@ -2,6 +2,7 @@ class_name AbilityButton
 extends Control
 ## Rund förmågeknapp. Reagerar på tryckningen (inte släppet) för snabbast möjliga respons.
 ## Visar cooldown, GCD, köad order, kastförlopp och blinkar när förmågan blir redo.
+## Om en egenskap laddar upp något som förmågan förbrukar visas laddningarna ovanför knappen.
 
 signal activated(ability_id: String)
 signal became_ready(ability_id: String)
@@ -11,6 +12,7 @@ const RADIUS := 52.0
 var ability_id := ""
 var ab: Dictionary
 var owner_unit: CombatUnit
+var sim: CombatSim
 var key_label := ""
 var hint := false
 var _press := 0.0
@@ -101,5 +103,29 @@ func _draw() -> void:
 		draw_circle(c, r, Color(0.1, 0.2, 0.7, 0.45))
 	if _ready_flash > 0.0:
 		draw_circle(c, r * (1.0 + 0.25 * (1.0 - _ready_flash)), Color(1, 1, 1, 0.5 * _ready_flash))
+	_draw_charges(c, r)
 	if key_label != "":
 		UiStyle.text(self, Vector2(c.x - r * 0.95, c.y - r * 0.6), key_label, 13, Color(1, 1, 1, 0.5))
+
+
+func _draw_charges(c: Vector2, r: float) -> void:
+	var info := sim.charge_info(owner_unit, ability_id) if sim else {}
+	if info.is_empty() or info.max <= 0.0:
+		return
+	var full: bool = info.value >= info.max
+	var glow := 0.75 + 0.25 * sin(_t * 9.0) if full else 1.0
+	if info.max <= 10.0:
+		# Prickar i en båge över knappen.
+		var n := int(info.max)
+		for i in n:
+			var a := -PI / 2 + (i - (n - 1) / 2.0) * 0.32
+			var p := c + Vector2(cos(a), sin(a)) * (r + 13)
+			var lit := i < int(info.value)
+			draw_circle(p, 6.5, Color(0, 0, 0, 0.8))
+			draw_circle(p, 5.0, Color(UiStyle.TRAIT_GOLD, glow) if lit else Color(1, 1, 1, 0.15))
+	else:
+		var label := str(int(info.value))
+		var p := c + Vector2(0, -r - 12)
+		draw_rect(Rect2(p - Vector2(30, 11), Vector2(60, 22)), Color(0, 0, 0, 0.75))
+		draw_rect(Rect2(p - Vector2(30, 11), Vector2(60 * info.value / info.max, 22)), Color(UiStyle.TRAIT_GOLD, 0.35 * glow))
+		UiStyle.text(self, p + Vector2(-30, 6), label, 15, Color(UiStyle.TRAIT_GOLD, glow), HORIZONTAL_ALIGNMENT_CENTER, 60, 3)

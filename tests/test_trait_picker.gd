@@ -5,6 +5,7 @@ var _result := {}
 
 
 func _picker() -> TraitPicker:
+	_result = {}
 	var p := TraitPicker.new()
 	p.setup(_data, _data.encounters.bone_lich.party, {}, {})
 	p.size = Vector2(1280, 720)
@@ -14,11 +15,28 @@ func _picker() -> TraitPicker:
 
 
 func _tap(p: TraitPicker, r: Rect2) -> void:
-	var e := InputEventMouseButton.new()
-	e.button_index = MOUSE_BUTTON_LEFT
-	e.pressed = true
-	e.position = r.get_center()
-	p._gui_input(e)
+	p._step_age = 1.0  # som om spelaren väntat en stund sedan förra stegbytet
+	for pressed in [true, false]:
+		var e := InputEventMouseButton.new()
+		e.button_index = MOUSE_BUTTON_LEFT
+		e.pressed = pressed
+		e.position = r.get_center()
+		p._gui_input(e)
+
+
+func test_double_tap_does_not_skip_artifacts() -> void:
+	var p := _picker()
+	_tap(p, p._button_rect())
+	assert_eq(p.step, 2)
+	for pressed in [true, false]:  # snabbt andra tryck direkt efter stegbytet
+		var e := InputEventMouseButton.new()
+		e.button_index = MOUSE_BUTTON_LEFT
+		e.pressed = pressed
+		e.position = p._button_rect().get_center()
+		p._gui_input(e)
+	assert_eq(p.step, 2)
+	assert_true(_result.is_empty(), "striden får inte starta av ett dubbeltryck")
+	p.queue_free()
 
 
 func test_full_pick_flow() -> void:

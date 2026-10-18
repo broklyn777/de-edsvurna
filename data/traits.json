@@ -10,9 +10,9 @@
 	},
 	"sunder": {
 		"name": "Sköldbrytare",
-		"text": "Shield Slam har 25 % chans att göra fienden Blottad i 4 s.",
+		"text": "Shield Slam har 20 % chans att göra fienden Blottad i 4 s.",
 		"trigger": "damage",
-		"chance": 0.25,
+		"chance": 0.2,
 		"when": {"source": "self", "ability": "shield_slam"},
 		"effects": [
 			{"type": "aura", "aura": "exposed", "duration": 4, "target": "target"}
@@ -190,5 +190,74 @@
 		"text": "Bäraren tar 15 % mindre skada.",
 		"trigger": "modify_damage_taken",
 		"modify": {"damage_taken_mult": 0.85}
+	},
+	"righteous_fury": {
+		"name": "Rättfärdig vrede",
+		"text": "Partyts helningar lagras som Vrede (högst 25 % av Warriors liv). Shield Wall förbrukar den och slår bossen lika hårt.",
+		"trigger": "heal",
+		"quiet": true,
+		"when": {"source": "ally"},
+		"effects": [
+			{"type": "charge", "charge": "vrede", "amount_from": "effective", "max_pct_hp": 0.25, "target": "self"}
+		],
+		"release": {
+			"ability": "shield_wall",
+			"charge": "vrede",
+			"effects": [
+				{"type": "damage", "min": 1, "max": 1, "per_charge": true, "school": "holy", "target": "enemy"}
+			]
+		}
+	},
+	"dawn_miracle": {
+		"name": "Gryningsmirakel",
+		"text": "Renew ger Priest en Gryning (högst 5, en varannan sekund). Flash Heal förbrukar dem och helar de andra för 60 per Gryning.",
+		"trigger": "heal",
+		"quiet": true,
+		"internal_cooldown": 2,
+		"when": {"source": "self", "ability": "renew"},
+		"effects": [
+			{"type": "charge", "charge": "gryning", "max": 5, "target": "self"}
+		],
+		"release": {
+			"ability": "flash_heal",
+			"charge": "gryning",
+			"effects": [
+				{"type": "heal", "min": 60, "max": 60, "per_charge": true, "target": "other_allies"}
+			]
+		}
+	},
+	"ember_lore": {
+		"name": "Glödande lärdom",
+		"text": "Varannan träff från Mage ger en Glöd (högst 5). Pyroblast förbrukar dem för 10 % mer skada per Glöd.",
+		"trigger": "damage",
+		"quiet": true,
+		"when": {"source": "self", "target": "enemy"},
+		"effects": [
+			{"type": "charge", "charge": "glod", "every": 2, "max": 5, "target": "self"}
+		],
+		"release": {
+			"ability": "pyroblast",
+			"charge": "glod",
+			"damage_mult_per": 0.1
+		}
+	},
+	"death_mark": {
+		"name": "Dödsstöten",
+		"text": "Rogues kritiska träffar ger Precision (högst 5). Ett lyckat Kick förbrukar dem: 80 skada och 1,2 s Blottad per Precision.",
+		"trigger": "damage",
+		"quiet": true,
+		"when": {"source": "self", "target": "enemy", "crit": true},
+		"effects": [
+			{"type": "charge", "charge": "precision", "max": 5, "target": "self"}
+		],
+		"release": {
+			"ability": "kick",
+			"charge": "precision",
+			"needs_interrupt": true,
+			"effects": [
+				{"type": "damage", "min": 80, "max": 80, "per_charge": true, "school": "physical", "target": "enemy"},
+				{"type": "aura", "aura": "exposed", "duration": 1.2, "per_charge": true, "target": "enemy"}
+			]
+		}
 	}
 }

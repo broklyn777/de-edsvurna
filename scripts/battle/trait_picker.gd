@@ -13,6 +13,8 @@ const CARD_GAP := 10.0
 const BUTTON_SIZE := Vector2(320, 62)
 const BACK_SIZE := Vector2(170, 52)
 const ARTIFACT_COLUMNS := 4
+## Stegknapparna ligger på samma plats, så efter ett stegbyte ignoreras dem en kort stund.
+const STEP_LOCK := 0.4
 
 var data: Dictionary
 var party: Array = []
@@ -26,6 +28,9 @@ var _active := 0  # hjälten som nästa artefakt hamnar på (steg 2)
 var _t := 0.0
 var _flash := {}  # id -> 1..0, kort glimt när något väljs
 var _button_press := 0.0
+var _step_age := 0.0
+## Vilken stegknapp fingret trycktes ned på ("next", "back" eller ""); den verkar först vid släpp.
+var _pressed_button := ""
 
 
 func setup(game_data: Dictionary, hero_ids: Array, initial_traits: Dictionary, initial_artifacts: Dictionary) -> void:
@@ -46,6 +51,7 @@ func setup(game_data: Dictionary, hero_ids: Array, initial_traits: Dictionary, i
 
 func _process(delta: float) -> void:
 	_t += delta
+	_step_age += delta
 	_button_press = maxf(0.0, _button_press - delta * 6.0)
 	for k in _flash.keys():
 		_flash[k] = maxf(0.0, _flash[k] - delta * 3.0)
@@ -53,18 +59,24 @@ func _process(delta: float) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	accept_event()
 	var p: Vector2 = event.position
-	if _button_rect().has_point(p):
-		_button_press = 1.0
-		tapped.emit()
-		_advance()
+	var on_button := "next" if _button_rect().has_point(p) else ("back" if step == 2 and _back_rect().has_point(p) else "")
+	# Stegknapparna verkar när fingret släpps, och bara om trycket började på samma knapp.
+	if not event.pressed:
+		if on_button != "" and on_button == _pressed_button and _step_age >= STEP_LOCK:
+			tapped.emit()
+			if on_button == "next":
+				_advance()
+			else:
+				_set_step(1)
+		_pressed_button = ""
 		return
-	if step == 2 and _back_rect().has_point(p):
-		tapped.emit()
-		step = 1
+	if on_button != "":
+		_pressed_button = on_button
+		_button_press = 1.0
 		return
 	if step == 1:
 		_tap_trait(p)
@@ -79,9 +91,14 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _advance() -> void:
 	if step == 1:
-		step = 2
+		_set_step(2)
 	else:
 		confirmed.emit(traits, artifacts)
+
+
+func _set_step(n: int) -> void:
+	step = n
+	_step_age = 0.0
 
 
 func _tap_trait(p: Vector2) -> void:

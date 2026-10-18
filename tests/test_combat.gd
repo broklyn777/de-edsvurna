@@ -175,3 +175,59 @@ func test_adding_traits_does_not_change_game_data() -> void:
 	var sim := _sim()
 	sim.unit("mage").traits.append("fire_rune")
 	assert_eq(_data.heroes.mage.traits, ["kindling"])
+
+
+func test_ember_lore_charges_and_pyroblast_consumes() -> void:
+	var sim := _sim()
+	var mage := sim.unit("mage")
+	mage.traits = ["ember_lore"]
+	mage.crit_chance = 0.0
+	for i in 6:
+		sim._deal_damage(mage, sim.boss, 10.0, "frost", "frostbolt", false, false)
+	assert_near(mage.charges.glod, 3.0)
+	sim.drain_events()
+	sim._apply_effects(mage, "pyroblast", ["bone_lich"])
+	var events := sim.drain_events()
+	var hit: Dictionary = events.filter(func(e: Dictionary) -> bool: return e.type == "damage" and e.ability == "pyroblast")[0]
+	assert_true(hit.amount >= 850.0 * 1.3 * sim.boss.damage_taken() - 1.0, "Pyroblast ska få +30 %% (fick %d)" % hit.amount)
+	assert_true(events.any(func(e: Dictionary) -> bool: return e.type == "release" and e.amount == 3.0))
+	assert_near(mage.charges.glod, 0.0)
+
+
+func test_failed_kick_keeps_precision() -> void:
+	var sim := _sim()
+	var rogue := sim.unit("rogue")
+	rogue.traits = ["death_mark"]
+	rogue.charges["precision"] = 4.0
+	sim._apply_effects(rogue, "kick", ["bone_lich"])  # bossen kastar inget
+	assert_near(rogue.charges.precision, 4.0)
+	var boss := sim.boss
+	assert_true(_advance_until(sim, func() -> bool: return boss.is_casting() and boss.cast.ability == "shadow_bolt_volley"))
+	rogue.charges["precision"] = 4.0
+	sim.player_use("kick")
+	assert_near(rogue.charges.precision, 0.0)
+	assert_near(boss.auras.exposed.remaining, 4.8, 0.06)
+
+
+func test_righteous_fury_stores_heals_and_shield_wall_hits() -> void:
+	var sim := _sim()
+	var warrior := sim.unit("warrior")
+	warrior.traits = ["righteous_fury"]
+	warrior.hp = 1000.0
+	sim._heal(sim.unit("priest"), warrior, 2000.0, "heal", false)
+	assert_near(warrior.charges.vrede, 650.0)
+	sim.drain_events()
+	sim.player_use("shield_wall")
+	var hit := sim.drain_events().filter(func(e: Dictionary) -> bool:
+		return e.type == "damage" and e.ability == "righteous_fury")
+	assert_eq(hit.size(), 1)
+	assert_near(warrior.charges.vrede, 0.0)
+
+
+func test_charge_info_for_buttons() -> void:
+	var sim := _sim()
+	var priest := sim.unit("priest")
+	priest.traits = ["dawn_miracle"]
+	priest.charges["gryning"] = 2.0
+	assert_eq(sim.charge_info(priest, "flash_heal"), {"charge": "gryning", "value": 2.0, "max": 5.0})
+	assert_eq(sim.charge_info(priest, "renew"), {})
