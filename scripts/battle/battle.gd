@@ -29,6 +29,8 @@ var boss_frame: BossFrame
 var overlay: BattleOverlay
 var pause_button: Control
 var telegraphs := {}
+## Effekter som väntar på att vapnet ska träffa: [{left, call}].
+var _later: Array[Dictionary] = []
 
 var paused := false
 var started := false
@@ -41,6 +43,15 @@ var _demo := false
 var _demo_bot: Script
 var _demo_rng := RandomNumberGenerator.new()
 var _demo_reacted := {}
+var _homes := {}
+var _ran_in := false
+var _shuffle_left := {}
+
+## Partyt springer in från kameran när nedräkningen närmar sig noll.
+const RUN_IN_FROM := Vector3(0.0, 0.0, 4.5)
+const RUN_IN_TIME := 1.5
+## Närstridshjältarna byter plats runt bossen med några sekunders mellanrum.
+const SHUFFLE_HEROES := ["warrior", "rogue"]
 
 
 func _ready() -> void:
@@ -62,7 +73,11 @@ func _ready() -> void:
 	_build_ui()
 	get_viewport().size_changed.connect(_layout)
 	_layout()
-	if warp > 0.0:
+	if warp <= 0.0:
+		for h in sim.heroes:
+			models[h.id].position = _homes[h.id] + RUN_IN_FROM + Vector3(randf_range(-0.6, 0.6), 0, randf_range(0, 1.0))
+	else:
+		_ran_in = true
 		started = true
 		_countdown = 0.0
 		while sim.time < warp and sim.outcome == "":
@@ -87,6 +102,9 @@ func _build_scene() -> void:
 	for u in sim.units:
 		var target := sim.boss if u.team == 0 else sim.threat_target()
 		models[u.id].face(models[target.id].global_position)
+		_homes[u.id] = models[u.id].position
+	for hero_id in SHUFFLE_HEROES:
+		_shuffle_left[hero_id] = randf_range(4.0, 7.0)
 
 	var fx_canvas := CanvasLayer.new()
 	fx_canvas.layer = 0
@@ -173,13 +191,19 @@ func _process(_delta: float) -> void:
 		_demo_act()
 	for e in sim.drain_events():
 		_handle(e)
+	_tick_later(_delta)
 	_update_facing()
+	_update_shuffle(_delta)
 	_update_hints()
 	_update_telegraphs()
 
 
 func _tick_countdown(dt: float) -> void:
 	_countdown -= dt
+	if not _ran_in and _countdown <= RUN_IN_TIME + 0.1:
+		_ran_in = true
+		for h in sim.heroes:
+			models[h.id].move_to(_homes[h.id], RUN_IN_TIME * randf_range(0.85, 1.0), true)
 	var n := ceili(_countdown)
 	if n != _last_count and n >= 1:
 		_last_count = n
@@ -200,6 +224,25 @@ func _update_facing() -> void:
 			models[h.id].face(models[h.cast.targets[0]].global_position)
 		else:
 			models[h.id].face(models[sim.boss.id].global_position)
+
+
+func _update_shuffle(delta: float) -> void:
+	if not started or paused or sim.outcome != "":
+		return
+	var boss_pos: Vector3 = _homes[sim.boss.id]
+	for hero_id in SHUFFLE_HEROES:
+		var u := sim.unit(hero_id)
+		var m: UnitModel = models[hero_id]
+		_shuffle_left[hero_id] -= delta
+		if _shuffle_left[hero_id] > 0.0 or not u.alive or u.is_casting() or m.is_moving():
+			continue
+		_shuffle_left[hero_id] = randf_range(5.0, 9.0)
+		# Ny plats på samma avstånd från bossen, högst ~25° från startplatsen.
+		var home_offset: Vector3 = _homes[hero_id] - boss_pos
+		var spot := boss_pos + home_offset.rotated(Vector3.UP, randf_range(-0.45, 0.45))
+		var dist := m.position.distance_to(spot)
+		if dist > 0.25:
+			m.move_to(spot, clampf(dist / 1.4, 0.5, 1.4), false)
 
 
 func _update_hints() -> void:
@@ -302,7 +345,10 @@ func _handle(e: Dictionary) -> void:
 		"cast_start":
 			_on_cast_start(e)
 		"cast_end":
-			_on_cast_end(e)
+			if e.result == "interrupted" and e.has("by"):
+				_after(models[e.by].last_impact_delay, _on_cast_end.bind(e))
+			else:
+				_on_cast_end(e)
 		"ability_used":
 			_on_ability_used(e)
 		"projectile":
@@ -313,7 +359,7 @@ func _handle(e: Dictionary) -> void:
 		"swing":
 			models[e.unit].attack(models[e.target].global_position, 0.35 if e.unit == sim.boss.id else 0.25)
 		"damage":
-			_on_damage(e)
+			_after(_impact_delay(e), _on_damage.bind(e))
 		"heal":
 			_on_heal(e)
 		"aura_applied":
@@ -326,10 +372,7 @@ func _handle(e: Dictionary) -> void:
 			if e.aura == "shield_wall":
 				models[e.unit].set_blocking(false)
 		"death":
-			sfx.play("death", -2.0)
-			_float(e.unit, "DÖD", Color(0.8, 0.8, 0.8), 26, false)
-			models[e.unit].die()
-			_hitstop(70)
+			_after(_pending_delay(), _on_death.bind(e.unit))
 		"error":
 			for b in buttons:
 				if b.ability_id == e.ability:
@@ -339,7 +382,7 @@ func _handle(e: Dictionary) -> void:
 		"announce":
 			overlay.announce(e.text)
 		"outcome":
-			_on_outcome(e.result)
+			_after(_pending_delay(), _on_outcome.bind(e.result))
 
 
 func _on_cast_start(e: Dictionary) -> void:
@@ -461,6 +504,13 @@ func _on_heal(e: Dictionary) -> void:
 		fx_layer.add_child(_at(Fx.Sparks.new(Color("#b8ffbf"), 10, 140.0, 0.5), p))
 
 
+func _on_death(unit_id: String) -> void:
+	sfx.play("death", -2.0)
+	_float(unit_id, "DÖD", Color(0.8, 0.8, 0.8), 26, false)
+	models[unit_id].die()
+	_hitstop(70)
+
+
 func _on_outcome(result: String) -> void:
 	for m in models.values():
 		m.stop_cast_sound()
@@ -497,6 +547,38 @@ func _float(unit_id: String, text: String, color: Color, size: int, big: bool) -
 	var anchor: Vector3 = models[unit_id].chest_position() if unit_id == sim.boss.id else models[unit_id].head_position()
 	var p := world.project(anchor) + Vector2(randf_range(-14, 14), -30)
 	fx_layer.add_child(_at(Fx.FloatingText.new(text, color, size, big, 1.1 if big else 0.9), p))
+
+
+## Hur länge träffeffekterna ska vänta så att de sammanfaller med att vapnet når fram.
+func _impact_delay(e: Dictionary) -> float:
+	if e.ability == "bone_crush":
+		return 0.08
+	var melee: bool = e.ability == "melee" or sim.ability(e.ability).get("melee", false)
+	return models[e.source].last_impact_delay if melee else 0.0
+
+
+func _after(delay: float, call: Callable) -> void:
+	if delay <= 0.0:
+		call.call()
+	else:
+		_later.append({"left": delay, "call": call})
+
+
+func _pending_delay() -> float:
+	var longest := 0.0
+	for item in _later:
+		longest = maxf(longest, item.left)
+	return longest + (0.01 if longest > 0.0 else 0.0)
+
+
+func _tick_later(delta: float) -> void:
+	if paused or _later.is_empty():
+		return
+	for item in _later.duplicate():
+		item.left -= delta
+		if item.left <= 0.0:
+			_later.erase(item)
+			item.call.call()
 
 
 func _hitstop(ms: int) -> void:

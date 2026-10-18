@@ -45,7 +45,8 @@
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"windup": "Sword_Attack"
+				"windup": "Sword_Attack",
+				"walk": "Walk"
 			}
 		}
 	}

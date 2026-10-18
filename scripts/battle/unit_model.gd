@@ -5,8 +5,12 @@ extends Node3D
 
 const WORLD_SCALE := 1.0 / 55.0
 const BLEND := 0.12
-## Andel av upptaktsanimationen där bossen stannar med vapnet höjt tills slaget faller.
-const WINDUP_HOLD := 0.38
+## Andel av upptaktsanimationen där bossen stannar med vapnet höjt tills slaget faller
+## (före den snabbaste delen av svingen).
+const WINDUP_HOLD := 0.09
+## Vapnet träffar ungefär så här långt in i attackanimationerna (uppmätt på armarnas rotationsfart).
+const IMPACT_AT := 0.2
+const ATTACK_SPEED := 1.25
 
 static var _weapon_kit: Node3D
 
@@ -27,6 +31,14 @@ var _blocking := false
 var _casting := false
 var _winding := false
 var _dead := false
+## Sekunder från senaste attackens start tills vapnet träffar; battle.gd fördröjer träffeffekterna så.
+var last_impact_delay := 0.0
+var _moving := false
+var _move_run := false
+var _move_from := Vector3.ZERO
+var _move_to := Vector3.ZERO
+var _move_t := 0.0
+var _move_dur := 1.0
 var _offset := Vector3.ZERO
 var _offset_vel := Vector3.ZERO
 var _face_target := Vector3.ZERO
@@ -54,7 +66,8 @@ func setup(u: CombatUnit, s: CombatSim, vis: Dictionary) -> void:
 	_model.scale = Vector3.ONE * model_scale
 	_body.add_child(_model)
 	_player = _model.find_children("*", "AnimationPlayer", true, false)[0]
-	for loop_anim in [anims.get("idle", ""), anims.get("cast", ""), anims.get("block", "")]:
+	for loop_anim in [anims.get("idle", ""), anims.get("cast", ""), anims.get("block", ""),
+			anims.get("run", ""), anims.get("walk", "")]:
 		if _player.has_animation(loop_anim):
 			_player.get_animation(loop_anim).loop_mode = Animation.LOOP_LINEAR
 	_attach_weapons(vis.get("weapons", {}))
@@ -100,9 +113,12 @@ func attack(toward: Vector3, lunge := 0.25) -> void:
 	if _dead:
 		return
 	var list: Array = anims.get("attack", [])
+	last_impact_delay = 0.0
 	if not list.is_empty():
-		_play_oneshot(list[randi() % list.size()], 0.06, 1.25)
-	_push((toward - global_position).normalized() * lunge * model_scale)
+		var anim_name: String = list[randi() % list.size()]
+		_play_oneshot(anim_name, 0.06, ATTACK_SPEED)
+		last_impact_delay = _player.get_animation(anim_name).length * IMPACT_AT / (ATTACK_SPEED * unit.haste())
+	_push_delayed((toward - global_position).normalized() * lunge * model_scale, last_impact_delay * 0.6)
 
 
 ## Startar kaströrelsen. Närstridsslag (windup) lyfter vapnet och håller det tills slaget faller.
@@ -160,6 +176,24 @@ func flash_color(c: Color) -> void:
 	_flash_color = c
 
 
+## Går eller springer till en ny plats. Bara utseende – stridslogiken bryr sig inte om positioner.
+func move_to(target: Vector3, duration: float, run: bool) -> void:
+	if _dead:
+		return
+	_move_from = position
+	_move_to = target
+	_move_t = 0.0
+	_move_dur = maxf(duration, 0.05)
+	_move_run = run
+	_moving = true
+	if not _oneshot and not _casting:
+		_idle(0.15)
+
+
+func is_moving() -> bool:
+	return _moving
+
+
 func set_blocking(on: bool) -> void:
 	_blocking = on
 	if not _oneshot and not _casting and not _dead:
@@ -205,7 +239,19 @@ func _process(delta: float) -> void:
 	_offset += _offset_vel * delta
 	_body.position = _offset
 
-	if _face_target != Vector3.ZERO and not _dead:
+	if _moving:
+		_move_t += delta
+		var k := clampf(_move_t / _move_dur, 0.0, 1.0)
+		position = _move_from.lerp(_move_to, k * k * (3.0 - 2.0 * k))
+		var dir := _move_to - _move_from
+		if dir.length() > 0.01 and not _casting:
+			_body.rotation.y = lerp_angle(_body.rotation.y, atan2(dir.x, dir.z), minf(1.0, delta * 12.0))
+		if k >= 1.0:
+			_moving = false
+			if not _oneshot and not _casting and not _dead:
+				_idle(0.2)
+
+	if _face_target != Vector3.ZERO and not _dead and not (_moving and not _casting):
 		var dir := _face_target - global_position
 		var want := atan2(dir.x, dir.z)
 		_body.rotation.y = lerp_angle(_body.rotation.y, want, minf(1.0, delta * 8.0))
@@ -263,12 +309,23 @@ func _play_oneshot(anim_name: String, blend: float, speed := 1.0) -> void:
 
 func _idle(blend: float) -> void:
 	_oneshot = false
-	var anim_name: String = anims.get("block", "") if _blocking else anims.get("idle", "")
+	var anim_name: String = anims.get("idle", "")
+	if _moving:
+		anim_name = anims.get("run" if _move_run else "walk", anim_name)
+	elif _blocking:
+		anim_name = anims.get("block", anim_name)
 	_play(anim_name, blend)
 
 
 func _push(v: Vector3) -> void:
 	_offset_vel += v * 14.0
+
+
+func _push_delayed(v: Vector3, delay: float) -> void:
+	if delay <= 0.0:
+		_push(v)
+	else:
+		get_tree().create_timer(delay, false).timeout.connect(_push.bind(v))
 
 
 func _attach_weapons(weapons: Dictionary) -> void:

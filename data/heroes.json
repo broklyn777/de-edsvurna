@@ -36,7 +36,9 @@
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"block": "Shield_Block"
+				"block": "Shield_Block",
+				"run": "Run",
+				"walk": "Walk"
 			}
 		}
 	},
@@ -77,7 +79,9 @@
 				"cast": "OneHand_Idle",
 				"release": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
-				"death": "Death01"
+				"death": "Death01",
+				"run": "Run",
+				"walk": "Walk"
 			}
 		}
 	},
@@ -107,7 +111,9 @@
 				"cast": "Staff_Cast",
 				"release": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
-				"death": "Death01"
+				"death": "Death01",
+				"run": "Staff_Run",
+				"walk": "Staff_Walk"
 			}
 		}
 	},
@@ -144,7 +150,9 @@
 					"OneHand_Attack_B"
 				],
 				"hit": "Hit_Chest",
-				"death": "Death01"
+				"death": "Death01",
+				"run": "Run",
+				"walk": "Walk"
 			}
 		}
 	}
