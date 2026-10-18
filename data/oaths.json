@@ -1,0 +1,84 @@
+{
+	"oath_vengeance": {
+		"specialization": "Paladin",
+		"idea": "Slå tillbaka när sällskapet träffas.",
+		"perks": [
+			{
+				"id": "vengeance_zeal",
+				"cost": 50
+			},
+			{
+				"id": "vengeance_wrath",
+				"cost": 50
+			},
+			{
+				"id": "vengeance_execution",
+				"cost": 60
+			},
+			{
+				"id": "vengeance_divine_toll",
+				"cost": 70
+			},
+			{
+				"id": "vengeance_reckoning",
+				"cost": 80
+			},
+			{
+				"id": "vengeance_hand_of_light",
+				"cost": 100
+			}
+		]
+	},
+	"oath_dawn": {
+		"specialization": "Cleric",
+		"idea": "Helning blir Barriärer och buffar.",
+		"perks": [
+			{
+				"id": "dawn_anointment",
+				"cost": 40
+			},
+			{
+				"id": "dawn_guiding_light",
+				"cost": 50
+			},
+			{
+				"id": "dawn_holy_might",
+				"cost": 60
+			},
+			{
+				"id": "dawn_revelation",
+				"cost": 80
+			},
+			{
+				"id": "dawn_greater_healing",
+				"cost": 100
+			}
+		]
+	},
+	"oath_ward": {
+		"specialization": "Siegemaster",
+		"idea": "Försvara, provocera och slå tillbaka med Defense.",
+		"perks": [
+			{
+				"id": "ward_rest_up",
+				"cost": 50
+			},
+			{
+				"id": "ward_best_offense",
+				"cost": 60
+			},
+			{
+				"id": "ward_in_formation",
+				"cost": 60
+			},
+			{
+				"id": "ward_titanic_rage",
+				"cost": 70
+			},
+			{
+				"id": "ward_war_machine",
+				"cost": 100
+			}
+		]
+	}
+}

@@ -125,7 +125,7 @@ func _draw() -> void:
 		var ab: Dictionary = data.abilities[ability]
 		what = "%s – %s. %s: kastar %s. %s" % [k.name, k.stat_text, k.trigger_text, ab.name, ab.get("text", "")]
 	UiStyle.text(self, Vector2(_x0(), y), what, 16, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN - _x0(), 3)
-	UiStyle.text(self, Vector2(_x0(), y + 24), "Förmågan använder bärarens anfallskraft. Den gamla artefakten smälts ned när typen byts.",
+	UiStyle.text(self, Vector2(_x0(), y + 24), "Förmågan använder bärarens Attack och Intelligence. Den gamla artefakten smälts ned när typen byts.",
 			14, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN - _x0(), 3)
 
 	var cost := profile.forge_cost(hero, type, ability)

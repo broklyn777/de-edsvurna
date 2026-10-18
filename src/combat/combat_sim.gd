@@ -350,6 +350,8 @@ func _tick_turn_start(u: CombatUnit) -> void:
 	for key in u.cooldowns.keys():
 		u.cooldowns[key] = maxf(0.0, u.cooldowns[key] - 1.0)
 	for aura_id in u.auras.keys():
+		if not u.auras.has(aura_id):
+			continue  # försvann under turstarten (t.ex. en Barriär som tog slut)
 		var a: Dictionary = u.auras[aura_id]
 		var source := unit(a.source)
 		if a.hot > 0.0:

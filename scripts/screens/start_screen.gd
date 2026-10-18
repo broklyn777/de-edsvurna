@@ -1,13 +1,12 @@
 extends Control
-## Kryptporten (Siralims Teleportation Shrine), nås från basen: välj Paladinens Ed, tre
-## följeslagare och eventuellt en trofé från samlingen, och gå ned i kryptan.
+## Kryptporten (Siralims Teleportation Shrine), nås från basen: välj tre följeslagare och eventuellt
+## en trofé från samlingen, och gå ned i kryptan. Eden väljs vid Edsaltaret (kortet leder dit).
 ## Knappar och kort reagerar när fingret släpps (undviker dubbeltryck mellan skärmar).
 
 const MARGIN := 28.0
 const GAP := 14.0
 const COMPANIONS := ["brokk", "alva", "eira", "solveig"]
 
-var oath := ""
 var companions: Array[String] = ["brokk", "alva", "eira"]
 var brought := ""
 var wearer := "paladin"
@@ -20,10 +19,6 @@ var _press_at := Vector2(-1, -1)
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var data: Dictionary = run.data
-	oath = data.heroes.paladin.oath_options[0]
-	if run.profile.oath in data.heroes.paladin.oath_options:
-		oath = run.profile.oath
 	var previous: Array[String] = []
 	for id in run.profile.party:
 		if id != "paladin":
@@ -54,11 +49,9 @@ func _tap(p: Vector2) -> void:
 	if _back_rect().has_point(p):
 		run.go(run.BASE_SCENE)
 		return
-	var oaths: Array = data.heroes.paladin.oath_options
-	for i in oaths.size():
-		if _oath_rect(i).has_point(p):
-			oath = oaths[i]
-			return
+	if _oath_rect().has_point(p):
+		run.go(run.ALTAR_SCENE)
+		return
 	for i in COMPANIONS.size():
 		if _companion_rect(i).has_point(p):
 			var id: String = COMPANIONS[i]
@@ -87,7 +80,7 @@ func _tap(p: Vector2) -> void:
 		return
 	if _button_rect().has_point(p) and companions.size() == 3:
 		var party := _party()
-		run.start_run(oath, party)
+		run.start_run(party)
 		if brought != "":
 			run.state.take_trophy(brought)
 			run.state.equip(wearer, brought)
@@ -103,9 +96,8 @@ func _party() -> Array[String]:
 
 # --- Layout -----------------------------------------------------------------
 
-func _oath_rect(i: int) -> Rect2:
-	var w := (size.x - MARGIN * 2 - GAP) / 2.0
-	return Rect2(MARGIN + i * (w + GAP), 98, w, 104)
+func _oath_rect() -> Rect2:
+	return Rect2(MARGIN, 98, size.x - MARGIN * 2, 104)
 
 
 func _companion_rect(i: int) -> Rect2:
@@ -146,10 +138,10 @@ func _draw() -> void:
 	UiStyle.text(self, Vector2(0, 76), "Tre strider. Varje seger ger silver och en trofé från monstren du slog.", 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 
-	var oaths: Array = data.heroes.paladin.oath_options
-	for i in oaths.size():
-		var t: Dictionary = data.traits[oaths[i]]
-		UiStyle.card(self, _oath_rect(i), t.name, t.text, oath == oaths[i], UiStyle.GOLD, "PALADINENS ED")
+	var ed: Dictionary = data.traits[run.profile.oath]
+	var perks: Array = run.profile.owned_perks(run.profile.oath).map(func(id: String) -> String: return data.traits[id].name)
+	var ed_body := "%s\nPerks: %s" % [ed.text, ", ".join(perks) if not perks.is_empty() else "inga (köp vid Edsaltaret)"]
+	UiStyle.card(self, _oath_rect(), ed.name, ed_body, true, UiStyle.GOLD, "PALADINENS ED – TRYCK FÖR EDSALTARET")
 
 	UiStyle.text(self, Vector2(MARGIN, 230), "FÖLJESLAGARE – VÄLJ TRE", 14, Color(1, 1, 1, 0.6))
 	for i in COMPANIONS.size():

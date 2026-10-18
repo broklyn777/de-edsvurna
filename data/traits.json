@@ -17,7 +17,325 @@
 				"school": "holy",
 				"target": "source"
 			}
+		],
+		"original": "Paladin: Retribution"
+	},
+	"vengeance_zeal": {
+		"name": "Iver",
+		"oath": "oath_vengeance",
+		"perk": true,
+		"text": "Hämndens ed slår 50 % hårdare för en allierad som provocerar.",
+		"original": "Zeal",
+		"trigger": "modify_damage",
+		"when": {
+			"ability": "oath_vengeance",
+			"origin_target_has_aura": "provoke"
+		},
+		"modify": {
+			"damage_mult": 1.5
+		}
+	},
+	"vengeance_wrath": {
+		"name": "Vrede",
+		"oath": "oath_vengeance",
+		"perk": true,
+		"text": "Hämndens ed slår 50 % hårdare för en allierad som försvarar sig.",
+		"original": "Wrath",
+		"trigger": "modify_damage",
+		"when": {
+			"ability": "oath_vengeance",
+			"origin_target_has_aura": "defend"
+		},
+		"modify": {
+			"damage_mult": 1.5
+		}
+	},
+	"vengeance_reckoning": {
+		"name": "Räkenskap",
+		"oath": "oath_vengeance",
+		"perk": true,
+		"text": "När någon i sällskapet provocerar anfaller hen en slumpad fiende.",
+		"original": "Reckoning",
+		"trigger": "aura_applied",
+		"when": {
+			"unit": "ally",
+			"aura": "provoke"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0,
+				"kind": "attack",
+				"actor": "event_unit",
+				"target": "random_enemy"
+			}
 		]
+	},
+	"vengeance_hand_of_light": {
+		"name": "Ljusets hand",
+		"oath": "oath_vengeance",
+		"perk": true,
+		"text": "När Hämndens ed slår tillbaka helas hela sällskapet för 10 % av skadan.",
+		"original": "Hand of Light",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"ability": "oath_vengeance"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_of_event": 0.1,
+				"target": "allies"
+			}
+		]
+	},
+	"vengeance_divine_toll": {
+		"name": "Klockan klämtar",
+		"oath": "oath_vengeance",
+		"perk": true,
+		"text": "När Hämndens ed slår tillbaka har Paladinen 15 % chans att kasta Helig smäll gratis mot samma fiende.",
+		"original": "Divine Toll",
+		"trigger": "damage",
+		"chance": 0.15,
+		"when": {
+			"source": "self",
+			"ability": "oath_vengeance"
+		},
+		"effects": [
+			{
+				"type": "cast",
+				"ability": "holy_smite",
+				"target": "target"
+			}
+		]
+	},
+	"vengeance_execution": {
+		"name": "Domslut",
+		"oath": "oath_vengeance",
+		"perk": true,
+		"text": "När någon i sällskapet stupar tar alla fiender Helig skada (40 % av Paladinens Attack, indirekt).",
+		"original": "Execution Sentence",
+		"trigger": "death",
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.4,
+				"school": "holy",
+				"kind": "indirect",
+				"target": "enemies"
+			}
+		]
+	},
+	"oath_dawn": {
+		"name": "Gryningens ed",
+		"original": "Cleric: Luminesce",
+		"text": "När någon i sällskapet helas får hen en Barriär för 60 % av helningen.",
+		"trigger": "heal",
+		"scope": "party",
+		"when": {
+			"target": "self"
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"pct_of_event": 0.6,
+				"target": "self"
+			}
+		]
+	},
+	"dawn_guiding_light": {
+		"name": "Ledljus",
+		"oath": "oath_dawn",
+		"perk": true,
+		"text": "När striden börjar får hela sällskapet en Barriär för 15 % av sitt liv.",
+		"original": "Guiding Light",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "barrier",
+				"pct_max_hp": 0.15,
+				"target": "allies"
+			}
+		]
+	},
+	"dawn_anointment": {
+		"name": "Smörjelse",
+		"oath": "oath_dawn",
+		"perk": true,
+		"text": "Den som helas får Välsignelse: nästa anfall gör 25 % mer skada och blir Heligt.",
+		"original": "Anointment",
+		"trigger": "heal",
+		"scope": "party",
+		"when": {
+			"target": "self"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "blessing",
+				"target": "self"
+			}
+		]
+	},
+	"dawn_greater_healing": {
+		"name": "Större helning",
+		"oath": "oath_dawn",
+		"perk": true,
+		"text": "All helning i sällskapet är 50 % starkare.",
+		"original": "Greater Healing",
+		"trigger": "modify_heal",
+		"scope": "party",
+		"modify": {
+			"heal_mult": 1.5
+		}
+	},
+	"dawn_revelation": {
+		"name": "Uppenbarelse",
+		"oath": "oath_dawn",
+		"perk": true,
+		"text": "I början av Paladinens tur: 30 % chans att väcka en stupad allierad med 30 % liv.",
+		"original": "Revelation",
+		"trigger": "turn_start",
+		"chance": 0.3,
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "revive",
+				"pct": 0.3,
+				"target": "dead_ally"
+			}
+		]
+	},
+	"dawn_holy_might": {
+		"name": "Helig makt",
+		"oath": "oath_dawn",
+		"perk": true,
+		"text": "Sällskapet gör 15 % mer skada per buff de har (Barriär räknas).",
+		"original": "Holy Might",
+		"trigger": "modify_damage",
+		"scope": "party",
+		"modify": {
+			"damage_mult_per_aura": 0.15
+		}
+	},
+	"oath_ward": {
+		"name": "Väktarens ed",
+		"original": "Siegemaster: Thorns",
+		"text": "När någon i sällskapet träffas av en attack eller spell slår hen tillbaka för 50 % av sin Defense (indirekt skada).",
+		"trigger": "damage",
+		"scope": "party",
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"stat": "defense",
+				"pct": 0.5,
+				"kind": "indirect",
+				"target": "source"
+			}
+		]
+	},
+	"ward_war_machine": {
+		"name": "Krigsmaskin",
+		"oath": "oath_ward",
+		"perk": true,
+		"text": "När någon i sällskapet provocerar försvarar hen sig också.",
+		"original": "War Machine",
+		"trigger": "aura_applied",
+		"scope": "party",
+		"when": {
+			"unit": "self",
+			"aura": "provoke"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defend",
+				"target": "self"
+			}
+		]
+	},
+	"ward_in_formation": {
+		"name": "I formation",
+		"oath": "oath_ward",
+		"perk": true,
+		"text": "Hela sällskapet börjar striden försvarande.",
+		"original": "In Formation",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defend",
+				"target": "allies"
+			}
+		]
+	},
+	"ward_rest_up": {
+		"name": "Vila upp",
+		"oath": "oath_ward",
+		"perk": true,
+		"text": "När någon i sällskapet försvarar sig får hen tillbaka en Charge på en förmåga.",
+		"original": "Rest Up",
+		"trigger": "aura_applied",
+		"scope": "party",
+		"when": {
+			"unit": "self",
+			"aura": "defend"
+		},
+		"effects": [
+			{
+				"type": "restore_charge",
+				"amount": 1,
+				"target": "self"
+			}
+		]
+	},
+	"ward_titanic_rage": {
+		"name": "Titanisk vrede",
+		"oath": "oath_ward",
+		"perk": true,
+		"text": "Sällskapet gör 50 % mer skada mot fiender som försvarar sig eller provocerar.",
+		"original": "Titanic Rage",
+		"trigger": "modify_damage",
+		"scope": "party",
+		"when": {
+			"target_has_any_aura": [
+				"defend",
+				"provoke"
+			]
+		},
+		"modify": {
+			"damage_mult": 1.5
+		}
+	},
+	"ward_best_offense": {
+		"name": "Bästa försvaret",
+		"oath": "oath_ward",
+		"perk": true,
+		"text": "Direkta anfall gör extra skada lika med 30 % av anfallarens Defense.",
+		"original": "The Best Offense",
+		"trigger": "modify_damage",
+		"scope": "party",
+		"when": {
+			"kind": "attack",
+			"direct": true
+		},
+		"modify": {
+			"additional_from_stat": {
+				"stat": "defense",
+				"pct": 0.3
+			}
+		}
 	},
 	"brokk_bulwark": {
 		"name": "Stenhård",
@@ -104,46 +422,6 @@
 				"type": "aura",
 				"aura": "warded",
 				"target": "other_allies"
-			}
-		]
-	},
-	"oath_challenger": {
-		"name": "Utmanarens ed",
-		"text": "När Paladinen Provocerar försvarar hen sig också, och slår tillbaka med Helig kraft (50 %) när fiender träffar hen, högst två gånger per fiendetur.",
-		"trigger": "aura_applied",
-		"when": {
-			"unit": "self",
-			"aura": "provoke"
-		},
-		"effects": [
-			{
-				"type": "aura",
-				"aura": "defend",
-				"target": "self"
-			}
-		],
-		"parts": [
-			"oath_challenger_strike"
-		]
-	},
-	"oath_challenger_strike": {
-		"name": "Utmanarens ed",
-		"hidden": true,
-		"text": "",
-		"trigger": "damage",
-		"max_per_turn": 2,
-		"when": {
-			"target": "self",
-			"source": "enemy",
-			"direct": true,
-			"self_has_aura": "provoke"
-		},
-		"effects": [
-			{
-				"type": "damage",
-				"power": 0.5,
-				"school": "holy",
-				"target": "source"
 			}
 		]
 	},

@@ -55,7 +55,8 @@ func test_profile_saves_and_loads() -> void:
 	p.silver = 123
 	p.add_trophy("bone_rage")
 	p.artifacts = {"eira": {"type": "boots", "ability": "arrow_rain"}}
-	p.oath = "oath_challenger"
+	p.oath = "oath_ward"
+	p.perks = {"oath_ward": ["ward_rest_up"]}
 	p.party.assign(["paladin", "brokk", "alva", "solveig"])
 	p.equip_practice("alva", "bone_rage")
 	assert_eq(p.save(TMP_PROFILE), OK)
@@ -64,7 +65,8 @@ func test_profile_saves_and_loads() -> void:
 	assert_eq(q.silver, 123)
 	assert_eq(q.collection, p.collection)
 	assert_eq(q.artifacts, p.artifacts)
-	assert_eq(q.oath, "oath_challenger")
+	assert_eq(q.oath, "oath_ward")
+	assert_eq(q.owned_perks("oath_ward"), ["ward_rest_up"])
 	assert_eq(q.party, p.party)
 	assert_eq(q.practice_equipped, {"alva": "bone_rage"})
 	assert_eq(Profile.load_from("user://finns_inte.cfg").silver, Profile.START_SILVER, "ny profil har startsilver")
@@ -215,15 +217,21 @@ func test_oath_stops_while_paladin_dead_and_returns_on_revive() -> void:
 	assert_eq(vengeance.call(), 1, "Eden verkar igen när Paladinen väcks")
 
 
-func test_challenger_oath_stops_while_dead() -> void:
-	var sim := CombatSim.create(_data, "crypt_1", 7, [], {"paladin": ["oath_challenger"]})
+func test_party_oath_stops_while_paladin_dead() -> void:
+	var sim := CombatSim.create(_data, "crypt_1", 7, [], {"paladin": ["oath_ward", "ward_war_machine"]})
 	sim.begin()
 	var paladin := sim.unit("paladin")
+	var brokk := sim.unit("brokk")
+	sim._add_aura(brokk, brokk, "provoke")
+	assert_true(brokk.auras.has("defend"), "Krigsmaskin gäller hela sällskapet")
+	brokk.auras.clear()
 	sim._kill(paladin)
+	sim._add_aura(brokk, brokk, "provoke")
+	assert_true(not brokk.auras.has("defend"), "Eden verkar inte medan Paladinen är död")
 	sim._revive(paladin, 0.5)
-	sim._kill(paladin)
-	sim._add_aura(paladin, paladin, "provoke")
-	assert_true(not paladin.auras.has("defend"), "en död paladin får inga auror och Eden slår inte till")
+	brokk.auras.clear()
+	sim._add_aura(brokk, brokk, "provoke")
+	assert_true(brokk.auras.has("defend"), "och verkar igen när hen väcks")
 
 
 func test_dead_units_modifiers_stop() -> void:

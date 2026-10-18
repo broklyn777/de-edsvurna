@@ -1,12 +1,14 @@
 extends TapScreen
 ## Basen mellan körningarna (Siralims slott, förenklat). Härifrån går man till Kryptporten,
-## Övningsgården, Smeden, Makron och Biblioteket. Förlust och seger på sista våningen leder hit.
+## Övningsgården, Edsaltaret, Smeden, Makron och Biblioteket. Förlust och seger på sista våningen leder hit.
 
 const PLACES := [
 	{"id": "gate", "name": "Kryptporten", "tag": "TELEPORTATION SHRINE",
-		"text": "Välj Ed och följeslagare, ta med en trofé och gå ned i kryptan. Varje vunnen strid ger silver."},
+		"text": "Välj följeslagare, ta med en trofé och gå ned i kryptan. Varje vunnen strid ger silver."},
 	{"id": "practice", "name": "Övningsgården", "tag": "ARENA",
 		"text": "Prova sällskapet, makrona och troféerna mot valfria fiender. Inget förloras, Charges är fulla."},
+	{"id": "altar", "name": "Edsaltaret", "tag": "ENCHANTED WARDROBE",
+		"text": "Välj Paladinens Ed – den gäller hela sällskapet – och köp perks för silver. Återställ gratis."},
 	{"id": "smith", "name": "Smeden", "tag": "BLACKSMITH",
 		"text": "Smid en artefakt per hjälte: svärd, stav, sköld, hjälm eller stövlar, med en förmåga som slår till av sig själv."},
 	{"id": "macros", "name": "Makron", "tag": "MACROS",
@@ -25,6 +27,8 @@ func _tap(p: Vector2) -> void:
 				run.go(run.START_SCENE)
 			"practice":
 				run.go(run.PRACTICE_SCENE)
+			"altar":
+				run.go(run.ALTAR_SCENE)
 			"smith":
 				run.go(run.SMITH_SCENE)
 			"macros":
@@ -35,13 +39,12 @@ func _tap(p: Vector2) -> void:
 
 
 func _place_rect(i: int) -> Rect2:
-	var top := 130.0
-	var h := 230.0
+	var top := 120.0
+	var h := 220.0
+	var w := (size.x - MARGIN * 2 - GAP * 2) / 3.0
 	if i < 3:
-		var w := (size.x - MARGIN * 2 - GAP * 2) / 3.0
 		return Rect2(MARGIN + i * (w + GAP), top, w, h)
-	var w2 := (size.x - MARGIN * 2 - GAP) / 2.0
-	return Rect2(MARGIN + (i - 3) * (w2 + GAP), top + h + GAP, w2, h - 60)
+	return Rect2(MARGIN + (i - 3) * (w + GAP), top + h + GAP, w, h - 50)
 
 
 func _draw() -> void:
@@ -64,7 +67,10 @@ func _status(id: String) -> String:
 	var data: Dictionary = run.data
 	match id:
 		"gate":
-			return "Senast: " + data.traits[run.profile.oath].name
+			return "%d troféer att ta med" % run.collection.size()
+		"altar":
+			return "%s · %d perks" % [data.traits[run.profile.oath].name,
+					run.profile.owned_perks(run.profile.oath).size()]
 		"smith":
 			return "%d artefakter smidda · %d silver" % [run.profile.artifacts.size(), run.profile.silver]
 		"library":

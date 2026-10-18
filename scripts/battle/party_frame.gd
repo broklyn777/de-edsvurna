@@ -98,8 +98,14 @@ func _draw() -> void:
 			px += 14.0
 
 	if not unit.traits.is_empty():
-		var shown := unit.traits.filter(func(t: String) -> bool: return not sim.data.traits[t].get("hidden", false))
-		var trait_name := " · ".join(shown.map(func(t: String) -> String: return sim.data.traits[t].name))
+		var shown := unit.traits.filter(func(t: String) -> bool:
+			return not sim.data.traits[t].get("hidden", false) and not sim.data.traits[t].get("perk", false))
+		var names: Array = shown.map(func(t: String) -> String: return sim.data.traits[t].name)
+		# Edens perks (Edsaltaret) visas som ett antal efter Eden.
+		var perks := unit.traits.filter(func(t: String) -> bool: return sim.data.traits[t].get("perk", false)).size()
+		if perks > 0 and not names.is_empty():
+			names[0] += " +%d perks" % perks
+		var trait_name := " · ".join(names)
 		var col := Color(UiStyle.TRAIT_GOLD, 0.6).lerp(Color.WHITE, _trait_flash * 0.8)
 		if _trait_flash > 0.0:
 			draw_rect(Rect2(6, 58, size.x - 12, 14), Color(UiStyle.TRAIT_GOLD, 0.25 * _trait_flash))

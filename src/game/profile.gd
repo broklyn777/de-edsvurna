@@ -17,6 +17,8 @@ const FORGE_COST := 100
 const RESOCKET_COST := 40
 ## Silver per vunnen strid, per våning.
 const FLOOR_REWARD := [25, 35, 50]
+## Ederna vid Edsaltaret (data/oaths.json). Äldre sparfiler kan ha en Ed som inte finns längre.
+const OATHS := ["oath_vengeance", "oath_dawn", "oath_ward"]
 
 var silver := START_SILVER
 var collection: Array[String] = []
@@ -24,6 +26,9 @@ var collection: Array[String] = []
 var artifacts := {}
 ## Senaste uppställningen från Kryptporten (används också i Övningsgården).
 var oath := "oath_vengeance"
+## Edsaltaret (Siralims Enchanted Wardrobe): köpta perks per Ed, oath_id -> [perk_id]. Alla köpta
+## perks i den valda Eden verkar; kärnan verkar alltid. Att återställa är gratis (silvret kommer tillbaka).
+var perks := {}
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
 ## Troféer ur samlingen som hjältarna bär i Övningsgården: hero_id -> trophy_id.
 var practice_equipped := {}
@@ -65,6 +70,46 @@ func forge(hero_id: String, type: String, ability_id: String) -> bool:
 	return true
 
 
+## Väljer Ed vid Edsaltaret.
+func choose_oath(oath_id: String) -> void:
+	if OATHS.has(oath_id):
+		oath = oath_id
+
+
+func owned_perks(oath_id: String) -> Array:
+	return perks.get(oath_id, [])
+
+
+## Vad perken kostar (−1 om den inte hör till Eden).
+static func perk_cost(data: Dictionary, oath_id: String, perk_id: String) -> int:
+	for p in data.oaths.get(oath_id, {}).get("perks", []):
+		if p.id == perk_id:
+			return int(p.cost)
+	return -1
+
+
+## Köper perken. Falskt om den redan är köpt, inte hör till Eden eller silvret inte räcker.
+func buy_perk(data: Dictionary, oath_id: String, perk_id: String) -> bool:
+	var cost := perk_cost(data, oath_id, perk_id)
+	if cost < 0 or owned_perks(oath_id).has(perk_id) or silver < cost:
+		return false
+	silver -= cost
+	var list: Array = owned_perks(oath_id).duplicate()
+	list.append(perk_id)
+	perks[oath_id] = list
+	return true
+
+
+## Återställer Edens perks gratis, som i Siralim: allt silver kommer tillbaka. Returnerar beloppet.
+func reset_perks(data: Dictionary, oath_id: String) -> int:
+	var refund := 0
+	for perk_id in owned_perks(oath_id):
+		refund += maxi(perk_cost(data, oath_id, perk_id), 0)
+	silver += refund
+	perks.erase(oath_id)
+	return refund
+
+
 ## Sätter en trofé på hjälten i Övningsgården (tar bort den från den som bar den). Tom sträng tar av.
 func equip_practice(hero_id: String, trophy_id: String) -> void:
 	for other in practice_equipped.keys():
@@ -82,6 +127,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "silver", silver)
 	cfg.set_value("progress", "artifacts", artifacts)
 	cfg.set_value("progress", "oath", oath)
+	cfg.set_value("progress", "perks", perks)
 	cfg.set_value("progress", "party", party)
 	cfg.set_value("progress", "practice_equipped", practice_equipped)
 	return cfg.save(path)
@@ -97,7 +143,10 @@ static func load_from(path: String) -> Profile:
 		p.collection.append(t)
 	p.silver = int(cfg.get_value("progress", "silver", START_SILVER))
 	p.artifacts = cfg.get_value("progress", "artifacts", {})
-	p.oath = cfg.get_value("progress", "oath", p.oath)
+	var saved_oath: String = cfg.get_value("progress", "oath", p.oath)
+	if OATHS.has(saved_oath):
+		p.oath = saved_oath
+	p.perks = cfg.get_value("progress", "perks", {})
 	var saved: Array = cfg.get_value("progress", "party", [])
 	if saved.size() == p.party.size():
 		p.party.assign(saved)

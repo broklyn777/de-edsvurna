@@ -66,11 +66,7 @@
 				"run": "Run_Loop",
 				"walk": "Walk_Loop"
 			}
-		},
-		"oath_options": [
-			"oath_vengeance",
-			"oath_challenger"
-		]
+		}
 	},
 	"brokk": {
 		"name": "Brokk",

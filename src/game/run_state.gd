@@ -10,6 +10,8 @@ const PARTY_SIZE := 4
 const OFFER_SIZE := 3
 
 var oath := "oath_vengeance"
+## Köpta perks i Eden (Edsaltaret). De bärs av Paladinen och verkar som Eden.
+var perks: Array = []
 ## Paladinen först, sedan följeslagarna.
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
 var floor := 0
@@ -31,6 +33,7 @@ var practice_encounter := ""
 static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	var s := RunState.new()
 	s.oath = profile.oath
+	s.perks = profile.owned_perks(profile.oath).duplicate()
 	s.party = profile.party.duplicate()
 	s.artifacts = profile.artifacts.duplicate(true)
 	s.fill_charges(data)
@@ -74,11 +77,12 @@ func is_last_floor() -> bool:
 	return practice or floor >= FLOORS.size() - 1
 
 
-## Egenskaper per hjälte för striden: Paladinens Ed ersätter hens förvalda, och troféer läggs till.
+## Egenskaper per hjälte för striden: Paladinens Ed och perks ersätter hens förvalda, och troféer
+## läggs till.
 func hero_traits(data: Dictionary) -> Dictionary:
 	var out := {}
 	for hero_id in party:
-		var list: Array = [oath] if hero_id == "paladin" else data.heroes[hero_id].get("traits", []).duplicate()
+		var list: Array = ([oath] + perks) if hero_id == "paladin" else data.heroes[hero_id].get("traits", []).duplicate()
 		if equipped.has(hero_id):
 			list.append(equipped[hero_id])
 		out[hero_id] = list

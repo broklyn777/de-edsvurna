@@ -12,6 +12,7 @@ const START_SCENE := "res://scenes/start.tscn"
 const PRACTICE_SCENE := "res://scenes/practice.tscn"
 const SMITH_SCENE := "res://scenes/smith.tscn"
 const LIBRARY_SCENE := "res://scenes/library.tscn"
+const ALTAR_SCENE := "res://scenes/altar.tscn"
 const BATTLE_SCENE := "res://scenes/main.tscn"
 const CAMP_SCENE := "res://scenes/camp.tscn"
 const MACRO_SCENE := "res://scenes/macros.tscn"
@@ -63,9 +64,16 @@ func _dev_args() -> void:
 			state.artifacts[parts[0]] = {"type": parts[1], "ability": parts[2] if parts.size() > 2 else ""}
 		elif arg == "--macros":
 			get_tree().change_scene_to_file.call_deferred(MACRO_SCENE)
-		elif arg in ["--practice", "--smith", "--library", "--gate"]:
+		elif arg.begins_with("--oath="):
+			# --oath=<ed> väljer Ed för den här körningen; med --all-perks får den alla perks (bara för test)
+			state.oath = arg.get_slice("=", 1)
+			state.perks = []
+			if OS.get_cmdline_user_args().has("--all-perks"):
+				for p in data.oaths[state.oath].perks:
+					state.perks.append(p.id)
+		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar"]:
 			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE,
-					"--library": LIBRARY_SCENE, "--gate": START_SCENE}[arg]
+					"--library": LIBRARY_SCENE, "--gate": START_SCENE, "--altar": ALTAR_SCENE}[arg]
 			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)
@@ -73,8 +81,8 @@ func _dev_args() -> void:
 			get_tree().change_scene_to_file.call_deferred(CAMP_SCENE)
 
 
-func start_run(oath: String, party: Array[String]) -> void:
-	profile.oath = oath
+## Eden väljs vid Edsaltaret (profile.oath), sällskapet vid Kryptporten.
+func start_run(party: Array[String]) -> void:
 	profile.party = party
 	_save()
 	state = RunState.new_run(profile, data)
@@ -176,6 +184,7 @@ func _load() -> void:
 	profile = Profile.load_from(PROGRESS_PATH)
 	collection = profile.collection
 	state.oath = profile.oath
+	state.perks = profile.owned_perks(profile.oath).duplicate()
 	state.party = profile.party.duplicate()
 	state.artifacts = profile.artifacts.duplicate(true)
 
