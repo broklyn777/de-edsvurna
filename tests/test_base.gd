@@ -152,11 +152,10 @@ func test_artifact_stats() -> void:
 	var sim := _sim({"paladin": {"type": "sword", "ability": ""}, "brokk": {"type": "helm", "ability": ""},
 			"alva": {"type": "shield", "ability": ""}, "eira": {"type": "boots", "ability": ""}})
 	var a: Dictionary = _data.artifacts
-	assert_near(sim.unit("paladin").attack_max, plain.unit("paladin").attack_max * a.sword.stat_mult, 0.01, "svärd: anfall")
+	assert_near(sim.unit("paladin").attack, plain.unit("paladin").attack * a.sword.stat_mult, 0.01, "svärd: Attack")
 	assert_eq(sim.unit("brokk").max_hp, roundf(plain.unit("brokk").max_hp * a.helm.stat_mult), "hjälm: liv")
 	assert_eq(sim.unit("brokk").hp, sim.unit("brokk").max_hp)
-	assert_near(sim.unit("alva").damage_taken(), plain.unit("alva").damage_taken() * a.shield.stat_mult, 0.001,
-			"sköld: mindre skada")
+	assert_near(sim.unit("alva").defense, plain.unit("alva").defense + a.shield.stat_add, 0.001, "sköld: Defense")
 	assert_eq(sim.unit("eira").speed, plain.unit("eira").speed + a.boots.stat_add, "stövlar: snabbhet")
 	assert_true(sim.unit("eira").speed > plain.unit("eira").speed)
 	assert_true(not sim.unit("paladin").traits.has("artifact_paladin"), "utan förmåga ingen egenskap")
@@ -165,13 +164,13 @@ func test_artifact_stats() -> void:
 func test_staff_boosts_healing() -> void:
 	var plain := _sim()
 	var sim := _sim({"alva": {"type": "staff", "ability": ""}})
+	assert_near(sim.unit("alva").intelligence, plain.unit("alva").intelligence * _data.artifacts.staff.stat_mult, 0.01,
+			"staven: Intelligence")
+	var healed := []
 	for s in [plain, sim]:
-		s.unit("alva").crit_chance = 0.0
-		s.unit("brokk").hp = 10.0
 		s.rng.seed = 3
-		s._heal(s.unit("alva"), s.unit("brokk"), 100.0, "healing_light", false)
-	assert_eq(sim.unit("brokk").hp - 10.0, roundf(100.0 * _data.artifacts.staff.stat_mult), "staven: mer helning")
-	assert_eq(plain.unit("brokk").hp - 10.0, 100.0)
+		healed.append(s._heal_amount(s.unit("alva"), {"type": "heal", "power": 1.0}))
+	assert_near(healed[1], healed[0] * _data.artifacts.staff.stat_mult, 0.01, "helning följer Intelligence")
 
 
 func test_artifacts_do_not_touch_shared_data() -> void:

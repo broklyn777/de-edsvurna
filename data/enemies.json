@@ -2,12 +2,13 @@
 	"skeleton_warrior": {
 		"name": "Skelettkrigare",
 		"color": "#e8e0d0",
-		"max_hp": 640,
-		"speed": 9,
-		"attack": [
-			161,
-			195
-		],
+		"stats": {
+			"health": 640,
+			"attack": 218,
+			"intelligence": 218,
+			"defense": 20,
+			"speed": 9
+		},
 		"crit_chance": 0.05,
 		"attack_ability": "bone_slash",
 		"visual": {
@@ -28,12 +29,13 @@
 	"skeleton_archer": {
 		"name": "Skelettbågskytt",
 		"color": "#d8cfb4",
-		"max_hp": 440,
-		"speed": 13,
-		"attack": [
-			131,
-			158
-		],
+		"stats": {
+			"health": 440,
+			"attack": 185,
+			"intelligence": 185,
+			"defense": 10,
+			"speed": 13
+		},
 		"crit_chance": 0.08,
 		"attack_ability": "bone_arrow",
 		"visual": {
@@ -83,12 +85,13 @@
 	"grave_priest": {
 		"name": "Gravpräst",
 		"color": "#b8a6e0",
-		"max_hp": 460,
-		"speed": 8,
-		"attack": [
-			79,
-			94
-		],
+		"stats": {
+			"health": 460,
+			"attack": 127,
+			"intelligence": 127,
+			"defense": 10,
+			"speed": 8
+		},
 		"crit_chance": 0.05,
 		"attack_ability": "shadow_bolt",
 		"rules": [
@@ -145,12 +148,13 @@
 	"grave_warden": {
 		"name": "Gravväktare",
 		"color": "#9fb4d8",
-		"max_hp": 900,
-		"speed": 6,
-		"attack": [
-			118,
-			144
-		],
+		"stats": {
+			"health": 900,
+			"attack": 171,
+			"intelligence": 171,
+			"defense": 45,
+			"speed": 6
+		},
 		"crit_chance": 0.05,
 		"attack_ability": "shield_bash",
 		"trophy": "warden_helm",
@@ -215,12 +219,13 @@
 	"ember_skeleton": {
 		"name": "Glödskelett",
 		"color": "#ff8a2a",
-		"max_hp": 480,
-		"speed": 11,
-		"attack": [
-			103,
-			126
-		],
+		"stats": {
+			"health": 480,
+			"attack": 155,
+			"intelligence": 155,
+			"defense": 15,
+			"speed": 11
+		},
 		"crit_chance": 0.08,
 		"attack_ability": "ember_bolt",
 		"trophy": "ember_jaw",
@@ -272,12 +277,13 @@
 		"name": "Benfursten",
 		"boss": true,
 		"color": "#cbbfe6",
-		"max_hp": 2000,
-		"speed": 9,
-		"attack": [
-			112,
-			135
-		],
+		"stats": {
+			"health": 2000,
+			"attack": 164,
+			"intelligence": 164,
+			"defense": 20,
+			"speed": 9
+		},
 		"crit_chance": 0.05,
 		"attack_ability": "lich_touch",
 		"trophy": "lich_crown",

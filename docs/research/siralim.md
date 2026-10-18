@@ -129,6 +129,51 @@ lägret. Då får makrona riktiga val ("har Charges kvar"?), och spelaren måste
 striderna. Anfall och Defend kostar ingenting, så det finns alltid något att göra. Gem-properties som
 *Cascading* och *Generous* är regelbrytare av precis den sort ledstjärnan efterfrågar.
 
+### 3b. Charges så nära Siralim som möjligt (användarens beslut 2026-10-18)
+
+Användaren: Alva ska inte kunna hela obegränsat. Charges ska ligga "så nära Siralims regler som möjligt".
+
+**Belagt i originalet:**
+
+| Regel | Säkerhet |
+|---|---|
+| Ingen mana. Varje spell sitter i en Spell Gem med ett eget antal Charges, och 1 cast = 1 Charge. Slut på Charges betyder att varken manuell eller automatisk cast går. | Bekräftat |
+| Charges fylls inte mellan striderna. Codex (version 2.0.37): "vid start av varje Realm". Wikin: "när man återvänder till slottet". | Bekräftat. Källorna skiljer sig. Hos oss betyder båda: vid en ny körning. |
+| Starkare spells har färre Charges. Exempel: *Benediction* (helar alla, massive) 4, *Breath of Life* (helar en, massive, och väcker döda) 5, *Holy Armor* (Barrier, massive) 5, *Fireball* (moderate skada + Burning) 8. | Bekräftat (wikins spell-sidor) |
+| Max 3 Spell Gems per figur. Attack, Defend och Provoke kostar ingenting. | Bekräftat |
+| Ethereal gems (fått i striden) har 1 Charge. Avatarernas Ultimate Spell har 1 Charge som fylls efter varje strid. | Bekräftat |
+| Sätt att få tillbaka Charges: buffen *Arcane* (nästa cast gratis), Siegemaster-perken *Rest Up* (+1 Charge efter Defend), spellen *Recharge*, gem-egenskapen *More Charges*, och *Cascading* som gör en gem starkare ju fler Charges som saknas. | Bekräftat (Recharge: spelare) |
+| Helning begränsas också av debuffen Blighted, Realm-egenskapen "Less Healing" och Action Limits (helad högst 15 gånger per tur). | Bekräftat |
+
+**Hos oss i dag:** Charges fylls vid en ny körning från basen. Det stämmer med originalet. Men talen är
+3–5 gånger högre än Siralims: Helande ljus 24, Förnyelse 20, Helig smäll 16. Därför märks gränsen inte.
+
+**Förslag: Siralims tal efter styrka.** Massive 4–5, large 6, moderate eller med bieffekt 8. Vårt val är
+hur våra förmågor placeras på skalan.
+
+| Förmåga | I dag | Förslag | Motivering (närmaste Siralim-spell) |
+|---|---|---|---|
+| Helande ljus (Alva, helar en, 300 %) | 24 | **5** | Breath of Life 5 |
+| Förnyelse (Alva, helning över tid) | 20 | **6** | large |
+| Ljusets dom (Alva, 150 % skada) | 12 | **8** | Fireball 8 |
+| Helig smäll (Paladinen, 160 %) | 16 | **8** | moderate |
+| Helig sköld (−40 % skada) | 12 | **5** | Holy Armor 5 |
+| Stenmur (Brokk, hela sällskapet −25 %) | 12 | **5** | effekt på hela laget |
+| Stridsrop (hela sällskapet +30 %) | 10 | **5** | effekt på hela laget |
+| Jägarens märke (Eira) | 20 | **8** | moderate + debuff |
+| Pilregn (alla fiender, 60 %) | 10 | **6** | flera mål |
+| Eldvåg (alla fiender, 70 %) | 12 | **6** | flera mål |
+| Eldklot (Solveig, 200 %) | 12 | **5** | massive |
+
+Ingen påfyllning i lägret, precis som i originalet. Körningen motsvarar en Realm. Med tre strider
+räcker Alvas 5 + 6 helningar till ungefär 3–4 per strid, och fler strider per körning gör det
+snävare, som i Siralim.
+
+Mekanikerna för att få tillbaka Charges hör hemma i Eder, troféer och artefakter. Exempel: *Rest Up* i
+Väktarens ed (avsnitt 13), en Arcane-aura och gem-egenskaperna hos Runristaren. Kontrollera efteråt med
+`tests/balance_report.gd`. Om AUTO hamnar under ~95 % ska stridernas svårighet sänkas, inte Charges
+höjas.
+
 ## 4. Traits, fusion och troféer
 
 | Regel | Säkerhet |
@@ -804,6 +849,7 @@ Gryningens och Väktarens ed kräver `scope: party` och Barrier.
   [skärmdump av Macro Editor](https://steamcommunity.com/sharedfiles/filedetails/?id=3356475192)
 - Slott och Projects: [Projects (wiki)](https://siralimultimate.wiki.gg/wiki/Projects), Codex-avsnitten Castle och Realms
 - [Cleric](https://siralimultimate.wiki.gg/wiki/Cleric), [Siegemaster](https://siralimultimate.wiki.gg/wiki/Siegemaster), [Steam: Speed stat](https://steamcommunity.com/app/1289810/discussions/0/3096760955426011883/), [Steam: new player question (krit)](https://steamcommunity.com/app/1289810/discussions/0/3467226415503450035/), [S3: speed → crit/dodge](https://steamcommunity.com/app/841770/discussions/0/1642042464747022009/)
+- Charges: [Spell Gems](https://siralimultimate.wiki.gg/wiki/Spell_Gems), [Benediction](https://siralimultimate.wiki.gg/wiki/Benediction), [Breath of Life](https://siralimultimate.wiki.gg/wiki/Breath_of_Life), [Holy Armor](https://siralimultimate.wiki.gg/wiki/Holy_Armor), [Fireball](https://siralimultimate.wiki.gg/wiki/Fireball)
 - [Steam-diskussion om fusion](https://steamcommunity.com/app/1289810/discussions/0/5767400709485797483),
   [Steam-diskussion om instability](https://steamcommunity.com/app/1289810/discussions/0/5710018482973776302)
 - Mobilbetyg och styrning: [worldsapps](https://worldsapps.com/reviews-siralim-ultimate), [grand-screen](https://grand-screen.com/games/siralim-ultimate/reviews/)

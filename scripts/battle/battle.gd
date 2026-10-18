@@ -412,6 +412,10 @@ func _handle(e: Dictionary) -> void:
 			_on_action(e)
 		"damage":
 			_after(_effect_delay(e), _on_damage.bind(e))
+		"dodge":
+			_after(_effect_delay(e), _float.bind(e.target, "UNDVEK", Color("#d8e6ff"), 22, false))
+		"charge_restored":
+			_after(_effect_delay(e), _float.bind(e.unit, "+%d CHARGE" % e.amount, UiStyle.GOLD, 18, false))
 		"heal":
 			_after(_effect_delay(e), _on_heal.bind(e))
 		"aura_applied":
@@ -483,7 +487,11 @@ func _on_damage(e: Dictionary) -> void:
 	if on_hero and e.school == "physical":
 		color = Color("#ff5a4a")
 	var size := 17 if is_dot else (22 if from_trait else (34 if crit else 26))
-	_float(e.target, str(int(e.amount)) + ("!" if crit else ""), color, size, crit or heavy)
+	var absorbed: float = e.get("absorbed", 0.0)
+	if absorbed > 0.0:
+		_float(e.target, "(%d)" % int(absorbed), Color("#bfe3ff"), 18, false)
+	if e.amount > 0.0 or absorbed <= 0.0:
+		_float(e.target, str(int(e.amount)) + ("!" if crit else ""), color, size, crit or heavy)
 	if on_hero:
 		frames[e.target].on_damage(e.amount)
 	if is_dot:

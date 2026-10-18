@@ -64,7 +64,7 @@
 		"effects": [
 			{
 				"type": "heal",
-				"power": 3.0
+				"power": 2.3
 			}
 		],
 		"kind": "spell",
@@ -126,11 +126,12 @@
 		"effects": [
 			{
 				"type": "damage",
-				"power": 0.7
+				"power": 0.6
 			}
 		],
 		"kind": "spell",
-		"charges": 12
+		"charges": 12,
+		"tier": "moderate"
 	},
 	"defend": {
 		"name": "Försvara",
@@ -411,9 +412,10 @@
 		"effects": [
 			{
 				"type": "damage",
-				"power": 1.5
+				"power": 1.15
 			}
-		]
+		],
+		"tier": "large"
 	},
 	"arrow_rain": {
 		"name": "Pilregn",
@@ -444,9 +446,10 @@
 		"effects": [
 			{
 				"type": "damage",
-				"power": 2.0
+				"power": 1.4
 			}
-		]
+		],
+		"tier": "massive"
 	},
 	"skip": {
 		"name": "Hoppa över",

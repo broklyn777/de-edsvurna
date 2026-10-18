@@ -4,15 +4,19 @@
 		"title": "Hämndens ed",
 		"role": "leader",
 		"color": "#f2c85b",
-		"max_hp": 900,
-		"speed": 10,
-		"attack": [
-			70,
-			90
-		],
+		"stats": {
+			"health": 900,
+			"attack": 95,
+			"intelligence": 95,
+			"defense": 50,
+			"speed": 10
+		},
 		"crit_chance": 0.1,
 		"attack_ability": "strike",
-		"abilities": ["holy_smite", "holy_shield"],
+		"abilities": [
+			"holy_smite",
+			"holy_shield"
+		],
 		"traits": [
 			"oath_vengeance"
 		],
@@ -73,15 +77,19 @@
 		"title": "Dvärgkrigare",
 		"role": "tank",
 		"color": "#c69b6d",
-		"max_hp": 1150,
-		"speed": 7,
-		"attack": [
-			55,
-			70
-		],
+		"stats": {
+			"health": 1150,
+			"attack": 78,
+			"intelligence": 77,
+			"defense": 60,
+			"speed": 7
+		},
 		"crit_chance": 0.08,
 		"attack_ability": "axe_chop",
-		"abilities": ["stone_wall", "war_cry"],
+		"abilities": [
+			"stone_wall",
+			"war_cry"
+		],
 		"traits": [
 			"brokk_bulwark"
 		],
@@ -130,15 +138,20 @@
 		"title": "Präst",
 		"role": "healer",
 		"color": "#f4f4f4",
-		"max_hp": 700,
-		"speed": 11,
-		"attack": [
-			45,
-			55
-		],
+		"stats": {
+			"health": 700,
+			"attack": 65,
+			"intelligence": 65,
+			"defense": 25,
+			"speed": 11
+		},
 		"crit_chance": 0.08,
 		"attack_ability": "holy_bolt",
-		"abilities": ["healing_light", "renew", "judgement"],
+		"abilities": [
+			"healing_light",
+			"renew",
+			"judgement"
+		],
 		"traits": [
 			"alva_blessing"
 		],
@@ -179,15 +192,19 @@
 		"title": "Jägare",
 		"role": "dps",
 		"color": "#7fe05a",
-		"max_hp": 650,
-		"speed": 14,
-		"attack": [
-			65,
-			85
-		],
+		"stats": {
+			"health": 650,
+			"attack": 90,
+			"intelligence": 90,
+			"defense": 20,
+			"speed": 14
+		},
 		"crit_chance": 0.15,
 		"attack_ability": "arrow",
-		"abilities": ["hunters_mark", "arrow_rain"],
+		"abilities": [
+			"hunters_mark",
+			"arrow_rain"
+		],
 		"traits": [
 			"eira_followup"
 		],
@@ -217,15 +234,19 @@
 		"title": "Eldmagiker",
 		"role": "dps",
 		"color": "#ff8a2a",
-		"max_hp": 600,
-		"speed": 12,
-		"attack": [
-			60,
-			75
-		],
+		"stats": {
+			"health": 600,
+			"attack": 83,
+			"intelligence": 83,
+			"defense": 15,
+			"speed": 12
+		},
 		"crit_chance": 0.12,
 		"attack_ability": "fire_bolt",
-		"abilities": ["flame_wave", "fireball"],
+		"abilities": [
+			"flame_wave",
+			"fireball"
+		],
 		"traits": [
 			"solveig_kindle"
 		],

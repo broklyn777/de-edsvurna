@@ -10,11 +10,15 @@ extends RefCounted
 ## Töm händelserna med drain_events() och spela upp dem.
 ##
 ## Händelser (Dictionary med "type"):
+##   battle_start {} – innan första turen (Siralims "när striden börjar")
 ##   turn_start {unit}
 ##   action {unit, action, ability, targets}
-##   damage {source, target, amount, crit, school, kind, ability, direct}
+##   damage {source, target, amount, absorbed, crit, school, kind, ability, direct} – amount är förlorat liv,
+##          absorbed det Barrier tog. Bara skada på livet sätter igång egenskaper (Siralim).
+##   dodge {source, target, ability} – målet undvek en attack
 ##   heal {source, target, amount, effective, overheal, crit, ability}
 ##   revive {unit}
+##   charge_restored {unit, ability, amount}
 ##   limit {unit, kind} – en egenskap stoppades av gränsen per tur
 ##
 ## Skada har en typ ("kind": attack, spell, indirect) skild från skolan (physical, holy, fire,
@@ -31,7 +35,26 @@ extends RefCounted
 ## början av turen. Byggs som en egenskap ("artifact_<hjälte>") med effekten "cast", som kastar
 ## förmågan utan att kosta Charges. Händelsen har action "artifact".
 
-const CRIT_MULT := 1.5
+## Siralims skadeformler (wiki: Combat, bekräftade):
+##   Attack   = (max(Attack − Defense, 0) + 1 % · Attack) × modifierare + tillägg
+##   Spell    = max(Potency − Defense, 0) × modifierare + tillägg, Potency = Int × nivåns procent
+##   Indirect = skada × modifierare − 20 % · Defense (ingen krit, inget undvikande)
+## Ökningar adderas, minskningar multipliceras och varje minskning stannar vid 80 %.
+## "power" i förmågorna är modifieraren. Spells nivå ("tier") ger Potency och hur mycket Defense
+## som ignoreras: [Potency, ignorerad Defense].
+const SPELL_TIERS := {"small": [0.9, 0.0], "moderate": [1.1, 0.1], "large": [1.2, 0.2],
+		"massive": [1.3, 0.3], "devastating": [1.5, 0.4]}
+const ATTACK_FLOOR := 0.01
+const INDIRECT_DEFENSE := 0.2
+const REDUCTION_CAP := 0.2
+## VAL: Siralim har ingen publicerad spridning; vi slår ±10 % på Attack, Int och helningar.
+const VARIANCE := 0.1
+## VAL (formeln är inte publicerad, se docs/research/siralim.md §12): krit och undvikande räknas
+## på kvoten mellan egen och målets Speed.
+const CRIT_CHANCE_PER_DOUBLING := 0.1
+const CRIT_CHANCE_MAX := 0.5
+const DODGE_PER_DOUBLING := 0.1
+const DODGE_MAX := 0.3
 ## Säkerhetsgräns för hur djupt egenskaper kan sätta igång varandra.
 const MAX_TRAIT_CHAIN := 10
 ## Som i Siralim: per figur och pågående tur får egenskaper utlösa högst så många attacker,
@@ -62,6 +85,8 @@ var auto := false
 
 var _by_id := {}
 var _trait_ctx := ""
+## Händelsen som satte igång den egenskap som körs just nu (för "origin_target_has_aura").
+var _origin := {}
 var _trait_depth := 0
 ## Medan en förmåga förbrukar laddningar: {unit, ability, mult} för skadebonusen.
 var _release_bonus := {}
@@ -130,24 +155,16 @@ func equip_artifact(hero: CombatUnit, art: Dictionary) -> void:
 	if kind.is_empty():
 		return
 	hero.artifact = {"type": art.type, "ability": art.get("ability", "")}
-	match kind.stat:
-		"attack":
-			hero.attack_min *= kind.stat_mult
-			hero.attack_max *= kind.stat_mult
-		"defense":
-			hero.damage_taken_mult *= kind.stat_mult
-		"health":
-			hero.max_hp = roundf(hero.max_hp * kind.stat_mult)
-			hero.hp = hero.max_hp
-		"speed":
-			hero.speed += float(kind.stat_add)
-		"power":
-			var id := "artifact_%s_power" % hero.id
-			data.traits[id] = {"name": kind.name, "hidden": true, "trigger": "modify_damage",
-					"when": {"kind": "spell"}, "modify": {"damage_mult": kind.stat_mult}}
-			data.traits[id + "_heal"] = {"name": kind.name, "hidden": true, "trigger": "modify_heal",
-					"modify": {"heal_mult": kind.stat_mult}}
-			hero.traits.append_array([id, id + "_heal"])
+	# Siralims artefakter höjer en stat; vi höjer med en andel ("stat_mult") eller ett tal ("stat_add").
+	var stat: String = kind.stat
+	var value := hero.max_hp if stat == "health" else float(hero.get(stat))
+	value = value * float(kind.get("stat_mult", 1.0)) + float(kind.get("stat_add", 0.0))
+	if stat == "health":
+		hero.max_hp = roundf(value)
+		hero.hp = hero.max_hp
+	else:
+		hero.set(stat, value)
+	hero.base_stats[stat] = value
 	var ability_id: String = hero.artifact.ability
 	if ability_id == "" or not data.abilities.has(ability_id):
 		return
@@ -170,6 +187,8 @@ func begin() -> void:
 	order.clear()
 	for u in alive:
 		order.append(u.id)
+	# Siralim: traits och buffar ges innan striden börjar, sedan börjar turerna.
+	_emit({"type": "battle_start"})
 	for e in enemies:
 		_choose_intent(e)
 	_next_turn()
@@ -334,7 +353,7 @@ func _tick_turn_start(u: CombatUnit) -> void:
 		var a: Dictionary = u.auras[aura_id]
 		var source := unit(a.source)
 		if a.hot > 0.0:
-			_heal(source if source else u, u, a.hot, aura_id, false)
+			_heal(source if source else u, u, a.hot, aura_id)
 		if a.dot > 0.0:
 			_deal_damage(source if source else u, u, a.dot, a.school, aura_id, false, false, "indirect")
 		if not u.alive:
@@ -435,9 +454,9 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 
 ## En förmåga som kastas automatiskt (artefakt): kostar inga Charges och sätter ingen nedkylning,
 ## men räknas mot gränsen per tur. VAL: inget giltigt mål = inget kast.
-func _auto_cast(u: CombatUnit, ability_id: String) -> void:
+func _auto_cast(u: CombatUnit, ability_id: String, target_id := "") -> void:
 	var ab := ability(ability_id)
-	var targets := _pick_targets(u, ab)
+	var targets := _targets_for(u, ab, target_id)
 	if targets.is_empty() or not _within_limit(u, "spell"):
 		return
 	_emit({"type": "action", "unit": u.id, "action": "artifact", "ability": ability_id, "targets": targets})
@@ -467,10 +486,10 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 				continue
 			match effect.type:
 				"damage":
-					_deal_damage(caster, t, _roll_power(caster, effect), effect.get("school", ab.get("school", "physical")),
-							ability_id, can_crit, true, ab.get("kind", "attack"))
+					_deal_damage(caster, t, _amount(caster, effect), effect.get("school", ab.get("school", "physical")),
+							ability_id, can_crit, true, ab.get("kind", "attack"), _scaled(effect))
 				"heal":
-					_heal(caster, t, _roll_power(caster, effect), ability_id, can_crit)
+					_heal(caster, t, _heal_amount(caster, effect), ability_id)
 				"aura":
 					_add_aura(caster, t, effect.aura, float(effect.get("duration", 0.0)))
 				"revive":
@@ -480,37 +499,157 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 		_run_release(caster, r, targets)
 
 
-func _roll_power(u: CombatUnit, effect: Dictionary) -> float:
+## En effekts belopp: "power" (modifierare mot stats, räknas i formeln), "min"/"max" eller
+## "stat" + "pct" (en andel av en stat, t.ex. Defense) som fast belopp.
+func _amount(u: CombatUnit, effect: Dictionary) -> float:
 	if effect.has("min"):
 		return rng.randf_range(effect.min, effect.max)
-	return rng.randf_range(u.attack_min, u.attack_max) * float(effect.get("power", 1.0))
+	if effect.has("stat"):
+		return u.stat(effect.stat) * float(effect.get("pct", 1.0))
+	return float(effect.get("power", 1.0))
 
 
-func _deal_damage(src: CombatUnit, tgt: CombatUnit, base: float, school: String,
-		ability_id: String, can_crit: bool, direct := false, kind := "attack") -> void:
+func _scaled(effect: Dictionary) -> bool:
+	return not (effect.has("min") or effect.has("stat") or effect.has("pct_of_event"))
+
+
+## Helning: Int × power (Siralim: helning är en andel av Intelligence), eller ett fast belopp.
+func _heal_amount(u: CombatUnit, effect: Dictionary) -> float:
+	if not _scaled(effect):
+		return _amount(u, effect)
+	return u.intelligence * _roll() * float(effect.get("power", 1.0))
+
+
+func _roll() -> float:
+	return rng.randf_range(1.0 - VARIANCE, 1.0 + VARIANCE)
+
+
+# --- Formler (statiska så att de kan testas var för sig) -----------------------
+
+static func attack_damage(attack: float, defense: float, power := 1.0) -> float:
+	return (maxf(attack - defense, 0.0) + ATTACK_FLOOR * attack) * power
+
+
+static func spell_damage(potency: float, defense: float, power := 1.0, ignore_defense := 0.0) -> float:
+	return maxf(potency - defense * (1.0 - ignore_defense), 0.0) * power
+
+
+## Indirect: Defense dras av efter modifierarna, och bara 20 % av den.
+static func indirect_damage(amount: float, defense: float) -> float:
+	return maxf(amount - INDIRECT_DEFENSE * defense, 0.0)
+
+
+## Ökningar adderas (+75 % och +75 % = +150 %), minskningar multipliceras, och varje minskning
+## stannar vid 80 % (Siralim).
+static func combine_mods(factors: Array) -> float:
+	var increase := 0.0
+	var reduce := 1.0
+	for f in factors:
+		if f >= 1.0:
+			increase += f - 1.0
+		else:
+			reduce *= maxf(f, REDUCTION_CAP)
+	return (1.0 + increase) * reduce
+
+
+static func _log(x: float, base: float) -> float:
+	return log(x) / log(base)
+
+
+## VAL: krit-chans = egen chans vid lika fart + 10 procentenheter per fördubbling av fartkvoten
+## (egen Speed / målets), mellan 0 och 50 %.
+static func crit_chance_for(base: float, ratio: float) -> float:
+	return clampf(base + CRIT_CHANCE_PER_DOUBLING * _log(maxf(ratio, 0.01), 2.0), 0.0, CRIT_CHANCE_MAX)
+
+
+## VAL, passar Siralims två datapunkter (+200 % vid 3× fart, ~+450 % vid 27×): 75 % + 125 % · log₃(kvot),
+## minst +50 %.
+static func crit_bonus(ratio: float) -> float:
+	return maxf(0.5, 0.75 + 1.25 * _log(maxf(ratio, 0.01), 3.0))
+
+
+## VAL: bara ett snabbare mål kan undvika: 10 % per fördubbling av målets fart mot anfallarens, högst 30 %.
+static func dodge_chance(ratio: float) -> float:
+	if ratio <= 1.0:
+		return 0.0
+	return minf(DODGE_PER_DOUBLING * _log(ratio, 2.0), DODGE_MAX)
+
+
+## Grundskadan före modifierarna enligt typen. power är förmågans modifierare.
+func _formula(src: CombatUnit, tgt: CombatUnit, kind: String, power: float, ability_id: String) -> float:
+	match kind:
+		"spell":
+			var tier: Array = SPELL_TIERS.get(data.abilities.get(ability_id, {}).get("tier", ""), [1.0, 0.0])
+			return spell_damage(src.intelligence * tier[0] * _roll(), tgt.defense_now(), power, tier[1])
+		"indirect":
+			return src.attack * _roll() * power
+	return attack_damage(src.attack * _roll(), tgt.defense_now(), power)
+
+
+## scaled: amount är en modifierare som räknas genom formeln; annars ett fast belopp (följdanfall för
+## en andel av en träff, DoT, en andel av en stat) som bara Indirect-regeln drar Defense från.
+func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: String,
+		ability_id: String, can_crit: bool, direct := false, kind := "attack", scaled := false) -> void:
 	if not tgt.alive:
 		return
 	var probe := {"source": src.id, "target": tgt.id, "ability": ability_id, "school": school,
-			"direct": direct, "kind": kind, "from_trait": _trait_ctx != ""}
+			"direct": direct, "kind": kind, "from_trait": _trait_ctx != "",
+			"origin_target": _origin.get("target", "")}
 	_convert(src, probe)
-	var mult := 1.0
-	if direct:
-		mult *= _consume_empower(src, probe)
 	school = probe.school
 	kind = probe.kind
-	var crit: bool = can_crit and (rng.randf() < src.crit_chance or _modify(src, "modify_damage", probe, "force_crit", false))
-	if crit:
-		mult *= CRIT_MULT
-	mult *= _modify(src, "modify_damage", probe, "damage_mult", 1.0)
-	mult *= _modify(tgt, "modify_damage_taken", probe, "damage_taken_mult", 1.0)
+	var ratio := src.speed / maxf(tgt.speed, 1.0)
+	if kind == "attack" and src.team != tgt.team and rng.randf() < dodge_chance(1.0 / ratio):
+		_emit({"type": "dodge", "source": src.id, "target": tgt.id, "ability": ability_id})
+		return
+	var factors: Array = []
+	if direct:
+		factors.append(_consume_empower(src, probe))
+	# VAL (Troligt i Siralim): bara attacker kan bli kritiska.
+	var crit: bool = kind == "attack" and can_crit and (rng.randf() < crit_chance_for(src.crit_chance, ratio)
+			or _modify(src, "modify_damage", probe, "force_crit", false))
+	var raw := _formula(src, tgt, kind, amount, ability_id) if scaled else amount
+	var additional := 0.0
+	for m in _modifiers(src, "modify_damage", probe):
+		if m.has("damage_mult"):
+			factors.append(float(m.damage_mult))
+		if m.has("damage_mult_per_aura"):
+			factors.append(1.0 + float(m.damage_mult_per_aura) * _buff_count(src))
+		if m.has("additional_from_stat"):
+			additional += src.stat(m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
+	for m in _modifiers(tgt, "modify_damage_taken", probe):
+		if m.has("damage_taken_mult"):
+			factors.append(float(m.damage_taken_mult))
+	factors.append_array(tgt.damage_taken_factors())
+	if tgt.damage_taken_mult != 1.0:
+		factors.append(tgt.damage_taken_mult)
 	if _release_bonus.get("unit", "") == src.id and _release_bonus.ability == ability_id:
-		mult *= _release_bonus.mult
-	var amount := maxf(1.0, roundf(base * mult * tgt.damage_taken()))
-	tgt.hp = maxf(0.0, tgt.hp - amount)
-	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": amount, "crit": crit,
-			"school": school, "kind": kind, "ability": ability_id, "direct": direct})
+		factors.append(_release_bonus.mult)
+	var dmg := raw * combine_mods(factors) * ((1.0 + crit_bonus(ratio)) if crit else 1.0)
+	if kind == "indirect":
+		dmg = indirect_damage(dmg, tgt.defense_now())
+	var total := maxf(1.0, roundf(dmg)) + roundf(additional)
+	var absorbed := minf(tgt.barrier, total)
+	if absorbed > 0.0:
+		tgt.barrier -= absorbed
+		if tgt.barrier <= 0.0 and tgt.auras.has("barrier"):
+			tgt.auras.erase("barrier")
+			_emit({"type": "aura_removed", "unit": tgt.id, "aura": "barrier"})
+	var lost := total - absorbed
+	tgt.hp = maxf(0.0, tgt.hp - lost)
+	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": lost, "absorbed": absorbed,
+			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct})
 	if tgt.hp <= 0.0:
 		_kill(tgt)
+
+
+## Buffar figuren har (auror märkta "buff", och Barrier).
+func _buff_count(u: CombatUnit) -> int:
+	var n := 0
+	for aura_id in u.auras:
+		if data.auras[aura_id].get("buff", false):
+			n += 1
+	return n
 
 
 ## Auror som förstärker nästa direkta anfall (t.ex. Välsignelse) förbrukas här.
@@ -532,7 +671,7 @@ func _consume_empower(src: CombatUnit, probe: Dictionary) -> float:
 func _convert(src: CombatUnit, probe: Dictionary) -> void:
 	if not src.alive:
 		return
-	for trait_id in src.traits:
+	for trait_id in traits_of(src):
 		var t: Dictionary = data.traits[trait_id]
 		if t.trigger == "convert_damage" and _when(src, t.get("when", {}), probe):
 			for key in t.convert:
@@ -551,12 +690,16 @@ func _revive(u: CombatUnit, pct: float) -> void:
 	_emit({"type": "revive", "unit": u.id})
 
 
-func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String, can_crit: bool) -> void:
+## VAL (som Siralim, där bara attacker blir kritiska): helningar blir aldrig kritiska.
+func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) -> void:
 	if not tgt.alive:
 		return
-	var crit := can_crit and rng.randf() < src.crit_chance
-	var mult: float = _modify(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}, "heal_mult", 1.0)
-	var amount := roundf(base * (CRIT_MULT if crit else 1.0) * mult)
+	var crit := false
+	var factors: Array = []
+	for m in _modifiers(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}):
+		if m.has("heal_mult"):
+			factors.append(float(m.heal_mult))
+	var amount := roundf(base * combine_mods(factors))
 	var effective := minf(amount, tgt.max_hp - tgt.hp)
 	tgt.hp += effective
 	_emit({"type": "heal", "source": src.id, "target": tgt.id, "amount": amount,
@@ -573,6 +716,7 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 		duration = tgt.auras[aura_id].remaining
 	tgt.auras[aura_id] = {"remaining": duration, "duration": duration,
 			"haste": float(d.get("haste", 0.0)), "damage_taken_mult": float(d.get("damage_taken_mult", 1.0)),
+			"defense_mult": float(d.get("defense_mult", 1.0)),
 			"hot": float(d.get("hot", 0.0)), "dot": float(d.get("dot", 0.0)),
 			"school": d.get("school", "physical"), "source": src.id}
 	_emit({"type": "aura_applied", "unit": tgt.id, "aura": aura_id, "refreshed": refreshed})
@@ -589,6 +733,7 @@ func _kill(u: CombatUnit) -> void:
 	u.hp = 0.0
 	u.deaths += 1
 	u.auras.clear()
+	u.barrier = 0.0
 	order.erase(u.id)
 	_emit({"type": "death", "unit": u.id})
 
@@ -599,6 +744,11 @@ func _kill(u: CombatUnit) -> void:
 # orsakar bär fältet "trait" och kan sätta igång andra egenskaper, men aldrig samma igen.
 # "once_per_turn"/"max_per_turn" begränsar per tur (vems tur som helst); "internal_cooldown"
 # räknas i turer (allas).
+#
+# "scope": "party" (Siralims Specialization): egenskapen gäller som om varje levande allierad bar den,
+# så "self" i villkoren betyder var och en av dem. Den verkar bara medan bäraren lever.
+# En effekt kan ha "actor": event_unit/event_target/event_source – den i händelsen som utför
+# effekten (annars den som bär egenskapen).
 
 func _emit(e: Dictionary) -> void:
 	if _trait_ctx != "":
@@ -607,10 +757,12 @@ func _emit(e: Dictionary) -> void:
 	_count_stats(e)
 	if _trait_depth >= MAX_TRAIT_CHAIN or outcome != "" or _turn_procs >= TURN_PROC_LIMIT:
 		return
+	if e.type == "damage" and e.amount <= 0.0:
+		return  # Siralim: bara skada på livet räknas (inte träffar som Barrier tog)
 	for owner in units:
 		if not owner.alive:
 			continue
-		for trait_id in owner.traits:
+		for trait_id in traits_of(owner):
 			var t: Dictionary = data.traits[trait_id]
 			if t.trigger != e.type or e.get("trait", "") == trait_id or not _trait_ready(owner, trait_id, t):
 				continue
@@ -665,20 +817,51 @@ func _trait_ready(owner: CombatUnit, trait_id: String, t: Dictionary) -> bool:
 	return turn_no >= last.ready_at
 
 
+## Egenskaperna som verkar för figuren: dess egna och de som levande allierade bär för hela
+## sällskapet ("scope": "party").
+func traits_of(u: CombatUnit) -> Array:
+	var out: Array = u.traits
+	var shared := []
+	for x in units:
+		if x == u or not x.alive or x.team != u.team:
+			continue
+		for trait_id in x.traits:
+			if data.traits[trait_id].get("scope", "") == "party" and not out.has(trait_id) and not shared.has(trait_id):
+				shared.append(trait_id)
+	if shared.is_empty():
+		return out
+	return out + shared
+
+
 func _run_trait(owner: CombatUnit, trait_id: String, t: Dictionary, e: Dictionary) -> void:
 	var outer := _trait_ctx
+	var outer_origin := _origin
 	_trait_ctx = trait_id
+	_origin = e
 	_trait_depth += 1
 	_emit({"type": "trait", "unit": owner.id, "trait": trait_id})
 	for effect in t.get("effects", []):
-		for tgt in _trait_targets(owner, effect.get("target", "self"), e, []):
-			_run_trait_effect(owner, trait_id, effect, tgt, e)
+		var actor := _actor(owner, effect, e)
+		if actor == null:
+			continue
+		for tgt in _trait_targets(actor, effect.get("target", "self"), e, []):
+			_run_trait_effect(actor, trait_id, effect, tgt, e)
 	_trait_depth -= 1
 	_trait_ctx = outer
+	_origin = outer_origin
 
 
-## self, allies, other_allies (alla utom förmågans mål), enemy, weakest_ally eller ett fält i
-## händelsen (source, target, unit …).
+## Vem som utför effekten: bäraren, eller en figur ur händelsen ("actor"). null om den inte lever.
+func _actor(owner: CombatUnit, effect: Dictionary, e: Dictionary) -> CombatUnit:
+	var who: String = effect.get("actor", "")
+	if who == "":
+		return owner
+	var u := unit(e.get(who.trim_prefix("event_"), ""))
+	return u if u != null and u.alive else null
+
+
+## self, allies, other_allies (alla utom förmågans mål), enemy (första), enemies (alla),
+## random_enemy, weakest_ally, dead_ally (första döda) eller ett fält i händelsen (source, target, unit …).
 func _trait_targets(owner: CombatUnit, where: String, e: Dictionary, ability_targets: Array) -> Array[CombatUnit]:
 	var out: Array[CombatUnit] = []
 	match where:
@@ -686,6 +869,17 @@ func _trait_targets(owner: CombatUnit, where: String, e: Dictionary, ability_tar
 			out = [owner]
 		"allies":
 			out = _allies(owner)
+		"enemies":
+			out = _enemies(owner)
+		"random_enemy":
+			var foes := _enemies(owner)
+			if not foes.is_empty():
+				out = [foes[rng.randi() % foes.size()]]
+		"dead_ally":
+			for x in units:
+				if not x.alive and x.team == owner.team:
+					out = [x]
+					break
 		"other_allies":
 			for a in _allies(owner):
 				if not ability_targets.has(a.id):
@@ -711,41 +905,90 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 	var amount := 0.0
 	if effect.has("pct_of_event"):
 		amount = float(e.get(effect.get("event_field", "amount"), 0.0)) * float(effect.pct_of_event)
-	elif effect.type in ["damage", "heal"]:
-		amount = _roll_power(owner, effect)
+	elif effect.has("pct_max_hp"):
+		amount = tgt.max_hp * float(effect.pct_max_hp)
+	elif effect.type == "damage":
+		amount = _amount(owner, effect)
+	elif effect.type == "heal":
+		amount = _heal_amount(owner, effect)
 	match effect.type:
 		"damage":
 			var kind: String = effect.get("kind", "attack")
 			if kind != "indirect" and not _within_limit(owner, kind):
 				return
 			_deal_damage(owner, tgt, amount, effect.get("school", "physical"), trait_id,
-					not effect.get("no_crit", false), false, kind)
+					not effect.get("no_crit", false), false, kind, _scaled(effect))
 		"heal":
 			if not _within_limit(tgt, "heal"):
 				return
-			_heal(owner, tgt, amount, trait_id, false)
+			_heal(owner, tgt, amount, trait_id)
+		"barrier":
+			_add_barrier(owner, tgt, amount)
+		"revive":
+			if not tgt.alive:
+				_revive(tgt, float(effect.get("pct", 0.5)))
+		"restore_charge":
+			_restore_charge(tgt, int(effect.get("amount", 1)))
 		"aura":
 			_add_aura(owner, tgt, effect.aura, float(effect.get("duration", 0.0)))
 		"stack":
 			_add_stack(tgt, effect, e)
 		"cast":
-			_auto_cast(owner, effect.ability)
+			# Utan "target" väljer förmågan själv; annars mot figuren ur händelsen (t.ex. samma fiende).
+			_auto_cast(owner, effect.ability, tgt.id if effect.has("target") else "")
+
+
+## Barrier: den starkaste gäller, de staplas inte (Siralim). VAL: högst figurens max liv.
+func _add_barrier(src: CombatUnit, tgt: CombatUnit, amount: float) -> void:
+	amount = minf(roundf(amount), tgt.max_hp)
+	if not tgt.alive or amount <= tgt.barrier:
+		return
+	tgt.barrier = amount
+	_add_aura(src, tgt, "barrier")
+
+
+## Ger tillbaka Charges på den förmåga som har minst kvar (i andel av fullt).
+func _restore_charge(u: CombatUnit, amount: int) -> void:
+	var best := ""
+	var best_share := 1.0
+	for ability_id in u.charges:
+		var full := full_charges(ability_id)
+		if full <= 0 or u.charges[ability_id] >= full:
+			continue
+		var share := float(u.charges[ability_id]) / full
+		if best == "" or share < best_share:
+			best = ability_id
+			best_share = share
+	if best == "":
+		return
+	var gained: int = mini(amount, full_charges(best) - u.charges[best])
+	u.charges[best] += gained
+	_emit({"type": "charge_restored", "unit": u.id, "ability": best, "amount": gained})
 
 
 ## Samlar ihop en egenskapsmodifierare: multiplicerar tal, eller sant om någon egenskap säger sant.
 func _modify(owner: CombatUnit, trigger: String, probe: Dictionary, key: String, base: Variant) -> Variant:
 	var result: Variant = base
-	if not owner.alive:  # en död figurs egenskaper verkar inte (t.ex. brinnande sår från en död)
-		return result
-	for trait_id in owner.traits:
-		var t: Dictionary = data.traits[trait_id]
-		if t.trigger != trigger or not t.get("modify", {}).has(key) or not _when(owner, t.get("when", {}), probe):
+	for m in _modifiers(owner, trigger, probe):
+		if not m.has(key):
 			continue
 		if result is bool:
-			result = result or t.modify[key]
+			result = result or m[key]
 		else:
-			result *= float(t.modify[key])
+			result *= float(m[key])
 	return result
+
+
+## "modify"-delarna i egenskaperna som gäller för händelsen (egna och sällskapets).
+func _modifiers(owner: CombatUnit, trigger: String, probe: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if not owner.alive:  # en död figurs egenskaper verkar inte (t.ex. brinnande sår från en död)
+		return out
+	for trait_id in traits_of(owner):
+		var t: Dictionary = data.traits[trait_id]
+		if t.trigger == trigger and t.has("modify") and _when(owner, t.get("when", {}), probe):
+			out.append(t.modify)
+	return out
 
 
 ## Villkor för en egenskap. Händelsefält jämförs med "self", "ally", "enemy" eller ett värde.
@@ -765,6 +1008,14 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 					return false
 			"target_has_aura":
 				var t := unit(e.get("target", ""))
+				if t == null or not t.auras.has(want):
+					return false
+			"target_has_any_aura":
+				var t := unit(e.get("target", ""))
+				if t == null or not want.any(func(a: String) -> bool: return t.auras.has(a)):
+					return false
+			"origin_target_has_aura":
+				var t := unit(e.get("origin_target", ""))
 				if t == null or not t.auras.has(want):
 					return false
 			"target_not_self":
