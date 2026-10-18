@@ -1,10 +1,17 @@
 extends Node
-## Autoload "Run": håller den pågående körningen mellan scenerna och sparar vilka troféer
-## spelaren någonsin har hittat (samlingen).
+## Autoload "Run": håller den pågående körningen mellan scenerna och profilen som varar mellan
+## körningarna (silver, samlingen, artefakter – se Profile).
+##
+## Flöde: basen → Kryptporten → strid → läger → … → basen (förlust eller sista våningen).
+## Övningsgården: basen → övning → strid → övningen (med makrologgen kvar).
 
 const PROGRESS_PATH := "user://progress.cfg"
 const MACROS_PATH := "user://macros.json"
+const BASE_SCENE := "res://scenes/base.tscn"
 const START_SCENE := "res://scenes/start.tscn"
+const PRACTICE_SCENE := "res://scenes/practice.tscn"
+const SMITH_SCENE := "res://scenes/smith.tscn"
+const LIBRARY_SCENE := "res://scenes/library.tscn"
 const BATTLE_SCENE := "res://scenes/main.tscn"
 const CAMP_SCENE := "res://scenes/camp.tscn"
 const MACRO_SCENE := "res://scenes/macros.tscn"
@@ -15,14 +22,21 @@ var state := RunState.new()
 var last_receipt: Array[String] = []
 var offer: Array[String] = []
 var rng := RandomNumberGenerator.new()
+var profile := Profile.new()
+## Samma lista som profile.collection.
 var collection: Array[String] = []
+## Silver från senaste striden (visas i lägret och i basen).
+var last_silver := 0
+## Makrologgen från senaste övningsstriden: [{text, ok, skipped}].
+var practice_log: Array[Dictionary] = []
+var practice_encounter := "crypt_1"
 ## Spelarens makron: macro_id -> {name, lines}. Sparas mellan körningar.
 var macros := {}
 ## hero_id -> macro_id, och hero_id -> "macro" eller "manual" (standardhandling).
 var assignment := {}
 var default_action := {}
 ## Scenen makroredigeraren går tillbaka till.
-var macro_return := START_SCENE
+var macro_return := BASE_SCENE
 ## Trofén som är vald i lägret (finns kvar om man går till makroredigeraren och tillbaka).
 var camp_chosen := ""
 
@@ -43,8 +57,16 @@ func _dev_args() -> void:
 			state.floor = int(arg.get_slice("=", 1))
 			state.fill_charges(data)
 			get_tree().change_scene_to_file.call_deferred(BATTLE_SCENE)
+		elif arg.begins_with("--artifact="):
+			# --artifact=<hjälte>:<typ>:<förmåga>, t.ex. brokk:shield:healing_light (bara den här körningen)
+			var parts := arg.get_slice("=", 1).split(":")
+			state.artifacts[parts[0]] = {"type": parts[1], "ability": parts[2] if parts.size() > 2 else ""}
 		elif arg == "--macros":
 			get_tree().change_scene_to_file.call_deferred(MACRO_SCENE)
+		elif arg in ["--practice", "--smith", "--library", "--gate"]:
+			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE,
+					"--library": LIBRARY_SCENE, "--gate": START_SCENE}[arg]
+			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)
 			last_receipt = ["Hämndens ed (Paladinen): slog till 7 gånger – 312 skada"]
@@ -52,27 +74,43 @@ func _dev_args() -> void:
 
 
 func start_run(oath: String, party: Array[String]) -> void:
-	state = RunState.new()
-	state.oath = oath
-	state.party = party
-	state.fill_charges(data)
+	profile.oath = oath
+	profile.party = party
+	_save()
+	state = RunState.new_run(profile, data)
 	get_tree().change_scene_to_file(BATTLE_SCENE)
 
 
+func start_practice(encounter_id: String) -> void:
+	practice_encounter = encounter_id
+	state = RunState.new_practice(profile, data, encounter_id)
+	get_tree().change_scene_to_file(BATTLE_SCENE)
+
+
+func go(scene: String) -> void:
+	get_tree().change_scene_to_file(scene)
+
+
 ## Anropas av striden när spelaren trycker vidare efter resultatet.
-func battle_finished(victory: bool, receipt: Array[String]) -> void:
+func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionary] = []) -> void:
+	if state.practice:
+		practice_log = log
+		last_receipt = receipt
+		get_tree().change_scene_to_file(PRACTICE_SCENE)
+		return
 	if not victory:
-		get_tree().change_scene_to_file(START_SCENE)
+		last_silver = 0
+		get_tree().change_scene_to_file(BASE_SCENE)
 		return
 	last_receipt = receipt
+	last_silver = profile.win_battle(state.floor)
 	offer = state.trophy_offer(data, rng)
 	camp_chosen = ""
 	for t in offer:
-		if not collection.has(t):
-			collection.append(t)
+		profile.add_trophy(t)
 	_save()
 	if state.is_last_floor():
-		get_tree().change_scene_to_file(START_SCENE)
+		get_tree().change_scene_to_file(BASE_SCENE)
 	else:
 		get_tree().change_scene_to_file(CAMP_SCENE)
 
@@ -135,13 +173,16 @@ func _load_macros() -> void:
 
 
 func _load() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load(PROGRESS_PATH) == OK:
-		for t in cfg.get_value("progress", "collection", []):
-			collection.append(t)
+	profile = Profile.load_from(PROGRESS_PATH)
+	collection = profile.collection
+	state.oath = profile.oath
+	state.party = profile.party.duplicate()
+	state.artifacts = profile.artifacts.duplicate(true)
+
+
+func save() -> void:
+	_save()
 
 
 func _save() -> void:
-	var cfg := ConfigFile.new()
-	cfg.set_value("progress", "collection", collection)
-	cfg.save(PROGRESS_PATH)
+	profile.save(PROGRESS_PATH)

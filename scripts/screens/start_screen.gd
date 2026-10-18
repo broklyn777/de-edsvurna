@@ -1,5 +1,6 @@
 extends Control
-## Startskärmen: välj Paladinens Ed, tre följeslagare och eventuellt en trofé från samlingen.
+## Kryptporten (Siralims Teleportation Shrine), nås från basen: välj Paladinens Ed, tre
+## följeslagare och eventuellt en trofé från samlingen, och gå ned i kryptan.
 ## Knappar och kort reagerar när fingret släpps (undviker dubbeltryck mellan skärmar).
 
 const MARGIN := 28.0
@@ -21,10 +22,10 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var data: Dictionary = run.data
 	oath = data.heroes.paladin.oath_options[0]
-	if run.state.oath in data.heroes.paladin.oath_options:
-		oath = run.state.oath
+	if run.profile.oath in data.heroes.paladin.oath_options:
+		oath = run.profile.oath
 	var previous: Array[String] = []
-	for id in run.state.party:
+	for id in run.profile.party:
 		if id != "paladin":
 			previous.append(id)
 	if previous.size() == 3:
@@ -50,6 +51,9 @@ func _gui_input(event: InputEvent) -> void:
 
 func _tap(p: Vector2) -> void:
 	var data: Dictionary = run.data
+	if _back_rect().has_point(p):
+		run.go(run.BASE_SCENE)
+		return
 	var oaths: Array = data.heroes.paladin.oath_options
 	for i in oaths.size():
 		if _oath_rect(i).has_point(p):
@@ -122,6 +126,10 @@ func _button_rect() -> Rect2:
 	return Rect2((size.x - 340) / 2.0, size.y - 76, 340, 60)
 
 
+func _back_rect() -> Rect2:
+	return Rect2(MARGIN, 18, 150, 44)
+
+
 func _macro_rect() -> Rect2:
 	return Rect2(size.x - MARGIN - 200, size.y - 70, 200, 50)
 
@@ -131,8 +139,11 @@ func _macro_rect() -> Rect2:
 func _draw() -> void:
 	var data: Dictionary = run.data
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.04, 0.035, 0.06))
-	UiStyle.text(self, Vector2(0, 48), "BENKRYPTAN", 38, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
-	UiStyle.text(self, Vector2(0, 76), "Tre strider. Efter varje seger väljer du en trofé från monstren du slog.", 16,
+	_small_button(_back_rect(), "‹ BASEN")
+	UiStyle.text(self, Vector2(0, 46), "SILVER %d" % run.profile.silver, 22, Color("#d8dde6"),
+			HORIZONTAL_ALIGNMENT_RIGHT, size.x - MARGIN, 4)
+	UiStyle.text(self, Vector2(0, 48), "KRYPTPORTEN", 38, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
+	UiStyle.text(self, Vector2(0, 76), "Tre strider. Varje seger ger silver och en trofé från monstren du slog.", 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 
 	var oaths: Array = data.heroes.paladin.oath_options

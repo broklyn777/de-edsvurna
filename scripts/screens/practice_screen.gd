@@ -1,0 +1,174 @@
+extends TapScreen
+## Övningsgården (Siralims Arena): välj en fiendegrupp och strid med sällskapet, makrona,
+## artefakterna och troféer ur samlingen – utan risk. Efter striden kommer man tillbaka hit med
+## makrologgen kvar, och kan gå till makroredigeraren och tillbaka: skapa makro → kör → se bristen
+## i loggen → ändra → kör igen.
+
+const LOG_LINE := 19.0
+
+var selected := ""
+var _full_log: MacroLog
+
+
+func _ready() -> void:
+	super()
+	_full_log = MacroLog.new()
+	_full_log.setup()
+	_full_log.entries = run.practice_log
+	_full_log.visible = false
+	add_child(_full_log)
+
+
+func _process(delta: float) -> void:
+	super(delta)
+	if _full_log.visible and not _full_log.expanded:
+		_full_log.visible = false
+
+
+func _tap(p: Vector2) -> void:
+	var data: Dictionary = run.data
+	var profile: Profile = run.profile
+	if back_rect().has_point(p):
+		run.go(run.BASE_SCENE)
+		return
+	var encs: Array = RunState.FLOORS
+	for i in encs.size():
+		if _enc_rect(i).has_point(p):
+			run.practice_encounter = encs[i]
+			return
+	for i in run.collection.size():
+		if _chip_rect(i).has_point(p):
+			selected = "" if selected == run.collection[i] else run.collection[i]
+			return
+	for i in profile.party.size():
+		if _hero_rect(i).has_point(p):
+			var hero_id: String = profile.party[i]
+			profile.equip_practice(hero_id, selected)
+			selected = ""
+			run.save()
+			return
+	if _log_rect().has_point(p) and not run.practice_log.is_empty():
+		_full_log.visible = true
+		_full_log.expanded = true
+		return
+	if _macro_rect().has_point(p):
+		run.open_macros(run.PRACTICE_SCENE)
+		return
+	if _fight_rect().has_point(p) and data.encounters.has(run.practice_encounter):
+		run.start_practice(run.practice_encounter)
+
+
+# --- Layout -----------------------------------------------------------------
+
+func _enc_rect(i: int) -> Rect2:
+	return Rect2(MARGIN, 124 + i * 104, 360, 94)
+
+
+func _right_x() -> float:
+	return MARGIN + 360 + GAP * 2
+
+
+func _hero_rect(i: int) -> Rect2:
+	var x0 := _right_x()
+	var w := (size.x - MARGIN - x0 - GAP * 3) / 4.0
+	return Rect2(x0 + i * (w + GAP), 124, w, 104)
+
+
+func _chip_rect(i: int) -> Rect2:
+	var x0 := _right_x()
+	var w := 168.0
+	var per_row := maxi(1, int((size.x - MARGIN - x0 + GAP) / (w + GAP)))
+	return Rect2(x0 + (i % per_row) * (w + GAP), 252 + (i / per_row) * 44, w, 36)
+
+
+func _log_rect() -> Rect2:
+	var x0 := _right_x()
+	var top := _chip_rect(maxi(run.collection.size() - 1, 0)).end.y + 16
+	return Rect2(x0, top, size.x - MARGIN - x0, size.y - 96 - top)
+
+
+func _fight_rect() -> Rect2:
+	return Rect2(MARGIN, size.y - 76, 360, 60)
+
+
+func _macro_rect() -> Rect2:
+	return Rect2(_right_x(), size.y - 70, 260, 50)
+
+
+# --- Ritning ----------------------------------------------------------------
+
+func _draw() -> void:
+	var data: Dictionary = run.data
+	var profile: Profile = run.profile
+	header("ÖVNINGSGÅRDEN", "Strid utan risk: inget förloras, Charges är fulla. Se i loggen varför hjältarna gjorde som de gjorde.")
+	small_button(back_rect(), "‹ BASEN")
+
+	UiStyle.text(self, Vector2(MARGIN, 114), "FIENDER", 14, Color(1, 1, 1, 0.6))
+	var encs: Array = RunState.FLOORS
+	for i in encs.size():
+		var enc: Dictionary = data.encounters[encs[i]]
+		UiStyle.card(self, _enc_rect(i), enc.name, _enemy_list(enc), run.practice_encounter == encs[i],
+				Color("#ff8a6a"), "VÅNING %d" % (i + 1))
+
+	UiStyle.text(self, Vector2(_right_x(), 114), "SÄLLSKAPET – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE", 14, Color(1, 1, 1, 0.6))
+	for i in profile.party.size():
+		var hero_id: String = profile.party[i]
+		var h: Dictionary = data.heroes[hero_id]
+		var trophy: String = profile.practice_equipped.get(hero_id, "")
+		var own: String = profile.oath if hero_id == "paladin" else h.traits[0]
+		var art: Dictionary = profile.artifacts.get(hero_id, {})
+		var body := "%s\nTrofé: %s\n%s" % [data.traits[own].name,
+				data.traits[trophy].name if trophy != "" else "–", ArtifactText.name_of(data, art)]
+		UiStyle.card(self, _hero_rect(i), h.name, body, trophy != "", Color(h.color))
+
+	if run.collection.is_empty():
+		UiStyle.text(self, Vector2(_right_x(), 276), "Samlingen är tom – troféer hittas i kryptan.", 15, Color(1, 1, 1, 0.45))
+	for i in run.collection.size():
+		var t: String = run.collection[i]
+		var who: String = ""
+		for hero_id in profile.practice_equipped:
+			if profile.practice_equipped[hero_id] == t:
+				who = " · " + data.heroes[hero_id].name
+		chip(_chip_rect(i), data.traits[t].name + who, selected == t, 13)
+
+	_draw_log(data)
+	UiStyle.big_button(self, _fight_rect(), "STRID!", _t)
+	small_button(_macro_rect(), "MAKRON")
+	if not run.last_receipt.is_empty() and not run.practice_log.is_empty():
+		UiStyle.text(self, Vector2(_macro_rect().end.x + GAP, size.y - 40), run.last_receipt[0], 14,
+				Color(UiStyle.TRAIT_GOLD, 0.8), HORIZONTAL_ALIGNMENT_LEFT, size.x - _macro_rect().end.x - GAP - MARGIN, 3)
+
+
+## Senaste besluten med de överhoppade raderna, nyast längst ned.
+func _draw_log(_data: Dictionary) -> void:
+	var r := _log_rect()
+	draw_rect(r, Color(0, 0, 0, 0.55))
+	draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.3), false, 1.5)
+	var log: Array[Dictionary] = run.practice_log
+	if log.is_empty():
+		UiStyle.text(self, r.position + Vector2(12, 26), "MAKROLOGGEN visas här efter en övningsstrid.", 14, Color(1, 1, 1, 0.5))
+		return
+	UiStyle.text(self, r.position + Vector2(12, 18), "MAKROLOGG FRÅN SENASTE STRIDEN – TRYCK FÖR HELA", 11, Color(1, 1, 1, 0.5))
+	var rows: Array = []
+	for e in log:
+		rows.append({"text": e.text, "col": Color(1, 1, 1, 0.9) if e.ok else Color("#ff8a6a"), "indent": 0.0})
+		for sk in e.get("skipped", []):
+			rows.append({"text": sk, "col": Color(1, 1, 1, 0.5), "indent": 24.0})
+	var fit := int((r.size.y - 30) / LOG_LINE)
+	var start := maxi(0, rows.size() - fit)
+	for i in range(start, rows.size()):
+		var row: Dictionary = rows[i]
+		UiStyle.text(self, r.position + Vector2(12 + row.indent, 38 + (i - start) * LOG_LINE), row.text, 13, row.col,
+				HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 24 - row.indent, 3)
+
+
+func _enemy_list(enc: Dictionary) -> String:
+	var data: Dictionary = run.data
+	var names := {}
+	for kind in enc.enemies:
+		names[data.enemies[kind].name] = names.get(data.enemies[kind].name, 0) + 1
+	var parts: Array[String] = []
+	for n in names:
+		parts.append(n if names[n] == 1 else "%s ×%d" % [n, names[n]])
+	return ", ".join(parts)
+

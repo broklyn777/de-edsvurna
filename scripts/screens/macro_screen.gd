@@ -382,6 +382,8 @@ func _values_for(cond: String) -> Array:
 			return [1, 2, 3, 4, 5]
 		"has_charges":
 			return _macro_abilities()
+		"has_artifact", "lacks_artifact":
+			return data.artifacts.keys()
 	return [0]
 
 
