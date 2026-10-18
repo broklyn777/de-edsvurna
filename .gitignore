@@ -1,0 +1,17 @@
+# Godot
+.godot/
+/android/
+*.translation
+
+# Byggen
+/export/
+*.apk
+*.aab
+*.idsig
+
+# Hemligheter
+*.keystore
+export_credentials.cfg
+
+# macOS
+.DS_Store
