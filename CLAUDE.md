@@ -13,8 +13,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 
 ## Design
 
-- **Paladinen** står alltid med i striden och väljer en **Ed** (Siralims specialisering) – en regelbrytare
-  för hela sällskapet. Finns: Hämndens ed. Planerade: Gryningens ed, Väktarens ed.
+- **Paladinen** står alltid med i striden och väljer en **Ed** (Siralims Specialization) – en regelbrytare
+  för hela sällskapet. Finns (0.13): Hämndens ed (Paladin), Gryningens ed (Cleric), Väktarens ed
+  (Siegemaster). Kärnan verkar alltid; perks köps för silver vid Edsaltaret och återställs gratis.
 - **Följeslagare** (Brokk, Syster Alva, Jägaren Eira, Solveig …): namn, roll, egen egenskap och en
   signaturhandling. Börja med 5–8, inte 30.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
@@ -25,8 +26,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (25 %), sköld vid Försvara (50 %), hjälm vid Provocera (50 %), stövlar i början av turen (15 %).
   Automatiska kast kostar inga Charges men räknas mot gränsen per tur.
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kryptporten, Övningsgården (Arena),
-  Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
+  Edsaltaret (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens Ed, och verkar igen när den väcks.
+- **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
+  (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
+  Försvara: −35 % skada och +50 % Defense; Provocera: −35 % Defense. Krit och undvikande från Speed-kvoten
+  (vårt val, formeln är inte publicerad). Barriär tar skada före livet. Se `docs/research/siralim.md` §12.
 - **Strid:** Siralims tidslinje – snabbheten avgör startplatsen, den som agerat läggs längst ned, inga
   rundor. Hjältar väljer Anfall, Förmåga (2–3 per hjälte, med Charges som räcker hela körningen),
   Försvara, Provocera eller Makro. Fiender visar sin avsikt och väljer nästa i slutet av sin tur.
@@ -35,8 +40,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   standardhandling Makro/Manuell. Auto kör makrona och stannar när inget passar. Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
-- Nästa steg: Siralims stats (Attack/Defense/Intelligence, Speed för krit och undvikande), artefaktnivåer
-  och fler platser, fler Eder, Inspect. Idéer för basen: `docs/research/siralim.md` §10c–10d.
+- Nästa steg: artefaktnivåer och fler platser, fler Eder (Warden, Inquisitor …), perk-ranks, Inspect
+  (visa stats), buffar som höjer stats. Idéer för basen: `docs/research/siralim.md` §10c–10d.
 - Realtidsprototypen i WoW-stil ligger kvar på grenen `wow-realtid` (tagg `v0.8.1-wow`).
 
 ## Språk
@@ -54,29 +59,39 @@ uppdaterad när nya begrepp tillkommer.
 
 ## Struktur
 
-- `src/game/run_state.gd` – en körning: Ed, sällskap, våning (`FLOORS`), troféer och vem som bär dem,
+- `src/game/run_state.gd` – en körning: Ed och perks, sällskap, våning (`FLOORS`), troféer och vem som bär dem,
   artefakter; `new_run()` och `new_practice()` (Övningsgården: valfritt möte, fulla Charges).
   `src/game/profile.gd` – det som varar mellan körningar: silver, samlingen, artefakter (`forge()`),
-  senaste Ed och sällskap, övningstroféer. Sparas i `user://progress.cfg`.
+  vald Ed och köpta perks per Ed (`buy_perk()`, `reset_perks()`), senaste sällskap, övningstroféer. Sparas i `user://progress.cfg`.
   `scripts/game/run.gd` är autoloaden `Run` som byter scen (bas → Kryptporten → strid → läger → … → bas;
   bas → Övningsgården → strid → Övningsgården) och sparar makrona i `user://macros.json`
   (startmakron i `data/macros.json`).
   Skärmar i `scripts/screens/`: `base_screen` (första skärmen), `start_screen` (Kryptporten),
-  `practice_screen`, `smith_screen`, `library_screen`, `camp_screen`, `macro_screen`. De flesta ärver
+  `altar_screen` (Edsaltaret), `practice_screen`, `smith_screen`, `library_screen`, `camp_screen`, `macro_screen`. De flesta ärver
   `tap_screen.gd` och reagerar vid släpp.
-- `src/combat/` – `CombatSim` (tidslinje, ren logik, händelselista), `CombatUnit`, `GameData`,
+- `src/combat/` – `CombatSim` (tidslinje, ren logik, händelselista, skadeformlerna som statiska
+  funktioner: `attack_damage`, `spell_damage`, `indirect_damage`, `combine_mods`, `crit_chance_for`,
+  `crit_bonus`, `dodge_chance`), `CombatUnit` (stats, `defense_now()`, `stat()`, `barrier`), `GameData`,
   `MacroRunner` (makron: `decide()` ger handling + förklaring, `describe_line()` texten i editorn).
   `create(…, artifacts)` ger hjältarna artefakter (`equip_artifact`): stat + en genererad egenskap
   `artifact_<hjälte>` som lyssnar på `acted` (efter handlingen) eller `turn_start` och kör effekten
   `cast` (kastar förmågan gratis, action `"artifact"`). Datan kopieras per strid – använd `sim.data`.
   Flöde: `begin()`, sedan `act(action, target, ability)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
 - `data/artifacts.json` – artefakttyperna (stat, utlösande handling, chans).
-- `data/*.json` – förmågor (`power` = andel av enhetens attack, `cooldown` i egna turer), auror
-  (`duration` i ägarens turer, `next_attack_mult`, `taunt`, `dot`/`hot`), hjältar (signatur, egenskaper,
-  auto-regler), fiender (attack, regler för avsikter), möten (sällskap + fiender), egenskaper (`traits.json`).
+- `data/oaths.json` – Ederna: Siralims Specialization och perks med pris. Kärnan och perkarna är
+  egenskaper i `traits.json` (perks har `"oath"` och `"perk": true`).
+- `data/*.json` – förmågor (`power` = modifieraren i skadeformeln, `tier` för spells, helning = Int ×
+  `power`, `cooldown` i egna turer), auror (`duration` i ägarens turer, `next_attack_mult`, `taunt`,
+  `defense_mult`, `damage_taken_mult`, `buff`, `dot`/`hot`), hjältar och fiender (`stats`: health, attack,
+  intelligence, defense, speed; signatur, egenskaper, regler för avsikter), möten (sällskap + fiender), egenskaper (`traits.json`).
 - Egenskaper: lyssnar på en händelsetyp (`trigger`) och kör effekter när `when` stämmer, eller ändrar
   siffror (`modify_damage`, `modify_damage_taken`, `modify_heal`). Kan sätta igång varandra i kedjor
   (max 4 steg), aldrig sig själva. `once_per_turn`, `internal_cooldown` (rundor), `chance`.
+  `"scope": "party"` = gäller som om varje levande allierad bar den (Specialization; "self" i `when` är då
+  var och en). Effekter: damage (`power`, `pct_of_event` eller `stat` + `pct`), heal, aura, barrier,
+  revive, restore_charge, cast; `actor` (event_unit/event_target/event_source) väljer vem som utför.
+  Mål: self, allies, enemy, enemies, random_enemy, weakest_ally, dead_ally eller ett händelsefält.
+  Triggern `battle_start` kommer före första turen. Träffar som en Barriär tar sätter inte igång något.
   Laddningar: en `charge`-effekt laddar upp, `release` förbrukar när en viss förmåga används.
   Effekter med `pct_of_event` skalar mot händelsens belopp (t.ex. följdanfall för 50 %).
 - `scripts/battle/` – grafik och känsla. `battle.gd` kör en tur i taget och översätter händelserna till
@@ -98,12 +113,15 @@ uppdaterad när nya begrepp tillkommer.
 - `assets/audio/` – `sfx.play("namn")` spelar `namn.wav` eller en slumpad variant ur mappen `namn/`
   (Kenney-ljud ligger i `k_*`-mappar). Kryptstämningen loopar (`ambience_crypt.wav`).
 - `tools/gen_sfx.py` – syntetiserar egna ljud och kryptstämningen till `assets/audio/`.
-- `tests/combat_bot.gd` – simulerade spelare (BASIC/AUTO/GOOD) för balanstester.
+- `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
+  `tests/perk_report.gd` mäter varje perk för sig.
 
 Balansmål (utan troféer): startmakrona vinner varje strid för sig nästan alltid, men klarar hela kryptan
 (Charges räcker alla tre våningarna) bara ~60 %; bättre makron ~66 %+. BASIC (bara Anfall) förlorar.
 En artefakt lyfter startmakrona till 75–85 %, fyra till ~96 % – därför kostar smide 100 silver
-(startsilvret räcker till en; en klarad körning ger 110).
+(startsilvret räcker till en; en klarad körning ger 110). Ederna: kärnan ensam ~55–70 %, en perk ger
++5–30 procentenheter. Perks som sparar Alvas Charges (Ljusets hand, Större helning) eller gör Brokk
+tålig (Krigsmaskin) ger nära 100 % och kostar därför som en artefakt (100 silver).
 Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
 
 ## Kommandon
@@ -115,8 +133,11 @@ godot --headless --path . --script res://tests/run_tests.gd
 # Starta spelet
 godot --path .
 
-# Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var)
+# Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var), och per Ed
 godot --headless --path . --script res://tests/balance_report.gd
+
+# Varje perk för sig (hela kryptan med startmakrona)
+godot --headless --path . --script res://tests/perk_report.gd
 
 # Skärmdump av spelet (sparas efter 30 bildrutor, sedan avslut)
 godot --path . -- --screenshot=/tmp/shot.png --frames=30
@@ -127,8 +148,11 @@ godot --path . -- --floor=2 --demo --turns=10 --seed=5
 # Visa lägret mellan striderna direkt
 godot --path . -- --camp
 
-# Öppna en plats i basen direkt (--gate = Kryptporten, --practice, --smith, --library)
+# Öppna en plats i basen direkt (--gate = Kryptporten, --practice, --altar, --smith, --library)
 godot --path . -- --smith
+
+# Strid med en annan Ed (bara den körningen), med alla dess perks
+godot --path . -- --oath=oath_ward --all-perks --floor=1 --demo
 
 # Strid med artefakter (bara den körningen): --artifact=<hjälte>:<typ>:<förmåga>
 godot --path . -- --floor=0 --demo --artifact=brokk:shield:healing_light
