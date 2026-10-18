@@ -1,0 +1,204 @@
+{
+	"shield_slam": {
+		"name": "Shield Slam",
+		"owner": "warrior",
+		"cooldown": 6,
+		"target": "enemy",
+		"melee": true,
+		"threat_bonus": 180,
+		"sound": "shield_slam",
+		"effects": [
+			{
+				"type": "damage",
+				"min": 100,
+				"max": 125,
+				"school": "physical"
+			}
+		]
+	},
+	"shield_wall": {
+		"name": "Shield Wall",
+		"owner": "warrior",
+		"cooldown": 25,
+		"gcd": false,
+		"target": "self",
+		"sound": "shield_wall",
+		"icon": "shield",
+		"button_color": "#8d9bb0",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "shield_wall"
+			}
+		]
+	},
+	"bloodlust": {
+		"name": "Bloodlust",
+		"owner": "warrior",
+		"cooldown": 600,
+		"gcd": false,
+		"target": "ally_all",
+		"sound": "bloodlust",
+		"icon": "drop",
+		"button_color": "#d8402c",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "bloodlust"
+			}
+		]
+	},
+	"renew": {
+		"name": "Renew",
+		"owner": "priest",
+		"cost": 110,
+		"target": "tank",
+		"school": "holy",
+		"sound": "renew",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "renew"
+			}
+		]
+	},
+	"heal": {
+		"name": "Heal",
+		"owner": "priest",
+		"cast": 2.5,
+		"cost": 250,
+		"target": "lowest_ally",
+		"school": "holy",
+		"sound": "heal",
+		"effects": [
+			{
+				"type": "heal",
+				"min": 520,
+				"max": 600
+			}
+		]
+	},
+	"flash_heal": {
+		"name": "Flash Heal",
+		"owner": "priest",
+		"cast": 1.5,
+		"cost": 300,
+		"target": "lowest_ally",
+		"school": "holy",
+		"sound": "heal",
+		"icon": "cross",
+		"button_color": "#f0dc8a",
+		"effects": [
+			{
+				"type": "heal",
+				"min": 420,
+				"max": 480
+			}
+		]
+	},
+	"frostbolt": {
+		"name": "Frostbolt",
+		"owner": "mage",
+		"cast": 2.0,
+		"target": "enemy",
+		"school": "frost",
+		"travel": 0.35,
+		"sound": "frost_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"min": 200,
+				"max": 235,
+				"school": "frost"
+			}
+		]
+	},
+	"pyroblast": {
+		"name": "Pyroblast",
+		"owner": "mage",
+		"cast": 3.5,
+		"cooldown": 15,
+		"target": "enemy",
+		"school": "fire",
+		"travel": 0.55,
+		"sound": "pyro_impact",
+		"icon": "flame",
+		"button_color": "#ff7a1a",
+		"effects": [
+			{
+				"type": "damage",
+				"min": 850,
+				"max": 1000,
+				"school": "fire"
+			}
+		]
+	},
+	"sinister_strike": {
+		"name": "Sinister Strike",
+		"owner": "rogue",
+		"cooldown": 3,
+		"target": "enemy",
+		"melee": true,
+		"sound": "melee_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"min": 75,
+				"max": 95,
+				"school": "physical"
+			}
+		]
+	},
+	"kick": {
+		"name": "Kick",
+		"owner": "rogue",
+		"cooldown": 12,
+		"gcd": false,
+		"target": "enemy",
+		"requires_interruptible_cast": true,
+		"sound": "kick",
+		"icon": "bolt",
+		"button_color": "#e9cf3f",
+		"effects": [
+			{
+				"type": "interrupt"
+			}
+		]
+	},
+	"shadow_bolt_volley": {
+		"name": "Shadow Bolt Volley",
+		"owner": "bone_lich",
+		"cast": 2.5,
+		"interruptible": true,
+		"target": "enemy_all",
+		"school": "shadow",
+		"travel": 0.3,
+		"sound": "volley_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"min": 380,
+				"max": 420,
+				"school": "shadow"
+			}
+		]
+	},
+	"bone_crush": {
+		"name": "Bone Crush",
+		"owner": "bone_lich",
+		"cast": 3.0,
+		"target": "threat_target",
+		"melee": true,
+		"no_crit": true,
+		"telegraph": true,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"min": 2300,
+				"max": 2400,
+				"school": "physical"
+			}
+		]
+	}
+}

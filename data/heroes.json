@@ -1,0 +1,89 @@
+{
+	"warrior": {
+		"name": "Warrior",
+		"role": "tank",
+		"color": "#c69b6d",
+		"max_hp": 2600,
+		"damage_taken_mult": 0.75,
+		"threat_mult": 3.0,
+		"crit_chance": 0.08,
+		"pos": [
+			30,
+			15
+		],
+		"swing": {
+			"interval": 2.0,
+			"min": 55,
+			"max": 75
+		},
+		"rules": [
+			{
+				"ability": "shield_slam"
+			}
+		]
+	},
+	"priest": {
+		"name": "Priest",
+		"role": "healer",
+		"color": "#f4f4f4",
+		"max_hp": 1500,
+		"max_mana": 3000,
+		"mana_regen": 6,
+		"crit_chance": 0.08,
+		"pos": [
+			-200,
+			-70
+		],
+		"rules": [
+			{
+				"ability": "heal",
+				"if": {
+					"target_hp_below": 0.5
+				}
+			},
+			{
+				"ability": "renew",
+				"if": {
+					"target_missing_aura": "renew"
+				}
+			}
+		]
+	},
+	"mage": {
+		"name": "Mage",
+		"role": "dps",
+		"color": "#3fc7eb",
+		"max_hp": 1300,
+		"crit_chance": 0.12,
+		"pos": [
+			-170,
+			95
+		],
+		"rules": [
+			{
+				"ability": "frostbolt"
+			}
+		]
+	},
+	"rogue": {
+		"name": "Rogue",
+		"role": "dps",
+		"color": "#fff468",
+		"max_hp": 1500,
+		"crit_chance": 0.15,
+		"pos": [
+			205,
+			55
+		],
+		"swing": {
+			"interval": 1.4,
+			"min": 42,
+			"max": 58
+		},
+		"rules": [
+			{
+				"ability": "sinister_strike"
+			}
+		]
+	}
+}

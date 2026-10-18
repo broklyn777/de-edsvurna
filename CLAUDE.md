@@ -20,6 +20,17 @@ Inga talangträd, ingen loot, inga nya klasser förrän den första striden (4 h
 - Data (klasser, förmågor, fiender) i `data/`.
 - Allt UI ska fungera med touch; musklick emuleras som touch.
 
+## Struktur
+
+- `src/combat/` – `CombatSim` (ren logik, fast tidssteg 0,05 s, händelselista), `CombatUnit`, `GameData`.
+- `data/*.json` – förmågor, auror, hjältar (med AI-regler), bossar (timers, faser), möten (party + knappar).
+- `scripts/battle/` – grafik och känsla. `battle.gd` översätter simulatorns händelser till ljud, siffror,
+  hitstop (`Engine.time_scale`), skakningar och effekter. Knappar reagerar på tryck, inte släpp.
+- `tools/gen_sfx.py` – syntetiserar platshållarljud till `assets/audio/` (kör om efter ändringar).
+- `tests/combat_bot.gd` – simulerade spelare (NONE/SLOPPY/GOOD) för balanstester.
+
+Balansmål för Bone Lich: NONE förlorar alltid, SLOPPY vinner ~70 %, GOOD ~100 %, strid ~90 s.
+
 ## Kommandon
 
 ```bash
@@ -29,8 +40,14 @@ godot --headless --path . --script res://tests/run_tests.gd
 # Starta spelet
 godot --path .
 
+# Balansrapport (40 strider per spelarnivå)
+godot --headless --path . --script res://tests/balance_report.gd
+
 # Skärmdump av spelet (sparas efter 30 bildrutor, sedan avslut)
 godot --path . -- --screenshot=/tmp/shot.png --frames=30
+
+# Låt en bot spela, spola fram 16 s, fast slumpfrö
+godot --path . -- --demo --warp=16 --seed=5
 
 # Bygg debug-APK och installera på ansluten Android-telefon
 godot --headless --path . --export-debug Android export/rpg007.apk
