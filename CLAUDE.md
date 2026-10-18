@@ -116,12 +116,11 @@ uppdaterad när nya begrepp tillkommer.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
-Balansmål (utan troféer): startmakrona vinner varje strid för sig nästan alltid, men klarar hela kryptan
-(Charges räcker alla tre våningarna) bara ~60 %; bättre makron ~66 %+. BASIC (bara Anfall) förlorar.
-En artefakt lyfter startmakrona till 75–85 %, fyra till ~96 % – därför kostar smide 100 silver
-(startsilvret räcker till en; en klarad körning ger 110). Ederna: kärnan ensam ~55–70 %, en perk ger
-+5–30 procentenheter. Perks som sparar Alvas Charges (Ljusets hand, Större helning) eller gör Brokk
-tålig (Krigsmaskin) ger nära 100 % och kostar därför som en artefakt (100 silver).
+Balansmål och läge (0.13, Charges på Siralim-nivå, utan troféer): startmakrona klarar hela kryptan ~60 %,
+förbättrade makron ~93 %, med artefakter eller alla perks i en Ed 100 %. Ederna med bara kärnan 60–70 %.
+**Känd brist:** striderna var för sig är för lätta (BASIC vinner Benfursten ~90 %) – svårigheten ligger
+nästan helt i att Charges ska räcka hela körningen, och artefakter/perks mättar snabbt. Nästa balans:
+starkare boss och våning 2–3, dyrare eller färre perks, och sikta på att varje strid kräver makron.
 Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
 
 ## Kommandon
