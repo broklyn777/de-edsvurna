@@ -4,7 +4,8 @@ extends Control
 
 signal tapped(unit_id: String)
 
-const AURA_PIPS := {"shield_wall": Color("#9fb4d8"), "renew": Color("#5dff73"), "bloodlust": Color("#ff5a2a")}
+const AURA_PIPS := {"shield_wall": Color("#9fb4d8"), "renew": Color("#5dff73"), "bloodlust": Color("#ff5a2a"),
+		"quickstep": Color("#ffd75e"), "ice_barrier": Color("#86d8ff")}
 
 var unit: CombatUnit
 var sim: CombatSim
@@ -14,7 +15,6 @@ var _hit_flash := 0.0
 var _heal_flash := 0.0
 var _press := 0.0
 var _trait_flash := 0.0
-var _trait_name := ""
 var _t := 0.0
 
 
@@ -22,8 +22,6 @@ func setup(u: CombatUnit, s: CombatSim) -> void:
 	unit = u
 	sim = s
 	size = Vector2(236, 82)
-	if not u.traits.is_empty():
-		_trait_name = s.data.traits[u.traits[0]].name
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
@@ -105,12 +103,13 @@ func _draw() -> void:
 	if unit.is_casting():
 		UiStyle.bar(self, Rect2(10, 59, size.x - 20, 4), unit.cast_progress(), UiStyle.GOLD)
 
-	if _trait_name != "":
+	if not unit.traits.is_empty():
+		var trait_name := " · ".join(unit.traits.map(func(t: String) -> String: return sim.data.traits[t].name))
 		var col := Color(UiStyle.TRAIT_GOLD, 0.55).lerp(Color.WHITE, _trait_flash * 0.8)
 		if _trait_flash > 0.0:
 			draw_rect(Rect2(6, 66, size.x - 12, 13), Color(UiStyle.TRAIT_GOLD, 0.25 * _trait_flash))
 		Glyphs.draw(self, "diamond", Vector2(16, 72.5), 4.0, col)
-		UiStyle.text(self, Vector2(26, 78), _trait_name, 13, col)
+		UiStyle.text(self, Vector2(26, 78), trait_name, 13, col)
 
 	if not unit.alive:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55))

@@ -2,6 +2,12 @@ class_name BossFrame
 extends Control
 ## Bossens ram högst upp: hälsa och en tydlig kastmätare som säger vad du ska göra.
 
+const DEBUFF_TAGS := {
+	"exposed": ["BLOTTAD", Color("#ffd75e")],
+	"burning": ["BRINNER", Color("#ff8a2a")],
+	"poison": ["GIFT", Color("#7fe05a")],
+}
+
 var sim: CombatSim
 var boss: CombatUnit
 var _ghost := 1.0
@@ -52,11 +58,13 @@ func _draw() -> void:
 	UiStyle.text(self, Vector2(12, 22), boss.name.to_upper(), 18, boss.color)
 	UiStyle.text(self, Vector2(12, 22), "%d%%" % ceili(boss.hp_pct() * 100.0), 18, Color.WHITE,
 			HORIZONTAL_ALIGNMENT_RIGHT, w - 24)
-	if boss.auras.has("exposed"):
-		var name_w := UiStyle.bold().get_string_size(boss.name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
-		var left: float = boss.auras.exposed.remaining
-		UiStyle.text(self, Vector2(24 + name_w, 22), "BLOTTAD %.0f s" % ceilf(left), 16,
-				Color(UiStyle.TRAIT_GOLD, 0.75 + 0.25 * sin(_t * 10.0)))
+	var tag_x := 24.0 + UiStyle.bold().get_string_size(boss.name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+	for aura_id in DEBUFF_TAGS:
+		if boss.auras.has(aura_id):
+			var tag: String = "%s %d" % [DEBUFF_TAGS[aura_id][0], ceili(boss.auras[aura_id].remaining)]
+			var col: Color = DEBUFF_TAGS[aura_id][1]
+			UiStyle.text(self, Vector2(tag_x, 22), tag, 15, Color(col, 0.75 + 0.25 * sin(_t * 10.0)))
+			tag_x += UiStyle.bold().get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 12.0
 	var hp_color := Color("#a3304e").lerp(Color("#ff3b2e"), 0.5 + 0.5 * sin(_t * 8.0)) if frenzy else Color("#a3304e")
 	var hp_rect := Rect2(12, 30, w - 24, 20)
 	UiStyle.bar(self, hp_rect, boss.hp_pct(), hp_color.lerp(Color.WHITE, _hit * 0.35), _ghost)

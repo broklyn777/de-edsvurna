@@ -179,12 +179,17 @@ func _tick_timers(u: CombatUnit, dt: float) -> void:
 		u.mana = minf(u.max_mana, u.mana + u.mana_regen * dt)
 	for aura_id in u.auras.keys():
 		var a: Dictionary = u.auras[aura_id]
-		if a.hot > 0.0:
+		if a.hot > 0.0 or a.dot > 0.0:
 			a.tick -= dt
 			if a.tick <= 0.0:
 				a.tick += 1.0
 				var source := unit(a.source)
-				_heal(source if source else u, u, a.hot, aura_id, false)
+				if a.hot > 0.0:
+					_heal(source if source else u, u, a.hot, aura_id, false)
+				else:
+					_deal_damage(source if source else u, u, a.dot, a.school, aura_id, false, false)
+				if not u.alive:
+					return
 		if a.duration > 0.0:
 			a.remaining -= dt
 			if a.remaining <= 0.0:
@@ -376,8 +381,11 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, base: float, school: String,
 		ability_id: String, melee: bool, can_crit: bool) -> void:
 	if not tgt.alive:
 		return
-	var crit := can_crit and (rng.randf() < src.crit_chance or _forced_crit(src, tgt))
-	var mult := (MELEE_CRIT if melee else SPELL_CRIT) if crit else 1.0
+	var probe := {"source": src.id, "target": tgt.id, "ability": ability_id, "school": school}
+	var crit: bool = can_crit and (rng.randf() < src.crit_chance or _modify(src, "modify_damage", probe, "force_crit", false))
+	var mult: float = (MELEE_CRIT if melee else SPELL_CRIT) if crit else 1.0
+	mult *= _modify(src, "modify_damage", probe, "damage_mult", 1.0)
+	mult *= _modify(tgt, "modify_damage_taken", probe, "damage_taken_mult", 1.0)
 	var amount := roundf(base * mult * tgt.damage_taken())
 	tgt.hp = maxf(0.0, tgt.hp - amount)
 	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": amount,
@@ -392,7 +400,8 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String, ca
 	if not tgt.alive:
 		return
 	var crit := can_crit and rng.randf() < src.crit_chance
-	var amount := roundf(base * (SPELL_CRIT if crit else 1.0))
+	var mult: float = _modify(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}, "heal_mult", 1.0)
+	var amount := roundf(base * (SPELL_CRIT if crit else 1.0) * mult)
 	var effective := minf(amount, tgt.max_hp - tgt.hp)
 	tgt.hp += effective
 	_emit({"type": "heal", "source": src.id, "target": tgt.id, "amount": amount,
@@ -401,15 +410,18 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String, ca
 		threat[src.id] += effective * HEAL_THREAT
 
 
-func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String) -> void:
+func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_override := 0.0) -> void:
 	if not tgt.alive:
 		return
 	var d: Dictionary = data.auras[aura_id]
 	var refreshed := tgt.auras.has(aura_id)
-	var duration := float(d.get("duration", -1))
+	var duration := duration_override if duration_override > 0.0 else float(d.get("duration", -1))
+	if refreshed and tgt.auras[aura_id].remaining > duration:
+		duration = tgt.auras[aura_id].remaining
 	tgt.auras[aura_id] = {"remaining": duration, "duration": duration,
 			"haste": float(d.get("haste", 0.0)), "damage_taken_mult": float(d.get("damage_taken_mult", 1.0)),
-			"hot": float(d.get("hot", 0.0)), "tick": 1.0, "source": src.id}
+			"hot": float(d.get("hot", 0.0)), "dot": float(d.get("dot", 0.0)),
+			"school": d.get("school", "physical"), "tick": 1.0, "source": src.id}
 	_emit({"type": "aura_applied", "unit": tgt.id, "aura": aura_id, "refreshed": refreshed})
 
 
@@ -423,6 +435,8 @@ func _interrupt(src: CombatUnit, tgt: CombatUnit) -> void:
 
 
 func _kill(u: CombatUnit) -> void:
+	if not u.alive:  # en egenskap kan ha dödat enheten mitt i en annan träff
+		return
 	u.alive = false
 	u.hp = 0.0
 	if u.is_casting():
@@ -456,6 +470,8 @@ func _emit(e: Dictionary) -> void:
 				continue
 			if time < owner.trait_ready.get(trait_id, 0.0) or not _when(owner, t.get("when", {}), e):
 				continue
+			if t.has("chance") and rng.randf() >= float(t.chance):
+				continue
 			owner.trait_ready[trait_id] = time + float(t.get("internal_cooldown", 0.0))
 			_run_trait(owner, trait_id, t, e)
 
@@ -466,21 +482,31 @@ func _run_trait(owner: CombatUnit, trait_id: String, t: Dictionary, e: Dictionar
 	_trait_depth += 1
 	_emit({"type": "trait", "unit": owner.id, "trait": trait_id})
 	for effect in t.get("effects", []):
-		var tgt := owner if effect.get("target", "self") == "self" else unit(e.get(effect.target, ""))
-		if tgt == null:
-			continue
-		match effect.type:
-			"damage":
-				_deal_damage(owner, tgt, _roll(effect), effect.get("school", "physical"), trait_id,
-						false, not effect.get("no_crit", false))
-			"heal":
-				_heal(owner, tgt, _roll(effect), trait_id, false)
-			"aura":
-				_add_aura(owner, tgt, effect.aura)
-			"mana":
-				tgt.mana = minf(tgt.max_mana, tgt.mana + float(effect.amount))
+		var where: String = effect.get("target", "self")
+		var targets: Array[CombatUnit] = []
+		if where == "self":
+			targets = [owner]
+		elif where == "allies":
+			targets = _allies(owner)
+		elif unit(e.get(where, "")) != null:
+			targets = [unit(e[where])]
+		for tgt in targets:
+			_run_trait_effect(owner, trait_id, effect, tgt)
 	_trait_depth -= 1
 	_trait_ctx = outer
+
+
+func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, tgt: CombatUnit) -> void:
+	match effect.type:
+		"damage":
+			_deal_damage(owner, tgt, _roll(effect), effect.get("school", "physical"), trait_id,
+					false, not effect.get("no_crit", false))
+		"heal":
+			_heal(owner, tgt, _roll(effect), trait_id, false)
+		"aura":
+			_add_aura(owner, tgt, effect.aura, float(effect.get("duration", 0.0)))
+		"mana":
+			tgt.mana = minf(tgt.max_mana, tgt.mana + float(effect.amount))
 
 
 ## Villkor för en egenskap. Händelsefält jämförs med "self", "ally", "enemy" eller ett värde.
@@ -490,6 +516,13 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 		match key:
 			"self_has_aura":
 				if not owner.auras.has(want):
+					return false
+			"self_hp_below":
+				if owner.hp_pct() >= want:
+					return false
+			"target_hp_below":
+				var t := unit(e.get("target", ""))
+				if t == null or t.hp_pct() >= want:
 					return false
 			"target_has_aura":
 				var t := unit(e.get("target", ""))
@@ -511,13 +544,18 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 	return true
 
 
-func _forced_crit(src: CombatUnit, tgt: CombatUnit) -> bool:
-	for trait_id in src.traits:
+## Samlar ihop en egenskapsmodifierare: multiplicerar tal, eller sant om någon egenskap säger sant.
+func _modify(owner: CombatUnit, trigger: String, probe: Dictionary, key: String, base: Variant) -> Variant:
+	var result: Variant = base
+	for trait_id in owner.traits:
 		var t: Dictionary = data.traits[trait_id]
-		if t.trigger == "modify_damage" and t.get("modify", {}).get("force_crit", false) \
-				and _when(src, t.get("when", {}), {"source": src.id, "target": tgt.id}):
-			return true
-	return false
+		if t.trigger != trigger or not t.get("modify", {}).has(key) or not _when(owner, t.get("when", {}), probe):
+			continue
+		if result is bool:
+			result = result or t.modify[key]
+		else:
+			result *= float(t.modify[key])
+	return result
 
 
 # --- Hjälpfunktioner --------------------------------------------------------

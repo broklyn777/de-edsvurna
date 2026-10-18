@@ -58,7 +58,7 @@ static func from_data(unit_id: String, d: Dictionary, unit_team: int) -> CombatU
 	u.swing = d.get("swing", {})
 	u.swing_timer = u.swing.get("interval", 2.0) * d.get("first_swing", 0.5)
 	u.rules = d.get("rules", [])
-	u.traits = d.get("traits", [])
+	u.traits = d.get("traits", []).duplicate()
 	return u
 
 

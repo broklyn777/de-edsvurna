@@ -14,7 +14,13 @@ func _init() -> void:
 	for file in DirAccess.get_files_at(TEST_DIR):
 		if not (file.begins_with("test_") and file.ends_with(".gd")):
 			continue
-		var suite: Object = load(TEST_DIR + file).new()
+		var script: GDScript = load(TEST_DIR + file)
+		if script == null or not script.can_instantiate():
+			total += 1
+			_current = file
+			fail("skriptet gick inte att kompilera")
+			continue
+		var suite: Object = script.new()
 		suite.set("runner", self)
 		for method in suite.get_method_list():
 			var name: String = method["name"]

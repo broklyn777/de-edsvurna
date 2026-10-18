@@ -110,8 +110,7 @@ func test_kick_exposes_boss() -> void:
 
 func test_mage_always_crits_exposed_target() -> void:
 	var sim := _sim()
-	sim.boss.auras["exposed"] = {"remaining": 99.0, "duration": 99.0, "haste": 0.0,
-			"damage_taken_mult": 1.0, "hot": 0.0, "tick": 1.0, "source": "rogue"}
+	sim._add_aura(sim.unit("rogue"), sim.boss, "exposed", 99.0)
 	sim.advance(12.0)
 	var mage_hits := sim.drain_events().filter(func(e: Dictionary) -> bool:
 		return e.type == "damage" and e.source == "mage")
@@ -141,3 +140,38 @@ func test_crit_gives_priest_mana() -> void:
 	sim.unit("rogue").crit_chance = 1.0
 	sim._deal_damage(sim.unit("rogue"), sim.boss, 10.0, "physical", "melee", true, true)
 	assert_near(priest.mana, 1030.0)
+
+
+func test_poison_ticks_damage_over_time() -> void:
+	var sim := _sim()
+	sim._add_aura(sim.unit("rogue"), sim.boss, "poison")
+	sim.drain_events()
+	sim.advance(3.0)
+	var ticks := sim.drain_events().filter(func(e: Dictionary) -> bool:
+		return e.type == "damage" and e.ability == "poison")
+	assert_eq(ticks.size(), 3)
+
+
+func test_mercy_boosts_heals_on_low_target() -> void:
+	var sim := _sim()
+	var priest := sim.unit("priest")
+	var mage := sim.unit("mage")
+	priest.traits = ["mercy"]
+	priest.crit_chance = 0.0
+	mage.hp = 100.0
+	sim._heal(priest, mage, 200.0, "flash_heal", false)
+	assert_near(mage.hp, 400.0)
+	mage.hp = 600.0
+	sim._heal(priest, mage, 200.0, "flash_heal", false)
+	assert_near(mage.hp, 800.0)
+
+
+func test_chosen_traits_replace_defaults() -> void:
+	var r := Bot.run_fight(_data, 1, Bot.Skill.GOOD, 400.0, {"mage": "combustion", "rogue": "envenom"})
+	assert_eq(r.outcome, "victory")
+
+
+func test_adding_traits_does_not_change_game_data() -> void:
+	var sim := _sim()
+	sim.unit("mage").traits.append("fire_rune")
+	assert_eq(_data.heroes.mage.traits, ["kindling"])

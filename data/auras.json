@@ -3,5 +3,9 @@
 	"bloodlust": {"name": "Bloodlust", "duration": 20, "haste": 0.3},
 	"renew": {"name": "Renew", "duration": 12, "hot": 45},
 	"frenzy": {"name": "Frenzy", "duration": -1, "haste": 0.35},
-	"exposed": {"name": "Blottad", "duration": 8, "damage_taken_mult": 1.15}
+	"exposed": {"name": "Blottad", "duration": 8, "damage_taken_mult": 1.15},
+	"burning": {"name": "Brinner", "duration": 8, "dot": 70, "school": "fire"},
+	"poison": {"name": "Gift", "duration": 6, "dot": 30, "school": "nature"},
+	"ice_barrier": {"name": "Isbarriär", "duration": 6, "damage_taken_mult": 0.5},
+	"quickstep": {"name": "Snabbfotad", "duration": 8, "haste": 0.15}
 }

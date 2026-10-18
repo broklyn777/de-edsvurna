@@ -16,6 +16,8 @@ const ERROR_TEXT := {
 	"nothing_to_interrupt": "Inget att avbryta",
 }
 const BOT_PATH := "res://tests/combat_bot.gd"
+## Spelarens senaste egenskapsval sparas här mellan försök och appstarter.
+const CHOICES_PATH := "user://choices.cfg"
 
 var data: Dictionary
 var sim: CombatSim
@@ -28,6 +30,7 @@ var buttons: Array[AbilityButton] = []
 var boss_frame: BossFrame
 var overlay: BattleOverlay
 var pause_button: Control
+var picker: TraitPicker
 var telegraphs := {}
 ## Effekter som väntar på att vapnet ska träffa: [{left, call}].
 var _later: Array[Dictionary] = []
@@ -74,6 +77,8 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout)
 	sfx.start_ambience("ambience_crypt", -11.0)
 	_layout()
+	if warp <= 0.0 and not _demo:
+		_open_picker()
 	if warp <= 0.0:
 		for h in sim.heroes:
 			models[h.id].position = _homes[h.id] + RUN_IN_FROM + Vector3(randf_range(-0.6, 0.6), 0, randf_range(0, 1.0))
@@ -168,6 +173,8 @@ func _layout() -> void:
 		buttons[i].position = pos
 	pause_button.position = Vector2(vs.x - 76, 12)
 	overlay.size = vs
+	if picker:
+		picker.size = vs
 
 
 # --- Bildruta ---------------------------------------------------------------
@@ -186,7 +193,7 @@ func _process(_delta: float) -> void:
 	else:
 		Engine.time_scale = 1.0
 
-	if not started:
+	if not started and picker == null:
 		_tick_countdown(real_dt)
 	elif not paused and sim.outcome == "":
 		sim.advance(real_dt * Engine.time_scale)
@@ -307,6 +314,47 @@ func _unhandled_input(event: InputEvent) -> void:
 				_restart()
 
 
+# --- Egenskapsval före striden ------------------------------------------------
+
+func _open_picker() -> void:
+	picker = TraitPicker.new()
+	picker.setup(data, data.encounters[ENCOUNTER].party, _load_choices("traits"), _load_choices("artifacts"))
+	picker.tapped.connect(func() -> void: sfx.play("k_click", -8.0, 0.05))
+	picker.confirmed.connect(_on_traits_chosen)
+	overlay.get_parent().add_child(picker)
+	picker.size = get_viewport().get_visible_rect().size
+
+
+func _on_traits_chosen(traits: Dictionary, artifacts: Dictionary) -> void:
+	for hero_id in traits:
+		sim.unit(hero_id).traits = [traits[hero_id]]
+		if artifacts.has(hero_id):
+			sim.unit(hero_id).traits.append(artifacts[hero_id])
+	_save_choices(traits, artifacts)
+	picker.queue_free()
+	picker = null
+	sfx.play("k_ready", -4.0, 0.0)
+
+
+func _load_choices(section: String) -> Dictionary:
+	var cfg := ConfigFile.new()
+	if cfg.load(CHOICES_PATH) != OK or not cfg.has_section(section):
+		return {}
+	var out := {}
+	for hero_id in cfg.get_section_keys(section):
+		out[hero_id] = cfg.get_value(section, hero_id, "")
+	return out
+
+
+func _save_choices(traits: Dictionary, artifacts: Dictionary) -> void:
+	var cfg := ConfigFile.new()
+	for hero_id in traits:
+		cfg.set_value("traits", hero_id, traits[hero_id])
+	for hero_id in artifacts:
+		cfg.set_value("artifacts", hero_id, artifacts[hero_id])
+	cfg.save(CHOICES_PATH)
+
+
 func _on_button(ability_id: String) -> void:
 	_use(ability_id, "")
 
@@ -326,7 +374,7 @@ func _use(ability_id: String, target_id: String) -> void:
 
 
 func _toggle_pause() -> void:
-	if sim.outcome != "":
+	if sim.outcome != "" or picker:
 		return
 	paused = not paused
 	overlay.paused = paused
@@ -459,6 +507,11 @@ func _on_ability_used(e: Dictionary) -> void:
 
 
 func _on_damage(e: Dictionary) -> void:
+	if data.auras.has(e.ability):  # skada över tid (gift, eld): små siffror, ingen träffreaktion
+		_float(e.target, str(int(e.amount)), UiStyle.school_color(e.school), 17, false)
+		if sim.unit(e.target).team != 0:
+			boss_frame.on_damage()
+		return
 	var target: UnitModel = models[e.target]
 	var p := _pos(e.target)
 	var crit: bool = e.crit

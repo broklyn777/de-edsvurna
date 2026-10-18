@@ -1,29 +1,31 @@
 {
-	"expose": {
-		"name": "Blottlägg",
-		"text": "När Rogue avbryter en besvärjelse blir fienden Blottad i 8 s (tar 15 % mer skada).",
-		"trigger": "cast_end",
-		"when": {"result": "interrupted", "by": "self"},
-		"effects": [
-			{"type": "aura", "aura": "exposed", "target": "unit"}
-		]
-	},
-	"kindling": {
-		"name": "Eldsjäl",
-		"text": "Mages träffar mot ett Blottat mål är alltid kritiska.",
-		"trigger": "modify_damage",
-		"when": {"target_has_aura": "exposed"},
-		"modify": {"force_crit": true}
-	},
 	"retaliation": {
 		"name": "Vedergällning",
-		"text": "När Warrior tar skada under Shield Wall slår han tillbaka för 90–110.",
+		"text": "När Warrior tar skada under Shield Wall slår han tillbaka för 90–110 helig skada.",
 		"trigger": "damage",
 		"when": {"target": "self", "source": "enemy", "self_has_aura": "shield_wall"},
 		"effects": [
 			{"type": "damage", "min": 90, "max": 110, "school": "holy", "target": "source"}
 		]
 	},
+	"sunder": {
+		"name": "Sköldbrytare",
+		"text": "Shield Slam har 25 % chans att göra fienden Blottad i 4 s.",
+		"trigger": "damage",
+		"chance": 0.25,
+		"when": {"source": "self", "ability": "shield_slam"},
+		"effects": [
+			{"type": "aura", "aura": "exposed", "duration": 4, "target": "target"}
+		]
+	},
+	"unyielding": {
+		"name": "Orubblig",
+		"text": "Under 35 % liv tar Warrior 30 % mindre skada.",
+		"trigger": "modify_damage_taken",
+		"when": {"self_hp_below": 0.35},
+		"modify": {"damage_taken_mult": 0.7}
+	},
+
 	"lightbringer": {
 		"name": "Ljusbringare",
 		"text": "När en hjälte gör en kritisk träff återfår Priest 30 mana.",
@@ -33,5 +35,160 @@
 		"effects": [
 			{"type": "mana", "amount": 30, "target": "self"}
 		]
+	},
+	"guardian_spirit": {
+		"name": "Skyddsande",
+		"text": "När Shield Wall aktiveras får hela partyt Renew.",
+		"trigger": "aura_applied",
+		"when": {"unit": "ally", "aura": "shield_wall"},
+		"effects": [
+			{"type": "aura", "aura": "renew", "target": "allies"}
+		]
+	},
+	"mercy": {
+		"name": "Barmhärtighet",
+		"text": "Priests helningar på en hjälte under 35 % liv helar 50 % mer.",
+		"trigger": "modify_heal",
+		"when": {"target_hp_below": 0.35},
+		"modify": {"heal_mult": 1.5}
+	},
+
+	"kindling": {
+		"name": "Eldsjäl",
+		"text": "Mages träffar mot ett Blottat mål är alltid kritiska.",
+		"trigger": "modify_damage",
+		"when": {"target_has_aura": "exposed"},
+		"modify": {"force_crit": true}
+	},
+	"combustion": {
+		"name": "Förbränning",
+		"text": "En kritisk Pyroblast sätter fyr på fienden: 70 eldskada per sekund i 8 s.",
+		"trigger": "damage",
+		"when": {"source": "self", "ability": "pyroblast", "crit": true},
+		"effects": [
+			{"type": "aura", "aura": "burning", "target": "target"}
+		]
+	},
+	"ice_barrier": {
+		"name": "Isbarriär",
+		"text": "När Mage hamnar under 40 % liv tar hon halv skada i 6 s (var 30:e s).",
+		"trigger": "damage",
+		"internal_cooldown": 30,
+		"when": {"target": "self", "self_hp_below": 0.4},
+		"effects": [
+			{"type": "aura", "aura": "ice_barrier", "target": "self"}
+		]
+	},
+
+	"expose": {
+		"name": "Blottlägg",
+		"text": "När Rogue avbryter en besvärjelse blir fienden Blottad i 8 s (tar 15 % mer skada).",
+		"trigger": "cast_end",
+		"when": {"result": "interrupted", "by": "self"},
+		"effects": [
+			{"type": "aura", "aura": "exposed", "target": "unit"}
+		]
+	},
+	"envenom": {
+		"name": "Giftblad",
+		"text": "Rogues vapenträffar har 25 % chans att förgifta: 30 skada per sekund i 6 s.",
+		"trigger": "damage",
+		"chance": 0.25,
+		"quiet": true,
+		"when": {"source": "self", "school": "physical"},
+		"effects": [
+			{"type": "aura", "aura": "poison", "target": "target"}
+		]
+	},
+	"quickstep": {
+		"name": "Snabbfotad",
+		"text": "När Rogue avbryter en besvärjelse får hela partyt 15 % snabbhet i 8 s.",
+		"trigger": "cast_end",
+		"when": {"result": "interrupted", "by": "self"},
+		"effects": [
+			{"type": "aura", "aura": "quickstep", "target": "allies"}
+		]
+	},
+	"fateblade": {
+		"name": "Ödesdolken",
+		"artifact": true,
+		"text": "Bärarens kritiska träffar gör fienden Blottad i 3 s (högst var 6:e s).",
+		"trigger": "damage",
+		"internal_cooldown": 6,
+		"when": {"source": "self", "target": "enemy", "crit": true},
+		"effects": [
+			{"type": "aura", "aura": "exposed", "duration": 3, "target": "target"}
+		]
+	},
+	"thorn_mantle": {
+		"name": "Törnemantel",
+		"artifact": true,
+		"text": "När bäraren tar skada slår den tillbaka för 40–50 (högst en gång i sekunden).",
+		"trigger": "damage",
+		"internal_cooldown": 1,
+		"quiet": true,
+		"when": {"target": "self", "source": "enemy"},
+		"effects": [
+			{"type": "damage", "min": 40, "max": 50, "school": "physical", "target": "source"}
+		]
+	},
+	"phoenix_feather": {
+		"name": "Fenixfjäder",
+		"artifact": true,
+		"text": "Första gången bäraren hamnar under 25 % liv helas den för 600.",
+		"trigger": "damage",
+		"internal_cooldown": 9999,
+		"when": {"target": "self", "self_hp_below": 0.25},
+		"effects": [
+			{"type": "heal", "min": 600, "max": 600, "target": "self"}
+		]
+	},
+	"vampire_fang": {
+		"name": "Vampyrtand",
+		"artifact": true,
+		"text": "Bärarens träffar helar bäraren för 20.",
+		"trigger": "damage",
+		"quiet": true,
+		"when": {"source": "self", "target": "enemy"},
+		"effects": [
+			{"type": "heal", "min": 20, "max": 20, "target": "self"}
+		]
+	},
+	"fire_rune": {
+		"name": "Eldrunan",
+		"artifact": true,
+		"text": "Bärarens eldskada ökar med 25 %.",
+		"trigger": "modify_damage",
+		"when": {"school": "fire"},
+		"modify": {"damage_mult": 1.25}
+	},
+	"saints_relic": {
+		"name": "Helgonrelik",
+		"artifact": true,
+		"text": "Flash Heal från bäraren har 35 % chans att också ge målet Renew.",
+		"trigger": "heal",
+		"chance": 0.35,
+		"when": {"source": "self", "ability": "flash_heal"},
+		"effects": [
+			{"type": "aura", "aura": "renew", "target": "target"}
+		]
+	},
+	"storm_amulet": {
+		"name": "Stormamulett",
+		"artifact": true,
+		"text": "Bärarens träffar har 15 % chans att slå ner en blixt för 120–150.",
+		"trigger": "damage",
+		"chance": 0.15,
+		"when": {"source": "self", "target": "enemy"},
+		"effects": [
+			{"type": "damage", "min": 120, "max": 150, "school": "nature", "target": "target"}
+		]
+	},
+	"warden_shield": {
+		"name": "Väktarsköld",
+		"artifact": true,
+		"text": "Bäraren tar 15 % mindre skada.",
+		"trigger": "modify_damage_taken",
+		"modify": {"damage_taken_mult": 0.85}
 	}
 }

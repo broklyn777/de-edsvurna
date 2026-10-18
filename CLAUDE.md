@@ -23,7 +23,12 @@ Inga talangträd, ingen loot, inga nya klasser förrän den första striden (4 h
 ## Struktur
 
 - `src/combat/` – `CombatSim` (ren logik, fast tidssteg 0,05 s, händelselista), `CombatUnit`, `GameData`.
-- `data/*.json` – förmågor, auror, hjältar (med AI-regler), bossar (timers, faser), möten (party + knappar).
+- `data/*.json` – förmågor, auror, hjältar (med AI-regler och `trait_options`), bossar (timers, faser),
+  möten (party + knappar), egenskaper (`traits.json`).
+- Egenskaper: lyssnar på en händelsetyp (`trigger`) och kör effekter när `when` stämmer, eller ändrar
+  siffror (`modify_damage`, `modify_damage_taken`, `modify_heal`). Kan sätta igång varandra i kedjor
+  (max 4 steg). Spelaren väljer en klassegenskap per hjälte och fördelar artefakter (egenskaper med `"artifact": true`,
+  en per hjälte, var och en bara på en hjälte) på valskärmen före striden (`trait_picker.gd`, sparas i `user://choices.cfg`).
 - `scripts/battle/` – grafik och känsla. `battle.gd` översätter simulatorns händelser till animationer,
   ljud, siffror, hitstop (`Engine.time_scale`), skakningar och effekter. Knappar reagerar på tryck, inte släpp.
   - `crypt_world.gd` – 3D-kryptan (golv, pelare, facklor, ljus, kamera, varningscirklar), byggd i kod.
@@ -57,6 +62,12 @@ godot --path .
 
 # Balansrapport (40 strider per spelarnivå)
 godot --headless --path . --script res://tests/balance_report.gd
+
+# Alla kombinationer av egenskapsval (SLOPPY-bot), starkast/svagast och snitt per egenskap (~2,5 min)
+godot --headless --path . --script res://tests/trait_report.gd
+
+# Varje artefakt på varje hjälte jämfört med utan artefakt (~2 min)
+godot --headless --path . --script res://tests/artifact_report.gd
 
 # Skärmdump av spelet (sparas efter 30 bildrutor, sedan avslut)
 godot --path . -- --screenshot=/tmp/shot.png --frames=30

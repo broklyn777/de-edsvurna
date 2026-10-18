@@ -8,6 +8,7 @@ const SCHOOL_COLORS := {
 	"fire": Color("#ff8a2a"),
 	"holy": Color("#ffe48a"),
 	"shadow": Color("#b47cff"),
+	"nature": Color("#7fe05a"),
 	"heal": Color("#5dff73"),
 }
 const HP_GREEN := Color("#3fbf4a")

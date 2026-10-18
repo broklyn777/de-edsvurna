@@ -9,8 +9,15 @@ enum Skill { NONE, GOOD, SLOPPY }
 const DT := 1.0 / 30.0
 
 
-static func run_fight(data: Dictionary, seed_value: int, skill: Skill, max_time := 400.0) -> Dictionary:
+## traits: hero_id -> trait_id, ersätter hjältens förvalda egenskap.
+## artifacts: hero_id -> trait_id, läggs till som hjältens andra egenskap.
+static func run_fight(data: Dictionary, seed_value: int, skill: Skill, max_time := 400.0,
+		traits := {}, artifacts := {}) -> Dictionary:
 	var sim := CombatSim.create(data, "bone_lich", seed_value)
+	for hero_id in traits:
+		sim.unit(hero_id).traits = [traits[hero_id]]
+	for hero_id in artifacts:
+		sim.unit(hero_id).traits.append(artifacts[hero_id])
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value * 7 + 3
 	var reacted := {}
