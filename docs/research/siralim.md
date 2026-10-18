@@ -367,6 +367,91 @@ passar vår avsiktsvisning.
 3. Död som resurs: traits och Eder som utlöses av död (som *Execution Sentence* eller Graveborn) är
    Siralim-typiska regelbrytare och fungerar redan i motorn (`death`-händelsen).
 
+## 10c. Basen: Siralims slott jämfört med vårt läger
+
+**Vad slottet är (Codex, bekräftat):** "När du inte är ute i en Realm tillbringar du det mesta av tiden
+i ditt slott." Där sköter man laget, ändrar föremål, spelar minispel och dekorerar. Det som finns där:
+
+| Plats / NPC | Vad man gör | Hos oss |
+|---|---|---|
+| Teleportation Shrine | Välj Realm, Realm Depth och Realm Instability, och slumpa om Realm Properties | startskärmen (körningen startar) |
+| Summoning Brazier | Kalla fram varelser man har 100 % Mana för | – (följeslagarna är fasta) |
+| Fusion | Smält ihop två varelser | trofé-tilldelningen |
+| Blacksmith | Tillverka, uppgradera och socka Artifacts (Brimstone) | – (artefakter planerade) |
+| Enchanter | Tillverka och förtrolla Spell Gems | – |
+| Enchanted Wardrobe | Byta Specialization, återställa perks, kostymer | Ed-valet på startskärmen |
+| Everett | Projects: samla föremål i Realms för att låsa upp nya platser (Blacksmith-nivåer, fler Specializations, Refinery, Goblet of Trials, Gambling Dwarves, slottsutbyggnad …) | – |
+| Reliquary, Nethermancer, Guilds, Godforge, Arena | Slutspelets system | – |
+| Dekorationer, Decoration Mode | Tusentals föremål att placera, egna NPC:er, musik, golv | – |
+
+Projects är motorn som får en att återvända: de låser upp nästan allt i slottet. Codex rekommenderar
+att alltid ha så många Projects igång som man får.
+
+**Hur ofta man är där:**
+
+| Regel | Säkerhet |
+|---|---|
+| En Realm är en utflykt med många strider och en kort Realm Quest. Questen måste klaras innan man får lämna Realmen. | Bekräftat |
+| När questen är klar använder man Teleportation Shrine för att åka **till en ny Realm eller hem**. Man behöver alltså inte åka hem mellan Realms. | Bekräftat (Codex, wiki Realms) |
+| Spell Gem-Charges fylls vid start av varje Realm, inte i slottet. Liv återställs efter varje strid. Det finns alltså inget tvång att åka hem för att "vila". | Bekräftat / Troligt |
+| Man åker hem när man vill bygga om: fusera, kalla fram, smida, förtrolla, starta Projects. Det blir ungefär var några Realms. | Troligt (följer av reglerna; ingen källa anger takt) |
+| Dör hela laget skickas man hem och förlorar Fortune. | Bekräftat |
+| Utrustning och makron sköts från huvudmenyn ("Items", "Creatures → Assign Macro"). Huvudmenyn nås troligen även inne i en Realm. | Troligt |
+
+**Vårt läger i dag:** det visas efter **varje** vunnen strid (våning). Där väljer man en av tre troféer,
+fördelar troféerna mellan hjältarna, öppnar makron och ser nästa strid. Charges följer med och fylls inte
+på. Startskärmen är där man väljer Ed och följeslagare.
+
+**Jämförelse:** vårt läger motsvarar egentligen inte slottet. Det motsvarar stunden *mellan strider inne i
+en Realm*: bytet efter striden plus huvudmenyn. Vår startskärm är närmare slottet och Teleportation
+Shrine. Det är rimligt för kryptloopen.
+
+**Frågor att besluta:**
+
+1. Ska det finnas ett riktigt slott, en bas, *mellan* körningarna? Den skulle ge en plats för det som
+   varar över körningar: samlingen, Eder att låsa upp, smedja för artefakter, Projects. I Siralim är det
+   där den långsiktiga motivationen ligger, och Projects är det som får spelaren att längta tillbaka.
+2. Ska lägret fylla på något? I Siralim gör det inte det mellan strider (bara liv). Fyller lägret på
+   Charges blir de en resurs per strid i stället för per körning.
+3. Siralims kritik gäller grind och menyer i slottet. En liten bas med få, tydliga platser (som smeden
+   och Ed-altaret) ger det långsiktiga utan Siralims meny-djungel.
+
+### 10d. Förslag: vår bas, som originalet men med egna lösningar
+
+Användarens riktning (2026-10-18): en bas som Siralims slott, med egna lösningar där vår design skiljer
+sig. Vi smälter till exempel inga monster. Smeden och flera andra platser passar oss.
+
+**Rytm, som originalet:** basen ligger *mellan* körningarna, och en körning motsvarar en Realm. Lägret
+finns kvar *inne i* körningen, mellan våningarna. Man åker hem när man vill bygga om, eller när laget dör.
+
+| Siralim | Vår plats (förslag) | Vad man gör | Vår lösning i stället för originalets |
+|---|---|---|---|
+| Teleportation Shrine | **Kryptporten** | Välj krypta och djup, senare instabilitet och våningsregler (Realm Properties), slumpa om reglerna | Som originalet |
+| Blacksmith | **Smeden** | Smid en Artifact av fem typer (svärd, sköld, hjälm, stövlar, stav), uppgradera nivåer som öppnar platser, socka material | Som originalet. Typen avgör när förmågan i den slår till |
+| Fusion | **Trofésalen** | Troféerna hänger på väggen (3D: monsterhuvuden, sköldar). Här bestämmer man vem som bär vilken | Ingen fusion. Trofén = Trait Material. Alternativ: trofén sockas i artefaktens Trait Slot hos Smeden, precis som Masters-material i originalet |
+| Enchanter | **Runristaren** | Lär hjältarna nya förmågor från inskrifter man hittat i kryptan, ge förmågorna egenskaper (som Cascading eller Generous), fler Charges | Förmågor i stället för Spell Gems, men samma tre platser och samma regler |
+| Enchanted Wardrobe | **Edsaltaret** (kapellet) | Välj Ed, lägg perks för poäng från körningar, återställ gratis | Ed = Specialization |
+| Summoning Brazier | **Värdshuset** | Värva följeslagare | Namngivna personer, inte varelser. Upplåsta genom händelser i kryptan (räddad fånge, uppdrag) i stället för Mana |
+| Everett, Projects | **Byggmästaren** | Bygg upp klostret eller borgen: samla föremål i kryptan för att låsa upp Smedens nivåer, nya Eder, nya platser och fler samtidiga projekt | Som originalet. Det är det som ger långsiktig dragkraft |
+| Arena | **Övningsgården** | Prova sällskapet mot valfria fiender, utan risk | Lyfts fram tidigt. Den testar ledstjärnan direkt: "vill spelaren prova den nya kombinationen genast?" |
+| Codex, Bestiary, Knowledge | **Biblioteket** | Samlingen av troféer, kända fiender och kunskap per fiende | Som originalet |
+| Reliquary, Piety, Prophecies | **Relikskrinet** | Helgonreliker som uppgraderas med fromhet | Senare. Passar en paladin perfekt |
+| Guilds, False Gods | **Riddarordnarna** | Uppdrag mot falska gudar, rykte, belöningar | Senare |
+| Decorations, Gambling Dwarves, minispel | – | – | Hoppas över, eller blir troféer på väggen |
+
+**Ordning efter ledstjärnan** (kombinationer före innehåll):
+
+1. **Smeden.** Artefakttypen ger en ny regelbrytare per handling (Anfall, Defend, Provoke).
+2. **Övningsgården.** Gör det gratis att prova en ny kombination.
+3. **Edsaltaret.** Fler Eder och perks.
+4. **Runristaren.** 2–3 förmågor per hjälte med egenskaper.
+5. **Byggmästaren.** Projects som låser upp resten och ger en anledning att åka ut igen.
+6. **Värdshuset.** Fler följeslagare, sedan Relikskrinet och Riddarordnarna.
+
+**Valuta:** Siralim har fem resurser (Brimstone, Crystal, Essence, Granite, Power) plus Emblems.
+Det är en källa till grind-kritiken. Förslag: en resurs per plats till att börja med, till exempel
+*järn* för Smeden och *bläck* för Runristaren, samt föremål till projekten.
+
 ## 11. Till ordlistan (`docs/ordlista.md`)
 
 Rättelser:
@@ -435,6 +520,7 @@ Saknas:
   [S3: Macro question / suggestion](https://steamcommunity.com/app/841770/discussions/0/1734342161847424378/),
   [Something Awful-tråden](https://forums.somethingawful.com/showthread.php?threadid=3962134&userid=0&perpage=40&pagenumber=2),
   [skärmdump av Macro Editor](https://steamcommunity.com/sharedfiles/filedetails/?id=3356475192)
+- Slott och Projects: [Projects (wiki)](https://siralimultimate.wiki.gg/wiki/Projects), Codex-avsnitten Castle och Realms
 - [Steam-diskussion om fusion](https://steamcommunity.com/app/1289810/discussions/0/5767400709485797483),
   [Steam-diskussion om instability](https://steamcommunity.com/app/1289810/discussions/0/5710018482973776302)
 - Mobilbetyg och styrning: [worldsapps](https://worldsapps.com/reviews-siralim-ultimate), [grand-screen](https://grand-screen.com/games/siralim-ultimate/reviews/)
