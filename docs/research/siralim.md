@@ -492,6 +492,288 @@ Saknas:
 | Inspect | gratis titt på fiendens allt | |
 | Default action, Turbo | standardhandling, håll Q/E för att köra den | Auto |
 
+## 12. Stats och skadeformler (underlag för 0.13)
+
+### Vad som är belagt i originalet
+
+| Stat | Gör | Säkerhet |
+|---|---|---|
+| Health | Liv. 0 = död. | Bekräftat (Codex) |
+| Attack | Skada med Attack. | Bekräftat |
+| Intelligence | Potency för spells: skada, helning, stat-ändringar. | Bekräftat |
+| Defense | Dras av från Attack/Potency innan modifierarna. Indirect Damage drar bara av 20 %. | Bekräftat |
+| Speed | Startplats på Timeline, chans till undvikande, chans till och storlek på krit. Allt räknas mot målets Speed. Ordningen räknas aldrig om under striden. | Bekräftat (Codex); "räknas aldrig om" Troligt (spelare) |
+
+**Formler (Bekräftat, wiki Combat):**
+
+- Attack Damage = `(max(Attack − Defense, 0) + 1 % · Attack) × modifierare + additional`
+- Spell Damage = `max(Potency − Defense, 0) × modifierare + additional`. Potency = Int × nivåns
+  procent (Small 90 % … Devastating 150 %). Starkare nivåer ignorerar 0–40 % av Defense (tabellen i
+  avsnitt 2). Spells på hela laget får ×0,25 efter Defense.
+- Indirect Damage = `skada × modifierare + additional − 20 % · Defense`. Här dras Defense av *efter*
+  modifierarna. Ingen krit och inget undvikande.
+- Procentökningar adderas, minskningar multipliceras, varje källa till minskning stannar vid 80 %.
+- Defend: −35 % skada **och** +50 % Defense. Provoke: alla fiendens attacker och spells går mot
+  figuren, och den har −35 % Defense. (Bekräftat, Codex)
+- Klass stark/svag: ×2 / ×½. Stats kan inte sjunka under 20 % av startvärdet.
+
+**Krit och undvikande: formeln är inte publicerad.** Wikin skriver uttryckligen att formeln är okänd.
+Spelare på Steam säger samma sak, och ingen utvecklare har svarat. Det enda som finns:
+
+- Krit-*skada* +200 % vid 3× målets Speed, cirka +450 % vid 27×, avtagande. Krit-bonusar adderas
+  (Pummel +200 % vid 3× = +400 %). (Bekräftat, wiki)
+- Traitet *Frenzy*: "dodge and deal critical damage as if they have 100 % more Speed". Både krit och
+  undvikande skalar alltså med Speed-kvoten. (Bekräftat, trait-text)
+- Krit-*chans* och undvikande-chans: inga datapunkter. (Okänt)
+
+### Förslag till vår modell (vårt val där originalet är okänt)
+
+- **Skada:** ta Siralims formler rakt av. `power` i abilities blir modifieraren:
+  `(max(Attack − Defense, 0) + 0,01 · Attack) × power × modifierare`. Spells använder Int.
+- **Krit-skada** (passar båda datapunkterna): `bonus = 75 % + 125 % · log₃(r)`, där r = egen
+  Speed / målets Speed. Det ger +75 % vid lika fart, +154 % vid 2×, +200 % vid 3× och +450 % vid 27×.
+  Under lika fart (r < 1) blir det +50 %, som vår `CRIT_MULT` 1,5 i dag.
+- **Krit-chans:** dagens `crit_chance` gäller vid lika fart, plus 10 procentenheter per fördubbling av r,
+  högst 50 %.
+- **Undvikande:** bara när målet är snabbare: 10 % per fördubbling av målets fart mot angriparens,
+  högst 30 %. Spells och Indirect Damage kan inte undvikas.
+- **Defend och Provoke** som originalet. Provoke blir mildare för en tank än vår +30 % i dag: Brokk
+  får 39 Defense i stället för 60.
+
+### Startvärden som håller dagens balans
+
+Tanken: fiendernas Attack höjs lika mycket som sällskapets genomsnittliga Defense (≈ 39, avrundat till
++40). Hjältarnas Attack höjs lika mycket som fiendernas genomsnittliga Defense (≈ 15). Medelskadan blir
+då ungefär oförändrad, men fördelas om: tanken tar mindre, de lätta tar mer.
+
+| Hjälte | Health | Attack (idag → nytt) | Int | Defense | Speed |
+|---|---|---|---|---|---|
+| Paladinen | 900 | 70–90 → 85–105 | 95 | 50 | 10 |
+| Brokk | 1150 | 55–70 → 70–85 | 77 | 60 | 7 |
+| Syster Alva | 700 | 45–55 → 60–70 | 65 | 25 | 11 |
+| Jägaren Eira | 650 | 65–85 → 80–100 | 90 | 20 | 14 |
+| Solveig | 600 | 60–75 → 75–90 | 83 | 15 | 12 |
+
+Int = Attack-mitten + 15, så att spells efter fiendens Defense gör ungefär lika mycket som i dag. Helningar
+dras inte mot Defense och skulle bli för starka. Sänk därför helningarnas `power` med faktorn
+mitten / (mitten + 15). Exempel: Helande ljus 3,0 → 2,3.
+
+| Fiende | Health | Attack (idag → nytt) | Defense | Speed |
+|---|---|---|---|---|
+| Skelettkrigare | 640 | 161–195 → 201–235 | 20 | 9 |
+| Skelettbågskytt | 440 | 131–158 → 171–198 | 10 | 13 |
+| Gravpräst | 460 | 79–94 → 119–134 | 10 | 8 |
+| Gravväktare | 900 | 118–144 → 158–184 | 45 | 6 |
+| Glödskelett | 480 | 103–126 → 143–166 | 15 | 11 |
+| Benlich (boss) | 2000 | 112–135 → 152–175 | 30 | 9 |
+
+Exempel (skelettkrigare, medel 218): mot Brokk 160, mot Paladinen 170, mot Alva 195, mot Eira 200 (i dag
+178 mot alla). Mot Brokk som försvarar sig (Defense 90, −35 %): 83. Mot Brokk som provocerar
+(Defense 39): 181.
+
+Kontrollera med `tests/balance_report.gd` efteråt. Målet är detsamma: BASIC förlorar nästan alltid,
+AUTO vinner ~95 %, cirka 7 rundor. Gravväktaren (Defense 45) blir tydligt svårare att slå med svaga
+anfall. Det är meningen, och det gör Alvas och Solveigs spells mer värda.
+
+## 13. Edsaltaret: tre Eder i vårt dataformat
+
+Siralims Specialization gäller **hela laget**. Hos oss bärs Eden av Paladinen och slutar verka när hen dör
+(0.12). Förslag: varje Ed har ett kärn-trait som alltid gäller, och 4–6 perks som låses upp vid
+Edsaltaret. Varje perk är ett trait i `data/traits.json` med `"oath"` och `"perk": true`. Siralim köper
+perks i flera nivåer (ranks). Vi börjar med ett steg per perk, i Siralims maxnivå eller lägre.
+
+Märkning: **O** = idén finns i originalet (namn och effekt, siffran ofta sänkt av oss). **V** = vårt
+val. **⚙** = kräver något som motorn inte har i dag (se listan sist).
+
+### Hämndens ed (Paladin, Retribution)
+
+Kärna: `oath_vengeance`, som finns i dag. Paladinen slår tillbaka för 40 % när en allierad träffas.
+Originalet: varje figur slår själv tillbaka för upp till 25 %. **O**
+
+| Perk (original) | Effekt hos oss | Märkning |
+|---|---|---|
+| Zeal | Retribution +50 % om den träffade provocerar | O ⚙ |
+| Wrath | Retribution +50 % om den träffade försvarar sig | O ⚙ |
+| Reckoning | När en allierad provocerar anfaller hen en slumpad fiende | O ⚙ |
+| Hand of Light | Efter Retribution helas alla allierade för 20 % av skadan | O (fungerar i motorn i dag) |
+| Divine Toll | Efter Retribution 25 % chans att kasta Helig smäll gratis mot samma fiende | O, chansen V ⚙ |
+| Execution Sentence | När en allierad dör tar alla fiender Helig skada (60 % av Paladinens Attack) | O förenklad: originalet räknar Retribution-skadan hittills i striden ⚙ |
+
+```json
+"vengeance_hand_of_light": {
+	"name": "Ljusets hand", "oath": "oath_vengeance", "perk": true,
+	"text": "När Hämndens ed slår tillbaka helas hela sällskapet för 20 % av skadan.",
+	"trigger": "damage",
+	"when": {"source": "self", "ability": "oath_vengeance"},
+	"effects": [{"type": "heal", "pct_of_event": 0.2, "target": "allies"}]
+},
+"vengeance_zeal": {
+	"name": "Iver", "oath": "oath_vengeance", "perk": true,
+	"text": "Hämndens ed slår 50 % hårdare för en allierad som provocerar.",
+	"trigger": "modify_damage",
+	"when": {"ability": "oath_vengeance", "origin_target_has_aura": "provoke"},
+	"modify": {"damage_mult": 1.5}
+},
+"vengeance_wrath": {
+	"name": "Vrede", "oath": "oath_vengeance", "perk": true,
+	"text": "Hämndens ed slår 50 % hårdare för en allierad som försvarar sig.",
+	"trigger": "modify_damage",
+	"when": {"ability": "oath_vengeance", "origin_target_has_aura": "defend"},
+	"modify": {"damage_mult": 1.5}
+},
+"vengeance_reckoning": {
+	"name": "Räkenskap", "oath": "oath_vengeance", "perk": true,
+	"text": "När någon i sällskapet provocerar anfaller hen en slumpad fiende.",
+	"trigger": "aura_applied",
+	"when": {"unit": "ally", "aura": "provoke"},
+	"effects": [{"type": "damage", "power": 1.0, "kind": "attack", "actor": "event_unit", "target": "enemy"}]
+},
+"vengeance_divine_toll": {
+	"name": "Klockan klämtar", "oath": "oath_vengeance", "perk": true,
+	"text": "När Hämndens ed slår tillbaka har Paladinen 25 % chans att kasta Helig smäll gratis.",
+	"trigger": "damage", "chance": 0.25,
+	"when": {"source": "self", "ability": "oath_vengeance"},
+	"effects": [{"type": "cast", "ability": "holy_smite", "free": true, "target": "target"}]
+},
+"vengeance_execution": {
+	"name": "Domslut", "oath": "oath_vengeance", "perk": true,
+	"text": "När någon i sällskapet dör tar alla fiender Helig skada.",
+	"trigger": "death",
+	"when": {"unit": "ally"},
+	"effects": [{"type": "damage", "power": 0.6, "school": "holy", "kind": "indirect", "target": "enemies"}]
+}
+```
+
+### Gryningens ed (Cleric: helning, Barrier, buffar)
+
+Kärna, **V** (byggd på Clerics *Luminesce*, som gör överhelning till Barrier): när någon i sällskapet
+helas får målet Barrier för 30 % av helningen.
+
+| Perk (original) | Effekt hos oss | Märkning |
+|---|---|---|
+| Guiding Light | Vid stridens start får alla Barrier för 15 % av max liv (original 50 %) | O ⚙ |
+| Anointment | Efter en helning 50 % chans att målet får Välsignelse | O (original: slumpad buff). Fungerar i motorn för Paladinens helningar |
+| Greater Healing | All helning i sällskapet +50 % (original +100 %) | O ⚙ |
+| Revelation | I början av Paladinens tur 30 % chans att väcka en död allierad med 30 % liv | O (original: i slutet av turen) ⚙ |
+| Holy Might | +10 % skada per buff man har (original 10 % per buff) | O ⚙ |
+
+```json
+"oath_dawn": {
+	"name": "Gryningens ed",
+	"text": "När någon i sällskapet helas får målet en Barrier för 30 % av helningen.",
+	"trigger": "heal", "scope": "party",
+	"when": {"target": "ally"},
+	"effects": [{"type": "barrier", "pct_of_event": 0.3, "target": "target"}]
+},
+"dawn_guiding_light": {
+	"name": "Ledljus", "oath": "oath_dawn", "perk": true,
+	"text": "Vid stridens start får hela sällskapet en Barrier för 15 % av sitt liv.",
+	"trigger": "battle_start",
+	"effects": [{"type": "barrier", "pct_max_hp": 0.15, "target": "allies"}]
+},
+"dawn_anointment": {
+	"name": "Smörjelse", "oath": "oath_dawn", "perk": true,
+	"text": "Efter en helning har målet 50 % chans att få Välsignelse.",
+	"trigger": "heal", "chance": 0.5, "scope": "party",
+	"when": {"target": "ally"},
+	"effects": [{"type": "aura", "aura": "blessing", "target": "target"}]
+},
+"dawn_greater_healing": {
+	"name": "Större helning", "oath": "oath_dawn", "perk": true,
+	"text": "All helning i sällskapet är 50 % starkare.",
+	"trigger": "modify_heal", "scope": "party",
+	"modify": {"heal_mult": 1.5}
+},
+"dawn_revelation": {
+	"name": "Uppenbarelse", "oath": "oath_dawn", "perk": true,
+	"text": "I början av Paladinens tur: 30 % chans att väcka en död allierad med 30 % liv.",
+	"trigger": "turn_start", "chance": 0.3,
+	"when": {"unit": "self"},
+	"effects": [{"type": "revive", "pct": 0.3, "target": "dead_ally"}]
+},
+"dawn_holy_might": {
+	"name": "Helig makt", "oath": "oath_dawn", "perk": true,
+	"text": "Sällskapet gör 10 % mer skada per buff de har.",
+	"trigger": "modify_damage", "scope": "party",
+	"modify": {"damage_mult_per_aura": 0.1}
+}
+```
+
+### Väktarens ed (Siegemaster: Defend, Provoke, Defense)
+
+Kärna, **O** (*Thorns*): när någon i sällskapet tar skada av en attack eller spell slår hen tillbaka för
+15 % av sin Defense. Kräver Defense från avsnitt 12. Dagens `oath_challenger` (Utmanarens ed, Provoke →
+Defend) motsvarar *War Machine* och flyttas hit som perk.
+
+| Perk (original) | Effekt hos oss | Märkning |
+|---|---|---|
+| War Machine | När någon provocerar försvarar hen sig också | O (finns som `oath_challenger`, men bara för Paladinen) ⚙ scope |
+| In Formation | Alla börjar striden med Försvara | O ⚙ |
+| Rest Up | Efter Försvara får hjälten tillbaka 1 Charge på en förmåga | O ⚙ |
+| Titanic Rage | +50 % skada mot fiender som försvarar sig eller provocerar (original +150 %) | O. Gravväktaren provocerar, så det passar krypta 2 |
+| The Best Offense | Anfall gör extra skada lika med 30 % av egen Defense | O ⚙ |
+| Barricade | Medan någon försvarar sig tar de andra 20 % mindre skada (original: grannar 50 %) | O förenklad: vi har inga grannar ⚙ |
+
+```json
+"oath_ward": {
+	"name": "Väktarens ed",
+	"text": "När någon i sällskapet träffas av en attack eller spell slår hen tillbaka för 15 % av sin Defense.",
+	"trigger": "damage", "scope": "party",
+	"when": {"target": "ally", "source": "enemy", "direct": true},
+	"effects": [{"type": "damage", "stat": "defense", "pct": 0.15, "kind": "indirect", "actor": "event_target", "target": "source"}]
+},
+"ward_war_machine": {
+	"name": "Krigsmaskin", "oath": "oath_ward", "perk": true,
+	"text": "När någon i sällskapet provocerar försvarar hen sig också.",
+	"trigger": "aura_applied", "scope": "party",
+	"when": {"unit": "ally", "aura": "provoke"},
+	"effects": [{"type": "aura", "aura": "defend", "target": "event_unit"}]
+},
+"ward_in_formation": {
+	"name": "I formation", "oath": "oath_ward", "perk": true,
+	"text": "Hela sällskapet börjar striden försvarande.",
+	"trigger": "battle_start",
+	"effects": [{"type": "aura", "aura": "defend", "target": "allies"}]
+},
+"ward_rest_up": {
+	"name": "Vila upp", "oath": "oath_ward", "perk": true,
+	"text": "När någon försvarar sig får hen tillbaka en Charge på en förmåga.",
+	"trigger": "aura_applied", "scope": "party",
+	"when": {"unit": "ally", "aura": "defend"},
+	"effects": [{"type": "restore_charge", "amount": 1, "target": "event_unit"}]
+},
+"ward_titanic_rage": {
+	"name": "Titanisk vrede", "oath": "oath_ward", "perk": true,
+	"text": "Sällskapet gör 50 % mer skada mot fiender som försvarar sig eller provocerar.",
+	"trigger": "modify_damage", "scope": "party",
+	"when": {"target_has_any_aura": ["defend", "provoke"]},
+	"modify": {"damage_mult": 1.5}
+},
+"ward_best_offense": {
+	"name": "Bästa försvaret", "oath": "oath_ward", "perk": true,
+	"text": "Anfall gör extra skada lika med 30 % av anfallarens Defense.",
+	"trigger": "modify_damage", "scope": "party",
+	"when": {"kind": "attack"},
+	"modify": {"additional_from_stat": {"stat": "defense", "pct": 0.3}}
+}
+```
+
+### Vad motorn behöver (⚙)
+
+1. **`"scope": "party"`.** Traitet gäller allas händelser, som om varje allierad bar det. Det motsvarar
+   Siralims Specialization. Det är det viktigaste tillägget. Utan det blir modify-perks bara Paladinens.
+2. **`actor`.** Den som utför effekten: `event_unit` (den som agerade) eller `event_target` (den som
+   träffades). I dag är det alltid traitets ägare.
+3. **Nya effekter:** `cast` (förmåga, gratis), `revive`, `barrier` (absorberar skada; i originalet
+   staplas de inte, den starkaste gäller, max 200 % av högsta stat), `restore_charge`.
+4. **Nya triggers:** `battle_start` (efter Siralims ordning i avsnitt 2), eventuellt `turn_end`.
+5. **Nya mål och villkor:** `enemies`, `dead_ally`, `origin_target_has_aura` (den allierade som
+   utlöste Retribution), `target_has_any_aura`, `damage_mult_per_aura`, `additional_from_stat`.
+6. **Defense och Int** som stats (avsnitt 12).
+
+Börja med Hämndens ed: `vengeance_hand_of_light` fungerar redan, och resten kräver bara punkt 2–5.
+Gryningens och Väktarens ed kräver `scope: party` och Barrier.
+
 ---
 
 ## Källor
@@ -521,6 +803,7 @@ Saknas:
   [Something Awful-tråden](https://forums.somethingawful.com/showthread.php?threadid=3962134&userid=0&perpage=40&pagenumber=2),
   [skärmdump av Macro Editor](https://steamcommunity.com/sharedfiles/filedetails/?id=3356475192)
 - Slott och Projects: [Projects (wiki)](https://siralimultimate.wiki.gg/wiki/Projects), Codex-avsnitten Castle och Realms
+- [Cleric](https://siralimultimate.wiki.gg/wiki/Cleric), [Siegemaster](https://siralimultimate.wiki.gg/wiki/Siegemaster), [Steam: Speed stat](https://steamcommunity.com/app/1289810/discussions/0/3096760955426011883/), [Steam: new player question (krit)](https://steamcommunity.com/app/1289810/discussions/0/3467226415503450035/), [S3: speed → crit/dodge](https://steamcommunity.com/app/841770/discussions/0/1642042464747022009/)
 - [Steam-diskussion om fusion](https://steamcommunity.com/app/1289810/discussions/0/5767400709485797483),
   [Steam-diskussion om instability](https://steamcommunity.com/app/1289810/discussions/0/5710018482973776302)
 - Mobilbetyg och styrning: [worldsapps](https://worldsapps.com/reviews-siralim-ultimate), [grand-screen](https://grand-screen.com/games/siralim-ultimate/reviews/)
