@@ -78,6 +78,9 @@ func _tap(p: Vector2) -> void:
 			if _wearer_rect(i).has_point(p):
 				wearer = party[i]
 				return
+	if _macro_rect().has_point(p):
+		run.open_macros(run.START_SCENE)
+		return
 	if _button_rect().has_point(p) and companions.size() == 3:
 		var party := _party()
 		run.start_run(oath, party)
@@ -119,6 +122,10 @@ func _button_rect() -> Rect2:
 	return Rect2((size.x - 340) / 2.0, size.y - 76, 340, 60)
 
 
+func _macro_rect() -> Rect2:
+	return Rect2(size.x - MARGIN - 200, size.y - 70, 200, 50)
+
+
 # --- Ritning ----------------------------------------------------------------
 
 func _draw() -> void:
@@ -138,8 +145,8 @@ func _draw() -> void:
 		var id: String = COMPANIONS[i]
 		var h: Dictionary = data.heroes[id]
 		var t: Dictionary = data.traits[h.traits[0]]
-		var sig: Dictionary = data.abilities[h.signature]
-		var body := "%s: %s\n%s" % [t.name, t.text, sig.name]
+		var names: Array = h.abilities.map(func(id: String) -> String: return data.abilities[id].name)
+		var body := "%s: %s\nFörmågor: %s" % [t.name, t.text, ", ".join(names)]
 		UiStyle.card(self, _companion_rect(i), h.name, body, companions.has(id), Color(h.color), h.title.to_upper())
 
 	UiStyle.text(self, Vector2(MARGIN, 400), "TA MED EN TROFÉ FRÅN SAMLINGEN (VALFRITT)", 14, Color(1, 1, 1, 0.6))
@@ -160,3 +167,10 @@ func _draw() -> void:
 					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
 	UiStyle.big_button(self, _button_rect(), "IN I KRYPTAN", _t, companions.size() == 3)
+	_small_button(_macro_rect(), "MAKRON")
+
+
+func _small_button(r: Rect2, label: String) -> void:
+	draw_rect(r, Color(0, 0, 0, 0.6))
+	draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)
+	UiStyle.text(self, r.position + Vector2(0, r.size.y / 2 + 8), label, 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 4)

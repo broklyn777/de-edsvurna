@@ -36,5 +36,15 @@
 		"name": "Skyddad",
 		"duration": 1,
 		"damage_taken_mult": 0.75
+	},
+	"holy_shield": {
+		"name": "Helig sköld",
+		"duration": 1,
+		"damage_taken_mult": 0.6
+	},
+	"renew": {
+		"name": "Förnyelse",
+		"duration": 3,
+		"hot": 45
 	}
 }

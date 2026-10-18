@@ -1,0 +1,43 @@
+{
+	"paladin": {
+		"name": "Paladinen",
+		"lines": [
+			{"subject": "any_ally", "cond": "hp_below", "value": 30, "action": "ability", "ability": "holy_shield", "target": "that"},
+			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "holy_smite", "target": "that"},
+			{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}
+		]
+	},
+	"brokk": {
+		"name": "Brokk",
+		"lines": [
+			{"subject": "self", "cond": "hp_below", "value": 50, "action": "ability", "ability": "stone_wall"},
+			{"subject": "self", "cond": "lacks_status", "value": "provoke", "action": "provoke"},
+			{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}
+		]
+	},
+	"alva": {
+		"name": "Syster Alva",
+		"lines": [
+			{"subject": "any_ally", "cond": "hp_below", "value": 40, "action": "ability", "ability": "healing_light", "target": "that"},
+			{"subject": "any_ally", "cond": "lacks_status", "value": "renew", "action": "test_next"},
+			{"subject": "any_ally", "cond": "hp_below", "value": 80, "action": "ability", "ability": "renew", "target": "that"},
+			{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}
+		]
+	},
+	"eira": {
+		"name": "Jägaren Eira",
+		"lines": [
+			{"subject": "any_enemy", "cond": "has_status", "value": "marked", "action": "attack", "target": "that"},
+			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "hunters_mark", "target": "that"},
+			{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}
+		]
+	},
+	"solveig": {
+		"name": "Solveig",
+		"lines": [
+			{"subject": "enemy_3", "cond": "is_alive", "action": "ability", "ability": "flame_wave"},
+			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "fireball", "target": "that"},
+			{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}
+		]
+	}
+}

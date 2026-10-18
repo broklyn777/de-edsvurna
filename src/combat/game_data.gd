@@ -2,7 +2,7 @@ class_name GameData
 extends RefCounted
 ## Läser speldata (förmågor, auror, hjältar, fiender, möten, egenskaper) från data/*.json.
 
-const FILES := ["abilities", "auras", "heroes", "enemies", "encounters", "traits"]
+const FILES := ["abilities", "auras", "heroes", "enemies", "encounters", "traits", "macros"]
 
 
 static func load_all() -> Dictionary:

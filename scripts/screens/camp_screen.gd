@@ -17,7 +17,8 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	if not run.offer.is_empty():
-		chosen = run.offer[0]
+		chosen = run.camp_chosen if run.offer.has(run.camp_chosen) else run.offer[0]
+		run.camp_chosen = chosen
 		selected = chosen
 
 
@@ -44,6 +45,7 @@ func _tap(p: Vector2) -> void:
 		if _offer_rect(i).has_point(p):
 			var old := chosen
 			chosen = run.offer[i]
+			run.camp_chosen = chosen
 			# Byter man val flyttas den tidigare valda troféns plats till den nya.
 			var w := state.wearer(old)
 			if w != "":
@@ -64,6 +66,9 @@ func _tap(p: Vector2) -> void:
 			else:
 				state.equip(hero_id, "")
 			return
+	if _macro_rect().has_point(p):
+		run.open_macros(run.CAMP_SCENE)
+		return
 	if _button_rect().has_point(p):
 		if chosen != "":
 			state.take_trophy(chosen)
@@ -96,6 +101,10 @@ func _hero_rect(i: int) -> Rect2:
 
 func _button_rect() -> Rect2:
 	return Rect2(size.x - 340 - MARGIN, size.y - 76, 340, 60)
+
+
+func _macro_rect() -> Rect2:
+	return Rect2(size.x - 340 - MARGIN - 220, size.y - 70, 200, 50)
 
 
 # --- Ritning ----------------------------------------------------------------
@@ -146,6 +155,10 @@ func _draw() -> void:
 	if boss_text != "":
 		UiStyle.text(self, Vector2(MARGIN, size.y - 64), boss_text, 15, Color("#ffb347"), HORIZONTAL_ALIGNMENT_LEFT, size.x - 420)
 	UiStyle.big_button(self, _button_rect(), "VIDARE", _t)
+	var m := _macro_rect()
+	draw_rect(m, Color(0, 0, 0, 0.6))
+	draw_rect(m, Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)
+	UiStyle.text(self, m.position + Vector2(0, m.size.y / 2 + 8), "MAKRON", 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, m.size.x, 4)
 
 
 func _source_name(trophy_id: String) -> String:

@@ -12,14 +12,9 @@
 		],
 		"crit_chance": 0.1,
 		"attack_ability": "strike",
-		"signature": "holy_smite",
+		"abilities": ["holy_smite", "holy_shield"],
 		"traits": [
 			"oath_vengeance"
-		],
-		"rules": [
-			{
-				"action": "signature"
-			}
 		],
 		"visual": {
 			"model": "torvald",
@@ -58,14 +53,9 @@
 		],
 		"crit_chance": 0.08,
 		"attack_ability": "axe_chop",
-		"signature": "stone_wall",
+		"abilities": ["stone_wall", "war_cry"],
 		"traits": [
 			"brokk_bulwark"
-		],
-		"rules": [
-			{
-				"action": "signature"
-			}
 		],
 		"visual": {
 			"model": "torvald",
@@ -101,17 +91,9 @@
 		],
 		"crit_chance": 0.08,
 		"attack_ability": "holy_bolt",
-		"signature": "healing_light",
+		"abilities": ["healing_light", "renew", "judgement"],
 		"traits": [
 			"alva_blessing"
-		],
-		"rules": [
-			{
-				"action": "signature",
-				"if": {
-					"ally_hp_below": 0.65
-				}
-			}
 		],
 		"visual": {
 			"model": "sigrun",
@@ -145,14 +127,9 @@
 		],
 		"crit_chance": 0.15,
 		"attack_ability": "arrow",
-		"signature": "hunters_mark",
+		"abilities": ["hunters_mark", "arrow_rain"],
 		"traits": [
 			"eira_followup"
-		],
-		"rules": [
-			{
-				"action": "signature"
-			}
 		],
 		"visual": {
 			"model": "liria",
@@ -185,17 +162,9 @@
 		],
 		"crit_chance": 0.12,
 		"attack_ability": "fire_bolt",
-		"signature": "flame_wave",
+		"abilities": ["flame_wave", "fireball"],
 		"traits": [
 			"solveig_kindle"
-		],
-		"rules": [
-			{
-				"action": "signature",
-				"if": {
-					"enemies_at_least": 2
-				}
-			}
 		],
 		"visual": {
 			"model": "solveig",

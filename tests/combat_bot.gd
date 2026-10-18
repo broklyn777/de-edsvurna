@@ -1,61 +1,57 @@
 extends RefCounted
 ## Simulerade spelare för balanstester i turordningsstriden.
 ##   BASIC – anfaller alltid det förvalda målet
-##   AUTO  – hjältarnas egna regler (samma som Auto-knappen)
-##   GOOD  – som AUTO, men slår ut helaren först och följer upp mot märkta mål
+##   MACRO – hjältarna kör startmakrona i data/macros.json (det Auto gör från början)
+##   TUNED – startmakrona med små förbättringar (TUNED_MACROS nedan): visar att makrobygget spelar roll
 
-enum Skill { BASIC, AUTO, GOOD }
+enum Skill { BASIC, MACRO, TUNED }
+
+## Startmakrona med små förbättringar (Brokk provocerar bara med mycket liv, Alva helar tidigare).
+## Försök som sparade Charges förlorade oftare – att spendera är oftast rätt.
+const TUNED_MACROS := {
+	"paladin": {"name": "Paladinen+", "lines": [
+		{"subject": "any_ally", "cond": "hp_below", "value": 35, "action": "ability", "ability": "holy_shield", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "holy_smite", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
+	"brokk": {"name": "Brokk+", "lines": [
+		{"subject": "self", "cond": "hp_below", "value": 50, "action": "ability", "ability": "stone_wall"},
+		{"subject": "self", "cond": "hp_above", "value": 50, "action": "test_next"},
+		{"subject": "self", "cond": "lacks_status", "value": "provoke", "action": "provoke"},
+		{"subject": "self", "cond": "hp_below", "value": 50, "action": "defend"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
+	"alva": {"name": "Syster Alva+", "lines": [
+		{"subject": "any_ally", "cond": "hp_below", "value": 50, "action": "ability", "ability": "healing_light", "target": "that"},
+		{"subject": "any_ally", "cond": "lacks_status", "value": "renew", "action": "test_next"},
+		{"subject": "any_ally", "cond": "hp_below", "value": 80, "action": "ability", "ability": "renew", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
+	"eira": {"name": "Jägaren Eira+", "lines": [
+		{"subject": "any_enemy", "cond": "has_status", "value": "marked", "action": "attack", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "hunters_mark", "target": "that"},
+		{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}]},
+}
 
 
 static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter := "crypt_1",
-		party: Array = [], traits := {}) -> Dictionary:
-	var sim := CombatSim.create(data, encounter, seed_value, party, traits)
+		party: Array = [], traits := {}, charges := {}) -> Dictionary:
+	var sim := CombatSim.create(data, encounter, seed_value, party, traits, charges)
 	sim.begin()
 	var guard := 0
+	var no_match := 0
 	while sim.outcome == "" and guard < 500:
 		guard += 1
 		if not sim.needs_input():
 			sim.ai_act()
 			continue
-		match skill:
-			Skill.BASIC:
-				sim.act("attack")
-			Skill.AUTO:
-				sim.auto = true
-				sim.ai_act()
-				sim.auto = false
-			Skill.GOOD:
-				_good(sim)
+		if skill == Skill.BASIC:
+			sim.act("attack")
+			continue
+		var macros: Dictionary = data.macros if skill == Skill.MACRO else TUNED_MACROS
+		var decision := MacroRunner.decide(sim, sim.current, macros.get(sim.current.id, {"lines": []}))
+		if decision.ok:
+			sim.act(decision.action, decision.target, decision.ability)
+		else:
+			no_match += 1
+			sim.act("defend")
 		sim.drain_events()
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
-	return {"outcome": sim.outcome, "rounds": sim.round, "alive": alive}
-
-
-static func _good(sim: CombatSim) -> void:
-	var h := sim.current
-	var focus := _focus_target(sim)
-	if h.role == "healer" and sim.can_act(h, "signature") == "":
-		for a in sim.heroes:
-			if a.alive and a.hp_pct() < 0.6:
-				sim.act("signature", a.id)
-				return
-	if h.role == "tank" and sim.can_act(h, "signature") == "":
-		sim.act("signature")
-		return
-	if h.role in ["dps", "leader"] and sim.can_act(h, "signature") == "":
-		sim.act("signature", focus)
-		return
-	sim.act("attack", focus)
-
-
-## Helaren först, sedan märkta mål, sedan den svagaste.
-static func _focus_target(sim: CombatSim) -> String:
-	var best: CombatUnit = null
-	for e in sim.enemies:
-		if not e.alive:
-			continue
-		if e.rules.any(func(r: Dictionary) -> bool: return r.ability == "grave_mend"):
-			return e.id
-		if best == null or e.auras.has("marked") and not best.auras.has("marked") or e.hp < best.hp:
-			best = e
-	return best.id if best else ""
+	return {"outcome": sim.outcome, "turns": sim.turn_no, "alive": alive, "no_match": no_match, "sim": sim}

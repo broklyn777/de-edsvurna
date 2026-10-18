@@ -1,14 +1,15 @@
 class_name CombatSim
 extends RefCounted
-## Turordningsstrid utan noder. Varje runda agerar alla levande en gång, snabbast först.
+## Turordningsstrid utan noder, med Siralims tidslinje: snabbheten avgör startplatsen, den som har
+## agerat läggs längst ned och kön roterar. Det finns inga rundor.
 ##
 ## Flöde: create() → begin() → så länge outcome == "":
-##   needs_input() → spelaren väljer act(action, target) för hjälten som har turen
+##   needs_input() → hjälten som har turen väntar på act(action, target, ability) – från spelaren
+##                   eller från ett makro (MacroRunner.decide)
 ##   annars        → ai_act() låter AI:n agera (fiender, och hjältar när auto är på)
 ## Töm händelserna med drain_events() och spela upp dem.
 ##
 ## Händelser (Dictionary med "type"):
-##   round_start {round, order}
 ##   turn_start {unit}
 ##   action {unit, action, ability, targets}
 ##   damage {source, target, amount, crit, school, kind, ability, direct}
@@ -21,7 +22,7 @@ extends RefCounted
 ##   aura_applied {unit, aura, refreshed} / aura_removed {unit, aura}
 ##   death {unit}
 ##   trait {unit, trait} – en egenskap slog till (händelser den orsakar bär fältet "trait")
-##   release {unit, trait, charge, amount, ability} – en förmåga förbrukade laddningar
+##   release {unit, trait, stack, amount} – en förmåga förbrukade en egenskaps uppladdade staplar
 ##   outcome {result: victory|defeat}
 
 const CRIT_MULT := 1.5
@@ -31,7 +32,8 @@ const MAX_TRAIT_CHAIN := 10
 ## besvärjelser och mottagna helningar, plus en övergripande gräns.
 const TURN_LIMIT := 5
 const TURN_PROC_LIMIT := 60
-const ACTIONS := ["attack", "signature", "defend", "provoke"]
+## Handlingar en hjälte kan göra på sin tur ("ability" kräver vilken förmåga).
+const ACTIONS := ["attack", "ability", "defend", "provoke", "skip"]
 ## Platser på slagfältet (sim-enheter, se UnitModel.to_world). Bara utseende.
 const HERO_SLOTS := [Vector2(-95, 10), Vector2(-150, -75), Vector2(-165, 95), Vector2(-230, 15),
 		Vector2(-240, -110), Vector2(-250, 130)]
@@ -42,9 +44,8 @@ var data: Dictionary
 var units: Array[CombatUnit] = []
 var heroes: Array[CombatUnit] = []
 var enemies: Array[CombatUnit] = []
-var round := 0
 var turn_no := 0
-## Vilka som har tur kvar den här rundan, i ordning.
+## Tidslinjen efter den som har turen: kön av levande figurer, i ordning.
 var order: Array[String] = []
 var current: CombatUnit
 var outcome := ""
@@ -66,9 +67,9 @@ var trait_stats := {}
 
 
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
-## hjältens förvalda egenskaper.
+## hjältens förvalda egenskaper; charges: hero_id -> {ability_id: kvar} (annars fulla).
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
-		party: Array = [], traits := {}) -> CombatSim:
+		party: Array = [], traits := {}, charges := {}) -> CombatSim:
 	var sim := CombatSim.new()
 	sim.data = game_data
 	sim.rng.seed = seed_value
@@ -80,6 +81,9 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		if traits.has(hero.id):
 			hero.traits = traits[hero.id].duplicate()
 		hero.traits = expand_traits(game_data, hero.traits)
+		for ability_id in hero.abilities:
+			var full := int(game_data.abilities[ability_id].get("charges", 0))
+			hero.charges[ability_id] = int(charges.get(hero.id, {}).get(ability_id, full))
 		sim._add(hero)
 		sim.heroes.append(hero)
 	var counts := {}
@@ -107,7 +111,20 @@ static func expand_traits(game_data: Dictionary, list: Array) -> Array:
 	return out
 
 func begin() -> void:
-	_start_round()
+	var alive: Array[CombatUnit] = units.duplicate()
+	alive.sort_custom(func(a: CombatUnit, b: CombatUnit) -> bool:
+		return a.speed > b.speed or (a.speed == b.speed and a.team < b.team))
+	order.clear()
+	for u in alive:
+		order.append(u.id)
+	for e in enemies:
+		_choose_intent(e)
+	_next_turn()
+
+
+## Förmågans fulla antal Charges (0 = obegränsad).
+func full_charges(ability_id: String) -> int:
+	return int(ability(ability_id).get("charges", 0))
 
 
 func ability(ability_id: String) -> Dictionary:
@@ -128,34 +145,40 @@ func needs_input() -> bool:
 	return outcome == "" and current != null and current.team == 0 and not auto
 
 
-## Förmågan bakom en handling ("attack", "signature", "defend") för en enhet.
-func action_ability(u: CombatUnit, action: String) -> String:
+## Förmågan bakom en handling för en enhet.
+func action_ability(u: CombatUnit, action: String, ability_id := "") -> String:
 	match action:
 		"attack":
 			return u.attack_ability
-		"signature":
-			return u.signature
+		"ability":
+			return ability_id
 		"provoke":
 			return "provoke"
+		"skip":
+			return "skip"
 	return "defend"
 
 
-## Tom sträng om handlingen går att göra, annars en orsak.
-func can_act(u: CombatUnit, action: String) -> String:
+## Tom sträng om handlingen går att göra, annars en orsak (dead, none, charges, cooldown).
+func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 	if u == null or not u.alive:
 		return "dead"
-	var ability_id := action_ability(u, action)
-	if ability_id == "":
+	var id := action_ability(u, action, ability_id)
+	if id == "" or not data.abilities.has(id):
 		return "none"
-	if u.cooldown_left(ability_id) > 0.0:
+	if action == "ability" and u.team == 0 and not u.abilities.has(id):
+		return "none"
+	if u.charges.has(id) and full_charges(id) > 0 and u.charges[id] <= 0:
+		return "charges"
+	if u.cooldown_left(id) > 0.0:
 		return "cooldown"
 	return ""
 
 
 ## Vilka mål spelaren kan välja för handlingen (tom lista = inget mål behövs).
-func valid_targets(u: CombatUnit, action: String) -> Array[String]:
+func valid_targets(u: CombatUnit, action: String, ability_id := "") -> Array[String]:
 	var out: Array[String] = []
-	match ability(action_ability(u, action)).get("target", "self"):
+	match ability(action_ability(u, action, ability_id)).get("target", "self"):
 		"enemy":
 			for x in _taunting_enemies(u):
 				out.append(x.id)
@@ -166,8 +189,8 @@ func valid_targets(u: CombatUnit, action: String) -> Array[String]:
 
 
 ## Förvalt mål om spelaren inte pekar ut något.
-func default_target(u: CombatUnit, action: String) -> String:
-	var ab := ability(action_ability(u, action))
+func default_target(u: CombatUnit, action: String, ability_id := "") -> String:
+	var ab := ability(action_ability(u, action, ability_id))
 	if not ab.get("target", "") in ["enemy", "ally"]:
 		return ""
 	var picked := _pick_targets(u, ab)
@@ -175,13 +198,13 @@ func default_target(u: CombatUnit, action: String) -> String:
 
 
 ## Hjälten som har turen gör en handling. Returnerar "" eller en orsak till att det inte gick.
-func act(action: String, target_id := "") -> String:
+func act(action: String, target_id := "", ability_id := "") -> String:
 	if outcome != "" or current == null:
 		return "over"
-	var reason := can_act(current, action)
+	var reason := can_act(current, action, ability_id)
 	if reason != "":
 		return reason
-	_perform(current, action_ability(current, action), action, target_id)
+	_perform(current, action_ability(current, action, ability_id), action, target_id)
 	_end_turn()
 	return ""
 
@@ -195,8 +218,8 @@ func ai_act() -> void:
 	_end_turn()
 
 
-## Laddningar som förmågan förbrukar när den används: {charge, value, max}, eller tom.
-func charge_info(u: CombatUnit, ability_id: String) -> Dictionary:
+## Egenskapsstaplar som förmågan förbrukar när den används: {stack, value, max}, eller tom.
+func stack_info(u: CombatUnit, ability_id: String) -> Dictionary:
 	for trait_id in u.traits:
 		var t: Dictionary = data.traits[trait_id]
 		var release: Dictionary = t.get("release", {})
@@ -204,62 +227,42 @@ func charge_info(u: CombatUnit, ability_id: String) -> Dictionary:
 			continue
 		var cap := 0.0
 		for effect in t.get("effects", []):
-			if effect.type == "charge":
-				cap = _charge_cap(u, effect)
-		return {"charge": release.charge, "value": u.charges.get(release.charge, 0.0), "max": cap}
+			if effect.type == "stack":
+				cap = _stack_cap(u, effect)
+		return {"stack": release.stack, "value": u.stacks.get(release.stack, 0.0), "max": cap}
 	return {}
 
 
-## Ordningen framöver: den som har turen, resten av rundan och sedan nästa runda (för tidslinjen).
-## Returnerar [{id, next_round}].
-func upcoming(count: int) -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	if current and current.alive:
-		out.append({"id": current.id, "next_round": false})
+## Tidslinjen framöver: den som har turen och sedan kön, som roterar (för tidslinjen i UI:t).
+func upcoming(count: int) -> Array[String]:
+	var cycle: Array[String] = []
 	for id in order:
 		if unit(id).alive:
-			out.append({"id": id, "next_round": false})
-	for id in _round_order():
-		out.append({"id": id, "next_round": true})
-	return out.slice(0, count)
-
-
-# --- Rundor och turer -------------------------------------------------------
-
-func _round_order() -> Array[String]:
-	var alive: Array[CombatUnit] = []
-	for u in units:
-		if u.alive:
-			alive.append(u)
-	alive.sort_custom(func(a: CombatUnit, b: CombatUnit) -> bool:
-		return a.speed > b.speed or (a.speed == b.speed and a.team < b.team))
+			cycle.append(id)
+	if current and current.alive:
+		cycle.append(current.id)
 	var out: Array[String] = []
-	for u in alive:
-		out.append(u.id)
+	if current and current.alive:
+		out.append(current.id)
+	while out.size() < count and not cycle.is_empty():
+		for id in cycle:
+			if out.size() >= count:
+				break
+			out.append(id)
 	return out
 
 
-func _start_round() -> void:
-	round += 1
-	order = _round_order()
-	_emit({"type": "round_start", "round": round, "order": order.duplicate()})
-	for e in enemies:
-		if e.alive:
-			_choose_intent(e)
-	_next_turn()
-
+# --- Turer ------------------------------------------------------------------
 
 func _next_turn() -> void:
 	current = null
-	while outcome == "":
-		if order.is_empty():
-			_start_round()
-			return
+	while outcome == "" and not order.is_empty():
 		var u := unit(order.pop_front())
 		if not u.alive:
 			continue
 		current = u
 		turn_no += 1
+		u.turns_taken += 1
 		_turn_counts.clear()
 		_turn_procs = 0
 		_emit({"type": "turn_start", "unit": u.id})
@@ -290,10 +293,16 @@ func _tick_turn_start(u: CombatUnit) -> void:
 				_emit({"type": "aura_removed", "unit": u.id, "aura": aura_id})
 
 
+## Den som har agerat läggs längst ned på tidslinjen. Fiender bestämmer då sin nästa handling.
 func _end_turn() -> void:
 	_check_outcome()
-	if outcome == "":
-		_next_turn()
+	if outcome != "":
+		return
+	if current and current.alive and not order.has(current.id):
+		order.push_back(current.id)
+		if current.team == 1:
+			_choose_intent(current)
+	_next_turn()
 
 
 func _check_outcome() -> void:
@@ -310,7 +319,8 @@ func _check_outcome() -> void:
 
 # --- AI ---------------------------------------------------------------------
 
-## Fienden bestämmer sin handling i början av rundan, så att spelaren kan se den.
+## Fienden bestämmer sin nästa handling i början av striden och i slutet av sin tur, så att
+## spelaren kan se den (som Siralims bossar som låser ett mål).
 func _choose_intent(e: CombatUnit) -> void:
 	for rule in e.rules:
 		var ability_id: String = rule.ability
@@ -332,12 +342,8 @@ func _enemy_choice(e: CombatUnit) -> Dictionary:
 	return {"action": "intent", "ability": e.intent.ability, "target": target}
 
 
+## Utan makro anfaller hjälten det förvalda målet (makron väljs utanför simulatorn).
 func _hero_choice(h: CombatUnit) -> Dictionary:
-	for rule in h.rules:
-		var action: String = rule.action
-		if can_act(h, action) != "" or not _rule_matches(h, rule):
-			continue
-		return {"action": action, "ability": action_ability(h, action)}
 	return {"action": "attack", "ability": h.attack_ability}
 
 
@@ -358,7 +364,12 @@ func _rule_matches(u: CombatUnit, rule: Dictionary) -> bool:
 # --- Förmågor ---------------------------------------------------------------
 
 func _perform(u: CombatUnit, ability_id: String, action: String, target_id: String) -> void:
+	if ability_id == "skip":
+		_emit({"type": "action", "unit": u.id, "action": "skip", "ability": "skip", "targets": []})
+		return
 	var ab := ability(ability_id)
+	if u.charges.has(ability_id) and full_charges(ability_id) > 0:
+		u.charges[ability_id] -= 1
 	var targets := _targets_for(u, ab, target_id)
 	var cooldown: float = ab.get("cooldown", 0.0)
 	if cooldown > 0.0:
@@ -465,7 +476,10 @@ func _revive(u: CombatUnit, pct: float) -> void:
 		return
 	u.alive = true
 	u.hp = roundf(u.max_hp * pct)
-	u.charges.clear()
+	u.revives += 1
+	u.stacks.clear()
+	if not order.has(u.id) and u != current:
+		order.push_back(u.id)
 	_emit({"type": "revive", "unit": u.id})
 
 
@@ -505,7 +519,9 @@ func _kill(u: CombatUnit) -> void:
 		return
 	u.alive = false
 	u.hp = 0.0
+	u.deaths += 1
 	u.auras.clear()
+	order.erase(u.id)
 	_emit({"type": "death", "unit": u.id})
 
 
@@ -513,8 +529,8 @@ func _kill(u: CombatUnit) -> void:
 # En egenskap lyssnar på en händelsetyp ("trigger") och kör effekter när villkoren i "when"
 # stämmer. "modify_*" körs i stället innan siffrorna räknas ut. Händelser som en egenskap
 # orsakar bär fältet "trait" och kan sätta igång andra egenskaper, men aldrig samma igen.
-# "once_per_turn" begränsar till en gång per tur (vems tur som helst); "internal_cooldown"
-# räknas i rundor.
+# "once_per_turn"/"max_per_turn" begränsar per tur (vems tur som helst); "internal_cooldown"
+# räknas i turer (allas).
 
 func _emit(e: Dictionary) -> void:
 	if _trait_ctx != "":
@@ -537,7 +553,7 @@ func _emit(e: Dictionary) -> void:
 			var last: Dictionary = owner.trait_ready.get(trait_id, {})
 			var count: int = last.count + 1 if last.get("turn", -1) == turn_no else 1
 			owner.trait_ready[trait_id] = {"turn": turn_no, "count": count,
-					"round": round + int(t.get("internal_cooldown", 0))}
+					"ready_at": turn_no + int(t.get("internal_cooldown", 0))}
 			_turn_procs += 1
 			_run_trait(owner, trait_id, t, e)
 
@@ -578,7 +594,7 @@ func _trait_ready(owner: CombatUnit, trait_id: String, t: Dictionary) -> bool:
 	var per_turn := 1 if t.get("once_per_turn", false) else int(t.get("max_per_turn", 0))
 	if per_turn > 0 and last.turn == turn_no and last.count >= per_turn:
 		return false
-	return round >= last.round
+	return turn_no >= last.ready_at
 
 
 func _run_trait(owner: CombatUnit, trait_id: String, t: Dictionary, e: Dictionary) -> void:
@@ -642,8 +658,8 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_heal(owner, tgt, amount, trait_id, false)
 		"aura":
 			_add_aura(owner, tgt, effect.aura, float(effect.get("duration", 0.0)))
-		"charge":
-			_add_charge(tgt, effect, e)
+		"stack":
+			_add_stack(tgt, effect, e)
 
 
 ## Samlar ihop en egenskapsmodifierare: multiplicerar tal, eller sant om någon egenskap säger sant.
@@ -707,26 +723,26 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 	return true
 
 
-# --- Laddningar och förlösning ----------------------------------------------
-# En egenskap kan ladda upp en resurs ("charge"-effekt) och förbruka den när hjälten använder
-# en viss förmåga ("release").
+# --- Staplar och förlösning -------------------------------------------------
+# En egenskap kan ladda upp staplar ("stack"-effekt) som förbrukas när hjälten använder en viss
+# förmåga ("release"). Inte samma sak som förmågornas Charges.
 
-func _charge_cap(u: CombatUnit, effect: Dictionary) -> float:
+func _stack_cap(u: CombatUnit, effect: Dictionary) -> float:
 	if effect.has("max_pct_hp"):
 		return roundf(u.max_hp * float(effect.max_pct_hp))
 	return float(effect.get("max", 5))
 
 
-func _add_charge(u: CombatUnit, effect: Dictionary, e: Dictionary) -> void:
-	var charge: String = effect.charge
+func _add_stack(u: CombatUnit, effect: Dictionary, e: Dictionary) -> void:
+	var stack: String = effect.stack
 	var every := int(effect.get("every", 1))
 	if every > 1:
-		u.charge_progress[charge] = u.charge_progress.get(charge, 0) + 1
-		if u.charge_progress[charge] < every:
+		u.stack_progress[stack] = u.stack_progress.get(stack, 0) + 1
+		if u.stack_progress[stack] < every:
 			return
-		u.charge_progress[charge] = 0
+		u.stack_progress[stack] = 0
 	var amount := float(e.get(effect.amount_from, 0.0)) if effect.has("amount_from") else float(effect.get("amount", 1))
-	u.charges[charge] = minf(_charge_cap(u, effect), u.charges.get(charge, 0.0) + amount)
+	u.stacks[stack] = minf(_stack_cap(u, effect), u.stacks.get(stack, 0.0) + amount)
 
 
 ## Plockar ut laddningarna som förmågan förbrukar och sätter skadebonusen för den här förmågan.
@@ -735,20 +751,21 @@ func _take_releases(caster: CombatUnit, ability_id: String) -> Array[Dictionary]
 	var mult := 1.0
 	for trait_id in caster.traits:
 		var release: Dictionary = data.traits[trait_id].get("release", {})
-		var amount: float = caster.charges.get(release.get("charge", ""), 0.0)
+		var amount: float = caster.stacks.get(release.get("stack", ""), 0.0)
 		if not _release_matches(caster, release, ability_id) or amount <= 0.0:
 			continue
-		caster.charges[release.charge] = 0.0
+		caster.stacks[release.stack] = 0.0
 		mult *= 1.0 + float(release.get("damage_mult_per", 0.0)) * amount
 		out.append({"trait": trait_id, "release": release, "amount": amount})
 	_release_bonus = {"unit": caster.id, "ability": ability_id, "mult": mult} if mult != 1.0 else {}
 	return out
 
 
-## En förlösning gäller en viss förmåga ("ability") eller bärarens signatur ("action": "signature").
+## En förlösning gäller en viss förmåga ("ability") eller vilken som helst av bärarens förmågor
+## ("action": "ability").
 func _release_matches(u: CombatUnit, release: Dictionary, ability_id: String) -> bool:
-	if release.get("action", "") == "signature":
-		return ability_id == u.signature
+	if release.get("action", "") == "ability":
+		return u.abilities.has(ability_id)
 	return release.get("ability", "") == ability_id and ability_id != ""
 
 
@@ -756,11 +773,11 @@ func _run_release(caster: CombatUnit, r: Dictionary, ability_targets: Array) -> 
 	var outer := _trait_ctx
 	_trait_ctx = r.trait
 	_trait_depth += 1
-	_emit({"type": "release", "unit": caster.id, "trait": r.trait, "charge": r.release.charge,
+	_emit({"type": "release", "unit": caster.id, "trait": r.trait, "stack": r.release.stack,
 			"amount": r.amount})
 	for effect in r.release.get("effects", []):
 		var scaled: Dictionary = effect.duplicate()
-		if effect.get("per_charge", false):
+		if effect.get("per_stack", false):
 			for key in ["min", "max", "duration"]:
 				if scaled.has(key):
 					scaled[key] = float(scaled[key]) * r.amount

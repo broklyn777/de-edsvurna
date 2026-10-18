@@ -6,7 +6,7 @@ extends Node
 ## träffar, siffror, egenskaper som slår till – och väntar en kort stund innan nästa tur.
 ##
 ## Utvecklarargument (efter `--`):
-##   --demo        AI:n spelar hela striden (auto)
+##   --demo        hjältarna kör sina makron hela striden (Auto)
 ##   --turns=<n>   spola fram så många turer innan bilden visas
 ##   --seed=<n>    fast slumpfrö
 
@@ -14,7 +14,8 @@ extends Node
 const BEAT := 0.45
 ## Extra tid mellan effekter i en kedja, så att man hinner se dem i ordning.
 const CHAIN_STEP := 0.22
-const ERROR_TEXT := {"cooldown": "Inte redo än", "dead": "Hjälten har stupat", "none": "Ingen sådan förmåga"}
+const ERROR_TEXT := {"cooldown": "Inte redo än", "dead": "Hjälten har stupat", "none": "Ingen sådan förmåga",
+		"charges": "Inga Charges kvar"}
 
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 var run: Node
@@ -29,6 +30,7 @@ var timeline: Timeline
 var action_bar: ActionBar
 var overlay: BattleOverlay
 var auto_chip: ChipButton
+var macro_log: MacroLog
 var speed_chip: ChipButton
 ## Effekter som väntar på att vapnet eller projektilen ska träffa: [{left, call}].
 var _later: Array[Dictionary] = []
@@ -38,7 +40,11 @@ var _countdown := 1.2
 var _wait := 0.0
 var _cursor := 0.0
 var _speed := 1.0
+## Handlingen ("attack", "ability" …) som väntar på mål, och vilken förmåga.
 var _choosing := ""
+var _choosing_ability := ""
+## Auto: hjältar med standardhandling Makro kör sitt makro varje tur.
+var _auto := false
 var _targets: Array[String] = []
 var _default_target := ""
 var _hitstop_until := 0
@@ -61,29 +67,35 @@ func _ready() -> void:
 		elif arg.begins_with("--seed="):
 			seed_value = int(arg.get_slice("=", 1))
 	var state: RunState = run.state
-	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data))
-	sim.auto = demo
+	if state.charges.is_empty():
+		state.fill_charges(data)
+	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges)
+	_auto = demo
 	_build_scene()
 	_build_ui()
 	get_viewport().size_changed.connect(_layout)
 	sfx.start_ambience("ambience_crypt", -11.0)
 	_layout()
 	if warp_turns > 0:
-		var was_auto := sim.auto
-		sim.auto = true
 		sim.begin()
 		for i in warp_turns:
 			if sim.outcome != "":
 				break
-			sim.ai_act()
-		sim.auto = was_auto
+			if sim.needs_input():
+				var d := MacroRunner.decide(sim, sim.current, run.macro_for(sim.current.id))
+				if d.ok:
+					sim.act(d.action, d.target, d.ability)
+				else:
+					sim.act("defend")
+			else:
+				sim.ai_act()
 		sim.drain_events()
 		for u in sim.units:
 			if not u.alive:
 				models[u.id].die()
 		started = true
 		_countdown = 0.0
-	auto_chip.on = sim.auto
+	auto_chip.on = _auto
 
 
 func _build_scene() -> void:
@@ -141,6 +153,9 @@ func _build_ui() -> void:
 	auto_chip.setup("AUTO")
 	auto_chip.pressed.connect(_toggle_auto)
 	ui.add_child(auto_chip)
+	macro_log = MacroLog.new()
+	macro_log.setup()
+	ui.add_child(macro_log)
 	speed_chip = ChipButton.new()
 	speed_chip.setup("1×", 64)
 	speed_chip.pressed.connect(_toggle_speed)
@@ -160,6 +175,7 @@ func _layout() -> void:
 		y += frames[h.id].size.y + 8
 	action_bar.position = Vector2(vs.x - action_bar.size.x - 18, vs.y - action_bar.size.y - 8)
 	auto_chip.position = Vector2(vs.x - auto_chip.size.x - 12, 12)
+	macro_log.position = Vector2(12, vs.y - macro_log.size.y - 12)
 	speed_chip.position = Vector2(auto_chip.position.x - speed_chip.size.x - 8, 12)
 	overlay.size = vs
 
@@ -194,6 +210,9 @@ func _process(delta: float) -> void:
 		_wait -= delta
 		return
 	if sim.needs_input():
+		if _auto and run.uses_macro(sim.current.id) and not action_bar.visible:
+			_run_macro()
+			return
 		if not action_bar.visible or action_bar.unit != sim.current:
 			action_bar.show_for(sim.current)
 			_choosing = ""
@@ -221,9 +240,9 @@ func _update_frames() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
-			KEY_1, KEY_2, KEY_3, KEY_4:
+			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5:
 				if action_bar.visible:
-					_on_action_chosen(CombatSim.ACTIONS[event.keycode - KEY_1])
+					_on_action_chosen(ActionBar.MAIN[event.keycode - KEY_1], "")
 			KEY_ENTER, KEY_KP_ENTER:
 				if _choosing != "":
 					_do(_choosing, _default_target)
@@ -249,28 +268,34 @@ func _unhandled_input(event: InputEvent) -> void:
 			_do(_choosing, best)
 
 
-func _on_action_chosen(action: String) -> void:
+func _on_action_chosen(action: String, ability_id: String) -> void:
 	if not sim.needs_input():
 		return
+	if action == "macro":
+		_run_macro()
+		return
 	var u := sim.current
-	var reason := sim.can_act(u, action)
+	var reason := sim.can_act(u, action, ability_id)
 	if reason != "":
-		action_bar.refuse(action)
+		action_bar.refuse(ability_id if action == "ability" else action)
 		sfx.play("k_error", -6.0, 0.0)
 		overlay.message(ERROR_TEXT.get(reason, reason))
 		return
 	sfx.play("k_click", -10.0, 0.05)
-	var targets := sim.valid_targets(u, action)
+	var key := ability_id if action == "ability" else action
+	var targets := sim.valid_targets(u, action, ability_id)
 	if targets.is_empty():
+		_choosing_ability = ability_id
 		_do(action, "")
 		return
-	if _choosing == action:  # andra trycket på samma knapp: förvalt mål
+	if action_bar.selected == key:  # andra trycket på samma knapp: förvalt mål
 		_do(action, _default_target)
 		return
 	_choosing = action
-	action_bar.selected = action
+	_choosing_ability = ability_id
+	action_bar.selected = key
 	_targets = targets
-	_default_target = sim.default_target(u, action)
+	_default_target = sim.default_target(u, action, ability_id)
 
 
 func _on_frame_tapped(unit_id: String) -> void:
@@ -280,16 +305,38 @@ func _on_frame_tapped(unit_id: String) -> void:
 
 func _do(action: String, target_id: String) -> void:
 	action_bar.visible = false
+	var ability_id := _choosing_ability
+	_choosing = ""
+	_choosing_ability = ""
+	_targets.clear()
+	if sim.act(action, target_id, ability_id) == "":
+		_play_events()
+
+
+## Kör makrot för hjälten som har turen och skriver beslutet i loggen. Passar inget stannar Auto
+## och spelaren väljer själv.
+func _run_macro() -> void:
+	var u := sim.current
+	var d := MacroRunner.decide(sim, u, run.macro_for(u.id))
+	macro_log.add({"text": d.text, "ok": d.ok, "skipped": d.skipped})
+	if not d.ok:
+		if _auto:
+			_toggle_auto()
+		sfx.play("k_error", -6.0, 0.0)
+		overlay.message("Inget makro passade – välj själv")
+		action_bar.show_for(u)
+		return
+	action_bar.visible = false
 	_choosing = ""
 	_targets.clear()
-	if sim.act(action, target_id) == "":
+	if sim.act(d.action, d.target, d.ability) == "":
 		_play_events()
 
 
 func _toggle_auto() -> void:
-	sim.auto = not sim.auto
-	auto_chip.on = sim.auto
-	if sim.auto:
+	_auto = not _auto
+	auto_chip.on = _auto
+	if _auto:
 		action_bar.visible = false
 		_choosing = ""
 		_targets.clear()
@@ -309,6 +356,8 @@ func _restart() -> void:
 ## Efter resultatet: vidare till lägret (seger) eller tillbaka till start (förlust).
 func _continue() -> void:
 	Engine.time_scale = 1.0
+	if sim.outcome == "victory":
+		run.state.store_charges(sim)
 	run.battle_finished(sim.outcome == "victory", receipt())
 
 
@@ -413,7 +462,7 @@ func _on_action(e: Dictionary) -> void:
 	else:
 		m.attack(target_pos, 0.1)
 		_cursor = maxf(m.last_impact_delay, 0.25)
-	if e.action == "signature" or (e.action == "intent" and e.ability != sim.unit(e.unit).attack_ability):
+	if e.action == "ability" or (e.action == "intent" and e.ability != sim.unit(e.unit).attack_ability):
 		_float(e.unit, ab.name.to_upper(), UiStyle.GOLD if sim.unit(e.unit).team == 0 else Color("#ffb347"), 20, false)
 
 
@@ -511,11 +560,11 @@ func _on_outcome(result: String) -> void:
 		sfx.play("victory", 0.0, 0.0)
 		world.add_shake(10.0)
 		var title := "KRYPTAN RENSAD!" if run.state.is_last_floor() else "SEGER!"
-		overlay.set_result("victory", "Runda %d   ·   %d av %d står kvar" % [sim.round, alive, sim.heroes.size()], title)
+		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
 		overlay.lines = receipt()
 	else:
 		sfx.play("defeat", 0.0, 0.0)
-		overlay.set_result("defeat", "Sällskapet föll i runda %d" % sim.round)
+		overlay.set_result("defeat", "Sällskapet föll efter %d turer" % sim.turn_no)
 
 
 # --- Hjälpfunktioner --------------------------------------------------------

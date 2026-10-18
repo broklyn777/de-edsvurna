@@ -16,17 +16,17 @@
 		"target": "enemy",
 		"melee": true,
 		"school": "holy",
-		"cooldown": 2,
 		"icon": "cross",
 		"button_color": "#f2c85b",
 		"sound": "pyro_impact",
-		"text": "Helig skada (160 %).",
+		"text": "Helig attack (160 %).",
 		"effects": [
 			{
 				"type": "damage",
 				"power": 1.6
 			}
-		]
+		],
+		"charges": 16
 	},
 	"axe_chop": {
 		"name": "Yxhugg",
@@ -57,7 +57,6 @@
 		"name": "Helande ljus",
 		"target": "ally",
 		"school": "holy",
-		"cooldown": 1,
 		"icon": "cross",
 		"button_color": "#5dff73",
 		"sound": "heal",
@@ -68,7 +67,8 @@
 				"power": 3.0
 			}
 		],
-		"kind": "spell"
+		"kind": "spell",
+		"charges": 24
 	},
 	"arrow": {
 		"name": "Pil",
@@ -86,7 +86,6 @@
 		"name": "Märk byte",
 		"target": "enemy",
 		"travel": 0.25,
-		"cooldown": 2,
 		"icon": "bolt",
 		"button_color": "#e9cf3f",
 		"sound": "k_hero_crit",
@@ -100,7 +99,8 @@
 				"type": "damage",
 				"power": 0.6
 			}
-		]
+		],
+		"charges": 20
 	},
 	"fire_bolt": {
 		"name": "Eldklot",
@@ -119,7 +119,6 @@
 		"name": "Eldvåg",
 		"target": "all_enemies",
 		"school": "fire",
-		"cooldown": 2,
 		"icon": "flame",
 		"button_color": "#ff8a2a",
 		"sound": "pyro_impact",
@@ -130,7 +129,8 @@
 				"power": 0.7
 			}
 		],
-		"kind": "spell"
+		"kind": "spell",
+		"charges": 12
 	},
 	"defend": {
 		"name": "Försvara",
@@ -219,7 +219,6 @@
 	"stone_wall": {
 		"name": "Stenmur",
 		"target": "self",
-		"cooldown": 3,
 		"icon": "shield",
 		"button_color": "#8d9bb0",
 		"sound": "k_shield_wall",
@@ -229,7 +228,8 @@
 				"type": "aura",
 				"aura": "defend"
 			}
-		]
+		],
+		"charges": 12
 	},
 	"aimed_shot": {
 		"name": "Siktat skott",
@@ -346,5 +346,111 @@
 				"pct": 0.6
 			}
 		]
+	},
+	"holy_shield": {
+		"name": "Helig sköld",
+		"target": "ally",
+		"kind": "spell",
+		"school": "holy",
+		"charges": 12,
+		"icon": "shield",
+		"button_color": "#f2c85b",
+		"sound": "shield_wall",
+		"text": "En allierad tar 40 % mindre skada till sin nästa tur.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "holy_shield"
+			}
+		]
+	},
+	"war_cry": {
+		"name": "Krigsrop",
+		"target": "all_allies",
+		"kind": "spell",
+		"charges": 10,
+		"icon": "bolt",
+		"button_color": "#c69b6d",
+		"sound": "bloodlust",
+		"text": "Hela sällskapet får Styrka: nästa anfall gör 30 % mer skada.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "inspired"
+			}
+		]
+	},
+	"renew": {
+		"name": "Förnyelse",
+		"target": "ally",
+		"kind": "spell",
+		"school": "holy",
+		"charges": 20,
+		"icon": "drop",
+		"button_color": "#9ff0a8",
+		"sound": "renew",
+		"text": "Målet helas 45 i början av sina tre nästa turer.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "renew"
+			}
+		]
+	},
+	"judgement": {
+		"name": "Ljusets dom",
+		"target": "enemy",
+		"kind": "spell",
+		"school": "holy",
+		"travel": 0.3,
+		"charges": 12,
+		"icon": "cross",
+		"button_color": "#ffe48a",
+		"sound": "pyro_impact",
+		"text": "Helig besvärjelse (150 %).",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.5
+			}
+		]
+	},
+	"arrow_rain": {
+		"name": "Pilregn",
+		"target": "all_enemies",
+		"charges": 10,
+		"icon": "daggers",
+		"button_color": "#7fe05a",
+		"sound": "k_hero_hit",
+		"text": "Pilar mot alla fiender (60 %).",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.6
+			}
+		]
+	},
+	"fireball": {
+		"name": "Eldklot",
+		"target": "enemy",
+		"kind": "spell",
+		"school": "fire",
+		"travel": 0.4,
+		"charges": 12,
+		"icon": "flame",
+		"button_color": "#ff5a2a",
+		"sound": "pyro_impact",
+		"text": "Stor eldbesvärjelse (200 %).",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 2.0
+			}
+		]
+	},
+	"skip": {
+		"name": "Hoppa över",
+		"target": "self",
+		"effects": []
 	}
 }

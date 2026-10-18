@@ -221,7 +221,7 @@
 	"ember_jaw": {
 		"name": "Glödkäken",
 		"trophy": true,
-		"text": "När någon i sällskapet helas får bäraren en Glöd (högst 5). Bärarens förmåga förbrukar dem: +15 % skada per Glöd.",
+		"text": "När någon i sällskapet helas får bäraren en Glöd (högst 5). Bärarens nästa förmåga förbrukar dem: +15 % skada per Glöd.",
 		"trigger": "heal",
 		"quiet": true,
 		"when": {
@@ -230,15 +230,15 @@
 		},
 		"effects": [
 			{
-				"type": "charge",
-				"charge": "glod",
+				"type": "stack",
+				"stack": "glod",
 				"max": 5,
 				"target": "self"
 			}
 		],
 		"release": {
-			"action": "signature",
-			"charge": "glod",
+			"action": "ability",
+			"stack": "glod",
 			"damage_mult_per": 0.15
 		}
 	},

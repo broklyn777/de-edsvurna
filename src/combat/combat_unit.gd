@@ -19,16 +19,22 @@ var attack_max := 12.0
 var crit_chance := 0.1
 var damage_taken_mult := 1.0
 var attack_ability := "attack"
-var signature := ""
+## Hjältens förmågor (motsvarar Siralims Spell Gems) och hur många Charges som är kvar på var.
+var abilities: Array = []
+var charges := {}
 var position := Vector2.ZERO
-## Hjältar: [{action, if}] för auto-läget. Fiender: [{ability, if}] för att välja avsikt.
+## Fiender: [{ability, if}] för att välja avsikt (hjältar styrs av makron).
 var rules: Array = []
 var traits: Array = []
-## trait_id -> {turn, round} då egenskapen senast slog till.
+## trait_id -> {turn, count, ready_at} då egenskapen senast slog till.
 var trait_ready := {}
-## Uppladdade resurser från egenskaper: charge -> mängd, och räknare för "var n:e"-laddningar.
-var charges := {}
-var charge_progress := {}
+## Uppladdade staplar från egenskaper: stack -> mängd, och räknare för "var n:e"-staplar.
+var stacks := {}
+var stack_progress := {}
+var deaths := 0
+var revives := 0
+## Hur många egna turer figuren har fått i striden.
+var turns_taken := 0
 var alive := true
 ## ability_id -> egna turer kvar.
 var cooldowns := {}
@@ -56,7 +62,7 @@ static func from_data(unit_id: String, d: Dictionary, unit_team: int) -> CombatU
 	u.crit_chance = d.get("crit_chance", 0.1)
 	u.damage_taken_mult = d.get("damage_taken_mult", 1.0)
 	u.attack_ability = d.get("attack_ability", "attack")
-	u.signature = d.get("signature", "")
+	u.abilities = d.get("abilities", []).duplicate()
 	u.rules = d.get("rules", [])
 	u.traits = d.get("traits", []).duplicate()
 	return u

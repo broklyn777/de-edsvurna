@@ -20,12 +20,23 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
   egenskap. Vanlig = pålitlig byggdel, elit = specialiserad, boss = ändrar en regel (med kostnad).
 - Varje hjälte får till slut 3 egenskaper: egen, trofé och artefakt.
-- **Strid:** varje runda agerar alla en gång, snabbast först. Hjältar väljer Anfall, signatur eller
-  Försvara. Fiender visar sin avsikt (vad och mot vem) i början av rundan. Följdanfall från egenskaper
-  är automatiska. Auto-läge och 2× snabbhet finns.
-- Nästa steg (enligt plan): troféval mellan tre korta strider (kryptloop), en andra Ed, efterrapport
-  ("varför vann du"), sedan värvning och våningar.
+- **Strid:** Siralims tidslinje – snabbheten avgör startplatsen, den som agerat läggs längst ned, inga
+  rundor. Hjältar väljer Anfall, Förmåga (2–3 per hjälte, med Charges som räcker hela körningen),
+  Försvara, Provocera eller Makro. Fiender visar sin avsikt och väljer nästa i slutet av sin tur.
+- **Makron** (kärnsystem, som i Siralim): upp till 20 rader per makro, subjekt + villkor + handling (+ mål),
+  uppifrån och ned, första raden som passar och går att utföra vinner. Tilldelas per hjälte, med
+  standardhandling Makro/Manuell. Auto kör makrona och stannar när inget passar. Förklaringsloggen
+  visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
+  `docs/research/siralim.md` §9–9b.
+- Nästa steg: Siralims stats (Attack/Defense/Intelligence, Speed för krit och undvikande), artefakter,
+  fler Eder, Inspect.
 - Realtidsprototypen i WoW-stil ligger kvar på grenen `wow-realtid` (tagg `v0.8.1-wow`).
+
+## Språk
+
+Spelets text är svensk. Kod, data och research använder Siralims engelska termer (trait, macro, provoke,
+timeline …) så att de går att söka på. Kopplingen mellan dem finns i `docs/ordlista.md` – håll den
+uppdaterad när nya begrepp tillkommer.
 
 ## Teknik
 
@@ -37,10 +48,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 ## Struktur
 
 - `src/game/run_state.gd` – en körning: Ed, sällskap, våning (`FLOORS`), troféer och vem som bär dem.
-  `scripts/game/run.gd` är autoloaden `Run` som byter scen (start → strid → läger → … ) och sparar
-  samlingen i `user://progress.cfg`. Skärmar i `scripts/screens/` (start, läger); val reagerar vid släpp.
-- `src/combat/` – `CombatSim` (turordning, ren logik, händelselista), `CombatUnit`, `GameData`.
-  Flöde: `begin()`, sedan `act(action, target)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
+  `scripts/game/run.gd` är autoloaden `Run` som byter scen (start → strid → läger → … ), sparar
+  samlingen i `user://progress.cfg` och makrona i `user://macros.json` (startmakron i `data/macros.json`).
+  Skärmar i `scripts/screens/` (start, läger, makroredigerare); valskärmarna reagerar vid släpp.
+- `src/combat/` – `CombatSim` (tidslinje, ren logik, händelselista), `CombatUnit`, `GameData`,
+  `MacroRunner` (makron: `decide()` ger handling + förklaring, `describe_line()` texten i editorn).
+  Flöde: `begin()`, sedan `act(action, target, ability)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
 - `data/*.json` – förmågor (`power` = andel av enhetens attack, `cooldown` i egna turer), auror
   (`duration` i ägarens turer, `next_attack_mult`, `taunt`, `dot`/`hot`), hjältar (signatur, egenskaper,
   auto-regler), fiender (attack, regler för avsikter), möten (sällskap + fiender), egenskaper (`traits.json`).
@@ -70,8 +83,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - `tools/gen_sfx.py` – syntetiserar egna ljud och kryptstämningen till `assets/audio/`.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/AUTO/GOOD) för balanstester.
 
-Balansmål (utan troféer): AUTO vinner ~95 % på våning 1, ~70 % på våning 2, ~60 % mot Benfursten;
-BASIC (bara Anfall) förlorar. Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
+Balansmål (utan troféer): startmakrona vinner varje strid för sig nästan alltid, men klarar hela kryptan
+(Charges räcker alla tre våningarna) bara ~60 %; bättre makron ~66 %+. BASIC (bara Anfall) förlorar.
+Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
 
 ## Kommandon
 
@@ -82,7 +96,7 @@ godot --headless --path . --script res://tests/run_tests.gd
 # Starta spelet
 godot --path .
 
-# Balansrapport per våning (100 strider per spelarnivå)
+# Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var)
 godot --headless --path . --script res://tests/balance_report.gd
 
 # Skärmdump av spelet (sparas efter 30 bildrutor, sedan avslut)
@@ -93,6 +107,9 @@ godot --path . -- --floor=2 --demo --turns=10 --seed=5
 
 # Visa lägret mellan striderna direkt
 godot --path . -- --camp
+
+# Öppna makroredigeraren direkt (--edit-line öppnar radeditorn)
+godot --path . -- --macros --edit-line
 
 # Spela in bildsekvens (PNG) för att granska rörelser
 godot --path . --write-movie /tmp/mov/f.png --fixed-fps 20 --quit-after 200 -- --floor=0 --demo --seed=3

@@ -27,17 +27,31 @@ func test_fastest_acts_first() -> void:
 	assert_eq(sim.order[0], "skeleton_archer_1", "bågskytten (13) kommer sedan")
 
 
-func test_round_gives_everyone_one_turn() -> void:
+func test_timeline_rotates_actor_to_bottom() -> void:
 	var sim := _sim()
+	var first_cycle := [sim.current.id] + sim.order
+	sim.act("attack")
+	assert_eq(sim.order[-1], "eira", "den som agerat läggs längst ned")
 	var seen := {}
 	var guard := 0
-	while sim.round == 1 and guard < 50:
+	while seen.size() < 8 and guard < 50:
 		guard += 1
-		seen[sim.current.id] = seen.get(sim.current.id, 0) + 1
+		seen[sim.current.id] = true
 		sim.auto = true
 		sim.ai_act()
-	assert_eq(seen.size(), 8)
-	assert_true(seen.values().all(func(n: int) -> bool: return n == 1), "en tur var per runda")
+	assert_eq(seen.size(), 8, "alla får en tur innan någon får två")
+	assert_eq(sim.upcoming(3).size(), 3)
+	assert_eq(first_cycle.size(), 8)
+
+
+func test_dead_leave_timeline_and_revived_rejoin_at_bottom() -> void:
+	var sim := CombatSim.create(_data, "crypt_3", 3)
+	sim.begin()
+	var skel := sim.unit("skeleton_warrior_1")
+	sim._kill(skel)
+	assert_true(not sim.order.has(skel.id))
+	sim._revive(skel, 0.5)
+	assert_eq(sim.order[-1], skel.id)
 
 
 func test_hero_waits_for_player() -> void:
@@ -49,17 +63,22 @@ func test_hero_waits_for_player() -> void:
 	assert_true(sim.unit("grave_priest_1").hp < sim.unit("grave_priest_1").max_hp)
 
 
-func test_signature_cooldown_counts_own_turns() -> void:
+func test_abilities_spend_charges() -> void:
 	var sim := _sim()
-	sim.act("signature", "skeleton_warrior_1")  # Märk byte, nedkylning 2
+	var eira := sim.unit("eira")
+	var full: int = eira.charges.hunters_mark
+	assert_eq(sim.act("ability", "skeleton_warrior_1", "hunters_mark"), "")
+	assert_eq(eira.charges.hunters_mark, full - 1)
+	eira.charges.hunters_mark = 0
 	_until_hero(sim, "eira")
-	assert_eq(sim.can_act(sim.current, "signature"), "cooldown")
-	sim.act("attack")
-	_until_hero(sim, "eira")
-	assert_eq(sim.can_act(sim.current, "signature"), "cooldown")
-	sim.act("attack")
-	_until_hero(sim, "eira")
-	assert_eq(sim.can_act(sim.current, "signature"), "")
+	assert_eq(sim.can_act(eira, "ability", "hunters_mark"), "charges")
+	assert_eq(sim.can_act(eira, "ability", "healing_light"), "none", "Eira har inte Alvas förmåga")
+
+
+func test_charges_carry_between_fights() -> void:
+	var sim := CombatSim.create(_data, "crypt_1", 1, [], {}, {"eira": {"hunters_mark": 2, "arrow_rain": 0}})
+	assert_eq(sim.unit("eira").charges.hunters_mark, 2)
+	assert_eq(sim.unit("alva").charges.healing_light, int(_data.abilities.healing_light.charges))
 
 
 func test_defend_reduces_damage_until_next_turn() -> void:
@@ -124,9 +143,9 @@ func test_eira_follows_up_on_marked() -> void:
 func test_auto_party_usually_beats_first_floor() -> void:
 	var wins := 0
 	for seed_value in range(1, 21):
-		if Bot.run_fight(_data, seed_value, Bot.Skill.AUTO).outcome == "victory":
+		if Bot.run_fight(_data, seed_value, Bot.Skill.MACRO).outcome == "victory":
 			wins += 1
-	assert_true(wins >= 10, "auto-sällskapet ska vinna minst hälften (vann %d/20)" % wins)
+	assert_true(wins >= 10, "sällskapet med startmakron ska vinna minst hälften (vann %d/20)" % wins)
 
 
 func test_turn_limit_stops_endless_follow_ups() -> void:

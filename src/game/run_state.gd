@@ -17,6 +17,24 @@ var floor := 0
 var trophies: Array[String] = []
 ## hero_id -> trophy_id
 var equipped := {}
+## hero_id -> {ability_id: Charges kvar}. Fylls vid ny körning och räcker hela körningen
+## (som Siralims Charges, som fylls först vid nästa Realm).
+var charges := {}
+
+
+func fill_charges(data: Dictionary) -> void:
+	charges.clear()
+	for hero_id in party:
+		var c := {}
+		for ability_id in data.heroes[hero_id].get("abilities", []):
+			c[ability_id] = int(data.abilities[ability_id].get("charges", 0))
+		charges[hero_id] = c
+
+
+## Sparar hur många Charges hjältarna har kvar efter en strid.
+func store_charges(sim: CombatSim) -> void:
+	for h in sim.heroes:
+		charges[h.id] = h.charges.duplicate()
 
 
 func encounter() -> String:
