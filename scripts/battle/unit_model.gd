@@ -16,6 +16,9 @@ const KICK_IMPACT_AT := 0.3
 static var _weapon_kit: Node3D
 
 var unit: CombatUnit
+## Sätts av battle.gd; används för fotsteg.
+var sfx: Sfx
+var _step_left := 0.0
 var sim: CombatSim
 var visual: Dictionary
 var anims: Dictionary
@@ -260,6 +263,10 @@ func _process(delta: float) -> void:
 		var dir := _move_to - _move_from
 		if dir.length() > 0.01 and not _casting:
 			_body.rotation.y = lerp_angle(_body.rotation.y, atan2(dir.x, dir.z), minf(1.0, delta * 12.0))
+		_step_left -= delta
+		if _step_left <= 0.0 and sfx:
+			_step_left = (0.27 if _move_run else 0.42) * model_scale
+			sfx.play("k_footstep", (-13.0 if _move_run else -17.0) + 4.0 * (model_scale - 1.0), 0.12)
 		if k >= 1.0:
 			_moving = false
 			if not _oneshot and not _casting and not _dead:

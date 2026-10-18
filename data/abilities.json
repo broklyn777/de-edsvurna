@@ -6,7 +6,7 @@
 		"target": "enemy",
 		"melee": true,
 		"threat_bonus": 180,
-		"sound": "shield_slam",
+		"sound": "k_shield_slam",
 		"effects": [
 			{
 				"type": "damage",
@@ -139,7 +139,7 @@
 		"cooldown": 3,
 		"target": "enemy",
 		"melee": true,
-		"sound": "melee_hit",
+		"sound": "k_hero_hit",
 		"effects": [
 			{
 				"type": "damage",

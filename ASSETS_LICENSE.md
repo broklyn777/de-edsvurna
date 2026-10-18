@@ -16,3 +16,11 @@ klädda och beväpnade i Blender för Drakvalvet:
 | vapen.glb | Vapen från Drakvalvet – **källa ej bekräftad, kontrollera före release** | Vapen i händerna |
 
 Animationerna kommer från Quaternius "Universal Animation Library" (CC0).
+
+# Ljud
+
+- `assets/audio/k_*/` – Kenney "RPG Audio", "Impact Sounds", "Interface Sounds" (kenney.nl), CC0 1.0.
+  Licens: `assets/audio/KENNEY_LICENSE.txt`.
+- `assets/audio/*.wav` – syntetiserade i `tools/gen_sfx.py` (egna).
+- `assets/audio/voice/*.mp3` – användarens egna röstrepliker, gjorda i ElevenLabs.
+  **Kontrollera att ElevenLabs-planen tillåter kommersiell användning före release.**

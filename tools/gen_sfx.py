@@ -133,6 +133,35 @@ def drum(offset):
     return (mix(tone(95, 0.35, 1.0, freq_end=48, decay=0.3), noise(0.08, 0.5, lp=0.3)), offset)
 
 
+def crypt_ambience(dur=24.0, xfade=1.5):
+    """Lågt mullrande, svagt surrande och droppar med eko. Sömlös loop via korstoning."""
+    total = dur + xfade
+    n = int(SR * total)
+    rumble = lowpass(lowpass(noise(total, 1.0, attack=0.001, decay=1e9, lp=0.02), 0.05), 0.05)
+    drone = [0.0] * n
+    for i in range(n):
+        t = i / SR
+        swell = 0.6 + 0.4 * math.sin(2 * math.pi * t / dur * 2)
+        drone[i] = swell * (0.25 * math.sin(2 * math.pi * 55 * t) + 0.15 * math.sin(2 * math.pi * 82.4 * t + 1.3)
+                            + 0.06 * math.sin(2 * math.pi * 110.3 * t))
+    out = mix([r * 1.6 for r in rumble], drone)
+    for _ in range(11):
+        at = rng.uniform(0.5, dur - 0.5)
+        f = rng.uniform(900, 1700)
+        drip = tone(f, 0.09, 0.22, freq_end=f * 0.55, decay=0.06)
+        for k, (delay, gain) in enumerate(((0, 1.0), (0.13, 0.35), (0.29, 0.15))):
+            start = int((at + delay) * SR)
+            for i, v in enumerate(drip):
+                if start + i < len(out):
+                    out[start + i] += v * gain
+    m = int(xfade * SR)
+    loop = out[: int(dur * SR)]
+    for i in range(m):
+        k = i / m
+        loop[i] = loop[i] * k + out[int(dur * SR) + i] * (1 - k)
+    return loop
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     sounds = {
@@ -181,6 +210,7 @@ def main():
         "victory": mix(*[lowpass(tone(f, d, 0.5, attack=0.01, decay=d * 1.2, shape="saw"), 0.2)
                          for f, d in ((523, 0.25), (659, 0.25), (784, 0.25), (1046, 1.4), (784, 1.4), (659, 1.4))],
                        offsets=[0, 0.16, 0.32, 0.5, 0.5, 0.5]),
+        "ambience_crypt": crypt_ambience(),
         "defeat": mix(*[lowpass(tone(f, 1.0, 0.5, decay=0.9, shape="saw"), 0.12) for f in (440, 349, 294, 220)],
                       offsets=[0, 0.35, 0.7, 1.05]),
     }

@@ -37,8 +37,11 @@ Inga talangträd, ingen loot, inga nya klasser förrän den första striden (4 h
   - 2D-lager ovanpå 3D: siffror, projektiler, ringar, healstrålar och hälsomätare projiceras från 3D.
 - `assets/models/` – Quaternius-figurer från Drakvalvet, uppackade med
   `node ~/.npm/_npx/425967af1abfabd4/node_modules/@gltf-transform/cli/bin/cli.js dequantize in.glb ut.glb`
-  (Godot läser inte meshopt/kvantisering). Se `assets/models/LICENSE.md`.
-- `tools/gen_sfx.py` – syntetiserar platshållarljud till `assets/audio/` (kör om efter ändringar).
+  (Godot läser inte meshopt/kvantisering). Se `ASSETS_LICENSE.md`.
+- `assets/audio/` – `sfx.play("namn")` spelar `namn.wav` eller en slumpad variant ur mappen `namn/`
+  (Kenney-ljud ligger i `k_*`-mappar). Röster i `voice/` spelas med `sfx.say()` (en i taget, vilotid).
+  Huvudkanalen har kompressor + limiter (sätts i `sfx.gd`). Kryptstämningen loopar (`ambience_crypt.wav`).
+- `tools/gen_sfx.py` – syntetiserar egna ljud och kryptstämningen till `assets/audio/` (kör om efter ändringar).
 - `tests/combat_bot.gd` – simulerade spelare (NONE/SLOPPY/GOOD) för balanstester.
 
 Balansmål för Bone Lich: NONE förlorar alltid, SLOPPY vinner ~70 %, GOOD ~100 %, strid ~90 s.

@@ -72,6 +72,7 @@ func _ready() -> void:
 	_build_scene()
 	_build_ui()
 	get_viewport().size_changed.connect(_layout)
+	sfx.start_ambience("ambience_crypt", -11.0)
 	_layout()
 	if warp <= 0.0:
 		for h in sim.heroes:
@@ -98,6 +99,7 @@ func _build_scene() -> void:
 		var m := UnitModel.new()
 		world.add_child(m)
 		m.setup(u, sim, vis)
+		m.sfx = sfx
 		models[u.id] = m
 	for u in sim.units:
 		var target := sim.boss if u.team == 0 else sim.threat_target()
@@ -135,7 +137,7 @@ func _build_ui() -> void:
 		var ab := sim.ability(ids[i])
 		b.setup(ids[i], ab, sim.unit(ab.owner), keys[i] if i < keys.size() else "")
 		b.activated.connect(_on_button)
-		b.became_ready.connect(func(_id: String) -> void: sfx.play("ready", -12.0, 0.0))
+		b.became_ready.connect(func(_id: String) -> void: sfx.play("k_ready", -9.0, 0.0))
 		ui.add_child(b)
 		buttons.append(b)
 	pause_button = preload("res://scripts/battle/pause_button.gd").new()
@@ -200,6 +202,8 @@ func _process(_delta: float) -> void:
 
 func _tick_countdown(dt: float) -> void:
 	_countdown -= dt
+	if _countdown > 2.9 and _last_count == 4:
+		sfx.say("fighter-in", 0.0, -3.0)
 	if not _ran_in and _countdown <= RUN_IN_TIME + 0.1:
 		_ran_in = true
 		for h in sim.heroes:
@@ -313,8 +317,10 @@ func _use(ability_id: String, target_id: String) -> void:
 	if not started or sim.outcome != "":
 		return
 	var result := sim.player_use(ability_id, target_id)
+	if result == "used" or result == "queued":
+		sfx.play("k_click", -12.0, 0.05)
 	if result == "queued":
-		sfx.play("queued", -14.0, 0.0)
+		sfx.play("k_queued", -10.0, 0.0)
 
 
 func _toggle_pause() -> void:
@@ -377,7 +383,7 @@ func _handle(e: Dictionary) -> void:
 			for b in buttons:
 				if b.ability_id == e.ability:
 					b.refuse()
-			sfx.play("ui_error", -6.0, 0.0)
+			sfx.play("k_error", -6.0, 0.0)
 			overlay.message(ERROR_TEXT.get(e.reason, e.reason))
 		"announce":
 			overlay.announce(e.text)
@@ -391,6 +397,8 @@ func _on_cast_start(e: Dictionary) -> void:
 	var school: String = ab.get("school", "physical")
 	m.start_cast(school, ab.get("melee", false))
 	m.start_cast_sound(sfx.stream("cast_" + school))
+	if e.ability == "pyroblast" and e.by_player:
+		sfx.say("wizard-eld", 30.0, -2.0)
 	if e.unit == sim.boss.id:
 		world.add_shake(3.0)
 
@@ -403,7 +411,9 @@ func _on_cast_end(e: Dictionary) -> void:
 		_clear_telegraphs()
 	if e.result == "interrupted":
 		var ab := sim.ability(e.ability)
-		sfx.play("interrupt", 2.0, 0.03)
+		sfx.play("k_interrupt", 0.0, 0.05)
+		sfx.play("k_kick", -2.0, 0.05)
+		sfx.play("interrupt", -6.0, 0.03)
 		boss_frame.on_interrupted(ab.name)
 		var p := _pos(e.unit)
 		fx_layer.add_child(_at(Fx.Sparks.new(Color("#d6b4ff"), 22, 380.0, 0.5), p))
@@ -419,7 +429,8 @@ func _on_ability_used(e: Dictionary) -> void:
 	var p := _pos(e.unit)
 	match e.ability:
 		"shield_wall":
-			sfx.play("shield_wall", 0.0)
+			sfx.play("k_shield_wall", -1.0, 0.03)
+			sfx.play("shield_wall", -8.0)
 			fx_layer.add_child(_at(Fx.Ring.new(Color("#bcd2ff"), 20, 110, 0.45, 8.0, true), p))
 			world.add_shake(4.0)
 		"bloodlust":
@@ -430,7 +441,7 @@ func _on_ability_used(e: Dictionary) -> void:
 			overlay.announce("BLOODLUST!")
 			world.add_shake(7.0)
 		"kick":
-			sfx.play("kick", 0.0)
+			sfx.play("kick", -4.0)
 			models[e.unit].kick(models[e.targets[0]].global_position)
 		"renew":
 			sfx.play("renew", -10.0)
@@ -461,12 +472,16 @@ func _on_damage(e: Dictionary) -> void:
 	match e.ability:
 		"melee":
 			if e.source == sim.boss.id:
-				sfx.play("boss_swing", -3.0)
+				sfx.play("k_boss_hit", -2.0, 0.08)
+				sfx.play("boss_swing", -10.0)
 				world.add_shake(2.0)
 			else:
-				sfx.play("melee_crit" if crit else "melee_hit", -9.0 if not crit else -4.0, 0.1)
+				sfx.play("k_hero_crit" if crit else "k_hero_hit", -3.0 if crit else -8.0, 0.1)
 		"bone_crush":
-			sfx.play("bone_crush", 2.0, 0.0)
+			sfx.play("bone_crush", 0.0, 0.0)
+			sfx.play("k_bone_crack", 2.0, 0.04)
+			if e.target == "warrior" and not sim.unit("warrior").auras.has("shield_wall"):
+				sfx.say("fighter-traff", 15.0)
 			fx_layer.add_child(_at(Fx.Ring.new(Color("#ff3b2e"), 20, 170, 0.5, 12.0, true), p))
 			fx_layer.add_child(_at(Fx.Sparks.new(Color("#e8dcc8"), 26, 420.0, 0.55), p))
 			_clear_telegraphs()
@@ -520,6 +535,7 @@ func _on_outcome(result: String) -> void:
 	if result == "victory":
 		_slowmo_until = Time.get_ticks_msec() + 1600
 		sfx.play("victory", 0.0, 0.0)
+		get_tree().create_timer(1.6, true, false, true).timeout.connect(sfx.say.bind("fighter-seger"))
 		world.add_shake(14.0)
 		var p := _pos(sim.boss.id)
 		fx_layer.add_child(_at(Fx.Ring.new(Color("#cbbfe6"), 40, 320, 1.2, 14.0, true), p))
