@@ -1,54 +1,61 @@
 extends RefCounted
-## Simulerade spelare för balanstester.
-##   NONE   – trycker aldrig på något (bara hjältarnas AI)
-##   GOOD   – reagerar på mekanikerna som en van spelare
-##   SLOPPY – som GOOD, men missar ungefär var tredje reaktion
+## Simulerade spelare för balanstester i turordningsstriden.
+##   BASIC – anfaller alltid det förvalda målet
+##   AUTO  – hjältarnas egna regler (samma som Auto-knappen)
+##   GOOD  – som AUTO, men slår ut helaren först och följer upp mot märkta mål
 
-enum Skill { NONE, GOOD, SLOPPY }
-
-const DT := 1.0 / 30.0
+enum Skill { BASIC, AUTO, GOOD }
 
 
-## traits: hero_id -> trait_id, ersätter hjältens förvalda egenskap.
-## artifacts: hero_id -> trait_id, läggs till som hjältens andra egenskap.
-static func run_fight(data: Dictionary, seed_value: int, skill: Skill, max_time := 400.0,
-		traits := {}, artifacts := {}) -> Dictionary:
-	var sim := CombatSim.create(data, "bone_lich", seed_value)
-	for hero_id in traits:
-		sim.unit(hero_id).traits = [traits[hero_id]]
-	for hero_id in artifacts:
-		sim.unit(hero_id).traits.append(artifacts[hero_id])
-	var rng := RandomNumberGenerator.new()
-	rng.seed = seed_value * 7 + 3
-	var reacted := {}
-	while sim.outcome == "" and sim.time < max_time:
-		sim.advance(DT)
+static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter := "crypt_1",
+		party: Array = [], traits := {}) -> Dictionary:
+	var sim := CombatSim.create(data, encounter, seed_value, party, traits)
+	sim.begin()
+	var guard := 0
+	while sim.outcome == "" and guard < 500:
+		guard += 1
+		if not sim.needs_input():
+			sim.ai_act()
+			continue
+		match skill:
+			Skill.BASIC:
+				sim.act("attack")
+			Skill.AUTO:
+				sim.auto = true
+				sim.ai_act()
+				sim.auto = false
+			Skill.GOOD:
+				_good(sim)
 		sim.drain_events()
-		if skill != Skill.NONE:
-			_act(sim, skill, rng, reacted)
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
-	return {"outcome": sim.outcome, "time": sim.time, "alive": alive, "boss_hp": sim.boss.hp_pct()}
+	return {"outcome": sim.outcome, "rounds": sim.round, "alive": alive}
 
 
-static func _act(sim: CombatSim, skill: Skill, rng: RandomNumberGenerator, reacted: Dictionary) -> void:
-	var boss := sim.boss
-	var cast_key := "%s@%d" % [boss.cast.get("ability", ""), int(sim.time - boss.cast.get("elapsed", 0.0))]
-	if boss.is_casting() and not reacted.has(cast_key) and boss.cast_progress() > 0.35:
-		reacted[cast_key] = true
-		var miss := skill == Skill.SLOPPY and rng.randf() < 0.33
-		if not miss:
-			match boss.cast.ability:
-				"shadow_bolt_volley":
-					sim.player_use("kick")
-				"bone_crush":
-					sim.player_use("shield_wall")
-	if sim.time > 2.0 and sim.time < 2.2:
-		sim.player_use("bloodlust")
-	if sim.unit("mage").cooldown_left("pyroblast") == 0.0 and sim.unit("mage").queued.is_empty():
-		sim.player_use("pyroblast")
-	var priest := sim.unit("priest")
-	if priest.alive and not (priest.is_casting() and priest.cast.by_player) and priest.queued.is_empty():
-		for h in sim.heroes:
-			if h.alive and h.hp_pct() < 0.45:
-				sim.player_use("flash_heal", h.id)
-				break
+static func _good(sim: CombatSim) -> void:
+	var h := sim.current
+	var focus := _focus_target(sim)
+	if h.role == "healer" and sim.can_act(h, "signature") == "":
+		for a in sim.heroes:
+			if a.alive and a.hp_pct() < 0.6:
+				sim.act("signature", a.id)
+				return
+	if h.role == "tank" and sim.can_act(h, "signature") == "":
+		sim.act("signature")
+		return
+	if h.role in ["dps", "leader"] and sim.can_act(h, "signature") == "":
+		sim.act("signature", focus)
+		return
+	sim.act("attack", focus)
+
+
+## Helaren först, sedan märkta mål, sedan den svagaste.
+static func _focus_target(sim: CombatSim) -> String:
+	var best: CombatUnit = null
+	for e in sim.enemies:
+		if not e.alive:
+			continue
+		if e.rules.any(func(r: Dictionary) -> bool: return r.ability == "grave_mend"):
+			return e.id
+		if best == null or e.auras.has("marked") and not best.auras.has("marked") or e.hp < best.hp:
+			best = e
+	return best.id if best else ""

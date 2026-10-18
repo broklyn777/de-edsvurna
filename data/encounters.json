@@ -1,8 +1,7 @@
 {
-	"bone_lich": {
+	"crypt_1": {
 		"name": "Benkryptan",
-		"party": ["warrior", "priest", "mage", "rogue"],
-		"boss": "bone_lich",
-		"buttons": ["shield_wall", "flash_heal", "kick", "pyroblast", "bloodlust"]
+		"party": ["paladin", "brokk", "alva", "eira"],
+		"enemies": ["skeleton_warrior", "skeleton_warrior", "skeleton_archer", "grave_priest"]
 	}
 }

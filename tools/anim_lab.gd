@@ -3,7 +3,7 @@ extends Node3D
 ## precis som i striden. Filma med --write-movie för att granska bild för bild.
 ##
 ##   godot --path . res://tools/anim_lab.tscn --write-movie /tmp/lab/f.png --fixed-fps 20 \
-##       --quit-after 80 -- --unit=priest --seq=cast:holy:2.5,release,idle:0.5,hit
+##       --quit-after 80 -- --unit=alva --seq=cast:holy:2.5,release,idle:0.5,hit
 ##
 ## Steg i --seq (kommaseparerade, valfri längd i sekunder efter kolon):
 ##   cast:<skola>:<s>  ladda en besvärjelse så länge, sedan släpp
@@ -16,7 +16,7 @@ var _wait := 0.3
 
 func _ready() -> void:
 	var data := GameData.load_all()
-	var unit_id := "priest"
+	var unit_id := "alva"
 	var seq := "idle:1"
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--unit="):
@@ -25,7 +25,7 @@ func _ready() -> void:
 			seq = arg.get_slice("=", 1)
 	_steps = Array(seq.split(","))
 	var is_hero: bool = data.heroes.has(unit_id)
-	var d: Dictionary = data.heroes[unit_id] if is_hero else data.bosses[unit_id]
+	var d: Dictionary = data.heroes[unit_id] if is_hero else data.enemies[unit_id]
 	var u := CombatUnit.from_data(unit_id, d, 0 if is_hero else 1)
 	u.position = Vector2.ZERO
 

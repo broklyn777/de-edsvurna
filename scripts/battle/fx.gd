@@ -141,9 +141,11 @@ class FloatingText extends Node2D:
 				HORIZONTAL_ALIGNMENT_CENTER, 600, 7 if big else 5)
 
 
-## Ljusstråle från healern till målet medan healingen laddas, så att man ser vem som får den.
-## Ritas i skärmkoordinater ovanpå 3D-scenen.
-class HealBeams extends Node2D:
+## Hälsomätare ovanför alla figurer. Fiender visar också sin avsikt: vad de gör på sin tur
+## och mot vem.
+class Overheads extends Node2D:
+	const INTENT_GLYPHS := {"heal": "cross", "ranged": "bolt", "melee": "daggers"}
+
 	var sim: CombatSim
 	var world: CryptWorld
 	var models: Dictionary
@@ -159,48 +161,32 @@ class HealBeams extends Node2D:
 		queue_redraw()
 
 	func _draw() -> void:
-		var c := UiStyle.school_color("heal")
-		for h in sim.heroes:
-			if not h.is_casting() or not CombatSim.is_heal(sim.ability(h.cast.ability)):
+		for u in sim.units:
+			if not u.alive:
 				continue
-			var target_id: String = h.cast.targets[0]
-			var from := world.project(models[h.id].chest_position())
-			var to := world.project(models[target_id].chest_position())
-			var k := h.cast_progress()
-			var pulse := 0.5 + 0.5 * sin(_t * 12.0)
-			if target_id != h.id:
-				draw_line(from, to, Color(c, 0.18 + 0.15 * pulse), 12.0, true)
-				draw_line(from, from.lerp(to, k), Color(1, 1, 0.8, 0.75), 3.5, true)
-			var feet := world.project(models[target_id].global_position)
-			draw_set_transform(feet, 0, Vector2(1, 0.45))
-			draw_arc(Vector2.ZERO, 44.0 + 5.0 * pulse, 0, TAU, 40, Color(c, 0.9), 5.0, true)
-			draw_set_transform(Vector2.ZERO)
-			draw_arc(to, 34.0, -PI / 2, -PI / 2 + TAU * k, 40, Color(c, 0.95), 4.0, true)
+			var head := world.project(models[u.id].head_position())
+			var c := UiStyle.HP_GREEN if u.team == 0 else Color("#c23a3a")
+			UiStyle.bar(self, Rect2(head + Vector2(-36, -12), Vector2(72, 8)), u.hp_pct(), c)
+			if u.team == 1:
+				UiStyle.text(self, head + Vector2(-90, -18), u.name, 13, Color(u.color, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 180, 4)
+				_draw_intent(u, head + Vector2(0, -42))
 
-
-## Hälsomätare, kastmätare och namn ovanför hjältarnas huvuden.
-class Overheads extends Node2D:
-	var sim: CombatSim
-	var world: CryptWorld
-	var models: Dictionary
-
-	func _init(s: CombatSim, w: CryptWorld, unit_models: Dictionary) -> void:
-		sim = s
-		world = w
-		models = unit_models
-
-	func _process(_delta: float) -> void:
-		queue_redraw()
-
-	func _draw() -> void:
-		for h in sim.heroes:
-			var head := world.project(models[h.id].head_position())
-			var name_color := h.color if h.alive else Color(0.55, 0.55, 0.55)
-			UiStyle.text(self, head + Vector2(-80, -22), h.name, 15, name_color, HORIZONTAL_ALIGNMENT_CENTER, 160, 4)
-			if not h.alive:
-				continue
-			var c := UiStyle.HP_GREEN if h.hp_pct() > 0.35 else Color("#e0412e")
-			UiStyle.bar(self, Rect2(head + Vector2(-30, -14), Vector2(60, 7)), h.hp_pct(), c)
-			if h.is_casting():
-				var school: String = sim.ability(h.cast.ability).get("school", "physical")
-				UiStyle.bar(self, Rect2(head + Vector2(-30, -5), Vector2(60, 5)), h.cast_progress(), UiStyle.school_color(school))
+	func _draw_intent(u: CombatUnit, at: Vector2) -> void:
+		if u.intent.is_empty():
+			return
+		var ab := sim.ability(u.intent.ability)
+		var is_heal: bool = ab.effects.any(func(e: Dictionary) -> bool: return e.type == "heal")
+		var kind := "heal" if is_heal else ("melee" if ab.get("melee", false) else "ranged")
+		var col := UiStyle.school_color("heal") if is_heal else Color("#ff6a4a")
+		var pulse := 0.8 + 0.2 * sin(_t * 5.0)
+		draw_circle(at, 15, Color(0, 0, 0, 0.75))
+		draw_arc(at, 15, 0, TAU, 32, Color(col, pulse), 2.0, true)
+		Glyphs.draw(self, INTENT_GLYPHS[kind], at, 8.0, Color(col, pulse))
+		var target_name := ""
+		for id in u.intent.get("targets", []):
+			var t := sim.unit(id)
+			if t and t.alive:
+				target_name = t.name
+				break
+		if target_name != "":
+			UiStyle.text(self, at + Vector2(-80, -20), "→ " + target_name, 12, Color(col, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 160, 4)

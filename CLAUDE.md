@@ -1,55 +1,73 @@
 # rpg007
 
-Party-RPG för mobil (Android först, iPhone senare via moln-Mac). Spelaren är raidledaren för ett party.
+"Siralim Ultimate i 3D" för mobil (Android först, iPhone senare via moln-Mac). Turordningsstrider där
+djupet ligger i hur egenskaper kombineras. Spelaren är en rättfärdig **paladin** (inte en besvärjare)
+som leder ett sällskap av följeslagare i Baldur's Gate-stil.
 
 ## Ledstjärna
 
-**En strid först, och ingenting annat förrän den känns skön.**
-Inga talangträd, ingen loot, inga nya klasser förrän den första striden (4 hjältar, 1 boss, 5 knappar) känns bra.
+**Bevisa att det är roligt att kombinera innan vi bygger mycket innehåll.**
+Få följeslagare, troféer och artefakter som ändrar regler, hellre än många som bara ger mer skada.
+Varje steg ska vara spelbart på telefonen innan nästa börjar. Det viktigaste testet: byter spelaren
+frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och vill prova den direkt?
 
-## Pelare
+## Design
 
-- **WoW Vanilla–WotLK** – känslan: GCD-rytm, cast bars, spell queue, tunga träffar, tydliga ljud, läsbara bossmekaniker.
-- **Path of Exile** – karaktärsbygget (senare).
-- **Dragon Age: Origins** – taktiken: regler per hjälte, taktisk paus, kombinationer.
+- **Paladinen** står alltid med i striden och väljer en **Ed** (Siralims specialisering) – en regelbrytare
+  för hela sällskapet. Finns: Hämndens ed. Planerade: Gryningens ed, Väktarens ed.
+- **Följeslagare** (Brokk, Syster Alva, Jägaren Eira, Solveig …): namn, roll, egen egenskap och en
+  signaturhandling. Börja med 5–8, inte 30.
+- **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
+  egenskap. Vanlig = pålitlig byggdel, elit = specialiserad, boss = ändrar en regel (med kostnad).
+- Varje hjälte får till slut 3 egenskaper: egen, trofé och artefakt.
+- **Strid:** varje runda agerar alla en gång, snabbast först. Hjältar väljer Anfall, signatur eller
+  Försvara. Fiender visar sin avsikt (vad och mot vem) i början av rundan. Följdanfall från egenskaper
+  är automatiska. Auto-läge och 2× snabbhet finns.
+- Nästa steg (enligt plan): troféval mellan tre korta strider (kryptloop), en andra Ed, efterrapport
+  ("varför vann du"), sedan värvning och våningar.
+- Realtidsprototypen i WoW-stil ligger kvar på grenen `wow-realtid` (tagg `v0.8.1-wow`).
 
 ## Teknik
 
 - Godot 4.7.2, GDScript, renderer GL Compatibility, 1280×720 liggande (`canvas_items`/`expand`).
 - Stridslogiken i `src/combat/` ska vara ren logik utan noder, så den kan testas och simuleras headless.
-- Data (klasser, förmågor, fiender) i `data/`.
+- Data (hjältar, fiender, förmågor, egenskaper) i `data/`.
 - Allt UI ska fungera med touch; musklick emuleras som touch.
 
 ## Struktur
 
-- `src/combat/` – `CombatSim` (ren logik, fast tidssteg 0,05 s, händelselista), `CombatUnit`, `GameData`.
-- `data/*.json` – förmågor, auror, hjältar (med AI-regler och `trait_options`), bossar (timers, faser),
-  möten (party + knappar), egenskaper (`traits.json`).
+- `src/combat/` – `CombatSim` (turordning, ren logik, händelselista), `CombatUnit`, `GameData`.
+  Flöde: `begin()`, sedan `act(action, target)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
+- `data/*.json` – förmågor (`power` = andel av enhetens attack, `cooldown` i egna turer), auror
+  (`duration` i ägarens turer, `next_attack_mult`, `taunt`, `dot`/`hot`), hjältar (signatur, egenskaper,
+  auto-regler), fiender (attack, regler för avsikter), möten (sällskap + fiender), egenskaper (`traits.json`).
 - Egenskaper: lyssnar på en händelsetyp (`trigger`) och kör effekter när `when` stämmer, eller ändrar
   siffror (`modify_damage`, `modify_damage_taken`, `modify_heal`). Kan sätta igång varandra i kedjor
-  (max 4 steg). Spelaren väljer en klassegenskap per hjälte och fördelar artefakter (egenskaper med `"artifact": true`,
-  en per hjälte, var och en bara på en hjälte) på valskärmen före striden (`trait_picker.gd`, sparas i `user://choices.cfg`).
-- `scripts/battle/` – grafik och känsla. `battle.gd` översätter simulatorns händelser till animationer,
-  ljud, siffror, hitstop (`Engine.time_scale`), skakningar och effekter. Knappar reagerar på tryck, inte släpp.
-  - `crypt_world.gd` – 3D-kryptan (golv, pelare, facklor, ljus, kamera, varningscirklar), byggd i kod.
+  (max 4 steg), aldrig sig själva. `once_per_turn`, `internal_cooldown` (rundor), `chance`.
+  Laddningar: en `charge`-effekt laddar upp, `release` förbrukar när en viss förmåga används.
+  Effekter med `pct_of_event` skalar mot händelsens belopp (t.ex. följdanfall för 50 %).
+- `scripts/battle/` – grafik och känsla. `battle.gd` kör en tur i taget och översätter händelserna till
+  animationer, projektiler, siffror, hitstop och skakningar; egenskapskedjor visas steg för steg.
+  - `timeline.gd` (tidslinjen), `action_bar.gd` (Anfall/signatur/Försvara; välj mål genom att trycka på
+    figuren eller tryck samma knapp igen för förvalt mål), `party_frame.gd`, `chip_button.gd` (Auto, 1×/2×).
+  - `crypt_world.gd` – 3D-kryptan (golv, pelare, facklor, ljus, kamera), byggd i kod.
   - `unit_model.gd` – 3D-figur: laddar `assets/models/<model>.glb`, hänger vapen från `vapen.glb` i
-    `grip_r`/`grip_l`, spelar animationer enligt `visual.anims` i heroes.json/bosses.json.
-    Bossens närstridskast (windup) håller vapnet högt tills slaget faller.
+    `grip_r`/`grip_l`, spelar animationer enligt `visual.anims`. `tint` färgar om, `glow` ger sken.
+    Vapen i `vapen.glb`: Greatsword, Longsword, Shortsword, Spear, Greataxe, Handaxe, Maul, Mace, Flail,
+    Javelin, Longbow, Shield, Staff, Shortbow.
   - `procedural_anims.gd` – egna animationer byggda i kod (Kick, Shield_Wall, Cast_Channel_*):
-    vridningar per ben i grader ovanpå en baspose. Fotbenen är egna IK-ben i riggen och flyttas
-    automatiskt med benet. Axlar: UpperLeg X− = benet framåt; Torso X+ = framåtlutning;
-    UpperArm.R Z+ / UpperArm.L Z− = armen framåt/upp; UpperArm X− = armen ut åt sidan.
-  - 2D-lager ovanpå 3D: siffror, projektiler, ringar, healstrålar och hälsomätare projiceras från 3D.
+    vridningar per ben i grader ovanpå en baspose. Axlar: UpperLeg X− = benet framåt; Torso X+ =
+    framåtlutning; UpperArm.R Z+ / UpperArm.L Z− = armen framåt/upp; UpperArm X− = armen ut åt sidan.
+  - `fx.gd` – 2D-lager ovanpå 3D: siffror, projektiler, ringar, hälsomätare och fiendernas avsikter.
 - `assets/models/` – Quaternius-figurer från Drakvalvet, uppackade med
   `node ~/.npm/_npx/425967af1abfabd4/node_modules/@gltf-transform/cli/bin/cli.js dequantize in.glb ut.glb`
   (Godot läser inte meshopt/kvantisering). Se `ASSETS_LICENSE.md`.
 - `assets/audio/` – `sfx.play("namn")` spelar `namn.wav` eller en slumpad variant ur mappen `namn/`
-  (Kenney-ljud ligger i `k_*`-mappar). Röster i `voice/` spelas med `sfx.say()` (en i taget, vilotid).
-  Huvudkanalen har kompressor + limiter (sätts i `sfx.gd`). Kryptstämningen loopar (`ambience_crypt.wav`).
-- `tools/gen_sfx.py` – syntetiserar egna ljud och kryptstämningen till `assets/audio/` (kör om efter ändringar).
-- `tests/combat_bot.gd` – simulerade spelare (NONE/SLOPPY/GOOD) för balanstester.
+  (Kenney-ljud ligger i `k_*`-mappar). Kryptstämningen loopar (`ambience_crypt.wav`).
+- `tools/gen_sfx.py` – syntetiserar egna ljud och kryptstämningen till `assets/audio/`.
+- `tests/combat_bot.gd` – simulerade spelare (BASIC/AUTO/GOOD) för balanstester.
 
-Balansmål för Bone Lich: NONE förlorar alltid, SLOPPY vinner ~70 %, GOOD ~100 %, strid ~90 s.
+Balansmål för första kryptstriden: BASIC (bara Anfall) förlorar nästan alltid, AUTO ~95 %, ~7 rundor.
 
 ## Kommandon
 
@@ -60,26 +78,20 @@ godot --headless --path . --script res://tests/run_tests.gd
 # Starta spelet
 godot --path .
 
-# Balansrapport (40 strider per spelarnivå)
+# Balansrapport (200 strider per spelarnivå)
 godot --headless --path . --script res://tests/balance_report.gd
-
-# Alla kombinationer av egenskapsval (SLOPPY-bot), starkast/svagast och snitt per egenskap (~2,5 min)
-godot --headless --path . --script res://tests/trait_report.gd
-
-# Varje artefakt på varje hjälte jämfört med utan artefakt (~2 min)
-godot --headless --path . --script res://tests/artifact_report.gd
 
 # Skärmdump av spelet (sparas efter 30 bildrutor, sedan avslut)
 godot --path . -- --screenshot=/tmp/shot.png --frames=30
 
-# Låt en bot spela, spola fram 16 s, fast slumpfrö
-godot --path . -- --demo --warp=16 --seed=5
+# Låt AI:n spela, spola fram 10 turer, fast slumpfrö
+godot --path . -- --demo --turns=10 --seed=5
 
 # Spela in bildsekvens (PNG) för att granska rörelser
-godot --path . --write-movie /tmp/mov/f.png --fixed-fps 20 --quit-after 70 -- --demo --warp=8 --seed=5
+godot --path . --write-movie /tmp/mov/f.png --fixed-fps 20 --quit-after 200 -- --demo --seed=3
 
 # Animationslabb: filma en figur på nära håll (se tools/anim_lab.gd för steg)
-godot --path . res://tools/anim_lab.tscn --write-movie /tmp/lab/f.png --fixed-fps 20 --quit-after 50 -- --unit=rogue --seq=idle:0.2,kick:1.2
+godot --path . res://tools/anim_lab.tscn --write-movie /tmp/lab/f.png --fixed-fps 20 --quit-after 50 -- --unit=eira --seq=idle:0.2,attack:1.2
 
 # Bygg debug-APK och installera på ansluten Android-telefon
 godot --headless --path . --export-debug Android export/rpg007.apk

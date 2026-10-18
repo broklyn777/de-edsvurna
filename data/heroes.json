@@ -1,180 +1,104 @@
 {
-	"warrior": {
-		"name": "Warrior",
-		"role": "tank",
-		"color": "#c69b6d",
-		"max_hp": 2600,
-		"damage_taken_mult": 0.75,
-		"threat_mult": 4.5,
-		"crit_chance": 0.08,
-		"pos": [
-			30,
-			15
-		],
-		"swing": {
-			"interval": 2.0,
-			"min": 55,
-			"max": 75
-		},
-		"traits": ["retaliation"],
-		"trait_options": ["retaliation", "sunder", "righteous_fury"],
-		"rules": [
-			{
-				"ability": "shield_slam"
-			}
-		],
+	"paladin": {
+		"name": "Paladinen",
+		"title": "Hämndens ed",
+		"role": "leader",
+		"color": "#f2c85b",
+		"max_hp": 900,
+		"speed": 10,
+		"attack": [70, 90],
+		"crit_chance": 0.1,
+		"attack_ability": "strike",
+		"signature": "holy_smite",
+		"traits": ["oath_vengeance"],
+		"rules": [{"action": "signature"}],
 		"visual": {
 			"model": "torvald",
-			"scale": 1.0,
-			"weapons": {
-				"grip_r": "Longsword",
-				"grip_l": "Shield"
-			},
-			"anims": {
-				"idle": "Shield_Idle",
-				"attack": [
-					"Shield_Attack",
-					"Shield_Attack_B"
-				],
-				"hit": "Hit_Chest",
-				"death": "Death01",
-				"block": "Shield_Wall",
-				"run": "Run",
-				"walk": "Walk"
-			},
-			"procedural": [
-				"Shield_Wall"
-			]
+			"weapons": {"grip_r": "Longsword", "grip_l": "Shield"},
+			"anims": {"idle": "Shield_Idle", "attack": ["Shield_Attack", "Shield_Attack_B"], "hit": "Hit_Chest",
+				"death": "Death01", "block": "Shield_Block", "run": "Run", "walk": "Walk"}
 		}
 	},
-	"priest": {
-		"name": "Priest",
+	"brokk": {
+		"name": "Brokk",
+		"title": "Dvärgkrigare",
+		"role": "tank",
+		"color": "#c69b6d",
+		"max_hp": 1150,
+		"speed": 7,
+		"attack": [55, 70],
+		"crit_chance": 0.08,
+		"attack_ability": "axe_chop",
+		"signature": "challenge",
+		"traits": ["brokk_bulwark"],
+		"rules": [{"action": "signature"}],
+		"visual": {
+			"model": "torvald",
+			"scale": 0.86,
+			"tint": "#b08060",
+			"weapons": {"grip_r": "Greataxe"},
+			"anims": {"idle": "TwoHand_Idle", "attack": ["TwoHand_Attack", "TwoHand_Attack_B"], "hit": "Hit_Chest",
+				"death": "Death01", "block": "Shield_Block", "run": "TwoHand_Run", "walk": "TwoHand_Walk"}
+		}
+	},
+	"alva": {
+		"name": "Syster Alva",
+		"title": "Präst",
 		"role": "healer",
 		"color": "#f4f4f4",
-		"max_hp": 1500,
-		"max_mana": 3000,
-		"mana_regen": 6,
+		"max_hp": 700,
+		"speed": 11,
+		"attack": [45, 55],
 		"crit_chance": 0.08,
-		"pos": [
-			-200,
-			-70
-		],
-		"traits": ["lightbringer"],
-		"trait_options": ["lightbringer", "guardian_spirit", "dawn_miracle"],
-		"rules": [
-			{
-				"ability": "heal",
-				"if": {
-					"target_hp_below": 0.5
-				}
-			},
-			{
-				"ability": "renew",
-				"if": {
-					"target_missing_aura": "renew"
-				}
-			}
-		],
+		"attack_ability": "holy_bolt",
+		"signature": "healing_light",
+		"traits": ["alva_blessing"],
+		"rules": [{"action": "signature", "if": {"ally_hp_below": 0.65}}],
 		"visual": {
 			"model": "sigrun",
-			"scale": 1.0,
-			"weapons": {
-				"grip_r": "Mace"
-			},
-			"anims": {
-				"idle": "OneHand_Idle",
-				"cast": "Cast_Channel_Priest",
-				"release": "Spell_Simple_Shoot",
-				"hit": "Hit_Chest",
-				"death": "Death01",
-				"run": "Run",
-				"walk": "Walk"
-			},
-			"procedural": [
-				"Cast_Channel_Priest"
-			]
+			"weapons": {"grip_r": "Mace"},
+			"anims": {"idle": "OneHand_Idle", "attack": ["Spell_Simple_Shoot"], "cast": "Spell_Simple_Shoot",
+				"hit": "Hit_Chest", "death": "Death01", "block": "Shield_Block", "run": "Run", "walk": "Walk"}
 		}
 	},
-	"mage": {
-		"name": "Mage",
+	"eira": {
+		"name": "Jägaren Eira",
+		"title": "Jägare",
 		"role": "dps",
-		"color": "#3fc7eb",
-		"max_hp": 1300,
-		"crit_chance": 0.12,
-		"pos": [
-			-170,
-			95
-		],
-		"traits": ["kindling"],
-		"trait_options": ["kindling", "combustion", "ember_lore"],
-		"rules": [
-			{
-				"ability": "frostbolt"
-			}
-		],
-		"visual": {
-			"model": "solveig",
-			"scale": 1.0,
-			"weapons": {
-				"grip_r": "Staff"
-			},
-			"anims": {
-				"idle": "Staff_Idle",
-				"cast": "Cast_Channel_Mage",
-				"release": "Spell_Simple_Shoot",
-				"hit": "Hit_Chest",
-				"death": "Death01",
-				"run": "Staff_Run",
-				"walk": "Staff_Walk"
-			},
-			"procedural": [
-				"Cast_Channel_Mage"
-			]
-		}
-	},
-	"rogue": {
-		"name": "Rogue",
-		"role": "dps",
-		"color": "#fff468",
-		"max_hp": 1500,
+		"color": "#7fe05a",
+		"max_hp": 650,
+		"speed": 14,
+		"attack": [65, 85],
 		"crit_chance": 0.15,
-		"pos": [
-			205,
-			55
-		],
-		"swing": {
-			"interval": 1.4,
-			"min": 42,
-			"max": 58
-		},
-		"traits": ["expose"],
-		"trait_options": ["expose", "death_mark", "quickstep"],
-		"rules": [
-			{
-				"ability": "sinister_strike"
-			}
-		],
+		"attack_ability": "arrow",
+		"signature": "hunters_mark",
+		"traits": ["eira_followup"],
+		"rules": [{"action": "signature"}],
 		"visual": {
 			"model": "liria",
-			"scale": 1.0,
-			"weapons": {
-				"grip_r": "Shortsword"
-			},
-			"anims": {
-				"idle": "OneHand_Idle",
-				"attack": [
-					"OneHand_Attack",
-					"OneHand_Attack_B"
-				],
-				"hit": "Hit_Chest",
-				"death": "Death01",
-				"run": "Run",
-				"walk": "Walk",
-				"kick": "Kick"
-			},
-			"procedural": [
-				"Kick"
-			]
+			"weapons": {"grip_l": "Longbow"},
+			"anims": {"idle": "Bow_Idle", "attack": ["Bow_Shoot"], "hit": "Hit_Chest", "death": "Death01",
+				"block": "Shield_Block", "run": "Run", "walk": "Walk"}
+		}
+	},
+	"solveig": {
+		"name": "Solveig",
+		"title": "Eldmagiker",
+		"role": "dps",
+		"color": "#ff8a2a",
+		"max_hp": 600,
+		"speed": 12,
+		"attack": [60, 75],
+		"crit_chance": 0.12,
+		"attack_ability": "fire_bolt",
+		"signature": "flame_wave",
+		"traits": ["solveig_kindle"],
+		"rules": [{"action": "signature", "if": {"enemies_at_least": 2}}],
+		"visual": {
+			"model": "solveig",
+			"weapons": {"grip_r": "Staff"},
+			"anims": {"idle": "Staff_Idle", "attack": ["Spell_Simple_Shoot"], "hit": "Hit_Chest", "death": "Death01",
+				"run": "Staff_Run", "walk": "Staff_Walk"}
 		}
 	}
 }

@@ -18,7 +18,7 @@ const CAST_INTERRUPTIBLE := Color("#ffb21e")
 const CAST_UNSTOPPABLE := Color("#d23a3a")
 const GOLD := Color("#f2c85b")
 const TRAIT_GOLD := Color("#ffd75e")
-const GLYPHS := {"warrior": "shield", "priest": "cross", "mage": "diamond", "rogue": "daggers"}
+const GLYPHS := {"paladin": "shield", "brokk": "daggers", "alva": "cross", "eira": "bolt", "solveig": "flame"}
 
 static var _bold: Font
 

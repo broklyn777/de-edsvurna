@@ -299,13 +299,13 @@ func _process(delta: float) -> void:
 
 
 func _update_auras(delta: float) -> void:
-	_shield.visible = unit.auras.has("shield_wall")
+	_shield.visible = unit.auras.has("defend")
 	if _shield.visible:
 		var p := 0.5 + 0.5 * sin(_t * 6.0)
 		(_shield.material_override as StandardMaterial3D).albedo_color = Color(0.6, 0.78, 1.0, 0.16 + 0.08 * p)
-	_renew.visible = unit.auras.has("renew")
+	_renew.visible = unit.auras.has("inspired") or unit.auras.has("blessing")
 	_renew.rotation.y += delta * 2.0
-	_lust.visible = unit.auras.has("bloodlust") or unit.auras.has("frenzy")
+	_lust.visible = unit.auras.has("marked") or unit.auras.has("taunt")
 	if _lust.visible:
 		_lust.rotation.y -= delta * 3.0
 		var s := 1.0 + 0.06 * sin(_t * 20.0)
@@ -375,9 +375,10 @@ func _setup_materials(vis: Dictionary) -> void:
 				if base is StandardMaterial3D:
 					var mat: StandardMaterial3D = base.duplicate()
 					mat.albedo_color = mat.albedo_color * tint
-					mat.emission_enabled = true
-					mat.emission = Color(0.35, 0.2, 0.6)
-					mat.emission_energy_multiplier = 0.25
+					if vis.has("glow"):
+						mat.emission_enabled = true
+						mat.emission = Color(vis.glow)
+						mat.emission_energy_multiplier = 0.3
 					mesh.set_surface_override_material(i, mat)
 
 

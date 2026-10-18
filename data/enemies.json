@@ -1,0 +1,88 @@
+{
+	"skeleton_warrior": {
+		"name": "Skelettkrigare",
+		"color": "#e8e0d0",
+		"max_hp": 640,
+		"speed": 9,
+		"attack": [
+			215,
+			260
+		],
+		"crit_chance": 0.05,
+		"attack_ability": "bone_slash",
+		"visual": {
+			"model": "skelett",
+			"scale": 1.05,
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			}
+		}
+	},
+	"skeleton_archer": {
+		"name": "Skelettbågskytt",
+		"color": "#d8cfb4",
+		"max_hp": 440,
+		"speed": 13,
+		"attack": [
+			175,
+			210
+		],
+		"crit_chance": 0.08,
+		"attack_ability": "bone_arrow",
+		"visual": {
+			"model": "skelett",
+			"scale": 0.95,
+			"tint": "#d8cfb4",
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			}
+		}
+	},
+	"grave_priest": {
+		"name": "Gravpräst",
+		"color": "#b8a6e0",
+		"max_hp": 460,
+		"speed": 8,
+		"attack": [
+			105,
+			125
+		],
+		"crit_chance": 0.05,
+		"attack_ability": "shadow_bolt",
+		"rules": [
+			{
+				"ability": "grave_mend",
+				"if": {
+					"ally_hp_below": 0.7
+				}
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.0,
+			"tint": "#c9b8ff",
+			"glow": "#5a3a9a",
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			}
+		}
+	}
+}
