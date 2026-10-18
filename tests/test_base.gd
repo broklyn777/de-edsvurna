@@ -36,10 +36,10 @@ func test_silver_for_won_battles() -> void:
 
 func test_forge_costs_silver() -> void:
 	var p := Profile.new()
-	p.silver = 100
+	p.silver = Profile.FORGE_COST + 10
 	assert_eq(p.forge_cost("brokk", "shield", "healing_light"), Profile.FORGE_COST)
 	assert_true(p.forge("brokk", "shield", "healing_light"))
-	assert_eq(p.silver, 100 - Profile.FORGE_COST)
+	assert_eq(p.silver, 10)
 	assert_eq(p.artifacts.brokk, {"type": "shield", "ability": "healing_light"})
 	assert_eq(p.forge_cost("brokk", "shield", "healing_light"), 0, "samma artefakt kostar inget")
 	assert_true(not p.forge("brokk", "shield", "healing_light"), "och smids inte om")
@@ -151,11 +151,14 @@ func test_artifact_stats() -> void:
 	var plain := _sim()
 	var sim := _sim({"paladin": {"type": "sword", "ability": ""}, "brokk": {"type": "helm", "ability": ""},
 			"alva": {"type": "shield", "ability": ""}, "eira": {"type": "boots", "ability": ""}})
-	assert_near(sim.unit("paladin").attack_max, plain.unit("paladin").attack_max * 1.1, 0.01, "svärd: anfall")
-	assert_eq(sim.unit("brokk").max_hp, roundf(plain.unit("brokk").max_hp * 1.1), "hjälm: liv")
+	var a: Dictionary = _data.artifacts
+	assert_near(sim.unit("paladin").attack_max, plain.unit("paladin").attack_max * a.sword.stat_mult, 0.01, "svärd: anfall")
+	assert_eq(sim.unit("brokk").max_hp, roundf(plain.unit("brokk").max_hp * a.helm.stat_mult), "hjälm: liv")
 	assert_eq(sim.unit("brokk").hp, sim.unit("brokk").max_hp)
-	assert_near(sim.unit("alva").damage_taken(), plain.unit("alva").damage_taken() * 0.9, 0.001, "sköld: mindre skada")
-	assert_eq(sim.unit("eira").speed, plain.unit("eira").speed + 2.0, "stövlar: snabbhet")
+	assert_near(sim.unit("alva").damage_taken(), plain.unit("alva").damage_taken() * a.shield.stat_mult, 0.001,
+			"sköld: mindre skada")
+	assert_eq(sim.unit("eira").speed, plain.unit("eira").speed + a.boots.stat_add, "stövlar: snabbhet")
+	assert_true(sim.unit("eira").speed > plain.unit("eira").speed)
 	assert_true(not sim.unit("paladin").traits.has("artifact_paladin"), "utan förmåga ingen egenskap")
 
 
@@ -167,7 +170,7 @@ func test_staff_boosts_healing() -> void:
 		s.unit("brokk").hp = 10.0
 		s.rng.seed = 3
 		s._heal(s.unit("alva"), s.unit("brokk"), 100.0, "healing_light", false)
-	assert_eq(sim.unit("brokk").hp - 10.0, 110.0, "staven: +10 % helning")
+	assert_eq(sim.unit("brokk").hp - 10.0, roundf(100.0 * _data.artifacts.staff.stat_mult), "staven: mer helning")
 	assert_eq(plain.unit("brokk").hp - 10.0, 100.0)
 
 

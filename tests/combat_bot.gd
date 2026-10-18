@@ -32,8 +32,8 @@ const TUNED_MACROS := {
 
 
 static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter := "crypt_1",
-		party: Array = [], traits := {}, charges := {}) -> Dictionary:
-	var sim := CombatSim.create(data, encounter, seed_value, party, traits, charges)
+		party: Array = [], traits := {}, charges := {}, artifacts := {}) -> Dictionary:
+	var sim := CombatSim.create(data, encounter, seed_value, party, traits, charges, artifacts)
 	sim.begin()
 	var guard := 0
 	var no_match := 0

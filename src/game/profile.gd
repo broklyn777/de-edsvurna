@@ -6,12 +6,15 @@ extends RefCounted
 ## Silver är den enda resursen än så länge (Siralim har fem). Det ges för vunna strider i kryptan –
 ## inte i Övningsgården – och behålls även om sällskapet faller, som i Siralim där man bara
 ## förlorar Fortune.
+##
+## Balans: en artefakt höjer chansen att klara hela kryptan med startmakrona från ~60 % till 75–85 %,
+## alla fyra till ~96 %. Startsilvret räcker till en, sedan ungefär en per klarad körning (110 silver).
 
-const START_SILVER := 60
+const START_SILVER := 100
 ## Smida en ny artefakt (eller byta typ, som smälter ned den gamla).
-const FORGE_COST := 60
+const FORGE_COST := 100
 ## Byta förmågan i en artefakt man redan har.
-const RESOCKET_COST := 30
+const RESOCKET_COST := 40
 ## Silver per vunnen strid, per våning.
 const FLOOR_REWARD := [25, 35, 50]
 
