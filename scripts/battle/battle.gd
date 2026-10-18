@@ -495,7 +495,7 @@ func _on_damage(e: Dictionary) -> void:
 			world.add_shake(12.0 if crit else 8.0)
 		_:
 			var ab := sim.ability(e.ability)
-			sfx.play(ab.get("sound", "melee_hit"), -6.0 if not crit else -1.0, 0.08)
+			sfx.play(ab.get("sound", "k_hero_hit"), -6.0 if not crit else -1.0, 0.08)
 			fx_layer.add_child(_at(Fx.Ring.new(color, 6, 46 if crit else 32, 0.3, 5.0), p))
 			if ab.get("melee", false):
 				fx_layer.add_child(_at(Fx.Sparks.new(color, 8, 220.0, 0.3), p))
