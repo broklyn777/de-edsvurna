@@ -834,6 +834,23 @@ Anointments låter en låna perks från andra Specializations efter segrar mot F
 3. **Delad poängpott: nej, inte nu.** Egen pott per Ed, så att det lönar sig att prova de andra. Tas upp
    igen vid fler än cirka 5 Eder.
 
+
+**Tillägg (2026-10-19, ur [Character Specialization Guide](https://steamcommunity.com/sharedfiles/filedetails/?id=2190265173), version 2.0.37):**
+- *Perk-potten:* "The total amount of perk points you've earned is available to every class." Varje
+  Specialization har alltså **hela** potten för sig. Vårt beslut (egen pott per Ed, punkt 3 ovan)
+  motsvarar originalet exakt. Den "delade potten" i wikin betydde detta. Bekräftat.
+- *Perk Points:* 10 per Realm Quest på djupaste djupet, 50 per besegrad story-boss. Bekräftat (guide).
+- *Anointments:* 5 platser som standard (vissa Specializations får fler). De låses upp gradvis genom
+  segrar mot False Gods via Guilds, långt efter berättelsen. Varje Specializations anointments kommer
+  från en viss False God: Paladin och Cleric från Saint Althea, Monk och Warden från Jotun, Inquisitor
+  från The Ancestor. Inte alla perks kan bli Anointments. Bekräftat (guide).
+- *Start:* varje start-Specialization får två unika startvarelser och en egen startspell. Efter
+  tutorialen får man en varelse till. Paladin börjar med Blood Crusader (Crusader/Life). Bekräftat
+  (guide).
+- *Klasscirkeln:* Life > Death > Chaos > Sorcery > Nature > Life (stark mot, ×2). Bekräftat (guide).
+- Guiden rekommenderar Cleric för den som vill tanka och Monk för den som vill undvika. Det stöder
+  §4 i `siralim_0.19.md` (tank som byggd roll).
+
 ---
 
 ## Källor
