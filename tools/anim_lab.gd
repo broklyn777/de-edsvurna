@@ -7,7 +7,7 @@ extends Node3D
 ##
 ## Steg i --seq (kommaseparerade, valfri längd i sekunder efter kolon):
 ##   cast:<skola>:<s>  ladda en besvärjelse så länge, sedan släpp
-##   attack[:s]  hit[:s]  block:<s>  kick[:s]  idle:<s>  walk:<s>
+##   attack[:s]  hit[:s]  block:<s>  kick[:s]  idle:<s>  walk:<s>  die[:s]  revive[:s]
 ##
 ## Nya modeller utan data: --models=gast,haxa (spelar Idle och Sword_Attack, se MODEL_PREVIEW).
 ## Uppställning: --units=heroes, --units=enemies, --units=all eller --units=paladin,brokk,…
@@ -18,11 +18,16 @@ extends Node3D
 const MODEL_PREVIEW := {
 	"biskop": {"anims": {"idle": "Sword_Idle"}},
 	"fallen_riddare": {"anims": {"idle": "Shield_Idle", "attack": ["Shield_Attack"]}},
-	"falkenerare": {"anims": {"idle": "Sword_Idle"}},
-	"bard": {"anims": {"idle": "Sword_Idle", "attack": ["Sword_Attack"]}},
-	"munk": {"anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack", "OneHand_Attack_B"]}},
-	"druid": {"weapons": {"grip_r": "Staff"}, "anims": {"idle": "Staff_Idle", "attack": ["Spell_Simple_Shoot"], "cast": "Staff_Cast"}},
+	"falkenerare": {"weapons": {"grip_r": "Shortsword"}, "anims": {"idle": "Sword_Idle"}},
+	"bard": {"anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack"], "run": "Run"}},
+	"munk": {"anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack", "OneHand_Attack_B"], "run": "Run"}},
+	"druid": {"weapons": {"grip_r": "Staff"}, "anims": {"idle": "Staff_Idle", "attack": ["Spell_Simple_Shoot"],
+			"cast": "Staff_Cast", "walk": "Staff_Walk", "run": "Staff_Run"}},
+	"domare": {"weapons": {"grip_r": "Mace"}, "anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack"], "run": "Run"}},
+	"svardsdansare": {"weapons": {"grip_r": "Shortsword", "grip_l_hand": "Shortsword"},
+			"anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack", "OneHand_Attack_B"], "run": "Run"}},
 }
+
 
 var _model: UnitModel
 var _models: Array[UnitModel] = []
@@ -142,6 +147,8 @@ func _process(delta: float) -> void:
 			"hit": m.hit(2.0, front)
 			"block": m.set_blocking(true)
 			"unblock": m.set_blocking(false)
+			"die": m.die()
+			"revive": m.revive()
 			"walk": m.move_to(m.position + Vector3(-1.5, 0, 0), arg.call(1, 1.2), false)
 	match step:
 		"cast":
