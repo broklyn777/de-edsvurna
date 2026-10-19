@@ -62,6 +62,10 @@ func _tap(p: Vector2) -> void:
 			selected = "" if selected == inv[i] else inv[i]
 			return
 	for i in state.party.size():
+		if _sheet_rect(i).has_point(p):
+			run.open_sheet(state.party[i], Array(state.party), run.CAMP_SCENE)
+			return
+	for i in state.party.size():
 		if _hero_rect(i).has_point(p):
 			var hero_id := state.party[i]
 			if selected != "":
@@ -101,6 +105,12 @@ func _chip_rect(i: int) -> Rect2:
 func _hero_rect(i: int) -> Rect2:
 	var w := (size.x - MARGIN * 2 - GAP * 3) / 4.0
 	return Rect2(MARGIN + i * (w + GAP), 396, w, 116)
+
+
+## Knappen till hjältebladet nere till höger i hjältens kort.
+func _sheet_rect(i: int) -> Rect2:
+	var r := _hero_rect(i)
+	return Rect2(r.end.x - 78, r.end.y - 36, 70, 30)
 
 
 func _button_rect() -> Rect2:
@@ -145,10 +155,17 @@ func _draw() -> void:
 		var trophy: String = state.equipped.get(hero_id, "")
 		var own: String = state.oath if hero_id == "paladin" else h.traits[0]
 		var body := "%s\nTrofé: %s" % [data.traits[own].name, data.traits[trophy].name if trophy != "" else "–"]
-		UiStyle.card(self, _hero_rect(i), h.name, body, trophy != "", Color(h.color), h.title.to_upper())
+		var lv := int(run.profile.hero(data, hero_id).level)
+		UiStyle.card(self, _hero_rect(i), "%s · nivå %d" % [h.name, lv], body, trophy != "", Color(h.color), h.title.to_upper())
+		var sr := _sheet_rect(i)
+		draw_rect(sr, Color(0, 0, 0, 0.7))
+		draw_rect(sr, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
+		UiStyle.text(self, sr.position + Vector2(0, 21), "BLAD", 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, sr.size.x, 3)
 
 	# Vad som väntar: rumskartan med questen och reglerna (0.18).
-	var next := "TILLBAKA TILL RUMSKARTAN – VÅNING %d" % (state.floor + 1)
+	if state.map != null:
+		InkArt.floor_markers(self, Vector2(size.x - 470, 44), state.floor, state.floor_ids.size(), UiStyle.GOLD, 18)
+	var next := "TILLBAKA TILL RUMSKARTAN – VÅNING %d AV %d" % [state.floor + 1, state.floor_ids.size()]
 	if state.floor_cleared():
 		next = "KÖRNINGEN ÄR KLAR!" if state.is_last_floor() else "VÅNINGEN ÄR KLAR – VIDARE TILL VÅNING %d" % (state.floor + 2)
 	UiStyle.text(self, Vector2(MARGIN, size.y - 112), next, 18, Color("#ff8a6a"))

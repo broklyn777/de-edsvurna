@@ -70,6 +70,10 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
 | Våning | floor, `FLOORS`, `stat_mult` i encounters.json | – (en del av en Realm) | Våning 2 och 3 har starkare fiender (×1,08, ×1,10). |
 | Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs på kampanjkartan: Kryptan eller Det fördärvade kapellet. |
+| Nivå | level, `Profile.heroes[id].level`, `HeroStats` | Level | +30 % av basvärdet per nivå, inget tak. Fiendernas nivå följer djup och våning. |
+| Erfarenhet | xp, `HeroStats.battle_xp()`, `add_xp()` | Experience | Per vunnen strid efter rumstyp och djup²; hela sällskapet får den. 5 · L² + 10 till nästa nivå. |
+| Personlighet | personality, `data/personalities.json` | Personality | 20 sorter: en stat växer 40 %, en annan 20 %. Byts i Biblioteket (Personality Tome) mot silver. |
+| Hjältebladet | `hero_screen` | varelsens skärm | Nivå, erfarenhet, fiendernas nivå på valt djup, stats per källa, vad de betyder, egenskaper, förmågor, artefakt och historik. |
 | Instabilitet | `Profile.instability`, `RunState.instability`, `roll_rules()` | Realm Instability | 0–3 på kampanjkartan: n synliga och n dolda våningsregler, mer silver och troféchans. |
 | Våningsregel | `data/floor_rules.json`, `CombatSim.rules`, händelsen `rule` | Realm Property | T.ex. De döda vaknar (Resurrect on Death), Förseglade ord (Gems Sealed After Casting), Speglande ben (Reflect Damage Taken), Kaosvind (Stats are Swapped). |
 | Dold regel | `rules_hidden`, `rules_revealed` | hidden Realm Property | Syns först när den slår till. |

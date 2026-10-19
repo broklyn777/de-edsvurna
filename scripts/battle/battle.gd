@@ -77,12 +77,16 @@ func _ready() -> void:
 			warp_turns = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--seed="):
 			seed_value = int(arg.get_slice("=", 1))
+		elif arg.begins_with("--inspect="):
+			_show_inspect.call_deferred(arg.get_slice("=", 1))  # Inspect direkt (för skärmdumpar)
 	var state: RunState = run.state
 	if state.charges.is_empty():
 		state.fill_charges(data)
+	var opts: Dictionary = state.battle_opts() if state.map != null and not state.practice \
+			else {"rules": state.active_rules(), "instability": state.instability, "floor": state.floor}
+	opts.levels = run.profile.levels_for(data, state.party)  # 0.19: hjältarnas nivåer
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
-			state.artifacts, state.depth, state.battle_opts() if state.map != null and not state.practice
-			else {"rules": state.active_rules(), "instability": state.instability})
+			state.artifacts, state.depth, opts)
 	data = sim.data  # med artefakternas egenskaper
 	_auto = demo
 	_build_scene()
@@ -108,6 +112,8 @@ func _ready() -> void:
 		for u in sim.units:
 			if not u.alive:
 				models[u.id].die()
+		if sim.outcome != "":
+			_on_outcome.call_deferred(sim.outcome)  # spolat till slutet: visa resultatet direkt
 		started = true
 		_countdown = 0.0
 	auto_chip.on = _auto
@@ -370,6 +376,10 @@ func _show_inspect(unit_id: String) -> void:
 	var u := sim.unit(unit_id)
 	var lines: Array[String] = ["Liv %d/%d · Attack %d · Intelligence %d · Defense %d · Speed %d" % [
 			u.hp, u.max_hp, u.attack, u.intelligence, u.defense_now(), u.speed]]
+	if u.team == 0 and u.personality != "":
+		var p: Dictionary = data.personalities[u.personality]
+		lines.append("Nivå %d · %s (%s 40 %%, %s 20 %%)" % [int(u.level), p.name, HeroStats.STAT_NAMES[p.up],
+				HeroStats.STAT_NAMES[p.down]])
 	for trait_id in u.traits:
 		var t: Dictionary = data.traits[trait_id]
 		if not t.get("hidden", false):
@@ -726,12 +736,18 @@ func _on_outcome(result: String) -> void:
 		run.audio.stop_music(0.8)
 		sfx.play("jingle_victory", -1.0, 0.0)
 		world.add_shake(10.0)
-		var title := "KRYPTAN RENSAD!" if run.state.is_last_floor() else "SEGER!"
+		var last: bool = run.state.is_last_floor() and run.state.current_room().get("kind", "end") == "end"
+		var title := ("%s RENSAD!" % run.data.realms[run.state.realm].short.to_upper()) if last else "SEGER!"
 		if run.state.practice:
 			title = "ÖVNINGEN VUNNEN"
 		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
 		overlay.lines = receipt()
+		# 0.19: erfarenhet och nivåuppgångar syns och hörs på segerskärmen.
+		overlay.level_ups = run.award_battle(sim, true)
+		if not overlay.level_ups.is_empty():
+			get_tree().create_timer(1.3).timeout.connect(sfx.play.bind("trophy_elite", -3.0, 0.0))
 	else:
+		run.award_battle(sim, false)
 		run.audio.stop_music(1.5)
 		sfx.play("jingle_defeat", -1.0, 0.0)
 		overlay.set_result("defeat", "Sällskapet föll efter %d turer" % sim.turn_no)

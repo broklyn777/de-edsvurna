@@ -54,6 +54,9 @@ var times_hit := 0
 var sealed := {}
 ## Elitvariant (0.17): starkare, eget namn, egen trofé och egen egenskap.
 var elite := false
+## Nivå och personlighet (0.19). Fiender får den väntade nivån för djupet.
+var level := 1.0
+var personality := ""
 ## Questens Nemesis (Realm Quest "Jakt"): en namngiven elit.
 var nemesis := false
 var alive := true

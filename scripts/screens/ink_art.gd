@@ -203,6 +203,22 @@ static func compass(ci: CanvasItem, c: Vector2, r: float, color: Color) -> void:
 	UiStyle.text(ci, c + Vector2(-20, -r - 8), "N", 18, color, HORIZONTAL_ALIGNMENT_CENTER, 40, 0)
 
 
+## "Våning 1 av 3" med tre markeringar: klarade fyllda, den pågående med ring, resten tomma (0.19).
+static func floor_markers(ci: CanvasItem, pos: Vector2, floor_index: int, total: int, color: Color, size := 18) -> void:
+	UiStyle.text(ci, pos, "VÅNING %d AV %d" % [floor_index + 1, total], size, color, HORIZONTAL_ALIGNMENT_LEFT, 220, 0)
+	for i in total:
+		var c := pos + Vector2(190 + i * 30, -size * 0.35)
+		if i < floor_index:
+			ci.draw_circle(c, 9, color)
+		elif i == floor_index:
+			ci.draw_circle(c, 9, Color(color, 0.35))
+			ci.draw_arc(c, 11, 0, TAU, 20, color, 2.5, true)
+		else:
+			ci.draw_arc(c, 9, 0, TAU, 20, Color(color, 0.6), 2.0, true)
+	var boss := pos + Vector2(190 + total * 30 + 6, -size * 0.35)
+	UiStyle.text(ci, boss + Vector2(0, 6), "→ boss", 14, Color(color, 0.8), HORIZONTAL_ALIGNMENT_LEFT, 80, 0)
+
+
 ## Kartusch: en inramad skylt med inrullade ändar och texten i mitten.
 static func cartouche(ci: CanvasItem, rect: Rect2, title: String, color: Color, size := 22) -> void:
 	ci.draw_rect(rect, Color(0.94, 0.87, 0.68, 0.92))

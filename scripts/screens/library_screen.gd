@@ -9,6 +9,12 @@ const RARITY := {"common": "VANLIG", "elite": "ELIT", "boss": "BOSS"}
 func _tap(p: Vector2) -> void:
 	if back_rect().has_point(p):
 		run.go(run.BASE_SCENE)
+		return
+	var heroes: Array = run.data.heroes.keys()
+	for i in heroes.size():
+		if _hero_rect(i).has_point(p):
+			run.open_sheet(heroes[i], heroes, run.LIBRARY_SCENE, true)
+			return
 
 
 func _trophy_rect(i: int) -> Rect2:
@@ -60,10 +66,16 @@ func _draw() -> void:
 				hint = "Från %s, efter %d segrar." % [d.name, RunState.BOSS_WINS_FOR_TROPHY]
 			UiStyle.card(self, _trophy_rect(i), "Okänd trofé", hint, false, Color("#8a93a6"), tag)
 
+	# Hjältarna (0.19): tryck för hjältebladet; här kan personligheten bytas mot silver.
 	var y := size.y - 120.0
-	UiStyle.text(self, Vector2(MARGIN, y), "ARTEFAKTER", 14, Color(1, 1, 1, 0.6))
-	var x := MARGIN
-	for hero_id in data.heroes:
-		var line := "%s: %s" % [data.heroes[hero_id].name, ArtifactText.name_of(data, run.profile.artifacts.get(hero_id, {}))]
-		UiStyle.text(self, Vector2(x, y + 28 + 0), line, 14, Color("#d8dde6"), HORIZONTAL_ALIGNMENT_LEFT, 236, 3)
-		x += 245.0
+	UiStyle.text(self, Vector2(MARGIN, y), "HJÄLTARNA – TRYCK FÖR HJÄLTEBLADET (HÄR BYTS PERSONLIGHET)", 14, Color(1, 1, 1, 0.6))
+	var heroes: Array = data.heroes.keys()
+	for i in heroes.size():
+		var h: Dictionary = run.profile.hero(data, heroes[i])
+		var p: Dictionary = data.personalities.get(h.personality, {})
+		chip(_hero_rect(i), "%s · nivå %d · %s" % [data.heroes[heroes[i]].name, int(h.level), p.get("name", "")], false, 14)
+
+
+func _hero_rect(i: int) -> Rect2:
+	var w := (size.x - MARGIN * 2 - GAP * 4) / 5.0
+	return Rect2(MARGIN + i * (w + GAP), size.y - 96, w, 50)

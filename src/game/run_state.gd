@@ -68,6 +68,8 @@ var next_auras: Array = []
 var next_rules: Array = []
 ## Klar med körningen (slutet på sista våningen vunnet).
 var finished := false
+## Egenskapernas statistik för hela körningen: trait_id -> {procs, damage, heal, unit} (hjältebladet).
+var trait_totals := {}
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -364,7 +366,8 @@ static func is_battle(r: Dictionary) -> bool:
 ## Inställningar till CombatSim för rummets strid (regler, elit, portal, helgedomens gåva).
 func battle_opts() -> Dictionary:
 	var r := current_room()
-	var opts := {"rules": active_rules() + next_rules, "instability": instability, "start_auras": next_auras.duplicate()}
+	var opts := {"rules": active_rules() + next_rules, "instability": instability, "start_auras": next_auras.duplicate(),
+			"floor": floor}
 	if r.get("kind", "") == "elite" or r.get("nemesis", false):
 		opts.force_elites = 1
 	if r.get("nemesis", false):
@@ -525,7 +528,7 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "room_id", "visited",
-		"side_index", "quest", "next_auras", "next_rules", "finished"]
+		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals"]
 
 
 func to_dict() -> Dictionary:

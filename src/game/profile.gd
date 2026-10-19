@@ -57,6 +57,11 @@ var boss_wins := {}
 var quests_done: Array = []
 ## Djupaste klarade djup per Realm (kampanjkartans front, 0.18).
 var realm_depth := {}
+## Hjältarnas utveckling (0.19, Siralim): hero_id -> {level, xp, personality, battles, wins, deaths,
+## revives, log: [{level, battle}]}. Nivåerna behålls mellan körningarna.
+var heroes := {}
+## Att byta personlighet i Biblioteket (Siralims Personality Tome).
+const PERSONALITY_COST := 80
 ## Inställning: 3D-ögonblicken när sällskapet går in i ett rum på rumskartan.
 var room_moments := true
 ## Perk-poäng från tiden före Realm Quests (0.14.1–0.17), så att äldre profiler behåller sina.
@@ -147,6 +152,46 @@ func complete_quest(realm_id: String, at_depth: int) -> Dictionary:
 	var amount := roundi(QUEST_SILVER * (1.0 + SILVER_PER_DEPTH * (maxi(at_depth, 1) - 1)))
 	silver += amount
 	return {"silver": amount, "point": point}
+
+
+## Hjältens utveckling; skapas på nivå 1 med den förvalda personligheten (även för gamla profiler).
+func hero(data: Dictionary, hero_id: String) -> Dictionary:
+	if not heroes.has(hero_id):
+		heroes[hero_id] = {"level": 1, "xp": 0, "personality": data.heroes[hero_id].get("personality", ""),
+				"battles": 0, "wins": 0, "deaths": 0, "revives": 0, "log": []}
+	return heroes[hero_id]
+
+
+## Nivå och personlighet per hjälte, till CombatSim (opts.levels).
+func levels_for(data: Dictionary, party: Array) -> Dictionary:
+	var out := {}
+	for hero_id in party:
+		var h := hero(data, hero_id)
+		out[hero_id] = {"level": int(h.level), "personality": h.personality}
+	return out
+
+
+## Erfarenhet till hela sällskapet efter en vunnen strid. Returnerar hero_id -> [nya nivåer].
+func grant_xp(data: Dictionary, party: Array, xp: int) -> Dictionary:
+	var out := {}
+	for hero_id in party:
+		var h := hero(data, hero_id)
+		var ups := HeroStats.add_xp(h, xp)
+		for lv in ups:
+			h.log.append({"level": lv, "battle": int(h.battles)})
+		if not ups.is_empty():
+			out[hero_id] = ups
+	return out
+
+
+## Byter personlighet mot silver; nivåerna räknas om bakåt (statsen räknas alltid ur nivå och personlighet).
+func set_personality(data: Dictionary, hero_id: String, personality: String) -> bool:
+	var h := hero(data, hero_id)
+	if not data.personalities.has(personality) or h.personality == personality or silver < PERSONALITY_COST:
+		return false
+	silver -= PERSONALITY_COST
+	h.personality = personality
+	return true
 
 
 ## Hur många perk-poäng Kallets köpta perks och lånade perk använder.
@@ -285,6 +330,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "quests_done", quests_done)
 	cfg.set_value("progress", "realm_depth", realm_depth)
 	cfg.set_value("progress", "room_moments", room_moments)
+	cfg.set_value("progress", "heroes", heroes)
 	cfg.set_value("progress", "bonus_points", bonus_points)
 	cfg.set_value("progress", "bosses_defeated", bosses_defeated)
 	cfg.set_value("progress", "anointed", anointed)
@@ -315,6 +361,7 @@ static func load_from(path: String) -> Profile:
 	p.boss_wins = cfg.get_value("progress", "boss_wins", {})
 	p.realm_depth = cfg.get_value("progress", "realm_depth", {})
 	p.room_moments = cfg.get_value("progress", "room_moments", true)
+	p.heroes = cfg.get_value("progress", "heroes", {})
 	if cfg.has_section_key("progress", "quests_done"):
 		p.quests_done = cfg.get_value("progress", "quests_done", [])
 		p.bonus_points = int(cfg.get_value("progress", "bonus_points", 0))

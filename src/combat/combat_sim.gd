@@ -133,7 +133,9 @@ var trait_stats := {}
 ## opts: {"rules": [regel-id], "instability": n, "elite_chance": andel (annars elite_chance()),
 ##   "force_elites": n (de n första vanliga fienderna blir elit – Elit-rum och Nemesis), "nemesis": true
 ##   (den första eliten heter Nemesis), "stat_bonus": extra skalning (Portalens strid),
-##   "start_auras": [aura] som sällskapet börjar med (Helgedomens gåva)}.
+##   "start_auras": [aura] som sällskapet börjar med (Helgedomens gåva),
+##   "levels": {hero_id: {level, personality}} (0.19) – hjältarnas nivåer; då har fienderna en nivå efter
+##   djupet och "floor" (0–2, HeroStats.enemy_level), också i Speed}.
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		party: Array = [], traits := {}, charges := {}, artifacts := {}, depth := 1, opts := {}) -> CombatSim:
 	var sim := CombatSim.new()
@@ -152,6 +154,18 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	for i in hero_ids.size():
 		var hero := CombatUnit.from_data(hero_ids[i], game_data.heroes[hero_ids[i]], 0)
 		hero.position = HERO_SLOTS[i]
+		if opts.has("levels"):
+			var lv: Dictionary = opts.levels.get(hero.id, {})
+			hero.level = float(lv.get("level", 1))
+			hero.personality = lv.get("personality", game_data.heroes[hero.id].get("personality", ""))
+			var st := HeroStats.level_stats(game_data, hero.id, int(hero.level), hero.personality)
+			hero.max_hp = st.health
+			hero.hp = st.health
+			hero.attack = st.attack
+			hero.intelligence = st.intelligence
+			hero.defense = st.defense
+			hero.speed = st.speed
+			hero.base_stats = st.duplicate()
 		if traits.has(hero.id):
 			hero.traits = traits[hero.id].duplicate()
 		hero.traits = expand_traits(game_data, hero.traits)
@@ -176,6 +190,12 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		e.kind = kind
 		e.position = ENEMY_SLOTS[i]
 		scale_unit(e, enemy_mult(enc, sim.depth) * float(opts.get("stat_bonus", 1.0)))
+		if opts.has("levels"):
+			e.level = HeroStats.enemy_level(sim.depth, int(opts.get("floor", 0)))
+			var lm := HeroStats.level_mult(e.level)
+			scale_unit(e, lm)
+			e.speed = roundf(e.speed * lm)
+			e.base_stats.speed = e.speed
 		# Elitvarianter slumpas med ett eget frö, så att striden i övrigt blir densamma.
 		var chance: float = opts.get("elite_chance", elite_chance(sim.depth, int(opts.get("instability", 0))))
 		var elite_rng := RandomNumberGenerator.new()
