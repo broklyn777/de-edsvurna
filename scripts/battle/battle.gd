@@ -47,6 +47,7 @@ var _recent_numbers: Array = []
 var _calc_open := false
 var _dev_calc := false
 var _dev_statuses := false
+var _dev_inspect := ""
 var _dev_log := false
 var _dev_ask_forfeit := false
 ## Effekter som väntar på att vapnet eller projektilen ska träffa: [{left, call}].
@@ -98,7 +99,7 @@ func _ready() -> void:
 		elif arg == "--ask-forfeit":
 			_dev_ask_forfeit = true  # visar frågan om att ge upp när striden har börjat (skärmdumpar)
 		elif arg.begins_with("--inspect="):
-			_show_inspect.call_deferred(arg.get_slice("=", 1))  # Inspect direkt (för skärmdumpar)
+			_dev_inspect = arg.get_slice("=", 1)  # Inspect när striden har börjat (skärmdumpar)
 	var state: RunState = run.state
 	if state.charges.is_empty():
 		state.fill_charges(data)
@@ -272,6 +273,8 @@ func _process(delta: float) -> void:
 			sim.begin()
 			if _dev_statuses:
 				_give_dev_statuses()
+			if _dev_inspect != "":
+				_show_inspect.call_deferred(_dev_inspect)
 			_play_events()
 		return
 
@@ -395,13 +398,16 @@ func _remember_number(e: Dictionary) -> void:
 
 func _give_dev_statuses() -> void:
 	var p := sim.heroes[0]
-	for id in ["inspired", "warded", "renew"]:
+	for id in ["protected", "mending", "leeching"]:
 		sim._add_aura(p, p, id)
-	sim._add_aura(p, sim.heroes[1], "vulnerable")
-	for e in sim.enemies:
-		sim._add_aura(p, e, "marked")
-	sim._add_aura(p, sim.enemies[0], "burning")
-	sim._add_aura(p, sim.enemies[0], "weak")
+	sim._add_aura(p, sim.heroes[1], "berserk")
+	sim._add_aura(p, sim.heroes[1], "shelled")
+	sim._add_aura(sim.enemies[0], sim.heroes[2], "poisoned")
+	sim._add_aura(sim.enemies[0], sim.heroes[2], "blind")
+	sim._add_aura(p, sim.enemies[0], "bleeding")
+	sim._add_aura(p, sim.enemies[0], "vulnerable")
+	sim._add_aura(p, sim.enemies[1 % sim.enemies.size()], "snared")
+	sim._add_aura(p, sim.enemies[2 % sim.enemies.size()], "frozen")
 
 
 func _open_damage_log() -> void:

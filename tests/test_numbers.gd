@@ -194,3 +194,229 @@ func test_heals_grow_with_the_stats() -> void:
 	assert_near(alva.auras.renew.hot, roundf(alva.intelligence * 0.7), 0.5, "Förnyelse följer Intelligence")
 	assert_true(not _data.abilities.grave_mend.effects[0].has("min"), "Gravens lagning är en andel av Int")
 	assert_true(not _data.traits.warden_helm.effects[0].has("min"), "Väktarens hjälm är en andel av Defense")
+
+
+# --- Statusarna (0.22, originalets siffror i siralim.md §17) -------------------------
+
+func _fresh(seed_value := 5) -> CombatSim:
+	return CombatSim.create(_data, "chapel_1", seed_value, ["paladin", "brokk", "alva", "eira"], {}, {}, {}, 1,
+			{"elite_chance": 0.0})
+
+
+## Andel av n träffar från src på tgt som undveks eller blev krit.
+func _rates(sim: CombatSim, src: CombatUnit, tgt: CombatUnit, n := 400) -> Dictionary:
+	var dodged := 0
+	var crits := 0
+	for i in n:
+		tgt.hp = tgt.max_hp
+		sim._deal_damage(src, tgt, 1.0, "physical", "attack", true, true, "attack", true)
+		for e in sim.drain_events():
+			if e.type == "dodge":
+				dodged += 1
+			elif e.type == "damage" and e.crit:
+				crits += 1
+	return {"dodge": float(dodged) / n, "crit": float(crits) / n}
+
+
+func test_status_protected_berserk_vulnerable_weak() -> void:
+	var base: float = _hit("").calc.mod_total
+	assert_near(_hit("protected").calc.mod_total / base, 0.5, 1e-9, "Beskyddad −50 %")
+	assert_near(_hit("", "berserk").calc.mod_total / base, 1.5, 1e-9, "Bärsärk +50 %")
+	assert_near(_hit("vulnerable").calc.mod_total / base, 1.5, 1e-9, "Sårbar +50 %")
+	assert_near(_hit("", "weak").calc.mod_total / base, 0.5, 1e-9, "Försvagad −50 %")
+
+
+func test_status_agile_and_stone_change_dodging() -> void:
+	var sim := _fresh()
+	var p := sim.unit("paladin")
+	var e := sim.enemies[0]
+	p.speed = e.speed  # ingen undvikande-chans från farten
+	assert_near(_rates(sim, p, e).dodge, 0.0, 0.001)
+	sim._add_aura(e, e, "agile")
+	assert_near(_rates(sim, p, e).dodge, 0.25, 0.06, "Smidig: 25 % extra")
+	sim._add_aura(p, e, "stone")
+	assert_near(_rates(sim, p, e).dodge, 0.0, 0.001, "Förstenad: kan inte undvika")
+
+
+func test_status_savage_and_stone_change_crits() -> void:
+	var sim := _fresh()
+	var p := sim.unit("paladin")
+	var e := sim.enemies[0]
+	p.speed = e.speed
+	var plain: float = _rates(sim, p, e).crit
+	sim._add_aura(p, p, "savage")
+	var savage: float = _rates(sim, p, e).crit
+	assert_near(savage, plain + (1.0 - plain) * 0.25, 0.06, "Vildsint: oberoende 25 %")
+	sim._add_aura(e, p, "stone")
+	assert_near(_rates(sim, p, e).crit, 0.0, 0.001, "Förstenad: kan inte krita")
+
+
+func test_status_leeching_counts_only_life_lost() -> void:
+	var sim := _fresh()
+	var p := sim.unit("paladin")
+	var e := sim.enemies[0]
+	p.speed = e.speed
+	p.hp = 100.0
+	sim._add_aura(p, p, "leeching")
+	e.hp = 30.0  # överskott räknas inte (vårt val)
+	sim.drain_events()
+	sim._deal_damage(p, e, 1.0, "physical", "attack", false, true, "attack", true)
+	var heal := sim.drain_events().filter(func(x: Dictionary) -> bool: return x.type == "heal")
+	assert_eq(heal[0].amount, roundf(30.0 * 0.25))
+
+
+func test_status_mending_and_bleeding_at_turn_start() -> void:
+	var sim := _fresh()
+	var b := sim.unit("brokk")
+	b.hp = 100.0
+	sim._add_aura(b, b, "mending")
+	sim._tick_turn_start(b)
+	assert_eq(b.hp, 100.0 + roundf(b.max_hp * 0.25), "Läkning: 25 % av livet")
+	var e := sim.enemies[0]
+	e.hp = 500.0
+	sim._add_aura(b, e, "bleeding")
+	sim.drain_events()
+	sim._tick_turn_start(e)
+	var dmg := sim.drain_events().filter(func(x: Dictionary) -> bool: return x.type == "damage")
+	assert_eq(dmg[0].amount, roundf(500.0 * 0.3) * dmg[0].calc.mod_total if dmg[0].calc.mod_total != 1.0 else 150.0)
+
+
+func test_status_poisoned_and_burning_use_the_source_stats() -> void:
+	var sim := _fresh()
+	var p := sim.unit("paladin")
+	var e := sim.enemies[0]
+	sim._add_aura(p, e, "poisoned")
+	sim._add_aura(p, e, "burning")
+	assert_eq(e.auras.poisoned.dot, roundf(p.attack * 0.3))
+	assert_eq(e.auras.burning.dot, roundf(p.intelligence * 0.3))
+	assert_eq(e.auras.poisoned.remaining, 3.0)
+
+
+func test_status_immune_blocks_debuffs_only() -> void:
+	var sim := _fresh()
+	var b := sim.unit("brokk")
+	sim._add_aura(b, b, "immune")
+	sim._add_aura(sim.enemies[0], b, "vulnerable")
+	sim._add_aura(b, b, "protected")
+	assert_true(not b.auras.has("vulnerable") and b.auras.has("protected"))
+
+
+func test_status_shelled_cancels_the_next_hit() -> void:
+	var sim := _fresh()
+	var p := sim.unit("paladin")
+	var e := sim.enemies[0]
+	p.speed = e.speed
+	sim._add_aura(e, e, "shelled")
+	var hp := e.hp
+	sim._deal_damage(p, e, 1.0, "physical", "attack", false, true, "attack", true)
+	assert_eq(e.hp, hp)
+	assert_true(not e.auras.has("shelled"))
+	sim._deal_damage(p, e, 1.0, "physical", "attack", false, true, "attack", true)
+	assert_true(e.hp < hp)
+
+
+func test_status_rebirth_revives_with_half_health() -> void:
+	var sim := _fresh()
+	var a := sim.unit("alva")
+	sim._add_aura(a, a, "rebirth")
+	sim._deal_damage(sim.enemies[0], a, a.hp * 10.0, "physical", "x", false, false, "pure")
+	assert_true(a.alive)
+	assert_eq(a.hp, roundf(a.max_hp * 0.5))
+	assert_true(not a.auras.has("rebirth"))
+
+
+func test_status_blighted_turns_healing_into_damage() -> void:
+	var sim := _fresh()
+	var b := sim.unit("brokk")
+	b.hp = 500.0
+	sim._add_aura(sim.enemies[0], b, "blighted")
+	sim._heal(sim.unit("alva"), b, 200.0, "healing_light")
+	assert_true(b.hp < 500.0, "helningen skadar")
+
+
+func test_status_defensive_and_taunting_act_at_the_end_of_the_turn() -> void:
+	var sim := _fresh()
+	sim.begin()
+	var u := sim.current
+	sim._add_aura(u, u, "defensive")
+	sim._add_aura(u, u, "taunting")
+	sim._end_turn()
+	assert_true(u.auras.has("defend") and u.auras.has("provoke"))
+
+
+func test_status_arcane_makes_the_next_ability_free() -> void:
+	var sim := _fresh()
+	var a := sim.unit("alva")
+	var ab: String = a.abilities[0]
+	var before: int = a.charges[ab]
+	sim._add_aura(a, a, "arcane")
+	sim._perform(a, ab, "ability", "")
+	assert_eq(a.charges[ab], before, "ingen Charge")
+	sim._perform(a, ab, "ability", "")
+	assert_eq(a.charges[ab], before - 1, "bara nästa")
+
+
+func test_status_scorned_and_silenced() -> void:
+	var sim := _fresh()
+	var p := sim.unit("paladin")
+	sim._add_aura(sim.enemies[0], p, "silenced")
+	assert_eq(sim.can_act(p, "ability", p.abilities[0]), "silenced")
+	sim._add_aura(sim.enemies[0], p, "scorned")
+	assert_true(not p.auras.has("silenced"), "Hånad skriver över Tystad")
+	assert_eq(sim.can_act(p, "attack"), "scorned")
+	assert_eq(sim.can_act(p, "ability", p.abilities[0]), "")
+
+
+func test_status_frozen_and_sleeping_lose_the_turn() -> void:
+	var sim := _fresh()
+	sim.begin()
+	var nxt := sim.unit(sim.order[0])
+	sim._add_aura(nxt, nxt, "sleeping")
+	sim._end_turn()
+	assert_true(sim.current != nxt, "sover: turen hoppas över")
+	assert_true(sim.drain_events().any(func(x: Dictionary) -> bool: return x.type == "status_skip"))
+	sim._deal_damage(sim.current, nxt, 5.0, "physical", "x", false, false, "pure")
+	assert_true(not nxt.auras.has("sleeping"), "skada väcker")
+	var e := sim.enemies[0]
+	sim._add_aura(e, e, "frozen")
+	assert_near(e.auras.frozen.thaw, 0.25, 1e-9)
+	sim._wakes_or_thaws(e)
+	if e.auras.has("frozen"):
+		assert_near(e.auras.frozen.thaw, 0.5, 1e-9, "chansen dubblas")
+
+
+func test_status_snared_stays_at_the_bottom() -> void:
+	var sim := _fresh()
+	sim.begin()
+	var u := sim.unit(sim.order[0])
+	sim._add_aura(sim.enemies[0], u, "snared")
+	assert_eq(sim.order[-1], u.id, "fast längst ned")
+	sim._move_on_timeline(u, "top")
+	assert_eq(sim.order[-1], u.id, "kan inte flyttas upp")
+
+
+func test_status_blind_and_confused_change_targets() -> void:
+	var sim := _fresh(11)
+	var p := sim.unit("paladin")
+	var ab := sim.ability(p.attack_ability)
+	sim._add_aura(sim.enemies[0], p, "blind")
+	var picked := {}
+	for i in 40:
+		picked[sim._targets_for(p, ab, sim.enemies[0].id)[0]] = true
+	assert_true(picked.size() > 1, "förblindad: målet slumpas")
+	p.auras.erase("blind")
+	sim._add_aura(sim.enemies[0], p, "confused")
+	var own := 0
+	for i in 200:
+		var t := sim.unit(sim._targets_for(p, ab, sim.enemies[0].id)[0])
+		own += 1 if t.team == 0 else 0
+	assert_near(own / 200.0, 0.5, 0.1, "förvirrad: hälften mot de egna")
+
+
+func test_status_dispel_removes_buffs_and_debuffs() -> void:
+	var sim := _fresh()
+	var p := sim.unit("paladin")
+	sim._add_aura(p, p, "berserk")
+	sim._add_aura(sim.enemies[0], p, "weak")
+	sim._status_effect({"type": "dispel"}, p)
+	assert_true(p.auras.is_empty() or not (p.auras.has("berserk") or p.auras.has("weak")))

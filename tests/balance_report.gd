@@ -35,7 +35,8 @@ func _init() -> void:
 	if OS.get_environment("BALANS") != "nivaer":
 		_runs_without_levels(data)
 	_levels(data)
-	_artifacts(data)
+	if OS.get_environment("BALANS") != "nivaer":
+		_artifacts(data)
 	quit()
 
 
@@ -68,6 +69,8 @@ func _levels(data: Dictionary) -> void:
 		print("=== Nivåer, djup %d (fiender nivå %.1f / %.1f / %.1f, väntad nivå %d) ===" % [depth,
 				HeroStats.enemy_level(depth, 0), HeroStats.enemy_level(depth, 1), HeroStats.enemy_level(depth, 2), expected])
 		var cases := [["nivå 1", 1], ["väntad %d" % expected, expected], ["väntad+2 %d" % (expected + 2), expected + 2]]
+		if OS.get_environment("NIVA_BARA_VANTAD") != "":
+			cases = [cases[1]]
 		for realm_id in realms:
 			for c in cases:
 				var opts := {"levels": Bot.party_levels(data, c[1]), "grow": true}

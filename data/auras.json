@@ -34,7 +34,7 @@
 	},
 	"burning": {
 		"name": "Brinner",
-		"duration": 2,
+		"duration": 3,
 		"dot_stat": "intelligence",
 		"dot_pct": 0.3,
 		"school": "fire",
@@ -93,15 +93,18 @@
 	},
 	"silenced": {
 		"name": "Tystad",
-		"duration": 2,
+		"duration": 1,
 		"silence": true,
 		"debuff": true,
-		"text": "Tystad: kan inte använda förmågor.",
-		"glyph": "bolt"
+		"text": "Tystad: kan inte använda förmågor. Resistent: kan, men gör 50 % mindre skada med dem.",
+		"glyph": "bolt",
+		"removes": [
+			"scorned"
+		]
 	},
 	"vulnerable": {
 		"name": "Sårbar",
-		"duration": 2,
+		"duration": 3,
 		"damage_taken_mult": 1.5,
 		"debuff": true,
 		"text": "Sårbar: tar 50 % mer skada.",
@@ -109,7 +112,7 @@
 	},
 	"weak": {
 		"name": "Försvagad",
-		"duration": 2,
+		"duration": 3,
 		"damage_mult": 0.5,
 		"debuff": true,
 		"text": "Försvagad: gör 50 % mindre skada.",
@@ -122,5 +125,187 @@
 		"debuff": true,
 		"text": "Saltad jord: −20 % Defense.",
 		"glyph": "skull"
+	},
+	"agile": {
+		"name": "Smidig",
+		"duration": 3,
+		"buff": true,
+		"text": "Smidig: en extra, oberoende chans (25 %) att undvika anfall.",
+		"glyph": "bolt",
+		"dodge_extra": 0.25
+	},
+	"arcane": {
+		"name": "Arkan",
+		"duration": -1,
+		"buff": true,
+		"text": "Arkan: nästa förmåga kostar ingen Charge, sedan försvinner den.",
+		"glyph": "diamond",
+		"free_spell": true
+	},
+	"berserk": {
+		"name": "Bärsärk",
+		"duration": 3,
+		"buff": true,
+		"text": "Bärsärk: gör 50 % mer skada.",
+		"glyph": "daggers",
+		"damage_mult": 1.5
+	},
+	"defensive": {
+		"name": "Defensiv",
+		"duration": 3,
+		"buff": true,
+		"text": "Defensiv: försvarar sig automatiskt i slutet av sin tur.",
+		"glyph": "shield",
+		"end_turn_aura": "defend"
+	},
+	"immune": {
+		"name": "Immun",
+		"duration": 1,
+		"buff": true,
+		"text": "Immun: kan inte få debuffar.",
+		"glyph": "cross",
+		"debuff_immune": true
+	},
+	"leeching": {
+		"name": "Livstörst",
+		"duration": 3,
+		"buff": true,
+		"text": "Livstörst: helas 25 % av skadan den gör.",
+		"glyph": "drop",
+		"leech": 0.25
+	},
+	"mending": {
+		"name": "Läkning",
+		"duration": 3,
+		"buff": true,
+		"text": "Läkning: helas 25 % av sitt liv i början av sin tur.",
+		"glyph": "drop",
+		"hot_max_hp_pct": 0.25
+	},
+	"protected": {
+		"name": "Beskyddad",
+		"duration": 3,
+		"buff": true,
+		"text": "Beskyddad: tar 50 % mindre skada.",
+		"glyph": "shield",
+		"damage_taken_mult": 0.5
+	},
+	"rebirth": {
+		"name": "Pånyttfödd",
+		"duration": 3,
+		"buff": true,
+		"text": "Pånyttfödd: återuppstår med 50 % liv när den faller.",
+		"glyph": "cross",
+		"rebirth": 0.5
+	},
+	"savage": {
+		"name": "Vildsint",
+		"duration": 3,
+		"buff": true,
+		"text": "Vildsint: en extra, oberoende chans (25 %) till krit med anfall.",
+		"glyph": "daggers",
+		"crit_extra": 0.25
+	},
+	"shelled": {
+		"name": "Skyddsskal",
+		"duration": -1,
+		"buff": true,
+		"text": "Skyddsskal: upphäver nästa anfall eller besvärjelse.",
+		"glyph": "shield",
+		"shell": true
+	},
+	"taunting": {
+		"name": "Utmanande",
+		"duration": 3,
+		"buff": true,
+		"text": "Utmanande: provocerar automatiskt i slutet av sin tur.",
+		"glyph": "skull",
+		"end_turn_aura": "provoke"
+	},
+	"bleeding": {
+		"name": "Blöder",
+		"duration": 3,
+		"debuff": true,
+		"text": "Blöder: tar skada lika med 30 % av sitt nuvarande liv i början av varje tur. Resistent: 66 % mindre.",
+		"glyph": "drop",
+		"bleed_pct": 0.3,
+		"resisted_bleed_pct": 0.1
+	},
+	"blighted": {
+		"name": "Fördärvad",
+		"duration": 3,
+		"debuff": true,
+		"text": "Fördärvad: kan inte helas; helning gör i stället skada (50 % av helningen).",
+		"glyph": "skull",
+		"blight": 0.5
+	},
+	"blind": {
+		"name": "Förblindad",
+		"duration": 3,
+		"debuff": true,
+		"text": "Förblindad: kan inte välja mål för anfall och förmågor mot en fiende.",
+		"glyph": "diamond",
+		"blind": true
+	},
+	"confused": {
+		"name": "Förvirrad",
+		"duration": 3,
+		"debuff": true,
+		"text": "Förvirrad: 50 % chans att anfalla eller kasta skadliga förmågor på sina egna.",
+		"glyph": "bolt",
+		"confuse": 0.5
+	},
+	"frozen": {
+		"name": "Frusen",
+		"duration": -1,
+		"debuff": true,
+		"text": "Frusen: kan inte agera. 25 % chans att tina i början av sin tur, chansen dubblas varje tur. Resistent: dubbel chans.",
+		"glyph": "diamond",
+		"freeze": 0.25
+	},
+	"poisoned": {
+		"name": "Förgiftad",
+		"duration": 3,
+		"debuff": true,
+		"text": "Förgiftad: tar skada (30 % av källans Attack) i början av varje tur.",
+		"glyph": "drop",
+		"dot_stat": "attack",
+		"dot_pct": 0.3,
+		"school": "nature"
+	},
+	"scorned": {
+		"name": "Hånad",
+		"duration": 1,
+		"debuff": true,
+		"text": "Hånad: kan inte anfalla. Resistent: kan, men gör 50 % mindre skada.",
+		"glyph": "skull",
+		"scorn": true,
+		"removes": [
+			"silenced"
+		]
+	},
+	"sleeping": {
+		"name": "Sover",
+		"duration": 3,
+		"debuff": true,
+		"text": "Sover: kan inte agera förrän den tar skada. Resistent: vaknar i början av sin tur.",
+		"glyph": "skull",
+		"sleep": true
+	},
+	"snared": {
+		"name": "Snärjd",
+		"duration": 3,
+		"debuff": true,
+		"text": "Snärjd: fast längst ned på tidslinjen; 10 % chans att slita sig loss i början av varje figurs tur. Resistent: 30 %.",
+		"glyph": "bolt",
+		"snare": true
+	},
+	"stone": {
+		"name": "Förstenad",
+		"duration": 1,
+		"debuff": true,
+		"text": "Förstenad: kan inte undvika eller krita. Resistent: 50 % lägre chans.",
+		"glyph": "shield",
+		"stone": true
 	}
 }

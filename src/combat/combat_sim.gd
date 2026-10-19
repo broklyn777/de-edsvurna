@@ -384,7 +384,21 @@ func action_ability(u: CombatUnit, action: String, ability_id := "") -> String:
 
 ## Tystad (Siralims Silenced): figuren kan inte använda förmågor, bara Anfall, Försvara och Provocera.
 func is_silenced(u: CombatUnit) -> bool:
-	return u.auras.keys().any(func(a: String) -> bool: return data.auras[a].get("silence", false))
+	return not u.resistant and has_flag(u, "silence")
+
+
+## Hånad (Siralims Scorned): kan inte anfalla. Resistent: kan, men gör 50 % mindre skada.
+func is_scorned(u: CombatUnit) -> bool:
+	return not u.resistant and has_flag(u, "scorn")
+
+
+## Frusen eller sover: figuren förlorar turen (0.22).
+func cannot_act(u: CombatUnit) -> String:
+	for flag in ["freeze", "sleep"]:
+		var id := flag_aura(u, flag)
+		if id != "":
+			return id
+	return ""
 
 
 ## Sant om figuren inte kan skadas just nu: en egenskap med "immune_while_ally_kind" (immun så länge
@@ -413,6 +427,8 @@ func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 		return "charges"
 	if action == "ability" and is_silenced(u):
 		return "silenced"
+	if action == "attack" and is_scorned(u):
+		return "scorned"
 	if action == "ability" and u.sealed.has(id):
 		return "sealed"
 	if action in ["defend", "provoke"] and _rule("no_guard"):
@@ -515,11 +531,49 @@ func _next_turn() -> void:
 		_turn_counts.clear()
 		_turn_procs = 0
 		_emit({"type": "turn_start", "unit": u.id})
+		_break_snares()
 		_tick_turn_start(u)
 		_check_outcome()
-		if u.alive:
+		if u.alive and _wakes_or_thaws(u):
 			return
+		if u.alive:
+			# Frusen eller sover: turen går förlorad, figuren läggs längst ned.
+			_emit({"type": "status_skip", "unit": u.id, "aura": cannot_act(u)})
+			order.push_back(u.id)
+			_sink_snared()
+			if u.team == 1:
+				_choose_intent(u)
 		current = null
+
+
+## Snärjd: 10 % chans (resistent 30 %) att slita sig loss i början av varje figurs tur.
+func _break_snares() -> void:
+	for x in units:
+		var snare := flag_aura(x, "snare")
+		if x.alive and snare != "" and rng.randf() < (0.3 if x.resistant else 0.1):
+			_remove_aura(x, snare, "broke_free")
+
+
+## Frusen och Sover i början av den egna turen. Sant om figuren kan agera.
+func _wakes_or_thaws(u: CombatUnit) -> bool:
+	if u.auras.has("frozen"):
+		var a: Dictionary = u.auras.frozen
+		if rng.randf() < float(a.get("thaw", 0.25)):
+			_remove_aura(u, "frozen", "thawed")
+		else:
+			a.thaw = minf(1.0, float(a.get("thaw", 0.25)) * 2.0)
+	if u.auras.has("sleeping") and u.resistant:
+		_remove_aura(u, "sleeping", "woke")
+	return cannot_act(u) == ""
+
+
+## Snärjda figurer hålls längst ned på tidslinjen.
+func _sink_snared() -> void:
+	for id in order.duplicate():
+		var x := unit(id)
+		if x and has_flag(x, "snare"):
+			order.erase(id)
+			order.push_back(id)
 
 
 ## I början av den egna turen: nedkylningar räknas ned och auror verkar och åldras.
@@ -536,6 +590,16 @@ func _tick_turn_start(u: CombatUnit) -> void:
 			continue  # försvann under turstarten (t.ex. en Barriär som tog slut)
 		var a: Dictionary = u.auras[aura_id]
 		var source := unit(a.source)
+		var d: Dictionary = data.auras.get(aura_id, {})
+		if d.has("hot_max_hp_pct"):
+			var mend := roundf(u.max_hp * float(d.hot_max_hp_pct))
+			_heal_ctx = {"base": mend, "hot": true}
+			_heal(source if source else u, u, mend, aura_id)
+		if d.has("bleed_pct"):
+			var pct := float(d.resisted_bleed_pct if u.resistant else d.bleed_pct)
+			_deal_damage(source if source else u, u, roundf(u.hp * pct), "physical", aura_id, false, false, "pure")
+			if not u.alive:
+				return
 		if a.hot > 0.0:
 			_heal_ctx = {"base": a.hot, "hot": true}
 			_heal(source if source else u, u, a.hot, aura_id)
@@ -558,12 +622,18 @@ func _end_turn() -> void:
 			and rng.randf() < VIGILANT_CHANCE:
 		_rule_hit("vigilant_guards")
 		_add_aura(current, current, "defend")
+	if current and current.alive:
+		for id in current.auras.keys():
+			var extra: String = data.auras.get(id, {}).get("end_turn_aura", "")
+			if extra != "":
+				_add_aura(current, current, extra)
 	if current and current.alive and not order.has(current.id):
 		if current.next_slot == "top":
 			order.push_front(current.id)
 		else:
 			order.push_back(current.id)
 		current.next_slot = ""
+		_sink_snared()
 		if current.team == 1:
 			_choose_intent(current)
 	_next_turn()
@@ -661,7 +731,15 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 		_emit({"type": "action", "unit": u.id, "action": "skip", "ability": "skip", "targets": []})
 		return
 	var ab := ability(ability_id)
-	if u.charges.has(ability_id) and full_charges(ability_id) > 0:
+	# En fiende som är Tystad eller Hånad gör sin avsikt bara om den inte är spärrad (0.22).
+	if u.team == 1 and ((ability_id == u.attack_ability and is_scorned(u))
+			or (ability_id != u.attack_ability and not ability_id in ["defend", "provoke"] and is_silenced(u))):
+		_emit({"type": "status_blocked", "unit": u.id, "aura": "scorned" if ability_id == u.attack_ability else "silenced"})
+		return
+	var free := action == "ability" and u.charges.has(ability_id) and u.auras.has("arcane")
+	if free:
+		_remove_aura(u, "arcane", "used")
+	elif u.charges.has(ability_id) and full_charges(ability_id) > 0:
 		u.charges[ability_id] -= 1
 	var targets := _targets_for(u, ab, target_id)
 	var cooldown: float = ab.get("cooldown", 0.0)
@@ -695,6 +773,22 @@ func _auto_cast(u: CombatUnit, ability_id: String, target_id := "") -> void:
 func _targets_for(u: CombatUnit, ab: Dictionary, target_id: String) -> Array:
 	if ab.get("target", "") == "dead_ally":
 		return _pick_targets(u, ab)
+	var tkind: String = ab.get("target", "self")
+	# Förvirrad (0.22): 50 % chans att det skadliga går mot de egna.
+	var confuse := flag_aura(u, "confuse")
+	if confuse != "" and tkind in ["enemy", "all_enemies"] and rng.randf() < float(data.auras[confuse].confuse):
+		var own := _allies(u).filter(func(x: CombatUnit) -> bool: return x != u)
+		if own.is_empty():
+			own = [u]
+		_emit({"type": "confused", "unit": u.id})
+		if tkind == "all_enemies":
+			return own.map(func(x: CombatUnit) -> String: return x.id)
+		return [own[rng.randi() % own.size()].id]
+	# Förblindad: kan inte välja mål; ett slumpat bland dem som går att anfalla.
+	if tkind == "enemy" and has_flag(u, "blind"):
+		var pool := _taunting_enemies(u)
+		if not pool.is_empty():
+			return [pool[rng.randi() % pool.size()].id]
 	var chosen := unit(target_id) if target_id != "" else null
 	var kind: String = ab.get("target", "self")
 	if kind == "enemy" and chosen and not _taunting_enemies(u).has(chosen):
@@ -712,6 +806,9 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 		for target_id in targets:
 			var t := unit(target_id)
 			if t == null or (not t.alive and effect.type != "revive"):
+				continue
+			# En effekt kan ha en chans (0.22: t.ex. 25 % att Blöda); slås per mål.
+			if effect.has("chance") and rng.randf() >= float(effect.chance):
 				continue
 			match effect.type:
 				"damage":
@@ -851,6 +948,22 @@ func defense_parts(u: CombatUnit) -> Array:
 	return out
 
 
+## Sant om figuren har en status med flaggan (t.ex. "snare", "stone", "blind").
+func has_flag(u: CombatUnit, flag: String) -> bool:
+	for id in u.auras:
+		if data.auras.get(id, {}).get(flag, false):
+			return true
+	return false
+
+
+## Första statusen med flaggan, eller "".
+func flag_aura(u: CombatUnit, flag: String) -> String:
+	for id in u.auras:
+		if data.auras.get(id, {}).has(flag):
+			return id
+	return ""
+
+
 ## Statusens namn med staplarna ("Gift ×3").
 func status_name(u: CombatUnit, aura_id: String) -> String:
 	var n: String = data.auras.get(aura_id, {}).get("name", aura_id)
@@ -920,12 +1033,27 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			"source_speed": src.speed, "target_speed": tgt.speed}
 	if kind == "attack" and src.team != tgt.team:
 		var dodge := _dodge_for(src, tgt, ratio, probe)
+		var extra := 0.0
+		var agile := flag_aura(tgt, "dodge_extra")
+		if agile != "":
+			extra = float(data.auras[agile].dodge_extra)
+		# Förstenad: kan inte undvika (resistent: halva chansen).
+		if has_flag(tgt, "stone"):
+			dodge = dodge * 0.5 if tgt.resistant else 0.0
+			extra = extra * 0.5 if tgt.resistant else 0.0
 		calc.dodge_chance = dodge
-		if rng.randf() < dodge:
+		calc.dodge_extra = extra
+		# Smidig: en extra, oberoende chans.
+		if rng.randf() < dodge or (extra > 0.0 and rng.randf() < extra):
 			_emit({"type": "dodge", "source": src.id, "target": tgt.id, "ability": ability_id, "calc": calc})
 			return
 	if is_immune(tgt):
 		_emit({"type": "immune", "source": src.id, "target": tgt.id, "ability": ability_id})
+		return
+	# Skyddsskal (0.22): upphäver nästa anfall eller besvärjelse.
+	if direct and kind in ["attack", "spell"] and tgt.auras.has("shelled") and src.team != tgt.team:
+		_remove_aura(tgt, "shelled", "used")
+		_emit({"type": "shelled", "source": src.id, "target": tgt.id, "ability": ability_id})
 		return
 	var fx: Array = []  # [{f, name}]
 	if direct:
@@ -938,9 +1066,19 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		for m in _modifiers(src, "modify_damage", probe):
 			crit_add += float(m.get("crit_add", 0.0))
 	var crit_chance := crit_chance_for(src.crit_chance, ratio) + crit_add if kind == "attack" and can_crit else 0.0
+	var crit_extra := 0.0
+	var savage := flag_aura(src, "crit_extra")
+	if savage != "" and kind == "attack" and can_crit:
+		crit_extra = float(data.auras[savage].crit_extra)
+	# Förstenad: kan inte krita (resistent: halva chansen).
+	if has_flag(src, "stone"):
+		crit_chance = crit_chance * 0.5 if src.resistant else 0.0
+		crit_extra = crit_extra * 0.5 if src.resistant else 0.0
 	var crit: bool = kind == "attack" and can_crit and (rng.randf() < crit_chance
-			or _modify(src, "modify_damage", probe, "force_crit", false))
+			or (crit_extra > 0.0 and rng.randf() < crit_extra)
+			or (not has_flag(src, "stone") and _modify(src, "modify_damage", probe, "force_crit", false)))
 	calc.crit_chance = crit_chance
+	calc.crit_extra = crit_extra
 	_formula_ctx = {}
 	var raw := _formula(src, tgt, kind, amount, ability_id) if scaled else amount
 	calc.merge(_formula_ctx)
@@ -961,6 +1099,9 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		if m.has("additional_from_stat"):
 			additional += src.stat(m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
 			calc.additional_name = x.name
+	if src.resistant and direct and ((kind == "attack" and has_flag(src, "scorn"))
+			or (ability_id != src.attack_ability and has_flag(src, "silence"))):
+		fx.append({"f": 0.5, "name": "%s (resistent)" % status_name(src, flag_aura(src, "scorn" if kind == "attack" else "silence"))})
 	for aura_id in src.auras:
 		var a: Dictionary = src.auras[aura_id]
 		if a.get("damage_mult", 1.0) != 1.0:
@@ -999,6 +1140,7 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		if tgt.barrier <= 0.0 and tgt.auras.has("barrier"):
 			_remove_aura(tgt, "barrier", "broken")
 	var lost := total - absorbed
+	var life_lost := minf(lost, tgt.hp)  # Leeching räknar bara liv som faktiskt förlorades (vårt val)
 	calc.total = total
 	calc.absorbed = absorbed
 	calc.lost = lost
@@ -1016,10 +1158,13 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	if tgt.hp <= 0.0:
 		_kill(tgt)
 	# Leeching (0.22): en andel av skadan helar anfallaren; helningens uträkning pekar på träffen.
-	if leech > 0.0 and lost > 0.0 and src.alive and src != tgt:
-		_heal_ctx = {"base": lost * leech, "leech": true, "from_damage": lost, "leech_pct": leech,
+	if leech > 0.0 and life_lost > 0.0 and src.alive and src != tgt:
+		_heal_ctx = {"base": life_lost * leech, "leech": true, "from_damage": life_lost, "leech_pct": leech,
 				"damage_calc": calc}
-		_heal(src, src, lost * leech, leech_id)
+		_heal(src, src, life_lost * leech, leech_id)
+	# Sover: vaknar av skada.
+	if lost > 0.0 and tgt.alive and tgt.auras.has("sleeping"):
+		_remove_aura(tgt, "sleeping", "woke")
 	# Speglande ben (våningsregel): en del av skadan från hjältarnas direkta träffar studsar tillbaka.
 	if direct and lost > 0.0 and src.team == 0 and tgt.team == 1 and src.alive and _rule("mirror_bones"):
 		_rule_hit("mirror_bones")
@@ -1098,6 +1243,13 @@ func _revive(u: CombatUnit, pct: float) -> void:
 func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) -> void:
 	if not tgt.alive:
 		return
+	# Fördärvad (0.22): kan inte helas; helningen gör i stället skada (50 %).
+	var blight := flag_aura(tgt, "blight")
+	if blight != "":
+		_heal_ctx = {}
+		_emit({"type": "blighted", "unit": tgt.id})
+		_deal_damage(src, tgt, roundf(base * float(data.auras[blight].blight)), "shadow", blight, false, false, "pure")
+		return
 	var crit := false
 	var fx: Array = []
 	for x in _modifiers_named(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}):
@@ -1135,6 +1287,9 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 		return
 	var d: Dictionary = data.auras[aura_id]
 	var kind := "buff" if d.get("buff", false) else ("debuff" if d.get("debuff", false) else "")
+	if kind == "debuff" and has_flag(tgt, "debuff_immune"):
+		_emit({"type": "status_immune", "unit": tgt.id, "aura": aura_id})
+		return
 	# En status som tar bort andra (t.ex. Snabb tar bort Långsam).
 	for other in d.get("removes", []):
 		if tgt.auras.has(other):
@@ -1159,12 +1314,15 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 			"haste": float(d.get("haste", 0.0)), "leech": float(d.get("leech", 0.0)),
 			"hot": hot * stacks, "dot": dot * stacks,
 			"school": d.get("school", "physical"), "source": src.id}
+	# 0.22, som originalet: bara statusar med en Resistant-version påverkas av Resistent (Blöder, Frusen,
+	# Tystad, Hånad, Sover, Snärjd, Förstenad); andra debuffar verkar fullt på bossar.
 	for key in FACTOR_KEYS:
-		var f := 1.0 + (float(d.get(key, 1.0)) - 1.0) * stacks
-		a[key] = resisted(f) if tgt.resistant and kind == "debuff" else f
-	if tgt.resistant and kind == "debuff":
-		a.dot = roundf(a.dot * RESISTANT)
+		a[key] = 1.0 + (float(d.get(key, 1.0)) - 1.0) * stacks
+	if d.has("freeze"):
+		a.thaw = float(d.freeze) * (2.0 if tgt.resistant else 1.0)
 	tgt.auras[aura_id] = a
+	if d.get("snare", false):
+		_sink_snared()  # Snärjd: fast längst ned
 	_emit({"type": "aura_applied", "unit": tgt.id, "aura": aura_id, "refreshed": refreshed, "source": src.id,
 			"aura_kind": kind, "stacks": stacks})
 	if d.get("taunt", false):
@@ -1177,7 +1335,9 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 func _status_effect(effect: Dictionary, t: CombatUnit) -> void:
 	match effect.type:
 		"dispel":
-			_strip(t, "buff", int(effect.get("count", 1)), "dispel")
+			# Som originalet: Dispel tar bort både buffar och debuffar.
+			_strip(t, "buff", int(effect.get("count", 99)), "dispel")
+			_strip(t, "debuff", int(effect.get("count", 99)), "dispel")
 		"purge":
 			_strip(t, "debuff", int(effect.get("count", 1)), "purge")
 		"to_top":
@@ -1212,28 +1372,71 @@ func _strip(u: CombatUnit, kind: String, count: int, reason: String) -> int:
 	return n
 
 
-## Flyttar figuren på tidslinjen (0.22, Siralim): "top" = nästa tur, "bottom" = sist. Snärjd kan inte flyttas,
-## och en boss flyttas bara ett steg. Figuren som har turen hamnar överst eller sist när turen är slut.
+## Flyttar figuren på tidslinjen (0.22, Siralim): "top" = nästa tur, och den som stod överst skickas till
+## botten; "bottom" = sist. Snärjd kan inte flyttas upp. En boss som skulle tvingas till botten flyttas bara ett
+## steg, och Bottom fungerar inte på fiender i bosstrider. Flyttas en figur till toppen nollställs dess gränser per
+## tur (originalet). Vårt val: samma figur kan flyttas till toppen högst MAX_TOP_PER_ROUND gånger per runda, så
+## att två effekter inte kan mata varandra i all oändlighet.
+const MAX_TOP_PER_ROUND := 1
+var _top_moves := {}
+var _round_start := 0
+
+
 func _move_on_timeline(u: CombatUnit, dir: String) -> void:
 	if not u.alive:
 		return
-	if u.auras.keys().any(func(id: String) -> bool: return data.auras[id].get("snare", false)):
-		_emit({"type": "timeline_blocked", "unit": u.id, "dir": dir})
+	if dir == "top" and has_flag(u, "snare"):
+		_emit({"type": "timeline_blocked", "unit": u.id, "dir": dir, "reason": "snared"})
 		return
+	var boss_battle := enemies.any(func(e: CombatUnit) -> bool: return data.enemies.get(e.kind, {}).get("boss", false))
+	if dir == "bottom" and u.team == 1 and boss_battle and not data.enemies.get(u.kind, {}).get("boss", false):
+		_emit({"type": "timeline_blocked", "unit": u.id, "dir": dir, "reason": "boss_battle"})
+		return
+	if dir == "top":
+		var alive := units.filter(func(x: CombatUnit) -> bool: return x.alive).size()
+		if turn_no - _round_start >= alive:
+			_round_start = turn_no
+			_top_moves.clear()
+		if int(_top_moves.get(u.id, 0)) >= MAX_TOP_PER_ROUND:
+			_emit({"type": "timeline_blocked", "unit": u.id, "dir": dir, "reason": "limit"})
+			return
+		_top_moves[u.id] = int(_top_moves.get(u.id, 0)) + 1
+		_turn_counts.erase(u.id)  # gränserna per tur nollställs (originalet)
 	var boss: bool = u.team == 1 and data.enemies.get(u.kind, {}).get("boss", false)
 	if u == current:
-		u.next_slot = dir if not boss else ""
-		_emit({"type": "timeline_move", "unit": u.id, "dir": dir, "steps": 0 if boss else 99})
+		u.next_slot = dir if not (boss and dir == "bottom") else ""
+		if dir == "top" and not order.is_empty() and order[0] != u.id:
+			_send_down(unit(order[0]))
+		_emit({"type": "timeline_move", "unit": u.id, "dir": dir, "steps": 0})
 		return
 	var i := order.find(u.id)
 	if i < 0:
 		return
+	if dir == "top":
+		var prev: String = order[0]
+		order.remove_at(i)
+		order.insert(0, u.id)
+		if prev != u.id:
+			_send_down(unit(prev))
+	else:
+		order.remove_at(i)
+		var to := mini(i + 1, order.size()) if boss else order.size()
+		order.insert(to, u.id)
+	_sink_snared()
+	_emit({"type": "timeline_move", "unit": u.id, "dir": dir, "steps": absi(order.find(u.id) - i)})
+
+
+## Den som stod överst när någon flyttades till toppen skickas till botten (en boss bara ett steg).
+func _send_down(x: CombatUnit) -> void:
+	if x == null:
+		return
+	var i := order.find(x.id)
+	if i < 0:
+		return
 	order.remove_at(i)
-	var to := 0 if dir == "top" else order.size()
-	if boss:
-		to = maxi(i - 1, 0) if dir == "top" else mini(i + 1, order.size())
-	order.insert(to, u.id)
-	_emit({"type": "timeline_move", "unit": u.id, "dir": dir, "steps": absi(to - i)})
+	var boss: bool = x.team == 1 and data.enemies.get(x.kind, {}).get("boss", false)
+	order.insert(mini(i + 1, order.size()) if boss else order.size(), x.id)
+	_emit({"type": "timeline_move", "unit": x.id, "dir": "bottom", "steps": 0, "pushed": true})
 
 
 ## Resistant: en debuffs ändring av en faktor halveras (×1,2 → ×1,1, ×0,65 → ×0,825).
@@ -1244,6 +1447,7 @@ static func resisted(factor: float) -> float:
 func _kill(u: CombatUnit) -> void:
 	if not u.alive:  # en egenskap kan ha dödat enheten mitt i en annan träff
 		return
+	var rebirth := float(data.auras.get(flag_aura(u, "rebirth"), {}).get("rebirth", 0.0))
 	u.alive = false
 	u.hp = 0.0
 	u.deaths += 1
@@ -1252,6 +1456,10 @@ func _kill(u: CombatUnit) -> void:
 	order.erase(u.id)
 	_emit({"type": "death", "unit": u.id})
 	if outcome != "" and u.team == 1:
+		return
+	# Pånyttfödd (0.22): återuppstår med 50 % liv; statusen förbrukas.
+	if rebirth > 0.0:
+		_revive(u, rebirth)
 		return
 	# De döda vaknar (våningsregel) och Kaosets hjärta (trofé): återuppstå en gång.
 	if u.team == 1 and u.revives == 0 and _rule("risen_dead"):

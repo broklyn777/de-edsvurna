@@ -32,7 +32,8 @@ func test_statuses_have_a_kind_and_count_down_in_the_owners_turns() -> void:
 	assert_eq(p.auras.vulnerable.kind, "debuff")
 	assert_eq(p.statuses("buff"), ["inspired"])
 	sim._tick_turn_start(p)
-	assert_eq(p.auras.vulnerable.remaining, 1.0)
+	assert_eq(p.auras.vulnerable.remaining, 2.0, "Sårbar varar tre av ägarens turer (originalet)")
+	sim._tick_turn_start(p)
 	sim._tick_turn_start(p)
 	assert_true(not p.auras.has("vulnerable"), "försvinner när ägarens turer är slut")
 	var found := false
@@ -68,14 +69,14 @@ func test_a_status_can_remove_its_opposite() -> void:
 	assert_true(p.auras.has("t_slow") and not p.auras.has("t_haste"))
 
 
-func test_resistant_halves_a_debuff() -> void:
+func test_resistant_only_changes_the_resistant_versions() -> void:
 	var sim := _sim()
 	var e := sim.enemies[0]
 	e.resistant = true
 	sim._add_aura(sim.unit("paladin"), e, "vulnerable")
-	assert_near(e.auras.vulnerable.damage_taken_mult, 1.25, 1e-9)
-	sim._add_aura(e, e, "lich_wrath")
-	assert_near(e.auras.lich_wrath.damage_mult, 1.5, 1e-9, "en buff halveras inte")
+	assert_near(e.auras.vulnerable.damage_taken_mult, 1.5, 1e-9, "Sårbar verkar fullt på bossar (originalet)")
+	sim._add_aura(sim.unit("paladin"), e, "silenced")
+	assert_true(not sim.is_silenced(e), "resistent: kan kasta ändå, men med −50 %")
 
 
 func test_dispel_and_purge() -> void:
@@ -102,7 +103,7 @@ func test_to_top_and_to_bottom() -> void:
 	sim._move_on_timeline(sim.unit(first), "bottom")
 	assert_eq(sim.order[-1], first)
 	var moves := sim.drain_events().filter(func(e: Dictionary) -> bool: return e.type == "timeline_move")
-	assert_eq(moves.size(), 2)
+	assert_eq(moves.size(), 3, "överst, den som skickades ned, och sist")
 
 
 func test_snared_cannot_be_moved() -> void:
