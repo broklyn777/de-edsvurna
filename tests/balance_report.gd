@@ -5,6 +5,7 @@ extends SceneTree
 ## körningar, snittet strider per körning och hur ofta Realm Questen blev klar.
 ##   godot --headless --path . --script res://tests/balance_report.gd
 ## Mål på djup 1: startmakrona omkring 40 %, TUNED omkring 65 % (som hela kryptan i 0.17).
+## Sist nivåerna (0.19): från nivå 1 som växer, väntad nivå, taket och nivå 1 (BALANS=nivaer för bara dem).
 ## Den äldre rapporten med perk-sökning och varje våningsregel för sig finns i git (0.17).
 
 const Bot := preload("res://tests/combat_bot.gd")
@@ -26,6 +27,34 @@ const BEST_PERKS := {1: ["oath_dawn", "ward_war_machine"], 3: ["oath_dawn", "daw
 
 func _init() -> void:
 	var data := GameData.load_all()
+	# BALANS=nivaer kör bara nivåavsnittet (0.19), som går snabbare och värmer mindre.
+	if OS.get_environment("BALANS") != "nivaer":
+		_runs_without_levels(data)
+	_levels(data)
+	quit()
+
+
+## Nivåer (0.19): hela körningar där hjältarna har nivåer och fienderna möter dem (HeroStats).
+## "från nivå 1" växer under körningen upp till taket, de andra står på en fast nivå.
+func _levels(data: Dictionary) -> void:
+	for depth in DEPTHS:
+		var expected := HeroStats.expected_level(depth)
+		var cap := HeroStats.level_cap(depth - 1)
+		print("=== Nivåer, djup %d (väntad nivå %d, tak %d) ===" % [depth, expected, cap])
+		var cases := [["väntad nivå %d" % expected, expected, false], ["taket %d" % cap, cap, false]]
+		if depth == 1:
+			cases.push_front(["från nivå 1, växer", 1, true])
+			cases.append(["nivå 1", 1, false])
+		for realm_id in data.realms:
+			for c in cases:
+				var opts := {"levels": Bot.party_levels(data, c[1]), "grow": c[2], "cap": cap}
+				_line(data, "%s, %s: MACRO" % [data.realms[realm_id].short, c[0]], Bot.Skill.MACRO, {}, {}, depth,
+						realm_id, opts, "simple")
+				_line(data, "%s, %s: TUNED" % [data.realms[realm_id].short, c[0]], Bot.Skill.TUNED, {}, {}, depth,
+						realm_id, opts, "simple")
+
+
+func _runs_without_levels(data: Dictionary) -> void:
 	for realm_id in data.realms:
 		for depth in DEPTHS:
 			print("=== %s, djup %d (fiender ×%.2f) ===" % [data.realms[realm_id].name, depth, CombatSim.depth_mult(depth)])
@@ -47,7 +76,6 @@ func _init() -> void:
 	print("=== Kallens kärnor, djup 1 (MACRO, kryptan, enkel väg) ===")
 	for oath_id in data.oaths:
 		_line(data, data.traits[oath_id].name, Bot.Skill.MACRO, {"paladin": [oath_id]}, {}, 1, "crypt", {}, "simple")
-	quit()
 
 
 func _names(data: Dictionary, list: Array) -> String:

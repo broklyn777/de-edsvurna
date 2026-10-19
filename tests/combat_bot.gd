@@ -111,6 +111,8 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	rng.seed = seed_value * 13 + 5
 	var fights := 0
 	var rooms := 0
+	# Nivåer (0.19): opts.levels = startnivåer per hjälte; med opts.grow växer de av erfarenheten upp till opts.cap.
+	var levels: Dictionary = opts.get("levels", {}).duplicate(true)
 	while not state.finished and rooms < 60:
 		var options := state.choices()
 		if options.is_empty():
@@ -120,8 +122,10 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		if RunState.is_battle(r):
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key):
+				if not battle_opts.has(key) and not key in ["levels", "grow", "cap"]:
 					battle_opts[key] = opts[key]
+			if not levels.is_empty():
+				battle_opts.levels = levels
 			var result := run_fight(data, seed_value * 31 + fights, skill, state.encounter(), state.party, traits,
 					state.charges, artifacts, depth, battle_opts)
 			fights += 1
@@ -129,6 +133,10 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				return {"cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 						"lost_at": "f%d_%s" % [state.floor, r.kind]}
 			state.store_charges(result.sim)
+			if opts.get("grow", false):
+				var xp := HeroStats.battle_xp(r.kind, depth, r.get("boss", false))
+				for hero_id in levels:
+					HeroStats.add_xp(levels[hero_id], xp, int(opts.get("cap", 99)))
 			state.battle_won()
 			if state.floor_cleared():
 				state.next_floor(data)
@@ -141,7 +149,16 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				"shrine":
 					var gifts := state.shrine_options(data, rng)
 					state.apply_shrine(data, rng, gifts[0] if gifts[0].kind == "charge" else gifts[1])
-	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms}
+	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
+			"levels": levels}
+
+
+## Sällskapet på en viss nivå med de förvalda personligheterna (för balansrapporten).
+static func party_levels(data: Dictionary, level: int, party: Array = ["paladin", "brokk", "alva", "eira"]) -> Dictionary:
+	var out := {}
+	for hero_id in party:
+		out[hero_id] = {"level": level, "xp": 0, "personality": data.heroes[hero_id].get("personality", "")}
+	return out
 
 
 static func _pick_room(state: RunState, options: Array, policy: String, rng: RandomNumberGenerator) -> String:
