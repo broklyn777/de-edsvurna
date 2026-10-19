@@ -60,6 +60,8 @@ var personality := ""
 ## Questens Nemesis (Realm Quest "Jakt"): en namngiven elit.
 var nemesis := false
 var alive := true
+## Tidslinjen (0.22): "top" om figuren ska komma först igen när turen är slut (flyttad under sin egen tur).
+var next_slot := ""
 ## ability_id -> egna turer kvar.
 var cooldowns := {}
 ## aura_id -> {remaining, duration, haste, damage_taken_mult, defense_mult, hot, dot, school, source}
@@ -94,6 +96,15 @@ static func from_data(unit_id: String, d: Dictionary, unit_team: int) -> CombatU
 	u.traits = d.get("traits", []).duplicate()
 	u.resistant = d.get("resistant", false) or u.traits.has("resistant")
 	return u
+
+
+## Statusar av en typ ("buff" eller "debuff"), i den ordning de kom.
+func statuses(kind: String) -> Array:
+	return auras.keys().filter(func(id: String) -> bool: return auras[id].get("kind", "") == kind)
+
+
+func has_kind(kind: String) -> bool:
+	return not statuses(kind).is_empty()
 
 
 func hp_pct() -> float:

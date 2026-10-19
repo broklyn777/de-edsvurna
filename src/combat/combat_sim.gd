@@ -546,8 +546,7 @@ func _tick_turn_start(u: CombatUnit) -> void:
 		if a.duration > 0.0:
 			a.remaining -= 1.0
 			if a.remaining <= 0.0:
-				u.auras.erase(aura_id)
-				_emit({"type": "aura_removed", "unit": u.id, "aura": aura_id})
+				_remove_aura(u, aura_id, "expired")
 
 
 ## Den som har agerat läggs längst ned på tidslinjen. Fiender bestämmer då sin nästa handling.
@@ -560,7 +559,11 @@ func _end_turn() -> void:
 		_rule_hit("vigilant_guards")
 		_add_aura(current, current, "defend")
 	if current and current.alive and not order.has(current.id):
-		order.push_back(current.id)
+		if current.next_slot == "top":
+			order.push_front(current.id)
+		else:
+			order.push_back(current.id)
+		current.next_slot = ""
 		if current.team == 1:
 			_choose_intent(current)
 	_next_turn()
@@ -720,6 +723,8 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 					_add_aura(caster, t, effect.aura, float(effect.get("duration", 0.0)))
 				"revive":
 					_revive(t, float(effect.get("pct", 0.5)))
+				"dispel", "purge", "to_top", "to_bottom":
+					_status_effect(effect, t)
 	_release_bonus = {}
 	for r in releases:
 		_run_release(caster, r, targets)
@@ -842,8 +847,15 @@ func defense_parts(u: CombatUnit) -> Array:
 	for aura_id in u.auras:
 		var m := float(u.auras[aura_id].get("defense_mult", 1.0))
 		if m != 1.0:
-			out.append({"name": data.auras[aura_id].get("name", aura_id), "mult": m})
+			out.append({"name": status_name(u, aura_id), "mult": m})
 	return out
+
+
+## Statusens namn med staplarna ("Gift ×3").
+func status_name(u: CombatUnit, aura_id: String) -> String:
+	var n: String = data.auras.get(aura_id, {}).get("name", aura_id)
+	var stacks := int(u.auras.get(aura_id, {}).get("stacks", 1))
+	return n if stacks <= 1 else "%s ×%d" % [n, stacks]
 
 
 ## Medelskadan för en träff (hjältebladet och testerna, 0.21): samma formler och samma modifierare som
@@ -952,14 +964,14 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	for aura_id in src.auras:
 		var a: Dictionary = src.auras[aura_id]
 		if a.get("damage_mult", 1.0) != 1.0:
-			fx.append({"f": float(a.damage_mult), "name": data.auras[aura_id].get("name", aura_id)})
+			fx.append({"f": float(a.damage_mult), "name": status_name(src, aura_id)})
 	for x in _modifiers_named(tgt, "modify_damage_taken", probe):
 		if x.modify.has("damage_taken_mult"):
 			fx.append({"f": float(x.modify.damage_taken_mult), "name": x.name})
 	for aura_id in tgt.auras:
 		var a: Dictionary = tgt.auras[aura_id]
 		if a.damage_taken_mult != 1.0:
-			fx.append({"f": float(a.damage_taken_mult), "name": data.auras[aura_id].get("name", aura_id)})
+			fx.append({"f": float(a.damage_taken_mult), "name": status_name(tgt, aura_id)})
 	if tgt.damage_taken_mult != 1.0:
 		fx.append({"f": tgt.damage_taken_mult, "name": "%s tar" % tgt.name})
 	if _release_bonus.get("unit", "") == src.id and _release_bonus.ability == ability_id:
@@ -985,8 +997,7 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	if absorbed > 0.0:
 		tgt.barrier -= absorbed
 		if tgt.barrier <= 0.0 and tgt.auras.has("barrier"):
-			tgt.auras.erase("barrier")
-			_emit({"type": "aura_removed", "unit": tgt.id, "aura": "barrier"})
+			_remove_aura(tgt, "barrier", "broken")
 	var lost := total - absorbed
 	calc.total = total
 	calc.absorbed = absorbed
@@ -994,10 +1005,21 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	tgt.hp = maxf(0.0, tgt.hp - lost)
 	if direct and lost > 0.0:
 		tgt.times_hit += 1
+	var leech := 0.0
+	var leech_id := ""
+	for aura_id in src.auras:
+		if float(src.auras[aura_id].get("leech", 0.0)) > 0.0:
+			leech += float(src.auras[aura_id].leech)
+			leech_id = aura_id
 	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": lost, "absorbed": absorbed,
 			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct, "calc": calc})
 	if tgt.hp <= 0.0:
 		_kill(tgt)
+	# Leeching (0.22): en andel av skadan helar anfallaren; helningens uträkning pekar på träffen.
+	if leech > 0.0 and lost > 0.0 and src.alive and src != tgt:
+		_heal_ctx = {"base": lost * leech, "leech": true, "from_damage": lost, "leech_pct": leech,
+				"damage_calc": calc}
+		_heal(src, src, lost * leech, leech_id)
 	# Speglande ben (våningsregel): en del av skadan från hjältarnas direkta träffar studsar tillbaka.
 	if direct and lost > 0.0 and src.team == 0 and tgt.team == 1 and src.alive and _rule("mirror_bones"):
 		_rule_hit("mirror_bones")
@@ -1045,8 +1067,7 @@ func _consume_empower(src: CombatUnit, probe: Dictionary) -> float:
 		_empower_names.append(d.get("name", aura_id))
 		if d.has("school"):
 			probe.school = d.school
-		src.auras.erase(aura_id)
-		_emit({"type": "aura_removed", "unit": src.id, "aura": aura_id})
+		_remove_aura(src, aura_id, "used")
 	return mult
 
 
@@ -1100,14 +1121,32 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 			"effective": effective, "overheal": amount - effective, "crit": crit, "ability": ability_id, "calc": calc})
 
 
+## Statusar (0.22, Siralims buffar och debuffar). En status är en aura med typ (buff/debuff), varaktighet i
+## ägarens turer och ett staplingssätt i data/auras.json:
+##   "stacking": "refresh" (standard: varaktigheten fylls på) eller "stack" (upp till "max_stacks"; varje stapel
+##   ger hela effekten en gång till), "removes": [statusar som den tar bort], "cannot_dispel", "snare" (kan inte
+##   flyttas på tidslinjen), "leech" (andel av skadan som helar bäraren), "stun" (förlorar turen) m.fl.
+## Resistant (bossar): en debuffs effekt halveras.
+const FACTOR_KEYS := ["damage_taken_mult", "defense_mult", "damage_mult"]
+
+
 func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_override := 0.0) -> void:
 	if not tgt.alive:
 		return
 	var d: Dictionary = data.auras[aura_id]
+	var kind := "buff" if d.get("buff", false) else ("debuff" if d.get("debuff", false) else "")
+	# En status som tar bort andra (t.ex. Snabb tar bort Långsam).
+	for other in d.get("removes", []):
+		if tgt.auras.has(other):
+			_remove_aura(tgt, other, "replaced")
 	var refreshed := tgt.auras.has(aura_id)
 	var duration := duration_override if duration_override > 0.0 else float(d.get("duration", -1))
-	if refreshed and tgt.auras[aura_id].remaining > duration:
-		duration = tgt.auras[aura_id].remaining
+	var stacks := 1
+	if refreshed:
+		if tgt.auras[aura_id].remaining > duration:
+			duration = tgt.auras[aura_id].remaining
+		if d.get("stacking", "refresh") == "stack":
+			stacks = mini(int(tgt.auras[aura_id].get("stacks", 1)) + 1, int(d.get("max_stacks", 3)))
 	# DoT som en andel av källans stat (Siralims Burning: 30 % av Int, Poisoned: 30 % av Attack).
 	var dot := float(d.get("dot", 0.0))
 	if d.has("dot_stat"):
@@ -1116,21 +1155,85 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 	var hot := float(d.get("hot", 0.0))
 	if d.has("hot_stat"):
 		hot = roundf(src.stat(d.hot_stat) * float(d.get("hot_pct", 0.5)))
-	var a := {"remaining": duration, "duration": duration,
-			"haste": float(d.get("haste", 0.0)), "damage_taken_mult": float(d.get("damage_taken_mult", 1.0)),
-			"defense_mult": float(d.get("defense_mult", 1.0)), "damage_mult": float(d.get("damage_mult", 1.0)),
-			"hot": hot, "dot": dot,
+	var a := {"remaining": duration, "duration": duration, "kind": kind, "stacks": stacks,
+			"haste": float(d.get("haste", 0.0)), "leech": float(d.get("leech", 0.0)),
+			"hot": hot * stacks, "dot": dot * stacks,
 			"school": d.get("school", "physical"), "source": src.id}
-	if tgt.resistant and d.get("debuff", false):
-		for key in ["damage_taken_mult", "defense_mult", "damage_mult"]:
-			a[key] = resisted(a[key])
+	for key in FACTOR_KEYS:
+		var f := 1.0 + (float(d.get(key, 1.0)) - 1.0) * stacks
+		a[key] = resisted(f) if tgt.resistant and kind == "debuff" else f
+	if tgt.resistant and kind == "debuff":
 		a.dot = roundf(a.dot * RESISTANT)
 	tgt.auras[aura_id] = a
-	_emit({"type": "aura_applied", "unit": tgt.id, "aura": aura_id, "refreshed": refreshed})
+	_emit({"type": "aura_applied", "unit": tgt.id, "aura": aura_id, "refreshed": refreshed, "source": src.id,
+			"aura_kind": kind, "stacks": stacks})
 	if d.get("taunt", false):
 		for e in enemies:
 			if e.alive and not e.intent.is_empty() and ability(e.intent.ability).get("target", "") == "enemy":
 				e.intent.targets = [tgt.id]
+
+
+## Effekter på statusar och tidslinjen (0.22): dispel (tar bort buffar), purge (tar bort debuffar), to_top, to_bottom.
+func _status_effect(effect: Dictionary, t: CombatUnit) -> void:
+	match effect.type:
+		"dispel":
+			_strip(t, "buff", int(effect.get("count", 1)), "dispel")
+		"purge":
+			_strip(t, "debuff", int(effect.get("count", 1)), "purge")
+		"to_top":
+			_move_on_timeline(t, "top")
+		"to_bottom":
+			_move_on_timeline(t, "bottom")
+
+
+## Tar bort en status. reason: expired, used, broken, replaced, dispel, purge.
+func _remove_aura(u: CombatUnit, aura_id: String, reason: String) -> void:
+	if not u.auras.has(aura_id):
+		return
+	var kind: String = u.auras[aura_id].get("kind", "")
+	u.auras.erase(aura_id)
+	if aura_id == "barrier":
+		u.barrier = 0.0
+	_emit({"type": "aura_removed", "unit": u.id, "aura": aura_id, "aura_kind": kind, "reason": reason})
+
+
+## Dispel (buffar) och Purge (debuffar): tar bort upp till count statusar av typen, de senaste först.
+## Statusar med "cannot_dispel" sitter kvar. Returnerar hur många som togs bort.
+func _strip(u: CombatUnit, kind: String, count: int, reason: String) -> int:
+	var ids: Array = u.auras.keys().filter(func(id: String) -> bool:
+		return u.auras[id].get("kind", "") == kind and not data.auras[id].get("cannot_dispel", false))
+	ids.reverse()
+	var n := 0
+	for id in ids:
+		if n >= count:
+			break
+		_remove_aura(u, id, reason)
+		n += 1
+	return n
+
+
+## Flyttar figuren på tidslinjen (0.22, Siralim): "top" = nästa tur, "bottom" = sist. Snärjd kan inte flyttas,
+## och en boss flyttas bara ett steg. Figuren som har turen hamnar överst eller sist när turen är slut.
+func _move_on_timeline(u: CombatUnit, dir: String) -> void:
+	if not u.alive:
+		return
+	if u.auras.keys().any(func(id: String) -> bool: return data.auras[id].get("snare", false)):
+		_emit({"type": "timeline_blocked", "unit": u.id, "dir": dir})
+		return
+	var boss: bool = u.team == 1 and data.enemies.get(u.kind, {}).get("boss", false)
+	if u == current:
+		u.next_slot = dir if not boss else ""
+		_emit({"type": "timeline_move", "unit": u.id, "dir": dir, "steps": 0 if boss else 99})
+		return
+	var i := order.find(u.id)
+	if i < 0:
+		return
+	order.remove_at(i)
+	var to := 0 if dir == "top" else order.size()
+	if boss:
+		to = maxi(i - 1, 0) if dir == "top" else mini(i + 1, order.size())
+	order.insert(to, u.id)
+	_emit({"type": "timeline_move", "unit": u.id, "dir": dir, "steps": absi(to - i)})
 
 
 ## Resistant: en debuffs ändring av en faktor halveras (×1,2 → ×1,1, ×0,65 → ×0,825).
@@ -1372,6 +1475,8 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_add_aura(owner, tgt, effect.aura, float(effect.get("duration", 0.0)))
 		"stack":
 			_add_stack(tgt, effect, e)
+		"dispel", "purge", "to_top", "to_bottom":
+			_status_effect(effect, tgt)
 		"cast":
 			# Utan "target" väljer förmågan själv; annars mot figuren ur händelsen (t.ex. samma fiende).
 			# "ability_from_event": samma förmåga som i händelsen (Mirakel kastar den igen).
@@ -1448,6 +1553,24 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 		match key:
 			"self_has_aura":
 				if not owner.auras.has(want):
+					return false
+			"self_lacks_aura":
+				if owner.auras.has(want):
+					return false
+			"self_has_kind":
+				if owner.has_kind(want) != true:
+					return false
+			"target_lacks_aura":
+				var t := unit(e.get("target", ""))
+				if t == null or t.auras.has(want):
+					return false
+			"target_has_kind":
+				var t := unit(e.get("target", ""))
+				if t == null or not t.has_kind(want):
+					return false
+			"unit_has_kind":
+				var t := unit(e.get("unit", ""))
+				if t == null or not t.has_kind(want):
 					return false
 			"self_hp_below":
 				if owner.hp_pct() >= want:

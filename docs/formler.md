@@ -83,12 +83,29 @@ Fartkvoten = egen Speed / målets Speed.
 - **Undvikande:** bara ett snabbare mål: 10 % per fördubbling av målets fart mot anfallarens, högst 30 %.
   Egenskaper (Hal sten, Gastens Eterisk) adderas, högst 75 %. Bara anfall kan undvikas.
 
-## 5. Barriär
+## 5. Statusar (0.22)
+
+En status är en buff eller en debuff (eller ett tillstånd som Försvarar och Provocerar). Den varar ett antal av
+**ägarens egna turer** och räknas ned i början av ägarens tur.
+
+- **Stapling:** de flesta fylls bara på (varaktigheten blir den längsta). En status med stapling ger hela sin
+  effekt en gång till per stapel, upp till ett tak: tre staplar av +10 % skada tagen ger +30 %, och en DoT gör
+  tre gånger så mycket.
+- **Statusar tar bort varandra:** en status kan ta bort sin motsats när den läggs på.
+- **Resistent** (bossar): en debuffs effekt halveras.
+- **Dispel** tar bort buffar och **Purge** debuffar, de senaste först. Vissa statusar går inte att ta bort.
+- **Leeching:** en andel av skadan bäraren gör helar bäraren. Helningens uträkning pekar på träffen.
+
+**Tidslinjen:** en effekt kan flytta en figur **överst** (den får nästa tur) eller **sist**. **Snärjd** kan inte
+flyttas, och en **boss** flyttas bara ett steg. Flyttas figuren som har turen hamnar den överst eller sist när
+turen är slut. Gränserna per tur (fem anfall, besvärjelser och helningar) nollställs varje gång figuren får turen.
+
+## 6. Barriär
 
 En Barriär tar skadan före livet. Den starkaste gäller, de staplas inte (originalet). Träffar som Barriären tar
 helt sätter inte igång egenskaper.
 
-## 6. Helning
+## 7. Helning
 
     helning = Intelligence × förmågans styrka × variation × modifierare
 
@@ -99,18 +116,18 @@ Helningar blir aldrig krit. Vissnad nåd (våningsregel) ger −40 %.
 **Förnyelse** (HoT) helar 70 % av kastarens Intelligence i början av målets tre nästa turer. *0.21:* tidigare var
 det fast 45 och växte inte med nivåerna.
 
-## 7. Artefaktens kast
+## 8. Artefaktens kast
 
 Artefaktens förmåga slår till av sig själv vid typens handling (svärd vid Anfall …) med typens chans, gånger
 artefaktnivåns styrka (högst 90 %). Kastet kostar inga Charges men räknas mot gränsen per tur, och skadan räknas
 precis som om hjälten hade använt förmågan själv.
 
-## 8. Fiender
+## 9. Fiender
 
 Fiendernas stats = bas × mötets skalning × djupet (+8 % per djup, inte Speed) × nivån (+30 % per nivå från
 djupets och våningens nivå, även Speed). Elitvarianter har +25 % Health och +10 % Attack och Intelligence.
 
-## 9. Hjältebladets "Vad det betyder"
+## 10. Hjältebladets "Vad det betyder"
 
 Bladet räknar med simulatorns egen funktion (`CombatSim.expected_damage`) på riktiga figurer mot den första
 fienden på valt djup: samma formler och samma egenskaper som i striden, med variationen 1,0 och utan krit. Ett

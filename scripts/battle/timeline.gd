@@ -38,3 +38,13 @@ func _draw() -> void:
 		if big:
 			ring = Color(UiStyle.GOLD, 0.75 + 0.25 * sin(_t * 6.0))
 		draw_arc(c, r + 1, 0, TAU, 32, Color(ring, a), 3.0 if big else 2.0, true)
+		# 0.22: en prick för debuffar (röd) och buffar (ljus) under porträttet; Snärjd ger ett kors.
+		var dots: Array = []
+		if u.has_kind("debuff"):
+			dots.append(StatusIcons.DEBUFF)
+		if u.has_kind("buff"):
+			dots.append(StatusIcons.BUFF)
+		for k in dots.size():
+			draw_circle(c + Vector2((k - (dots.size() - 1) / 2.0) * 10.0, r + 7), 3.5, Color(dots[k], a))
+		if u.auras.keys().any(func(id: String) -> bool: return sim.data.auras[id].get("snare", false)):
+			draw_line(c + Vector2(-r, -r) * 0.7, c + Vector2(r, r) * 0.7, Color(StatusIcons.DEBUFF, a), 2.0)

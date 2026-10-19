@@ -167,6 +167,9 @@ class Overheads extends Node2D:
 			var head := world.project(models[u.id].head_position())
 			var c := UiStyle.HP_GREEN if u.team == 0 else Color("#c23a3a")
 			UiStyle.bar(self, Rect2(head + Vector2(-36, -12), Vector2(72, 8)), u.hp_pct(), c)
+			if not u.auras.is_empty():
+				var n := u.auras.size()
+				StatusIcons.draw(self, sim.data, u, head + Vector2(-n * 9.0, 0), 16.0)
 			if u.team == 1:
 				UiStyle.text(self, head + Vector2(-90, -18), u.name, 13, Color(u.color, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 180, 4)
 				_draw_intent(u, head + Vector2(0, -42))

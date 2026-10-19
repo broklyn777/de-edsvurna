@@ -3,26 +3,34 @@
 		"name": "Försvarar",
 		"duration": 1,
 		"damage_taken_mult": 0.65,
-		"defense_mult": 1.5
+		"defense_mult": 1.5,
+		"text": "Försvarar: +50 % Defense och 35 % mindre skada till nästa tur.",
+		"glyph": "shield"
 	},
 	"inspired": {
 		"name": "Styrka",
 		"duration": 2,
 		"next_attack_mult": 1.3,
-		"buff": true
+		"buff": true,
+		"text": "Styrka: nästa direkta anfall gör 30 % mer skada.",
+		"glyph": "daggers"
 	},
 	"blessing": {
 		"name": "Välsignelse",
 		"duration": 2,
 		"next_attack_mult": 1.25,
 		"school": "holy",
-		"buff": true
+		"buff": true,
+		"text": "Välsignelse: nästa direkta anfall gör 25 % mer skada och blir Heligt.",
+		"glyph": "cross"
 	},
 	"marked": {
 		"name": "Märkt",
 		"duration": 3,
 		"damage_taken_mult": 1.2,
-		"debuff": true
+		"debuff": true,
+		"text": "Märkt: tar 20 % mer skada.",
+		"glyph": "diamond"
 	},
 	"burning": {
 		"name": "Brinner",
@@ -30,66 +38,89 @@
 		"dot_stat": "intelligence",
 		"dot_pct": 0.3,
 		"school": "fire",
-		"debuff": true
+		"debuff": true,
+		"text": "Brinner: tar eldskada (30 % av källans Intelligence) i början av varje tur.",
+		"glyph": "flame"
 	},
 	"provoke": {
 		"name": "Provocerar",
 		"duration": 1,
 		"taunt": true,
-		"defense_mult": 0.65
+		"defense_mult": 0.65,
+		"text": "Provocerar: fiendernas anfall går hit; −35 % Defense.",
+		"glyph": "skull"
 	},
 	"warded": {
 		"name": "Skyddad",
 		"duration": 1,
 		"damage_taken_mult": 0.75,
-		"buff": true
+		"buff": true,
+		"text": "Skyddad: tar 25 % mindre skada.",
+		"glyph": "shield"
 	},
 	"holy_shield": {
 		"name": "Helig sköld",
 		"duration": 1,
 		"damage_taken_mult": 0.6,
-		"buff": true
+		"buff": true,
+		"text": "Helig sköld: tar 40 % mindre skada.",
+		"glyph": "cross"
 	},
 	"renew": {
 		"name": "Förnyelse",
 		"duration": 3,
 		"hot_stat": "intelligence",
 		"hot_pct": 0.7,
-		"buff": true
+		"buff": true,
+		"text": "Förnyelse: helas 70 % av kastarens Intelligence i början av varje tur.",
+		"glyph": "drop"
 	},
 	"barrier": {
 		"name": "Barriär",
 		"duration": -1,
-		"buff": true
+		"buff": true,
+		"text": "Barriär: tar skadan före livet.",
+		"glyph": "shield"
 	},
 	"lich_wrath": {
 		"name": "Vrede",
 		"duration": -1,
 		"damage_mult": 1.5,
-		"buff": true
+		"buff": true,
+		"text": "Vrede: gör 50 % mer skada resten av striden.",
+		"glyph": "skull",
+		"cannot_dispel": true
 	},
 	"silenced": {
 		"name": "Tystad",
 		"duration": 2,
 		"silence": true,
-		"debuff": true
+		"debuff": true,
+		"text": "Tystad: kan inte använda förmågor.",
+		"glyph": "bolt"
 	},
 	"vulnerable": {
 		"name": "Sårbar",
 		"duration": 2,
 		"damage_taken_mult": 1.5,
-		"debuff": true
+		"debuff": true,
+		"text": "Sårbar: tar 50 % mer skada.",
+		"glyph": "diamond"
 	},
 	"weak": {
 		"name": "Försvagad",
 		"duration": 2,
 		"damage_mult": 0.5,
-		"debuff": true
+		"debuff": true,
+		"text": "Försvagad: gör 50 % mindre skada.",
+		"glyph": "daggers"
 	},
 	"salted": {
 		"name": "Saltad jord",
 		"duration": 3,
 		"defense_mult": 0.8,
-		"debuff": true
+		"debuff": true,
+		"text": "Saltad jord: −20 % Defense.",
+		"glyph": "skull"
 	}
 }

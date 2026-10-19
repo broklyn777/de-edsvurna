@@ -20,7 +20,8 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"not_top_of_timeline", "bottom_of_timeline", "not_bottom_of_timeline", "has_trait", "lacks_trait",
 		"deaths_at_least", "revives_at_least", "is_alive", "highest_speed", "lowest_hp", "lowest_defense",
 		"highest_defense", "highest_attack", "own_turn",
-		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced"]
+		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced",
+		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -122,6 +123,14 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return x.auras.has(v)
 		"lacks_status":
 			return not x.auras.has(v)
+		"has_buff":
+			return x.has_kind("buff")
+		"has_debuff":
+			return x.has_kind("debuff")
+		"lacks_buff":
+			return not x.has_kind("buff")
+		"lacks_debuff":
+			return not x.has_kind("debuff")
 		"top_of_timeline":
 			return _timeline_pos(sim, x) == 0
 		"not_top_of_timeline":
@@ -264,6 +273,14 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "har %s" % data.auras.get(value, {}).get("name", str(value))
 		"lacks_status":
 			return "har inte %s" % data.auras.get(value, {}).get("name", str(value))
+		"has_buff":
+			return "har en buff"
+		"has_debuff":
+			return "har en debuff"
+		"lacks_buff":
+			return "har ingen buff"
+		"lacks_debuff":
+			return "har ingen debuff"
 		"top_of_timeline":
 			return "är överst på tidslinjen"
 		"not_top_of_timeline":

@@ -109,6 +109,13 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
   Försvara: −35 % skada och +50 % Defense; Provocera: −35 % Defense. Krit och undvikande från Speed-kvoten
   (vårt val, formeln är inte publicerad). Barriär tar skada före livet. Se `docs/research/siralim.md` §12.
+- **Statusar** (0.22, ramverket): auror har typ (`buff`/`debuff`, annars tillstånd), varaktighet i ägarens turer,
+  `stacking` ("refresh" eller "stack" med `max_stacks`), `removes`, `cannot_dispel`, `snare`, `leech`, `text` och
+  `glyph`. Effekter: `dispel`, `purge`, `to_top`, `to_bottom` (`CombatSim._move_on_timeline`: Snärjd hindrar, bossar
+  ett steg). Händelser `aura_applied`/`aura_removed` har `aura_kind` och `reason`; `timeline_move`. Villkor för
+  egenskaper: `self_lacks_aura`, `target_lacks_aura`, `self_has_kind`, `target_has_kind`, `unit_has_kind`; makron:
+  har/saknar buff/debuff. Ikoner under livmätarna (`scripts/battle/status_icons.gd`), Inspect listar dem.
+  `-- --statuses` ger några statusar i en strid. Tester: `tests/test_status.gd`.
 - **Siffrorna** (0.21): alla formler med svensk förklaring i `docs/formler.md`. Varje skada, helning och
   undvikande bär sin uträkning (`calc` i händelsen); `DamageExplain` (`src/combat/damage_explain.gd`) skriver den
   i klartext. I striden: tryck på en siffra, eller SKADELOGG. Hjältebladet räknar med `CombatSim.expected_damage()`

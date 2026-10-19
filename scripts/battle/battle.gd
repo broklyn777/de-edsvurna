@@ -46,6 +46,7 @@ var damage_log: DamageLog
 var _recent_numbers: Array = []
 var _calc_open := false
 var _dev_calc := false
+var _dev_statuses := false
 var _dev_log := false
 var _dev_ask_forfeit := false
 ## Effekter som väntar på att vapnet eller projektilen ska träffa: [{left, call}].
@@ -88,6 +89,8 @@ func _ready() -> void:
 			warp_turns = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--seed="):
 			seed_value = int(arg.get_slice("=", 1))
+		elif arg == "--statuses":
+			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
 		elif arg == "--show-calc":
 			_dev_calc = true  # visar uträkningen för en av hjältarnas träffar (skärmdumpar)
 		elif arg == "--damage-log":
@@ -267,6 +270,8 @@ func _process(delta: float) -> void:
 			overlay.show_big("STRID!")
 			sfx.play("go", -2.0, 0.0)
 			sim.begin()
+			if _dev_statuses:
+				_give_dev_statuses()
 			_play_events()
 		return
 
@@ -388,6 +393,17 @@ func _remember_number(e: Dictionary) -> void:
 		damage_log._open_rows[damage_log.entries.size() - 3] = true
 
 
+func _give_dev_statuses() -> void:
+	var p := sim.heroes[0]
+	for id in ["inspired", "warded", "renew"]:
+		sim._add_aura(p, p, id)
+	sim._add_aura(p, sim.heroes[1], "vulnerable")
+	for e in sim.enemies:
+		sim._add_aura(p, e, "marked")
+	sim._add_aura(p, sim.enemies[0], "burning")
+	sim._add_aura(p, sim.enemies[0], "weak")
+
+
 func _open_damage_log() -> void:
 	if overlay.mode == "confirm":
 		return
@@ -479,6 +495,7 @@ func _show_inspect(unit_id: String) -> void:
 			lines.append("%s: %s" % [t.name, t.text])
 	if lines.size() == 1:
 		lines.append("Inga egenskaper.")
+	lines.append_array(StatusIcons.lines(data, u))  # 0.22: statusarna med text och turer kvar
 	if u.team == 1:
 		lines.append(_trophy_line(u))
 		lines.append("Djup %d · stats ×%.2f" % [sim.depth, CombatSim.enemy_mult(data.encounters[run.state.encounter()], sim.depth)])
@@ -649,6 +666,11 @@ func _handle(e: Dictionary) -> void:
 			_on_action(e)
 		"damage":
 			_after(_effect_delay(e), _on_damage.bind(e))
+		"timeline_move":
+			_after(_cursor + 0.1, _float.bind(e.unit, "↑ ÖVERST" if e.dir == "top" else "↓ SIST",
+					Color("#bcd2ff"), 20, false))
+		"timeline_blocked":
+			_after(_cursor + 0.1, _float.bind(e.unit, "SNÄRJD", StatusIcons.DEBUFF, 20, false))
 		"dodge":
 			_after(_effect_delay(e), _float.bind(e.target, "UNDVEK", Color("#d8e6ff"), 22, false))
 			_after(_effect_delay(e), _remember_number.bind(e))

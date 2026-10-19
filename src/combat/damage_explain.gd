@@ -82,7 +82,10 @@ static func lines(data: Dictionary, e: Dictionary) -> Array[String]:
 
 static func _heal_lines(data: Dictionary, c: Dictionary) -> Array[String]:
 	var out: Array[String] = []
-	if c.has("roll"):
+	if c.get("leech", false):
+		out.append("%s av skadan %s (%s) = %s" % [pct(c.leech_pct), num(c.from_damage),
+				_source_name(data, String(c.get("ability", ""))), num(c.base)])
+	elif c.has("roll"):
 		out.append("%s Intelligence × %s × variation %s = %s" % [num(c.stat_value), dec(c.power), dec(c.roll), num(c.base)])
 	elif c.get("hot", false):
 		out.append("Grundbelopp %s per tur (%s)" % [num(c.base), _source_name(data, String(c.get("ability", "")))])
