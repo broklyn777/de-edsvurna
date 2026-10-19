@@ -49,26 +49,34 @@ func test_breakdown_sums_to_the_stats_in_combat() -> void:
 	assert_true(b.health.artifact > 0.0)
 
 
-func test_xp_levels_up_until_the_cap() -> void:
+func test_xp_levels_up_without_a_cap() -> void:
 	var p := {"level": 1, "xp": 0}
-	var ups := HeroStats.add_xp(p, HeroStats.xp_to_next(1) + 5, 5)
+	var ups := HeroStats.add_xp(p, HeroStats.xp_to_next(1) + 5)
 	assert_eq(ups, [2])
 	assert_eq(p.xp, 5)
-	ups = HeroStats.add_xp(p, 1000, 5)
-	assert_eq(ups, [3, 4, 5])
-	assert_eq(p.level, 5, "taket")
-	assert_eq(p.xp, HeroStats.xp_to_next(5), "mätaren är full vid taket")
-	assert_eq(HeroStats.add_xp(p, 50, 10), [6], "när taket höjs går det vidare")
+	ups = HeroStats.add_xp(p, 10000)
+	assert_true(ups.size() > 8, "inget tak")
+	assert_true(p.xp < HeroStats.xp_to_next(p.level))
+	assert_true(HeroStats.xp_to_next(10) > HeroStats.xp_to_next(3), "högre nivåer kostar mer")
 
 
-func test_cap_and_expected_level_follow_depth() -> void:
-	assert_eq(HeroStats.level_cap(0), 5)
-	assert_eq(HeroStats.level_cap(2), 15)
+func test_expected_level_and_enemy_levels_follow_depth() -> void:
 	assert_eq(HeroStats.expected_level(1), 3)
 	assert_eq(HeroStats.expected_level(3), 13)
+	assert_true(HeroStats.enemy_level(1, 0) < HeroStats.expected_level(1) and
+			HeroStats.expected_level(1) < HeroStats.enemy_level(1, 2), "väntad nivå mitt i djupet")
 	assert_true(HeroStats.battle_xp("end", 1, true) > HeroStats.battle_xp("end", 1) and
 			HeroStats.battle_xp("end", 1) > HeroStats.battle_xp("battle", 1), "boss > slut > strid")
 	assert_eq(HeroStats.battle_xp("battle", 3), 9 * HeroStats.battle_xp("battle", 1), "djup² som kurvan")
+	assert_true(HeroStats.battle_xp("battle", 1) > 0, "lägre djup går att träna på")
+
+
+func test_breakdown_lists_every_source() -> void:
+	var b := HeroStats.breakdown(_data, "brokk", 3, "envis", {"type": "sword", "ability": ""})
+	for stat in HeroStats.STATS:
+		for source in HeroStats.SOURCES:
+			assert_true(b[stat].has(source), "%s har %s" % [stat, source])
+			assert_true(HeroStats.SOURCE_NAMES.has(source))
 
 
 func test_profile_keeps_levels_and_old_profiles_start_at_one() -> void:
@@ -80,7 +88,7 @@ func test_profile_keeps_levels_and_old_profiles_start_at_one() -> void:
 	assert_eq(int(p.hero(_data, "brokk").level), 1, "gammal profil börjar på nivå 1")
 	assert_eq(p.hero(_data, "brokk").personality, "envis")
 	var ups := p.grant_xp(_data, ["paladin", "brokk"], 200)
-	assert_eq(ups.brokk, [2, 3, 4, 5], "taket på djup 1")
+	assert_eq(ups.brokk, [2, 3, 4, 5])
 	assert_eq(p.hero(_data, "brokk").log.size(), 4, "historiken")
 	assert_true(p.set_personality(_data, "brokk", "stadig"))
 	assert_eq(p.silver, 100 - Profile.PERSONALITY_COST)

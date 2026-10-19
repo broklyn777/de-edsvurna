@@ -162,10 +162,6 @@ func hero(data: Dictionary, hero_id: String) -> Dictionary:
 	return heroes[hero_id]
 
 
-func level_cap() -> int:
-	return HeroStats.level_cap(best_depth)
-
-
 ## Nivå och personlighet per hjälte, till CombatSim (opts.levels).
 func levels_for(data: Dictionary, party: Array) -> Dictionary:
 	var out := {}
@@ -180,7 +176,7 @@ func grant_xp(data: Dictionary, party: Array, xp: int) -> Dictionary:
 	var out := {}
 	for hero_id in party:
 		var h := hero(data, hero_id)
-		var ups := HeroStats.add_xp(h, xp, level_cap())
+		var ups := HeroStats.add_xp(h, xp)
 		for lv in ups:
 			h.log.append({"level": lv, "battle": int(h.battles)})
 		if not ups.is_empty():

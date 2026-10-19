@@ -113,7 +113,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	var rooms := 0
 	var f0_fights := 0  # strider på första våningen (för en ny profil på nivå 1)
 	var f0_won := 0
-	# Nivåer (0.19): opts.levels = startnivåer per hjälte; med opts.grow växer de av erfarenheten upp till opts.cap.
+	# Nivåer (0.19): opts.levels = startnivåer per hjälte; med opts.grow växer de av erfarenheten.
 	var levels: Dictionary = opts.get("levels", {}).duplicate(true)
 	while not state.finished and rooms < 60:
 		var options := state.choices()
@@ -124,7 +124,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		if RunState.is_battle(r):
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "cap"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
@@ -142,7 +142,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			if opts.get("grow", false):
 				var xp := HeroStats.battle_xp(r.kind, depth, r.get("boss", false))
 				for hero_id in levels:
-					HeroStats.add_xp(levels[hero_id], xp, int(opts.get("cap", 99)))
+					HeroStats.add_xp(levels[hero_id], xp)
 			state.battle_won()
 			if state.floor_cleared():
 				state.next_floor(data)

@@ -1,6 +1,6 @@
 extends TapScreen
 ## Hjältebladet (0.19): allt om en hjälte, och allt som visas har betydelse.
-##   Huvud: namn, roll, nivå av taket, erfarenhet till nästa nivå och personligheten.
+##   Huvud: namn, roll, nivå, erfarenhet till nästa nivå, fiendernas nivå på valt djup och personligheten.
 ##   STATS: de fem statsen med uppdelning per källa (bas, nivåer, personlighet, artefakt), vad nästa
 ##          nivå ger, och vad statsen betyder i skada och helning mot en typisk fiende på valt djup
 ##          (spelets egna formler). Krit och undvikande visas inte i procent, som i Siralim.
@@ -97,17 +97,15 @@ func _draw() -> void:
 	if _heroes().size() > 1:
 		small_button(_arrow_rect(-1), "‹")
 		small_button(_arrow_rect(1), "›")
-	# Nivå, erfarenhet och taket.
-	var cap := prof.level_cap()
+	# Nivå och erfarenhet (inget tak, som i Siralim).
 	var need := HeroStats.xp_to_next(level)
-	UiStyle.text(self, Vector2(MARGIN, 100), "%s · NIVÅ %d AV %d" % [String(h.get("title", h.role)).to_upper(), level, cap], 20,
+	UiStyle.text(self, Vector2(MARGIN, 100), "%s · NIVÅ %d" % [String(h.get("title", h.role)).to_upper(), level], 20,
 			Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, 600, 3)
 	var bar := Rect2(MARGIN, 112, 420, 16)
 	UiStyle.bar(self, bar, float(prog.xp) / need, UiStyle.GOLD)
 	var bar_text := "%d / %d erfarenhet till nivå %d" % [int(prog.xp), need, level + 1]
-	if level >= cap:
-		bar_text = "Taket nått – klara djup %d för att höja det till %d" % [prof.best_depth + 1, HeroStats.level_cap(prof.best_depth + 1)]
-	UiStyle.text(self, Vector2(MARGIN, 148), bar_text, 14, Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_LEFT, 700, 2)
+	UiStyle.text(self, Vector2(MARGIN, 148), bar_text, 14, Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_LEFT, 420, 2)
+	_draw_enemy_levels(data, prof, level, Vector2(480, 100))
 	# Personligheten.
 	var pr := _personality_rect()
 	draw_rect(pr, Color(0, 0, 0, 0.55))
@@ -145,16 +143,41 @@ func _draw_stats(data: Dictionary, prof: Profile, prog: Dictionary) -> void:
 		UiStyle.text(self, Vector2(MARGIN, y), HeroStats.STAT_NAMES[stat] + arrow, 18,
 				UiStyle.GOLD if arrow == " ↑" else (Color("#ff9a7a") if arrow != "" else Color.WHITE), HORIZONTAL_ALIGNMENT_LEFT, 170, 3)
 		UiStyle.text(self, Vector2(MARGIN + 170, y), "%d" % s.total, 20, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT, 70, 3)
-		var text := "= %d bas" % s.base
-		for part in [["levels", "nivåer"], ["personality", "personlighet"], ["artifact", "artefakt"]]:
-			var v: float = s[part[0]]
-			if v != 0.0:
-				text += (" + %d %s" if v > 0.0 else " − %d %s") % [absf(v), part[1]]
+		var text := "="
+		for source in HeroStats.SOURCES:
+			var v: float = s.get(source, 0.0)
+			if source == "base":
+				text += " %d %s" % [v, HeroStats.SOURCE_NAMES[source]]
+			elif v != 0.0:
+				text += (" + %d %s" if v > 0.0 else " − %d %s") % [absf(v), HeroStats.SOURCE_NAMES[source]]
 		UiStyle.text(self, Vector2(MARGIN + 260, y), text, 15, Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_LEFT, 420, 2)
 		UiStyle.text(self, Vector2(MARGIN + 690, y), "nästa nivå +%d" % nxt[stat], 14, Color(UiStyle.TRAIT_GOLD, 0.8),
 				HORIZONTAL_ALIGNMENT_LEFT, 160, 2)
 		y += 34
 	_draw_meaning(data, prof, b, level, Vector2(MARGIN, y + 20))
+
+
+## Fiendernas nivå på valt djup, våning för våning, och om hjälten är rustad för dem.
+func _draw_enemy_levels(data: Dictionary, prof: Profile, level: int, at: Vector2) -> void:
+	var lv: Array[int] = []
+	for f in 3:
+		lv.append(roundi(HeroStats.enemy_level(prof.depth, f)))
+	UiStyle.text(self, at, "FIENDERNA I %s, DJUP %d" % [String(data.realms[prof.realm].short).to_upper(), prof.depth], 14,
+			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, 380, 2)
+	UiStyle.text(self, at + Vector2(0, 24), "Våning 1–3: nivå %d · %d · %d" % [lv[0], lv[1], lv[2]], 17, Color.WHITE,
+			HORIZONTAL_ALIGNMENT_LEFT, 380, 2)
+	var verdict := "Rustad för hela djupet"
+	var color := Color("#8fd18f")
+	if level < lv[0]:
+		verdict = "Under fienderna – träna på ett lägre djup"
+		color = Color("#ff9a7a")
+	elif level < lv[1]:
+		verdict = "Räcker för våning 1"
+		color = UiStyle.TRAIT_GOLD
+	elif level < lv[2]:
+		verdict = "Räcker för våning 1–2"
+		color = UiStyle.TRAIT_GOLD
+	UiStyle.text(self, at + Vector2(0, 48), verdict, 14, color, HORIZONTAL_ALIGNMENT_LEFT, 380, 2)
 
 
 ## Vad statsen betyder: skada och helning mot en typisk fiende i vald Realm på valt djup.
