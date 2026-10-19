@@ -28,6 +28,7 @@ klädda och beväpnade i Blender för Drakvalvet:
 | druid.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: horn, lövkrage, mossgrön klädsel (7 anims, utan UV) | Hulda Mossrot, druid |
 | domare.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: vit och guld dräkt, silverhår, domarmössa, vit mantel (7 anims, utan UV) | Ragnhild Ljusdom, domare |
 | svardsdansare.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), Drakvalvets `qt-hjalte-human-m.glb` i Blender: sandfärgad dräkt, turban, turkost skärp (8 anims, utan UV) | Sefir av Sanden, svärdsdansare |
+| imma.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: kopparrosa hår, läderdräkt, kort lila mantel, koger (6 anims, utan UV) | Imma, Paladinens barndomsvän |
 | vapen.glb | Vapen från Drakvalvet – **källa ej bekräftad, kontrollera före release** | Vapen i händerna |
 
 Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla figurer har samma rigg
