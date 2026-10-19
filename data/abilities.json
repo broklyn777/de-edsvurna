@@ -18,7 +18,7 @@
 		"school": "holy",
 		"icon": "cross",
 		"button_color": "#f2c85b",
-		"sound": "pyro_impact",
+		"sound": "k_shield_wall",
 		"text": "Helig attack (160 %).",
 		"effects": [
 			{
@@ -45,7 +45,7 @@
 		"target": "enemy",
 		"school": "holy",
 		"travel": 0.3,
-		"sound": "heal",
+		"sound": "k_shield_wall",
 		"effects": [
 			{
 				"type": "damage",
@@ -59,7 +59,7 @@
 		"school": "holy",
 		"icon": "cross",
 		"button_color": "#5dff73",
-		"sound": "heal",
+		"sound": "heal_light",
 		"text": "Helar en allierad (300 % av kraften).",
 		"effects": [
 			{
@@ -74,7 +74,7 @@
 		"name": "Pil",
 		"target": "enemy",
 		"travel": 0.25,
-		"sound": "k_hero_hit",
+		"sound": "arrow_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -107,7 +107,7 @@
 		"target": "enemy",
 		"school": "fire",
 		"travel": 0.35,
-		"sound": "pyro_impact",
+		"sound": "fire_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -121,7 +121,7 @@
 		"school": "fire",
 		"icon": "flame",
 		"button_color": "#ff8a2a",
-		"sound": "pyro_impact",
+		"sound": "fire_hit",
 		"text": "Eldskada på alla fiender (70 %).",
 		"effects": [
 			{
@@ -135,6 +135,7 @@
 	},
 	"defend": {
 		"name": "Försvara",
+		"cue": "defend",
 		"target": "self",
 		"icon": "shield",
 		"button_color": "#6f7f99",
@@ -165,7 +166,7 @@
 		"target": "enemy",
 		"pick": "lowest",
 		"travel": 0.25,
-		"sound": "k_hero_hit",
+		"sound": "arrow_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -179,7 +180,7 @@
 		"pick": "random",
 		"school": "shadow",
 		"travel": 0.35,
-		"sound": "volley_impact",
+		"sound": "shadow_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -205,6 +206,7 @@
 	},
 	"provoke": {
 		"name": "Provocera",
+		"cue": "provoke",
 		"target": "self",
 		"icon": "skull",
 		"button_color": "#b0503a",
@@ -219,6 +221,7 @@
 	},
 	"stone_wall": {
 		"name": "Stenmur",
+		"cue": "defend",
 		"target": "self",
 		"icon": "shield",
 		"button_color": "#8d9bb0",
@@ -238,7 +241,7 @@
 		"pick": "lowest",
 		"travel": 0.3,
 		"cooldown": 3,
-		"sound": "k_hero_crit",
+		"sound": "arrow_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -261,6 +264,7 @@
 	},
 	"warden_provoke": {
 		"name": "Väktarens utmaning",
+		"cue": "provoke",
 		"target": "self",
 		"cooldown": 3,
 		"sound": "k_shield_wall",
@@ -281,7 +285,7 @@
 		"pick": "random",
 		"school": "fire",
 		"travel": 0.3,
-		"sound": "pyro_impact",
+		"sound": "fire_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -295,7 +299,7 @@
 		"school": "fire",
 		"kind": "spell",
 		"cooldown": 3,
-		"sound": "pyro_impact",
+		"sound": "fire_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -313,7 +317,7 @@
 		"pick": "random",
 		"school": "shadow",
 		"travel": 0.35,
-		"sound": "volley_impact",
+		"sound": "shadow_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -350,6 +354,7 @@
 	},
 	"holy_shield": {
 		"name": "Helig sköld",
+		"cue": "spell_holy",
 		"target": "ally",
 		"kind": "spell",
 		"school": "holy",
@@ -367,6 +372,7 @@
 	},
 	"war_cry": {
 		"name": "Krigsrop",
+		"cue": "bloodlust",
 		"target": "all_allies",
 		"kind": "spell",
 		"charges": 5,
@@ -383,6 +389,7 @@
 	},
 	"renew": {
 		"name": "Förnyelse",
+		"cue": "heal_light",
 		"target": "ally",
 		"kind": "spell",
 		"school": "holy",
@@ -407,7 +414,7 @@
 		"charges": 8,
 		"icon": "cross",
 		"button_color": "#ffe48a",
-		"sound": "pyro_impact",
+		"sound": "k_shield_wall",
 		"text": "Helig besvärjelse (150 %).",
 		"effects": [
 			{
@@ -423,7 +430,7 @@
 		"charges": 6,
 		"icon": "daggers",
 		"button_color": "#7fe05a",
-		"sound": "k_hero_hit",
+		"sound": "arrow_hit",
 		"text": "Pilar mot alla fiender (60 %).",
 		"effects": [
 			{
@@ -441,7 +448,7 @@
 		"charges": 5,
 		"icon": "flame",
 		"button_color": "#ff5a2a",
-		"sound": "pyro_impact",
+		"sound": "fire_hit",
 		"text": "Stor eldbesvärjelse (200 %).",
 		"effects": [
 			{
@@ -465,7 +472,7 @@
 		"tier": "large",
 		"travel": 0.4,
 		"cooldown": 3,
-		"sound": "volley_impact",
+		"sound": "shadow_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -515,6 +522,7 @@
 	},
 	"knight_stand": {
 		"name": "Den fallnes vakt",
+		"cue": "defend",
 		"target": "self",
 		"cooldown": 3,
 		"sound": "k_shield_wall",
@@ -535,7 +543,7 @@
 		"pick": "random",
 		"school": "shadow",
 		"travel": 0.35,
-		"sound": "volley_impact",
+		"sound": "shadow_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -551,7 +559,7 @@
 		"school": "shadow",
 		"travel": 0.35,
 		"cooldown": 3,
-		"sound": "volley_impact",
+		"sound": "shadow_hit",
 		"effects": [
 			{
 				"type": "aura",
@@ -583,7 +591,7 @@
 		"pick": "random",
 		"school": "shadow",
 		"travel": 0.35,
-		"sound": "volley_impact",
+		"sound": "shadow_hit",
 		"effects": [
 			{
 				"type": "damage",
@@ -597,7 +605,7 @@
 		"kind": "spell",
 		"school": "shadow",
 		"cooldown": 4,
-		"sound": "bone_crush",
+		"sound": "shadow_hit",
 		"effects": [
 			{
 				"type": "aura",
@@ -612,7 +620,7 @@
 		"school": "shadow",
 		"tier": "moderate",
 		"cooldown": 3,
-		"sound": "bone_crush",
+		"sound": "shadow_hit",
 		"effects": [
 			{
 				"type": "damage",

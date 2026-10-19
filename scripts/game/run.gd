@@ -43,11 +43,16 @@ var camp_chosen := ""
 ## Våningsreglerna för nästa körning, slumpade vid Kryptporten när instabiliteten väljs:
 ## {visible: [regel], hidden: [regel]}.
 var pending_rules := {"visible": [], "hidden": []}
+## Musik och menyljud, som fortsätter mellan scenerna (striden har egna effektljud).
+var audio: Sfx
+var _ui_frame := -1
 
 
 func _ready() -> void:
 	data = GameData.load_all()
 	rng.randomize()
+	audio = Sfx.new()
+	add_child(audio)
 	_load()
 	_load_macros()
 	roll_rules()
@@ -113,7 +118,25 @@ func roll_rules() -> void:
 	pending_rules = RunState.roll_rules(data, profile.instability, rng)
 
 
+## Menyljud (assets/audio/ui_*). Ett tryck som inte gav något eget ljud får ui_tap (se ui_tap()).
+func ui(sound: String, volume_db := -10.0) -> void:
+	audio.play(sound, volume_db, 0.04)
+	_ui_frame = Engine.get_process_frames()
+
+
+## Anropas efter varje tryck i basens skärmar: ett mjukt klick om trycket inte redan lät.
+func ui_tap() -> void:
+	if _ui_frame != Engine.get_process_frames():
+		ui("ui_tap", -14.0)
+
+
+## Basens musik (alla platser i basen och lägret).
+func base_music() -> void:
+	audio.play_music("music_base", -17.0)
+
+
 func start_run(party: Array[String]) -> void:
+	ui("ui_confirm", -8.0)
 	profile.party = party
 	_save()
 	state = RunState.new_run(profile, data)
@@ -126,11 +149,13 @@ func start_run(party: Array[String]) -> void:
 
 func start_practice(encounter_id: String) -> void:
 	practice_encounter = encounter_id
+	ui("ui_confirm", -8.0)
 	state = RunState.new_practice(profile, data, encounter_id)
 	get_tree().change_scene_to_file(BATTLE_SCENE)
 
 
 func go(scene: String) -> void:
+	ui({BASE_SCENE: "ui_back", LIBRARY_SCENE: "ui_page"}.get(scene, "ui_door"), -12.0)
 	get_tree().change_scene_to_file(scene)
 
 
@@ -152,6 +177,7 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 			if data.enemies[kind].get("boss", false):
 				profile.defeat_boss(kind)
 	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
+	_trophy_sound()
 	camp_chosen = ""
 	for t in offer:
 		profile.add_trophy(t)
@@ -164,7 +190,19 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		get_tree().change_scene_to_file(CAMP_SCENE)
 
 
+## Troféfynd: ljudet efter den finaste trofén i erbjudandet.
+func _trophy_sound() -> void:
+	var best := ""
+	for t in offer:
+		var r: String = data.traits.get(t, {}).get("rarity", "common")
+		if best == "" or ["common", "elite", "boss"].find(r) > ["common", "elite", "boss"].find(best):
+			best = r
+	if best != "":
+		get_tree().create_timer(0.5).timeout.connect(audio.play.bind("trophy_" + best, -4.0, 0.0))
+
+
 func next_floor() -> void:
+	ui("ui_confirm", -8.0)
 	state.floor += 1
 	get_tree().change_scene_to_file(BATTLE_SCENE)
 
@@ -179,12 +217,14 @@ func uses_macro(hero_id: String) -> bool:
 
 
 func open_macros(return_scene: String) -> void:
+	ui("ui_page", -10.0)
 	macro_return = return_scene
 	get_tree().change_scene_to_file(MACRO_SCENE)
 
 
 func close_macros() -> void:
 	save_macros()
+	ui("ui_back", -12.0)
 	get_tree().change_scene_to_file(macro_return)
 
 
@@ -230,7 +270,9 @@ func _load() -> void:
 	state.artifacts = profile.artifacts.duplicate(true)
 
 
-func save() -> void:
+## Sparar efter ett val i basen; sound är menyljudet för valet.
+func save(sound := "ui_toggle") -> void:
+	ui(sound, -10.0)
 	_save()
 
 

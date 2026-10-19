@@ -16,6 +16,7 @@ var _press_at := Vector2(-1, -1)
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	run.base_music()
 	if not run.offer.is_empty():
 		chosen = run.camp_chosen if run.offer.has(run.camp_chosen) else run.offer[0]
 		run.camp_chosen = chosen
@@ -37,6 +38,7 @@ func _gui_input(event: InputEvent) -> void:
 	if _press_at.distance_to(event.position) > 30.0:
 		return
 	_tap(event.position)
+	run.ui_tap()
 
 
 func _tap(p: Vector2) -> void:

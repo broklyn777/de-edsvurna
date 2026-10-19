@@ -49,7 +49,7 @@ func _tap(p: Vector2) -> void:
 			profile.choose_oath(oaths[i])
 			selected_perk = ""
 			anoint_mode = false
-			run.save()
+			run.save("ui_confirm")
 			return
 	var perks := _perks()
 	for i in perks.size():
@@ -65,11 +65,11 @@ func _tap(p: Vector2) -> void:
 				else profile.buy_perk(data, profile.oath, selected_perk)
 		if ok:
 			_flash = 1.0
-			run.save()
+			run.save("ui_confirm")
 		return
 	if _reset_rect().has_point(p) and profile.points_used(data, profile.oath) > 0:
 		profile.reset_perks(data, profile.oath)
-		run.save()
+		run.save("ui_back")
 
 
 # --- Layout -----------------------------------------------------------------

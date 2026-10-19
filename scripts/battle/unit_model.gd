@@ -84,6 +84,8 @@ func setup(u: CombatUnit, s: CombatSim, vis: Dictionary) -> void:
 	ProceduralAnims.add_to(_player, vis.get("procedural", []))
 	for loop_anim in [anims.get("idle", ""), anims.get("cast", ""), anims.get("block", ""),
 			anims.get("run", ""), anims.get("walk", "")]:
+		if not _player.has_animation(loop_anim) and loop_anim.ends_with("_Loop"):
+			loop_anim = loop_anim.trim_suffix("_Loop")
 		if _player.has_animation(loop_anim):
 			_player.get_animation(loop_anim).loop_mode = Animation.LOOP_LINEAR
 	for part_name in vis.get("hide", []):
@@ -351,6 +353,9 @@ func _update_auras(delta: float) -> void:
 # --- Hjälpfunktioner --------------------------------------------------------
 
 func _play(anim_name: String, blend: float, speed := 1.0) -> void:
+	# Godot tar bort ändelsen _Loop ur animationsnamnen vid importen (Walk_Loop blir Walk).
+	if not _player.has_animation(anim_name) and anim_name.ends_with("_Loop"):
+		anim_name = anim_name.trim_suffix("_Loop")
 	if not _player.has_animation(anim_name):
 		return
 	_player.speed_scale = speed * unit.haste()
