@@ -52,7 +52,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Rumssymbolerna, paladinpjäsen, kompassrosen, kartuschen, draken och svärdet i stenen kommer ur VD:ns
   symbolark: `godot --headless --path . --script res://tools/cut_symbols.gd` klipper ut dem enligt rutorna i
   `tools/symbolark.json` till `assets/illustrations/icons/` (pergamentet blir genomskinligt med en
-  luminansmask). Kör om med nya koordinater när ett nytt ark kommer.
+  luminansmask). Kör om med nya koordinater när ett nytt ark kommer. Enskilda bilder (t.ex. skelett.webp) är
+  egna källor i samma fil. Källbilderna (symbolark, sigillet, skelett) exporteras inte (`exclude_filter`).
   **Realm Quest** (Jakt på Nemesis, Rensa 2 elitstrider, Rening 3 helgedomar) ger silver och en perk-poäng
   per ny kombination av Realm och djup. Körningen sparas i `user://run.cfg` efter varje rum.
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),

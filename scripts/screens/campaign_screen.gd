@@ -233,7 +233,7 @@ func _draw_decor() -> void:
 	InkArt.icon(self, "compass", Vector2(700, 470) * k, 130 * k.y, 0.8)
 	InkArt.icon(self, "dragon", Vector2(720, 640) * k, 130 * k.y, 0.8)
 	InkArt.icon(self, "sword_in_stone", Vector2(560, 640) * k, 120 * k.y, 0.75)
-	InkArt.skeleton(self, Vector2(80, 600) * k, 60, ink)
+	InkArt.icon(self, "skeleton", Vector2(78, 596) * k, 150 * k.y, 0.8)
 
 
 ## Ett område: vinjetten (egen nod), fördärvets bläckflöde, ram, kartusch med namnet och bossens sigill.
