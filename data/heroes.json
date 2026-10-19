@@ -95,12 +95,9 @@
 			"imma_sleight"
 		],
 		"visual": {
-			"model": "liria",
+			"model": "imma",
 			"weapons": {
 				"grip_l": "Shortbow"
-			},
-			"colors": {
-				"Ranger_Cloak": "#c8402a"
 			},
 			"anims": {
 				"idle": "Bow_Idle",
@@ -109,9 +106,8 @@
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"block": "Shield_Block",
-				"run": "Run_Loop",
-				"walk": "Walk_Loop"
+				"walk": "Walk",
+				"run": "Run"
 			}
 		},
 		"placeholder_figure": true
@@ -396,23 +392,20 @@
 			"ronja_falcon_watch"
 		],
 		"visual": {
-			"model": "liria",
+			"model": "falkenerare",
 			"weapons": {
-				"grip_l": "Shortbow"
-			},
-			"colors": {
-				"Ranger_Cloak": "#8a6a3a"
+				"grip_r": "Shortsword"
 			},
 			"anims": {
-				"idle": "Bow_Idle",
+				"idle": "Sword_Idle",
 				"attack": [
-					"Bow_Shoot"
+					"Sword_Attack"
 				],
+				"cast": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"block": "Shield_Block",
-				"run": "Run_Loop",
-				"walk": "Walk_Loop"
+				"walk": "Walk",
+				"run": "Walk"
 			}
 		},
 		"placeholder_figure": true
@@ -442,34 +435,17 @@
 			"lirien_chorus"
 		],
 		"visual": {
-			"model": "alva",
-			"anims_from": [
-				"sigrun_delar"
-			],
-			"hide": [
-				"Ako_Staff"
-			],
-			"colors": {
-				"Ako_Robe": "#9fc6e8",
-				"Ako_Cord": "#d8e8ff",
-				"Ako_Gold": "#c8d8f0"
-			},
-			"weapons": {
-				"grip_r": "Shortsword"
-			},
-			"light": "#ffe7a0",
-			"light_energy": 0.6,
+			"model": "bard",
 			"anims": {
 				"idle": "OneHand_Idle",
 				"attack": [
-					"Spell_Simple_Shoot"
+					"OneHand_Attack"
 				],
 				"cast": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"block": "Shield_Block",
-				"run": "Run_Loop",
-				"walk": "Walk_Loop"
+				"walk": "Walk",
+				"run": "Run"
 			}
 		},
 		"placeholder_figure": true,
@@ -510,30 +486,18 @@
 			"tove_mirror_hand"
 		],
 		"visual": {
-			"model": "solveig",
-			"weapons": {
-				"grip_r": "Staff"
-			},
-			"colors": {
-				"Solveig_Robe": "#c8822a",
-				"White.001": "#e2b36b",
-				"Orange": "#8a5a1a",
-				"Solveig_Cloak": "#5a3a1a"
-			},
-			"emit": {
-				"Solveig_Ember": "#ff6a10"
-			},
-			"light": "#ff7a30",
-			"light_energy": 0.8,
+			"model": "munk",
 			"anims": {
-				"idle": "Staff_Idle",
+				"idle": "OneHand_Idle",
 				"attack": [
-					"Spell_Simple_Shoot"
+					"OneHand_Attack",
+					"OneHand_Attack_B"
 				],
+				"cast": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"run": "Staff_Run",
-				"walk": "Staff_Walk"
+				"walk": "Walk",
+				"run": "Run"
 			}
 		},
 		"placeholder_figure": true
@@ -563,30 +527,20 @@
 			"hulda_rootwork"
 		],
 		"visual": {
-			"model": "solveig",
+			"model": "druid",
 			"weapons": {
 				"grip_r": "Staff"
 			},
-			"colors": {
-				"Solveig_Robe": "#3a6a3a",
-				"White.001": "#6fbf73",
-				"Orange": "#2a4a2a",
-				"Solveig_Cloak": "#4a3a24"
-			},
-			"emit": {
-				"Solveig_Ember": "#ff6a10"
-			},
-			"light": "#ff7a30",
-			"light_energy": 0.8,
 			"anims": {
 				"idle": "Staff_Idle",
 				"attack": [
 					"Spell_Simple_Shoot"
 				],
+				"cast": "Staff_Cast",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"run": "Staff_Run",
-				"walk": "Staff_Walk"
+				"walk": "Staff_Walk",
+				"run": "Staff_Run"
 			}
 		},
 		"placeholder_figure": true,
@@ -627,38 +581,20 @@
 			"ragnhild_truth_light"
 		],
 		"visual": {
-			"model": "torvald",
+			"model": "domare",
 			"weapons": {
-				"grip_r": "Mace",
-				"grip_l": "Shield"
-			},
-			"colors": {
-				"Torvald_Iron": "#c9ced6",
-				"Torvald_Edge": "#e0b24a",
-				"Torvald_Red": "#e8d8a0",
-				"Green.001": "#8c929e",
-				"Brown2.001": "#5a6070",
-				"Brown.002": "#3a3f4e",
-				"Vapen_Wood": "#e8d8a0",
-				"Vapen_Iron": "#e0b24a",
-				"Paladin_Cape": "#f2eee4",
-				"Paladin_Gold": "#ffd36a",
-				"Paladin_Sun": "#ffd36a"
-			},
-			"emit": {
-				"Paladin_Sun": "#d9a030"
+				"grip_r": "Mace"
 			},
 			"anims": {
-				"idle": "Shield_Idle",
+				"idle": "OneHand_Idle",
 				"attack": [
-					"Shield_Attack",
-					"Shield_Attack_B"
+					"OneHand_Attack"
 				],
+				"cast": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"block": "Shield_Block",
-				"run": "Run_Loop",
-				"walk": "Walk_Loop"
+				"walk": "Walk",
+				"run": "Run"
 			}
 		},
 		"placeholder_figure": true
@@ -688,37 +624,22 @@
 			"sefir_blade_whirl"
 		],
 		"visual": {
-			"model": "torvald",
+			"model": "svardsdansare",
 			"weapons": {
-				"grip_r": "Shortsword"
-			},
-			"colors": {
-				"Torvald_Iron": "#c9ced6",
-				"Torvald_Edge": "#e0b24a",
-				"Torvald_Red": "#b8302a",
-				"Green.001": "#8c929e",
-				"Brown2.001": "#5a6070",
-				"Brown.002": "#3a3f4e",
-				"Vapen_Wood": "#b8302a",
-				"Vapen_Iron": "#e0b24a",
-				"Paladin_Cape": "#d8603a",
-				"Paladin_Gold": "#ffd36a",
-				"Paladin_Sun": "#ffd36a"
-			},
-			"emit": {
-				"Paladin_Sun": "#d9a030"
+				"grip_r": "Shortsword",
+				"grip_l_hand": "Shortsword"
 			},
 			"anims": {
-				"idle": "Shield_Idle",
+				"idle": "OneHand_Idle",
 				"attack": [
-					"Shield_Attack",
-					"Shield_Attack_B"
+					"OneHand_Attack",
+					"OneHand_Attack_B"
 				],
+				"cast": "Spell_Simple_Shoot",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"block": "Shield_Block",
-				"run": "Run_Loop",
-				"walk": "Walk_Loop"
+				"walk": "Walk",
+				"run": "Run"
 			}
 		},
 		"placeholder_figure": true
