@@ -9,10 +9,19 @@ extends Node3D
 ##   cast:<skola>:<s>  ladda en besvärjelse så länge, sedan släpp
 ##   attack[:s]  hit[:s]  block:<s>  kick[:s]  idle:<s>  walk:<s>
 ##
-## Nya modeller utan data: --models=gast,haxa (spelar Idle_Loop/Sword_Idle och Sword_Attack).
+## Nya modeller utan data: --models=gast,haxa (spelar Idle och Sword_Attack, se MODEL_PREVIEW).
 ## Uppställning: --units=heroes, --units=enemies, --units=all eller --units=paladin,brokk,…
 ## visar flera figurer i rad (alla gör samma sekvens). --shot=<fil.png> sparar en bild efter
 ## --frames=<n> bildrutor och avslutar.
+
+## Vilo- och attackrörelser (och vapen) för --models, när filen inte har Idle (Idle_Loop).
+const MODEL_PREVIEW := {
+	"biskop": {"anims": {"idle": "Sword_Idle"}},
+	"fallen_riddare": {"anims": {"idle": "Shield_Idle", "attack": ["Shield_Attack"]}},
+	"bard": {"anims": {"idle": "Sword_Idle", "attack": ["Sword_Attack"]}},
+	"munk": {"anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack", "OneHand_Attack_B"]}},
+	"druid": {"weapons": {"grip_r": "Staff"}, "anims": {"idle": "Staff_Idle", "attack": ["Spell_Simple_Shoot"], "cast": "Staff_Cast"}},
+}
 
 var _model: UnitModel
 var _models: Array[UnitModel] = []
@@ -42,12 +51,12 @@ func _ready() -> void:
 				var id := "model:" + model_name
 				var base: Dictionary = data.enemies.values()[0].duplicate()
 				base.name = model_name
-				base.visual = {"model": model_name, "anims": {"idle": "Idle_Loop", "attack": ["Sword_Attack"],
-						"cast": "Spell_Simple_Shoot", "hit": "Hit_Chest", "death": "Death01", "walk": "Walk_Loop"}}
-				if model_name == "biskop":
-					base.visual.anims.idle = "Sword_Idle"
-				elif model_name == "fallen_riddare":
-					base.visual.anims.merge({"idle": "Shield_Idle", "attack": ["Shield_Attack"]}, true)
+				# Godot tar bort ändelsen _Loop vid import: Idle_Loop heter Idle, Walk_Loop Walk.
+				var preview: Dictionary = MODEL_PREVIEW.get(model_name, {})
+				var anims := {"idle": "Idle", "attack": ["Sword_Attack"], "cast": "Spell_Simple_Shoot",
+						"hit": "Hit_Chest", "death": "Death01", "walk": "Walk"}
+				anims.merge(preview.get("anims", {}), true)
+				base.visual = {"model": model_name, "anims": anims, "weapons": preview.get("weapons", {})}
 				data.enemies[id] = base
 				unit_ids.append(id)
 		elif arg.begins_with("--seq="):
