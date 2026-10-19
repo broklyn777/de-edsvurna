@@ -182,3 +182,23 @@ func test_same_seed_gives_the_same_map() -> void:
 	var a := RoomMap.generate(42, 1, false, _data.realms.crypt.pools[1], "crypt_2")
 	var b := RoomMap.generate(42, 1, false, _data.realms.crypt.pools[1], "crypt_2")
 	assert_eq(a.to_dict(), b.to_dict(), "kartan beror bara på fröet")
+
+
+## 0.18.4 fastnade i portalen: sidorummen finns inte bland kartans rum, så rumskartan ritar dem där
+## portalen står (room_map_screen._room_pos). Inne i portalen är sidorummet det enda valet.
+func test_portal_side_rooms_are_the_only_choice_inside_the_portal() -> void:
+	var found := 0
+	for seed_value in 200:
+		var s := _state()
+		s.start_expedition(_data, seed_value)
+		for r in s.map.all_rooms():
+			if r.kind != "portal" or r.step != 0:
+				continue
+			found += 1
+			s = _state()
+			s.start_expedition(_data, seed_value)
+			s.enter(r.id)
+			s.battle_won()
+			assert_eq(s.choices(), [r.side[1].id], "skatten är nästa val")
+			assert_true(s.map.room(s.choices()[0]).is_empty(), "sidorummet finns inte bland kartans rum")
+	assert_true(found > 0, "några kartor börjar med en portal")

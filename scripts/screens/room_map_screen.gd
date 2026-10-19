@@ -89,7 +89,8 @@ func _tap(p: Vector2) -> void:
 
 
 func _enter(id: String) -> void:
-	var kind: String = run.state.map.room(id).kind
+	# Inne i en portal är nästa rum ett sidorum, som inte finns bland kartans rum.
+	var kind: String = run.state.current_room().kind if run.state.side_index >= 0 else run.state.map.room(id).kind
 	if run.profile.room_moments and MOMENT_KINDS.has(kind):
 		await _play_moment(kind)
 	var r: Dictionary = run.enter_room(id)
@@ -147,6 +148,8 @@ func _room_pos(id: String) -> Vector2:
 	var area := _map_rect()
 	var columns := m.steps.size() + 1
 	var r := m.room(id)
+	if r.is_empty() and run.state.side_index >= 0:
+		return _room_pos(run.state.room_id)  # portalens sidorum spelas där portalen står
 	if r.is_empty():
 		return Vector2(-1000, -1000)
 	if r.kind == "end":
