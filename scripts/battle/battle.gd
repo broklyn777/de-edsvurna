@@ -12,6 +12,10 @@ extends Node
 
 ## Hur länge en tur får verka efter sista effekten innan nästa tur börjar (sekunder).
 const BEAT := 0.45
+## Vapnet i handen (visual.weapons.grip_r/grip_l) -> ljudet när figuren slår.
+const WEAPON_CUES := {"Greatsword": "atk_sword", "Longsword": "atk_sword", "Shortsword": "atk_sword",
+		"Spear": "atk_sword", "Greataxe": "atk_axe", "Handaxe": "atk_axe", "Maul": "atk_blunt",
+		"Mace": "atk_blunt", "Flail": "atk_blunt", "Staff": "atk_blunt"}
 ## Extra tid mellan effekter i en kedja, så att man hinner se dem i ordning.
 const CHAIN_STEP := 0.22
 const ERROR_TEXT := {"cooldown": "Inte redo än", "dead": "Hjälten har stupat", "none": "Ingen sådan förmåga",
@@ -84,7 +88,7 @@ func _ready() -> void:
 	_build_ui()
 	_update_rules_text()
 	get_viewport().size_changed.connect(_layout)
-	sfx.start_ambience("ambience_crypt", -11.0)
+	_start_music()
 	_layout()
 	if warp_turns > 0:
 		sim.begin()
@@ -320,7 +324,19 @@ func _on_rule(rule_id: String) -> void:
 ## En elitvariant är med i striden: skylt och ljudsignal.
 func _on_elite(unit_id: String) -> void:
 	overlay.announce("Elitfiende: %s!" % sim.unit(unit_id).name)
-	sfx.play("bloodlust", -4.0, 0.0)
+	sfx.play("elite_appears", -3.0, 0.0)
+
+
+## Musik och stämning efter Realm; bossmöten får bossmusik och en signal när bossen syns.
+func _start_music() -> void:
+	var chapel: bool = run.state.realm == "chapel"
+	sfx.start_ambience("ambience_chapel" if chapel else "ambience_crypt", -12.0 if chapel else -11.0)
+	var boss := sim.enemies.any(func(e: CombatUnit) -> bool: return data.enemies[e.kind].get("boss", false))
+	if boss:
+		run.audio.play_music("music_boss", -16.0, 1.0)
+		get_tree().create_timer(0.6).timeout.connect(sfx.play.bind("boss_appears", -2.0, 0.0))
+	else:
+		run.audio.play_music("music_chapel" if chapel else "music_crypt", -15.0)
 
 
 ## Raden med våningsreglerna (synliga och avslöjade dolda) uppe till höger.
@@ -419,7 +435,7 @@ func _run_macro() -> void:
 	if not d.ok:
 		if _auto:
 			_toggle_auto()
-		sfx.play("k_error", -6.0, 0.0)
+		sfx.play("macro_nomatch", -4.0, 0.0)
 		overlay.message("Inget makro passade – välj själv")
 		action_bar.show_for(u)
 		return
@@ -557,27 +573,58 @@ func _on_action(e: Dictionary) -> void:
 	if target_id != e.unit:
 		m.face(target_pos)
 	var school: String = ab.get("school", "physical")
+	var cue := _cue(e.unit, e.ability, ab)
 	if ab.get("melee", false):
 		m.attack(target_pos, 0.9)
 		_cursor = m.last_impact_delay
+		# vapenljudets träff ligger ~0,18 s in i filen: starta det så att träffen landar med slaget
+		_after(maxf(_cursor - 0.18, 0.0), sfx.play.bind(cue, -7.0, 0.06))
+		cue = ""
 	elif ab.get("travel", 0.0) > 0.0:
 		m.attack(target_pos, 0.15)
 		var release := maxf(m.last_impact_delay, 0.15)
+		if cue == "bow_shot":  # strängen släpps när pilen far iväg
+			_after(maxf(release - 0.05, 0.0), sfx.play.bind(cue, -6.0, 0.05))
+			cue = ""
 		var travel: float = ab.travel
 		var color := UiStyle.school_color(school)
 		for id in e.targets:
 			_after(release, func() -> void:
 				fx_layer.add_child(Fx.Projectile.new(_pos(e.unit), _pos(id), travel, color, 8.0)))
 		_cursor = release + travel
-	elif e.ability == "defend" or e.ability == "challenge":
+	elif e.ability == "defend":
 		m.set_blocking(true)
-		sfx.play("k_shield_wall", -4.0, 0.03)
 		_cursor = 0.15
 	else:
 		m.attack(target_pos, 0.1)
 		_cursor = maxf(m.last_impact_delay, 0.25)
+	if cue != "":
+		sfx.play(cue, -6.0, 0.05)
 	if e.action in ["ability", "artifact"] or (e.action == "intent" and e.ability != sim.unit(e.unit).attack_ability):
 		_float(e.unit, ab.name.to_upper(), UiStyle.GOLD if sim.unit(e.unit).team == 0 else Color("#ffb347"), 20, false)
+
+
+## Ljudet när handlingen börjar: förmågans "cue", annars vapnet (närstrid och båge) eller skolans
+## besvärjelse mot fiender. Träffen har sitt eget ljud ("sound").
+func _cue(unit_id: String, ability_id: String, ab: Dictionary) -> String:
+	if ab.has("cue"):
+		return ab.cue
+	var u := sim.unit(unit_id)
+	var vis: Dictionary = (data.heroes[u.id] if u.team == 0 else data.enemies[u.kind]).get("visual", {})
+	var hands: Dictionary = vis.get("weapons", {})
+	var weapon: String = hands.get("grip_r", hands.get("grip_l", ""))
+	var school: String = ab.get("school", "physical")
+	if ab.get("melee", false):
+		if school != "physical" and weapon == "":
+			return "spell_" + school
+		return WEAPON_CUES.get(weapon, "atk_sword")
+	if ability_id == "skip":
+		return ""
+	if school == "physical":
+		return "bow_shot" if hands.get("grip_l", "") in ["Longbow", "Shortbow"] else ""
+	if str(ab.get("target", "")).contains("enem"):
+		return "spell_" + school
+	return ""
 
 
 func _on_damage(e: Dictionary) -> void:
@@ -620,7 +667,7 @@ func _on_heal(e: Dictionary) -> void:
 	_float(e.target, "+" + str(int(e.effective)) + ("!" if e.crit else ""), UiStyle.school_color("heal"), 26 if e.crit else 22, e.crit)
 	if sim.unit(e.target).team == 0:
 		frames[e.target].on_heal()
-	sfx.play("heal", -6.0, 0.03)
+	sfx.play("heal_light", -6.0, 0.03)
 	models[e.target].flash_color(UiStyle.school_color("heal"))
 	fx_layer.add_child(_at(Fx.Ring.new(UiStyle.school_color("heal"), 10, 70, 0.45, 5.0, true), p))
 
@@ -675,7 +722,8 @@ func _on_outcome(result: String) -> void:
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
 	if result == "victory":
 		_slowmo_until = Time.get_ticks_msec() + 1200
-		sfx.play("victory", 0.0, 0.0)
+		run.audio.stop_music(0.8)
+		sfx.play("jingle_victory", -1.0, 0.0)
 		world.add_shake(10.0)
 		var title := "KRYPTAN RENSAD!" if run.state.is_last_floor() else "SEGER!"
 		if run.state.practice:
@@ -683,7 +731,8 @@ func _on_outcome(result: String) -> void:
 		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
 		overlay.lines = receipt()
 	else:
-		sfx.play("defeat", 0.0, 0.0)
+		run.audio.stop_music(1.5)
+		sfx.play("jingle_defeat", -1.0, 0.0)
 		overlay.set_result("defeat", "Sällskapet föll efter %d turer" % sim.turn_no)
 
 

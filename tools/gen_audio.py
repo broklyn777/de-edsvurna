@@ -21,7 +21,8 @@ import soundfile as sf
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "audio")
 KENNEY = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/Downloads/kenney")
-MSR = 22050   # musik och ambiens
+MSR = 22050   # musik
+ASR = 16000   # ambiens (mörkt och lågt, behöver inte mer; håller APK:n under gränsen)
 XSR = 32000   # handlingsljud
 rng = np.random.default_rng(17)
 
@@ -411,7 +412,7 @@ def music_boss():
 
 def ambience_chapel():
     """Kapellets stämning: avlägsen orgelton, viskningar, knarr och droppar i ett stort rum."""
-    sr = MSR
+    sr = ASR
     loop = 24.0
     n = int((loop + 5) * sr)
     buf = np.zeros(n)
@@ -670,11 +671,20 @@ def main():
     for name, fn in [("music_base", music_base), ("music_crypt", music_crypt),
                      ("music_chapel", music_chapel), ("music_boss", music_boss)]:
         x, sr = fn()
-        write(f"music/{name}.ogg", normalize(x, 0.8), sr, 0.15)
+        write(f"music/{name}.ogg", normalize(x, 0.8), sr, 0.08)
     x, sr = ambience_chapel()
-    write("ambience_chapel/ambience_chapel.ogg", normalize(x, 0.7), sr, 0.1)
+    write("ambience_chapel/ambience_chapel.ogg", normalize(x, 0.7), sr, 0.08)
+    # kryptstämningen från gen_sfx.py: wav -> ogg (sparar ~120 KiB i APK:n)
+    wav = os.path.join(OUT, "ambience_crypt.wav")
+    if os.path.exists(wav):
+        x, sr = sf.read(wav)
+        x = lowpass(x, 6000, sr)
+        n = int(len(x) * ASR / sr)
+        x = np.interp(np.arange(n) * sr / ASR, np.arange(len(x)), x)
+        write("ambience_crypt/ambience_crypt.ogg", x, ASR, 0.08)
+        os.remove(wav)
 
-    q = 0.3
+    q = 0.2
     for v in range(3):
         write(f"atk_sword/atk_sword_{v}.ogg", attack_sword(v), XSR, q)
         write(f"atk_axe/atk_axe_{v}.ogg", attack_axe(v), XSR, q)
@@ -698,9 +708,9 @@ def main():
     # menyljud: Kenney-filerna rakt av (redan små ogg)
     ui = {"ui_tap": ["select_001", "select_002", "select_003"], "ui_back": ["back_001", "back_002"],
           "ui_confirm": ["confirmation_001", "confirmation_002"], "ui_toggle": ["toggle_001", "toggle_002"],
-          "ui_page": ["bookFlip1", "bookFlip2", "bookFlip3"], "ui_coins": ["handleCoins", "handleCoins2"],
+          "ui_page": ["bookFlip2", "bookFlip3"], "ui_coins": ["handleCoins2"],
           "ui_forge": ["impactMetal_heavy_000", "impactMetal_heavy_002", "impactMetal_heavy_004"],
-          "ui_door": ["doorOpen_1", "doorOpen_2"]}
+          "ui_door": ["doorOpen_1"]}
     for folder, names in ui.items():
         for nm in names:
             src = glob.glob(os.path.join(KENNEY, "**", nm + ".ogg"), recursive=True)[0]

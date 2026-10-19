@@ -33,7 +33,7 @@ Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla 
 - `assets/audio/k_*/` – Kenney "RPG Audio", "Impact Sounds", "Interface Sounds" (kenney.nl), CC0 1.0.
   Licens: `assets/audio/KENNEY_LICENSE.txt`.
 - `assets/audio/*.wav` – syntetiserade i `tools/gen_sfx.py` (egna).
-- `assets/audio/music/*.ogg`, `ambience_chapel/` – egenkomponerade och syntetiserade i `tools/gen_audio.py`
+- `assets/audio/music/*.ogg`, `ambience_chapel/`, `ambience_crypt/` (från gen_sfx.py, omkodad) – egenkomponerade och syntetiserade i `tools/gen_audio.py`
   (egna). Kapellstämningen har knarr ur Kenney "RPG Audio" (`creak1–3`), CC0 1.0.
 - Handlingsljud byggda i `tools/gen_audio.py` (egna synteslager blandade med Kenney-inspelningar, CC0 1.0):
   | Mapp | Egen syntes | Kenney-filer (paket) |
@@ -50,7 +50,7 @@ Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla 
   | `trophy_*/`, `elite_appears/`, `boss_appears/`, `jingle_victory/`, `jingle_defeat/`, `macro_nomatch/` | allt (egen musik) | trophy_boss: impactBell_heavy_000 (Impact Sounds) |
 - `assets/audio/ui_*/` – Kenney-filer oförändrade, CC0 1.0: `ui_tap` (select_001–003), `ui_back` (back_001–002),
   `ui_confirm` (confirmation_001–002), `ui_toggle` (toggle_001–002) ur "Interface Sounds"; `ui_page`
-  (bookFlip1–3), `ui_coins` (handleCoins, handleCoins2), `ui_door` (doorOpen_1–2) ur "RPG Audio";
+  (bookFlip2–3), `ui_coins` (handleCoins2), `ui_door` (doorOpen_1) ur "RPG Audio";
   `ui_forge` (impactMetal_heavy_000/002/004) ur "Impact Sounds". Hämtade från kenney.nl 2026-10-19.
 - `assets/audio/voice/*.mp3` – användarens egna röstrepliker, gjorda i ElevenLabs.
   **Kontrollera att ElevenLabs-planen tillåter kommersiell användning före release.**

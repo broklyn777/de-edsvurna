@@ -1,15 +1,21 @@
 # Ljud och musik – mappning
 
-Nya ljud (oktober 2026, gren `claude/ljud-musik-b526c1`). Ingenting är inkopplat ännu; den här filen
-säger var varje ljud ska höra hemma. Källor och licenser: `ASSETS_LICENSE.md`. Allt byggs om med
+Inkopplat i 0.17.2. Den här filen säger var varje ljud hör hemma. Källor och licenser: `ASSETS_LICENSE.md`. Allt byggs om med
 `tools/gen_audio.py` (kräver numpy och soundfile, se filhuvudet).
 
-Alla nya ljud ligger i **mappar** (`assets/audio/<namn>/`), så `sfx.play("<namn>")` fungerar redan i dag och
-slumpar mellan varianterna. Totalt 1,13 MiB, 67 filer (ogg Vorbis).
+Alla nya ljud ligger i **mappar** (`assets/audio/<namn>/`), så `sfx.play("<namn>")` slumpar mellan
+varianterna. Totalt cirka 0,9 MiB ogg Vorbis. Kontrollera inkopplingen med `-- --log-sfx`.
+
+**Så är det inkopplat:** `Run.audio` (en `Sfx` i autoloaden) spelar musiken och menyljuden.
+Basens skärmar startar `music_base` och ger `ui_tap` efter varje tryck som inte redan lät; `Run.go()`,
+`save(sound)`, `start_run()` m.fl. ger de särskilda menyljuden. Striden väljer musik och stämning efter
+Realm och boss (`_start_music`), och spelar förmågans `cue` (eller vapnets/skolans ljud, `_cue`) när
+handlingen börjar och `sound` när den träffar. Troféljudet spelas i `Run.battle_finished()` efter den
+finaste trofén i erbjudandet. Natur-ljuden finns men exporteras inte förrän någon förmåga använder dem.
 
 ## Musik (`assets/audio/music/`)
 
-Mono 22 kHz, låg bitrate, 27–34 s långa loopar. Efterklangen är vikt tillbaka till början, så de loopar
+Mono 22 kHz (stämningarna 16 kHz), låg bitrate, 27–34 s långa loopar. Efterklangen är vikt tillbaka till början, så de loopar
 sömlöst om man sätter `loop = true` på `AudioStreamOggVorbis` (i koden eller i importinställningen).
 
 | Fil | Karaktär | Var |
@@ -87,7 +93,7 @@ inte), bara träffljudet. Hjälpregel: **kastljudet** spelas när figuren svinga
 
 Föreslagna nivåer: `ui_*` −10 dB, troféer −4 dB, stingers −2 dB, handlingar som i dag (−6/−2 vid krit).
 
-## Svaga ljud som kan tas bort när de nya är inkopplade
+## Gamla ljud som inte längre exporteras (exclude_filter)
 
 `heal.wav`, `pyro_impact.wav`, `volley_impact.wav`, `victory.wav`, `defeat.wav` (syntetiserade
 platshållare från WoW-prototypen). Redan oanvända i dag och kan tas bort direkt (cirka 0,4 MiB, mer
