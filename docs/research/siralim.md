@@ -851,6 +851,100 @@ Anointments låter en låna perks från andra Specializations efter segrar mot F
 - Guiden rekommenderar Cleric för den som vill tanka och Monk för den som vill undvika. Det stöder
   §4 i `siralim_0.19.md` (tank som byggd roll).
 
+## 14. Hur varelser blir starkare, och hur man ser det (2026-10-19)
+
+VD:ns fråga (bara diskussion): hur bygger man upp HP och styrka, vad bygger man utöver troféerna, och hur
+ser man hur en karaktär är uppbyggd? Hos oss är hjältarnas grundstats fasta. Bara artefaktens stat och
+perks höjer dem, och fienderna skalar med djupet.
+
+### 14.1 Nivåer
+
+| Regel | Säkerhet |
+|---|---|
+| Varelser får erfarenhet när en strid vinns. | Bekräftat (Codex) |
+| Varje nivå höjer varje stat med 30 % av basvärdet (värdet på nivå 1). Personligheten gör att en stat växer 40 % och en annan 20 %. | Bekräftat (Codex) |
+| Det finns inget nivåtak. Fienderna skalar också utan tak. | Bekräftat (wiki) |
+| Fienderna stiger i nivå mycket snabbare än ens varelser. Svaret är nya traits och synergi, inte grind. | Bekräftat (wiki FAQ) |
+| Fiendernas nivå följer Realm Depth, och djupet väljer man själv (låga djup går att använda för att träna). | Troligt (spelare) |
+| Från djup 40 kan man betala Power för att höja en varelse till den högsta nivå man har nått (hos Fusionist), så att nya varelser inte behöver tränas från noll. | Bekräftat (wiki Starter guide); var det sker: Troligt |
+| I Gate of the Gods skalas alla till nivå 100. | Bekräftat (Codex) |
+
+### 14.2 Andra källor till stats
+
+| Källa | Hur | Säkerhet |
+|---|---|---|
+| **Personlighet** | 20 sorter. Den ändrar inte stats direkt, bara tillväxten per nivå (+40 % / 20 % i stället för 30 %). Kan bytas med en Personality Tome, och då räknas allt om bakåt. Pilar vid stats visar vilka som påverkas. | Bekräftat (Codex) |
+| **Artefakt** | Typen ger en stat. Uppgradering till nivå 50 stärker allt. Upp till 4 Stat Slots (Amber) med en eller två stats var. Buffen Proficient ger +30 % från Stat Slots. Health fungerar som en ökning vid stridens start. | Bekräftat (Codex, wiki) |
+| **Kort (Cards)** | Varje kort ger en liten stat-bonus efter klass. Kompletta kortsamlingar ger en passiv bonus. Dubbletter ger stats men inte samlingsbonus. | Bekräftat (Codex) |
+| **Reliker** (slutspel) | Stat-bonus till den varelse reliken är fäst vid, och en perk per 10 ranker. Med "Synergy" får alla varelser stat-bonusen från alla reliker. | Bekräftat (Codex) |
+| **Nether Stones** (slutspel) | Kan ge stora stat-ökningar och flera traits. | Bekräftat (Codex) |
+| **Stat scrolls** | Projects-uppdraget Training ger 3 stat scrolls. | Bekräftat (wiki Projects); exakt effekt: Okänt |
+| **Mastery** (per ras) | Mer skada och mindre skada tagen, inga stats. | Bekräftat |
+| **Traits och perks** | Ändrar oftast stats i striden (t.ex. +35 % Attack efter en cast), inte grundvärdet. *Seraphim* (Paladin) lägger Defense på Health vid start. | Bekräftat |
+| **Spell Properties** | Påverkar besvärjelser, inte varelsens stats. | Bekräftat |
+
+Det finns ingen "träning" i slottet som köps med pengar, utom nivå-upphämtningen för Power och Projects
+som ger scrolls. Styrkan byggs över tid genom nivåer, artefakter och samlingar, och i varje strid genom
+traits.
+
+### 14.3 Att granska en varelse
+
+- Siralim har **inget karaktärsblad med många värden** (ingen styrka, smidighet osv. som i D&D). Det
+  finns bara fem stats: Health, Attack, Intelligence, Defense och Speed. Bekräftat (Codex).
+- Varelsens skärm visar nivå, klass och ras, de fem värdena med personlighetens pilar (upp och ned),
+  traits (egen, ihopsmält, artefaktens), artefakten och dess egenskaper, och Spell Gems med Charges.
+  Delarna: Bekräftat (Codex). Exakt layout: Troligt.
+- I striden visar Inspect fiendens stats, traits, artefakt, Spell Gems, buffar, debuffar och minions.
+  Liv syns först från Knowledge-rang E. Håll F för varaktigheter och Realm Properties. Bekräftat (Codex).
+- **Krit- och undvikandechans visas inte som procent.** De beror på Speed mot det aktuella målet, och
+  formeln är inte publicerad. Troligt (wiki: "formeln är okänd", spelare: "ingen fast procent att se").
+
+### 14.4 Trait Materials kontra troféer
+
+- Trait Materials är **sällsynta** i Siralim: "extremely difficult to find". De kommer från Masters (efter
+  3 segrar, sedan en chans per seger) och Assassination-uppdrag (Knowledge-rang S). En varelse kan bära
+  bara ett (artefaktens Trait Slot). Bekräftat (Codex).
+- Däremot får man **många varelser**. Nästan varje besegrad varelse ger Mana, och vid 100 % kan man kalla
+  fram den, med dess trait. Man äger hundratals men använder sex. Bekräftat (Codex).
+- Våra troféer motsvarar alltså två saker: den täta strömmen av nya varelser (nya traits att välja
+  bland) och, för bosstroféerna, de sällsynta Trait Materials (3 segrar, beslut §4 i
+  `siralim_innehall.md`). **Att det kommer många troféer stämmer med originalet**, så länge man bara kan
+  bära en per hjälte. Samlingen ska kännas som Siralims Bestiary, inte som en ryggsäck.
+
+### 14.5 Slottet mellan våningarna
+
+- I Siralim är en Realm en sammanhängande karta utan våningar. Man går inte hem mitt i den. När Realm
+  Quest är klar väljer man vid Teleportation Shrine: en ny Realm direkt, eller hem till slottet.
+  Bekräftat (Codex).
+- Hos oss (0.18.5) går körningen redan från våning till våning via lägret och rumskartan, och man kommer
+  hem till basen först när sista våningen är klar eller sällskapet faller. **Det stämmer med
+  originalet.**
+- Skillnad (Okänt om det behövs): Siralim låter en gå direkt till nästa Realm utan att åka hem. Hos oss
+  går man alltid hem efter körningen.
+
+### 14.6 Vad vi saknar jämfört med originalet
+
+Bara sådant som finns i Siralim. Varje anpassning är märkt.
+
+1. **Nivåer och erfarenhet** (originalet). Hjältarna får erfarenhet av vunna strider, och varje nivå ger
+   +30 % av basvärdet. Fienderna skalar med djupet som i dag. *Anpassning (vårt val):* ett tak per djup
+   (t.ex. nivå = 5 × högsta klarade djup), eftersom våra körningar är få och korta och fria nivåer annars
+   gör djup 1–2 betydelselösa. Motivering: Siralims eget svar är att fienderna växer snabbare, vilket är
+   svårt att få rätt med få strider.
+2. **Personlighet per hjälte** (originalet). Passar namngivna personer extra bra: Brokk "Envis"
+   (Health 40 %, Speed 20 %), Eira "Rastlös" (Speed 40 %, Defense 20 %) … Kan bytas med en Personality
+   Tome från skattkammare. Syns som pilar vid stats.
+3. **Nivå-upphämtning i basen** (originalet: Power-uppgradering hos Fusionist). En ny följeslagare från
+   Värdshuset kan höjas till sällskapets högsta nivå för silver, så att den inte måste tränas från noll.
+4. **Artefaktnivåer och Stat Slots hos Smeden** (originalet). I dag ger en artefakt +5 % eller +10. Med
+   nivåer och Stat Slots (Amber) blir Smeden platsen där man bygger upp stats över tid.
+5. **Hjältens blad** (originalet). En skärm per hjälte med nivå, de fem stats och personlighetens pilar,
+   egen egenskap, trofé och artefakt, och förmågor med Charges. Ingen procent för krit eller undvikande,
+   som i originalet. *Möjligt eget tillägg, inte rekommenderat nu:* en hjälptext "Snabbare än målet ger
+   högre krit- och undvikandechans".
+6. **Senare, i originalets ordning:** kort (stat-bonus per fiende och samlingsbonus, passar Bestiariet),
+   stat scrolls via Byggmästarens projekt, och reliker.
+
 ---
 
 ## Källor
