@@ -334,7 +334,97 @@ Samspel: Brokk eller en provocerande tank som samlar träffarna, och Väktarens 
 någon flyttas till toppen. Behåll därför vår `TURN_LIMIT` och `once_per_turn`, så att det inte blir
 oändliga turer. Samspel: krit-troféer, Eiras och Ronjas märken.
 
-### Motorbehov, i ordning efter hur många som behöver dem
+## 4. Tank som byggd roll: Taunting och Intercept (beslut, Huvudtråden, 2026-10-19)
+
+Användaren: "vi håller oss till Siralims regler där tank är en roll man bygger och inte en klass."
+Siralims klasser (Life, Nature, Chaos, Death, Sorcery) är magiska riktningar, inte roller. Man tankar
+med Provoke, Defend, Taunting och traits som tar skada åt andra. Spells mot hela laget och Indirect
+Damage går förbi tanken (Bekräftat, Codex och wiki). Båda delarna kommer i 0.19.
+
+### 4.1 Taunting
+
+Siralim (Bekräftat, wiki Buffs): *Taunting* – "Automatically Provokes at end of turn", 3 turer.
+
+```json
+"taunting": {"name": "Utmanande", "duration": 3, "buff": true, "auto_provoke": true}
+```
+
+Brokks nya förmåga (få Charges, som Siralims buff-spells på 4–5):
+
+```json
+"challenge_roar": {
+	"name": "Utmaningsvrål", "target": "self", "kind": "spell", "charges": 4,
+	"icon": "shield", "sound": "war_cry",
+	"text": "Brokk blir Utmanande i 3 turer: han provocerar automatiskt i slutet av varje egen tur.",
+	"effects": [{"type": "aura", "aura": "taunting"}]
+}
+```
+
+Brokk får då tre förmågor: `stone_wall`, `war_cry` och `challenge_roar`. Det är Siralims tak på tre.
+
+Vanlig trofé från Gravväktaren (väktartypen). Den ersätter inte `warden_helm`. Den läggs till som andra
+trofé från en annan väktartyp, eller som elitvariantens trofé:
+
+```json
+"wardens_challenge": {
+	"name": "Väktarens utmaning", "trophy": true, "original": "Taunting (buff)",
+	"text": "Bäraren börjar striden Utmanande (provocerar automatiskt i slutet av sina turer i 3 turer).",
+	"trigger": "battle_start",
+	"effects": [{"type": "aura", "aura": "taunting", "target": "self"}]
+}
+```
+
+Regler (vårt val, nära originalet):
+- Auto-provoke sker i slutet av ägarens tur, efter handlingen. Hen får alltså både anfalla och provocera.
+  Det räknas inte som en Provoke-handling (ingen Action Limit), men triggar `aura_applied` med
+  `provoke`, så att Hjälm-artefakten, Väktarens ed och *War Machine* slår till som i Siralim.
+- Makron: `has_status` / `lacks_status` med `taunting` finns redan i `macro_runner.gd`
+  (`x.auras.has(v)`). Statusen måste bara läggas till i makroredigerarens lista med namnet "Utmanande".
+
+### 4.2 Intercept
+
+Siralim (Bekräftat, Codex): Nether Bossen *Ceaseless Gladiator* – "This creature intercepts all damage
+dealt to its allies". Byggguiden (Troligt) nämner Pegasus för att omdirigera dödande slag.
+
+Elittrofé från Fallen riddare. Fallen riddare har i dag `fallen_oath` som vanlig trofé och
+elitvarianten Edsbrytare har `heart_of_chaos`. Förslag: Intercept blir **en andra elittrofé** som
+erbjuds bredvid `heart_of_chaos`, eller ersätter den om elitvarianten bara ska ha en.
+
+```json
+"shield_bearer": {
+	"name": "Sköldbärarens ed", "trophy": true, "original": "Ceaseless Gladiator: intercept",
+	"text": "Bäraren tar 50 % av skadan som riktas mot den allierade som har lägst liv i procent.",
+	"trigger": "modify_damage_taken", "scope": "party",
+	"when": {"target": "weakest_ally_of_bearer", "target_not_bearer": true, "source": "enemy"},
+	"modify": {"redirect_to": "bearer", "redirect_pct": 0.5}
+}
+```
+
+**Lägst liv i procent, inte absolut.** Skälen:
+
+1. *Den som är i fara skyddas.* Med absolut liv skulle Solveig (600 max) alltid vara "svagast", även när
+   hon har fullt liv och Brokk har 200 kvar. Procent pekar på den som faktiskt håller på att falla.
+2. *Det är samma mått som resten av spelet.* Motorns `weakest_ally` är redan lägst `hp_pct()`, och
+   Siralims makrovillkor räknas i procent (`has < X% Health`). Spelaren kan förutse vem som skyddas.
+3. *Det flyttas under striden.* Vem som skyddas byter när liv förändras. Det gör trofén till ett
+   aktivt samspel med helning, inte en fast livvakt.
+4. Vid lika procent väljs den med lägst absolut liv, sedan platsordningen. Bäraren själv räknas aldrig,
+   och inte heller döda.
+
+Regler (vårt val):
+- Gäller direkt skada (attack och spell), inte Indirect Damage. Det motsvarar Siralim, där indirekt
+  skada går sin egen väg.
+- Den omdirigerade delen räknas mot bärarens Defense (bäraren tar skadan som om hen blivit träffad, utan
+  krit och undvikande). Det gör en tank med Defend eller Barrier till rätt bärare.
+- Omdirigerad skada triggar inte "efter att ha tagit skada"-traits hos bäraren, utom Retribution
+  (Hämndens ed) och Thorns (Väktarens ed). Det är vårt val, så att kedjorna inte exploderar. Siralims
+  regel är okänd.
+- **Logg:** en egen händelse
+  `{"type": "redirect", "from": <målet>, "to": <bäraren>, "amount": <omdirigerat>, "trait": "shield_bearer"}`.
+  Text i loggen: "Brokk tar 84 av skadan åt Solveig (Sköldbärarens ed)". Den syns också i
+  efterrapporten och Krönikan (`trait_stats.damage` räknar omdirigerad skada som skyddad).
+
+## 5. Motorbehov för §3–4, i ordning efter hur många som behöver dem
 
 1. **Effekten `timeline`** (`to_top` / `move: n`): Ronja, Lirien, Sefir. Siralim har samma regler:
    en boss flyttas bara ett steg.
@@ -345,6 +435,10 @@ oändliga turer. Samspel: krit-troféer, Eiras och Ronjas märken.
 5. **Triggern `intent_chosen`:** Ronja. Den kan också ge bossar svar på avsikter.
 6. **Villkor och fält:** `aura_is_buff`, `event_aura`, `self_has_stack`, `per_stack`,
    `stat_owner`, och flera triggers i ett trait.
+7. **Auran `auto_provoke`** (Taunting, §4.1): Provoke i slutet av ägarens tur som triggar `aura_applied`,
+   men inte räknas som handling. Plus statusen "Utmanande" i makroredigeraren.
+8. **`modify_damage_taken` med redirect** (Intercept, §4.2): dela upp skadan före Defense, låt bäraren
+   ta sin del mot sin egen Defense, och skicka händelsen `redirect` till loggen.
 
 ## Källor
 
