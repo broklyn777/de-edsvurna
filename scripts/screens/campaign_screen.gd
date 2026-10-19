@@ -129,7 +129,7 @@ func _tap(p: Vector2) -> void:
 			return
 	if _prep_rect().has_point(p):
 		run.go(run.START_SCENE)
-	elif _start_rect().has_point(p) and prof.party.size() == RunState.PARTY_SIZE:
+	elif _start_rect().has_point(p) and prof.party.size() >= RunState.MIN_PARTY:
 		run.ui("ui_door", -8.0)
 		_zoom_t = 0.0
 
@@ -332,9 +332,17 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 			Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 	UiStyle.text(self, Vector2(x, y + 22), "Perk-poäng: %d (en per ny quest)" % prof.perk_points(), 14,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
+	# 0.23: lärjungar som sitter fångna här syns i förväg (Siralims varelser hör till sina Realms).
+	var captives: Array[String] = []
+	for d in data.realms[prof.realm].get("disciples", []):
+		if not prof.recruited.has(d.hero):
+			captives.append("%s (djup %d)" % [data.heroes[d.hero].get("short", d.hero), int(d.depth)])
+	if not captives.is_empty():
+		UiStyle.text(self, Vector2(x, y + 46), "Sägs sitta fången här: " + ", ".join(captives), 15, Color("#ffd27a"),
+				HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 
 	var companions: Array = prof.party.slice(1).map(func(id: String) -> String: return data.heroes[id].name)
 	UiStyle.text(self, Vector2(x, _prep_rect().position.y - 10), "Sällskap: Paladinen, " + ", ".join(companions), 13,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 	small_button(_prep_rect(), "FÖRBEREDELSER")
-	UiStyle.big_button(self, _start_rect(), "IN I " + str(realm.short).to_upper(), _t, prof.party.size() == RunState.PARTY_SIZE)
+	UiStyle.big_button(self, _start_rect(), "IN I " + str(realm.short).to_upper(), _t, prof.party.size() >= RunState.MIN_PARTY)

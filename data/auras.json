@@ -307,5 +307,15 @@
 		"text": "Förstenad: kan inte undvika eller krita. Resistent: 50 % lägre chans.",
 		"glyph": "shield",
 		"stone": true
+	},
+	"rootling": {
+		"name": "Rotskott",
+		"duration": 3,
+		"buff": true,
+		"stacking": "stack",
+		"max_stacks": 3,
+		"root_thorns": 0.15,
+		"text": "Rotskott: när bäraren tar en direkt träff slår rötterna angriparen för 15 % av källans Intelligence per stapel.",
+		"glyph": "drop"
 	}
 }

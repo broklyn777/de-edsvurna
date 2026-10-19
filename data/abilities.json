@@ -670,5 +670,394 @@
 				"power": 0.5
 			}
 		]
+	},
+	"talon_strike": {
+		"name": "Klohugg",
+		"target": "enemy",
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"falcon_dive": {
+		"name": "Dykattack",
+		"target": "enemy",
+		"charges": 8,
+		"icon": "daggers",
+		"button_color": "#c9a46a",
+		"melee": false,
+		"text": "Falken dyker: 120 % skada, 50 % mer mot Märkta.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.2,
+				"bonus_if_aura": {
+					"marked": 1.5
+				}
+			}
+		]
+	},
+	"scout_flight": {
+		"name": "Spejarflykt",
+		"target": "all_enemies",
+		"kind": "spell",
+		"charges": 5,
+		"icon": "diamond",
+		"button_color": "#c9a46a",
+		"text": "Alla fiender blir Märkta (tar 20 % mer skada) i 2 turer.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "marked",
+				"duration": 2
+			}
+		]
+	},
+	"wing_shadow": {
+		"name": "Vingskugga",
+		"target": "ally",
+		"kind": "spell",
+		"charges": 6,
+		"icon": "bolt",
+		"button_color": "#c9a46a",
+		"text": "En allierad blir Smidig (25 % extra undvikande) i 2 turer.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "agile",
+				"duration": 2
+			}
+		]
+	},
+	"dissonance": {
+		"name": "Dissonans",
+		"target": "enemy",
+		"school": "holy",
+		"sound": "k_shield_wall",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"battle_song": {
+		"name": "Stridssång",
+		"target": "ally",
+		"kind": "spell",
+		"charges": 6,
+		"icon": "daggers",
+		"button_color": "#9fd3ff",
+		"text": "En allierad får Styrka (nästa anfall +30 %) i 3 turer.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "inspired",
+				"duration": 3
+			}
+		]
+	},
+	"lullaby": {
+		"name": "Vaggvisa",
+		"target": "enemy",
+		"kind": "spell",
+		"charges": 5,
+		"icon": "diamond",
+		"button_color": "#9fd3ff",
+		"text": "En fiende somnar i högst 2 turer (vaknar av skada).",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sleeping",
+				"duration": 2
+			}
+		]
+	},
+	"heroes_ballad": {
+		"name": "Hjältens ballad",
+		"target": "ally",
+		"kind": "spell",
+		"charges": 4,
+		"icon": "bolt",
+		"button_color": "#9fd3ff",
+		"text": "En allierad flyttas överst på tidslinjen och får nästa tur.",
+		"effects": [
+			{
+				"type": "to_top"
+			}
+		]
+	},
+	"palm_strike": {
+		"name": "Handflata",
+		"target": "enemy",
+		"sound": "k_hero_hit",
+		"melee": true,
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"wind_step": {
+		"name": "Vindsteg",
+		"target": "self",
+		"kind": "spell",
+		"charges": 6,
+		"icon": "bolt",
+		"button_color": "#e2b36b",
+		"text": "Tove blir Smidig i 3 turer och provocerar.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "agile"
+			},
+			{
+				"type": "aura",
+				"aura": "provoke"
+			}
+		]
+	},
+	"pressure_point": {
+		"name": "Tryckpunkt",
+		"target": "enemy",
+		"charges": 8,
+		"icon": "daggers",
+		"button_color": "#e2b36b",
+		"melee": true,
+		"text": "Anfall 100 %; målet blir Hånat (kan inte anfalla) i 1 tur.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			},
+			{
+				"type": "aura",
+				"aura": "scorned"
+			}
+		]
+	},
+	"still_water": {
+		"name": "Stilla vatten",
+		"target": "self",
+		"kind": "spell",
+		"charges": 6,
+		"icon": "shield",
+		"button_color": "#e2b36b",
+		"text": "Tove försvarar sig och blir av med alla debuffar.",
+		"effects": [
+			{
+				"type": "purge",
+				"count": 99
+			},
+			{
+				"type": "aura",
+				"aura": "defend"
+			}
+		]
+	},
+	"thorn_whip": {
+		"name": "Tornpiska",
+		"target": "enemy",
+		"school": "nature",
+		"sound": "nature_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"snaring_roots": {
+		"name": "Snärjande rötter",
+		"target": "enemy",
+		"kind": "spell",
+		"school": "nature",
+		"charges": 6,
+		"icon": "bolt",
+		"button_color": "#6fbf73",
+		"text": "En fiende blir Snärjd: fast längst ned på tidslinjen i 2 turer.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "snared",
+				"duration": 2
+			}
+		]
+	},
+	"leaf_shield": {
+		"name": "Lövskydd",
+		"target": "ally",
+		"kind": "spell",
+		"school": "nature",
+		"charges": 6,
+		"icon": "shield",
+		"button_color": "#6fbf73",
+		"text": "En allierad får en Barriär (100 % av Huldas Intelligence).",
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "intelligence",
+				"pct": 1.0
+			}
+		]
+	},
+	"spore_ring": {
+		"name": "Svampring",
+		"target": "all_enemies",
+		"kind": "spell",
+		"school": "nature",
+		"charges": 5,
+		"icon": "drop",
+		"button_color": "#6fbf73",
+		"text": "Alla fiender blir Förgiftade (30 % av Huldas Attack per tur) i 3 turer.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "poisoned"
+			}
+		]
+	},
+	"gavel_strike": {
+		"name": "Klubbslag",
+		"target": "enemy",
+		"school": "holy",
+		"sound": "k_hero_hit",
+		"melee": true,
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"brand": {
+		"name": "Brännmärke",
+		"target": "enemy",
+		"kind": "spell",
+		"school": "holy",
+		"charges": 6,
+		"icon": "skull",
+		"button_color": "#ffd27a",
+		"text": "Fienden blir Fördärvad (helning skadar i stället) och Sårbar i 2 turer.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "blighted",
+				"duration": 2
+			},
+			{
+				"type": "aura",
+				"aura": "vulnerable",
+				"duration": 2
+			}
+		]
+	},
+	"dispel_lie": {
+		"name": "Skingra lögnen",
+		"target": "enemy",
+		"kind": "spell",
+		"school": "holy",
+		"charges": 6,
+		"icon": "cross",
+		"button_color": "#ffd27a",
+		"text": "Tar bort alla buffar från en fiende.",
+		"effects": [
+			{
+				"type": "dispel",
+				"only": "buff"
+			}
+		]
+	},
+	"light_wave": {
+		"name": "Ljusvåg",
+		"target": "all_enemies",
+		"kind": "spell",
+		"school": "holy",
+		"tier": "moderate",
+		"charges": 5,
+		"icon": "cross",
+		"button_color": "#ffd27a",
+		"sound": "k_shield_wall",
+		"text": "Helig skada (70 %) på alla fiender.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.7
+			}
+		]
+	},
+	"scimitar": {
+		"name": "Kroksabel",
+		"target": "enemy",
+		"sound": "k_hero_hit",
+		"melee": true,
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"dancing_steel": {
+		"name": "Dansande stål",
+		"target": "enemy",
+		"charges": 8,
+		"icon": "daggers",
+		"button_color": "#ff6f61",
+		"melee": true,
+		"text": "Två hugg à 60 % mot samma mål.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.6
+			},
+			{
+				"type": "damage",
+				"power": 0.6
+			}
+		]
+	},
+	"wind_stride": {
+		"name": "Vindens steg",
+		"target": "self",
+		"kind": "spell",
+		"charges": 5,
+		"icon": "bolt",
+		"button_color": "#ff6f61",
+		"text": "Sefir flyttas överst på tidslinjen och blir Vildsint (25 % extra krit) i 2 turer.",
+		"effects": [
+			{
+				"type": "to_top"
+			},
+			{
+				"type": "aura",
+				"aura": "savage",
+				"duration": 2
+			}
+		]
+	},
+	"thousand_cuts": {
+		"name": "Tusen snitt",
+		"target": "all_enemies",
+		"charges": 3,
+		"icon": "drop",
+		"button_color": "#ff6f61",
+		"melee": true,
+		"text": "30 % skada på alla fiender, som börjar Blöda i 2 turer.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.3
+			},
+			{
+				"type": "aura",
+				"aura": "bleeding",
+				"duration": 2
+			}
+		]
 	}
 }

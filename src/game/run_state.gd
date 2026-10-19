@@ -7,7 +7,9 @@ extends RefCounted
 
 ## Kryptans våningar (standard). Varje Realm har sina i data/realms.json.
 const FLOORS := ["crypt_1", "crypt_2", "crypt_3"]
+## Största sällskapet (Paladinen + 3). 0.23: det minsta är Paladinen + 1.
 const PARTY_SIZE := 4
+const MIN_PARTY := 2
 const OFFER_SIZE := 3
 ## Troféchans (Realm Depth ger bättre byte): första trofén efter en seger är säker, varje ytterligare
 ## plats i erbjudandet kommer med den här chansen, +15 procentenheter per djup över 1.
@@ -75,6 +77,8 @@ var finished := false
 var trait_totals := {}
 ## Fynden i körningen (0.20), visas på rumskartan: bärnsten, trick och Nether Stones.
 var found := {"amber": 0, "trick": 0, "nether": 0}
+## 0.23: fångar på våningarna, floor (som text) -> {hero, first}. Den första är tidig och obevakad.
+var prisoners := {}
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -87,7 +91,22 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.depth = profile.depth
 	s.set_realm(data, profile.realm)
 	s.fill_charges(data)
+	s.place_prisoners(data, profile.recruited)
 	return s
+
+
+## Lärjungar som sitter fångna i den här Realmen på det här djupet (0.23, Siralims varelser per Realm):
+## de man inte redan har och vars djup är nått, högst en per våning.
+func place_prisoners(data: Dictionary, recruited: Array) -> void:
+	prisoners.clear()
+	for d in data.realms[realm].get("disciples", []):
+		if recruited.has(d.hero) or depth < int(d.depth):
+			continue
+		var f := clampi(int(d.floor), 0, floor_ids.size() - 1)
+		while prisoners.has(str(f)) and f < floor_ids.size() - 1:
+			f += 1
+		if not prisoners.has(str(f)):
+			prisoners[str(f)] = {"hero": d.hero, "first": d.get("first", false)}
 
 
 ## En strid i Övningsgården: samma sällskap, makron och artefakter, troféer ur samlingen och fulla
@@ -102,6 +121,14 @@ static func new_practice(profile: Profile, data: Dictionary, encounter_id: Strin
 			s.take_trophy(trophy_id)
 			s.equip(hero_id, trophy_id)
 	return s
+
+
+## Fulla Charges för en hjälte som ansluter mitt i körningen (0.23).
+func add_charges_for(data: Dictionary, hero_id: String) -> void:
+	var c := {}
+	for ability_id in data.heroes[hero_id].get("abilities", []):
+		c[ability_id] = int(data.abilities[ability_id].get("charges", 0))
+	charges[hero_id] = c
 
 
 func fill_charges(data: Dictionary) -> void:
@@ -323,6 +350,7 @@ func start_floor(data: Dictionary) -> void:
 	map = RoomMap.generate(run_seed * 101 + floor * 7 + 1, floor, is_last_floor(), pool, floor_ids[floor], want_shrines)
 	room_id = ""
 	side_index = -1
+	_place_prisoner_room()
 	if quest.get("type", "") == "hunt" and int(quest.floor) == floor:
 		# Nemesis i ett av stridsrummen (det i mitten av kartan om det går).
 		var fights := map.all_rooms().filter(func(r: Dictionary) -> bool: return r.kind == "battle")
@@ -330,6 +358,27 @@ func start_floor(data: Dictionary) -> void:
 			fights[fights.size() / 2].nemesis = true
 		else:
 			map.end.nemesis = true
+
+
+## Fånge-rummet på våningen: den första tidigt och obevakad (steg 0), de andra i ett senare rum, bevakade av en strid.
+func _place_prisoner_room() -> void:
+	var p: Dictionary = prisoners.get(str(floor), {})
+	if p.is_empty() or map == null or map.steps.is_empty():
+		return
+	var first: bool = p.get("first", false)
+	var step: Array = map.steps[0 if first else mini(1, map.steps.size() - 2)]
+	var r: Dictionary = step[0]
+	for x in step:
+		if x.kind == "battle":
+			r = x
+			break
+	var pool: Array = [r.get("encounter", floor_ids[floor])]
+	r.kind = "prisoner"
+	r.hero = p.hero
+	r.guarded = not first
+	r.erase("side")
+	if r.guarded and not r.has("encounter"):
+		r.encounter = pool[0]
 
 
 func current_room() -> Dictionary:
@@ -366,6 +415,8 @@ func enter(id: String) -> Dictionary:
 
 ## Sant om rummet är en strid.
 static func is_battle(r: Dictionary) -> bool:
+	if r.get("kind", "") == "prisoner":
+		return r.get("guarded", false) and not r.get("rescued", false)
 	return r.get("kind", "") in ["battle", "elite", "portal_battle", "end"]
 
 
@@ -535,7 +586,7 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "room_id", "visited",
-		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending"]
+		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners"]
 
 
 func to_dict() -> Dictionary:

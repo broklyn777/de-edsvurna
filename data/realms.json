@@ -33,7 +33,35 @@
 			],
 			"vignette": "stendorren",
 			"zoom_image": "under-tornet"
-		}
+		},
+		"disciples": [
+			{
+				"hero": "alva",
+				"depth": 1,
+				"floor": 0,
+				"first": true
+			},
+			{
+				"hero": "eira",
+				"depth": 1,
+				"floor": 1
+			},
+			{
+				"hero": "tove",
+				"depth": 1,
+				"floor": 2
+			},
+			{
+				"hero": "solveig",
+				"depth": 2,
+				"floor": 1
+			},
+			{
+				"hero": "sefir",
+				"depth": 3,
+				"floor": 1
+			}
+		]
 	},
 	"chapel": {
 		"name": "Det fördärvade kapellet",
@@ -69,6 +97,29 @@
 			],
 			"vignette": "kapellet",
 			"zoom_image": "kapellet"
-		}
+		},
+		"disciples": [
+			{
+				"hero": "lirien",
+				"depth": 1,
+				"floor": 0,
+				"first": true
+			},
+			{
+				"hero": "ragnhild",
+				"depth": 1,
+				"floor": 1
+			},
+			{
+				"hero": "hulda",
+				"depth": 2,
+				"floor": 0
+			},
+			{
+				"hero": "ronja",
+				"depth": 2,
+				"floor": 2
+			}
+		]
 	}
 }

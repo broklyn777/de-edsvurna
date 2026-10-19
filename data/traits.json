@@ -1064,5 +1064,140 @@
 				"target": "self"
 			}
 		]
+	},
+	"ronja_falcon_watch": {
+		"name": "Falkens vakt",
+		"text": "När en fiende väljer ett mål i sällskapet dyker Stormvinge ned: fienden flyttas ett steg ned på tidslinjen och blir Märkt (en gång per tur).",
+		"trigger": "intent_chosen",
+		"once_per_turn": true,
+		"when": {
+			"unit": "enemy",
+			"target": "ally"
+		},
+		"effects": [
+			{
+				"type": "step_down",
+				"target": "unit"
+			},
+			{
+				"type": "aura",
+				"aura": "marked",
+				"target": "unit"
+			}
+		]
+	},
+	"lirien_chorus": {
+		"name": "Allsång",
+		"text": "När Lirien ger en allierad en buff får alla andra i sällskapet samma buff i 1 tur.",
+		"trigger": "aura_applied",
+		"when": {
+			"source": "self",
+			"unit": "ally",
+			"aura_kind": "buff",
+			"not_from_trait": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "event_aura",
+				"duration": 1,
+				"target": "allies_except_unit"
+			}
+		]
+	},
+	"tove_mirror_hand": {
+		"name": "Spegelhand",
+		"text": "När Tove undviker ett anfall kontrar han för 100 % och blir 10 % snabbare resten av striden.",
+		"trigger": "dodge",
+		"when": {
+			"target": "self"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0,
+				"kind": "attack",
+				"target": "source"
+			},
+			{
+				"type": "raise_stat",
+				"stat": "speed",
+				"pct": 0.1,
+				"target": "self"
+			}
+		]
+	},
+	"hulda_rootwork": {
+		"name": "Rotverk",
+		"text": "Huldas förmågor på allierade ger målet ett Rotskott (högst 3). När bäraren tar en direkt träff slår varje Rotskott angriparen för 15 % av Huldas Intelligence.",
+		"trigger": "acted",
+		"when": {
+			"unit": "self",
+			"action": "ability"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "rootling",
+				"target": "action_allies"
+			}
+		]
+	},
+	"ragnhild_truth_light": {
+		"name": "Sanningens ljus",
+		"text": "När en fiende helas eller får en buff bränner ljuset den: Helig skada lika med 50 % av Ragnhilds Intelligence.",
+		"trigger": "heal",
+		"when": {
+			"target": "enemy"
+		},
+		"parts": [
+			"ragnhild_truth_light_buff"
+		],
+		"effects": [
+			{
+				"type": "damage",
+				"stat": "intelligence",
+				"pct": 0.5,
+				"school": "holy",
+				"kind": "indirect",
+				"target": "target"
+			}
+		]
+	},
+	"ragnhild_truth_light_buff": {
+		"name": "Sanningens ljus",
+		"hidden": true,
+		"trigger": "aura_applied",
+		"when": {
+			"unit": "enemy",
+			"aura_kind": "buff"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"stat": "intelligence",
+				"pct": 0.5,
+				"school": "holy",
+				"kind": "indirect",
+				"target": "unit"
+			}
+		]
+	},
+	"sefir_blade_whirl": {
+		"name": "Bladvirvel",
+		"text": "En kritisk träff flyttar Sefir överst på tidslinjen (en gång per tur).",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"when": {
+			"source": "self",
+			"crit": true,
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "to_top",
+				"target": "self"
+			}
+		]
 	}
 }

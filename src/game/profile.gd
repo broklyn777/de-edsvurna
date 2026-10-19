@@ -44,7 +44,17 @@ var oath := "oath_vengeance"
 ## perks i den valda kallet verkar (inom perk-poängen); kärnan verkar alltid. Att återställa är gratis
 ## (poängen kommer tillbaka).
 var perks := {}
-var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
+var party: Array[String] = ["paladin", "brokk"]
+## 0.23: följeslagarna man har (de som inte följer med bor i Värdshuset och behåller sina nivåer). En ny profil
+## börjar med Paladinen och Brokk; de andra befrias som lärjungar (fånge-rummet). Äldre profiler behåller sina fyra.
+var recruited: Array[String] = ["brokk"]
+const STARTER := "brokk"
+const LEGACY_COMPANIONS := ["brokk", "alva", "eira", "solveig"]
+## Paladinen och högst så här många följeslagare i sällskapet.
+const MAX_COMPANIONS := 3
+## Ikapphämtning (vårt val): en hjälte under sällskapets snitt får mer erfarenhet, +50 % per nivå under, högst ×3.
+const CATCH_UP_PER_LEVEL := 0.5
+const CATCH_UP_MAX := 3.0
 ## Troféer ur samlingen som hjältarna bär i Övningsgården: hero_id -> trophy_id.
 var practice_equipped := {}
 ## Realm Depth (Siralim): valt djup vid Kryptporten och det djupaste som klarats (0 = inget än).
@@ -259,16 +269,54 @@ func levels_for(data: Dictionary, party: Array) -> Dictionary:
 
 
 ## Erfarenhet till hela sällskapet efter en vunnen strid. Returnerar hero_id -> [nya nivåer].
+## 0.23: den som ligger under sällskapets snitt hämtar ikapp (catch_up).
 func grant_xp(data: Dictionary, party: Array, xp: int) -> Dictionary:
 	var out := {}
+	var avg := 0.0
+	for hero_id in party:
+		avg += float(hero(data, hero_id).level)
+	avg /= maxi(party.size(), 1)
 	for hero_id in party:
 		var h := hero(data, hero_id)
-		var ups := HeroStats.add_xp(h, xp)
+		var ups := HeroStats.add_xp(h, roundi(xp * catch_up(float(h.level), avg)))
 		for lv in ups:
 			h.log.append({"level": lv, "battle": int(h.battles)})
 		if not ups.is_empty():
 			out[hero_id] = ups
 	return out
+
+
+static func catch_up(level: float, party_avg: float) -> float:
+	return minf(1.0 + CATCH_UP_PER_LEVEL * maxf(party_avg - level, 0.0), CATCH_UP_MAX)
+
+
+## En befriad lärjunge ansluter (0.23). Nivå 1, eller 2 om sällskapet redan är på nivå 4 eller mer (svag men
+## användbar; egenskapen verkar från nivå 1). Returnerar falskt om hen redan fanns.
+func recruit(data: Dictionary, hero_id: String, party_avg := 1.0) -> bool:
+	if recruited.has(hero_id) or not data.heroes.has(hero_id) or hero_id == "paladin":
+		return false
+	recruited.append(hero_id)
+	var h := hero(data, hero_id)
+	if int(h.level) <= 1:
+		h.level = 2 if party_avg >= 4.0 else 1
+		h.xp = 0
+	return true
+
+
+## Följeslagarna man kan välja (Värdshuset): de man har, i den ordning de kom.
+func roster() -> Array[String]:
+	return recruited.duplicate()
+
+
+## Väljer sällskapet: Paladinen plus 1–MAX_COMPANIONS följeslagare man har.
+func set_party(companions: Array) -> void:
+	var p: Array[String] = ["paladin"]
+	for id in companions:
+		if recruited.has(id) and not p.has(id) and p.size() <= MAX_COMPANIONS:
+			p.append(id)
+	if p.size() == 1 and not recruited.is_empty():
+		p.append(recruited[0])
+	party = p
 
 
 ## Byter personlighet mot silver; nivåerna räknas om bakåt (statsen räknas alltid ur nivå och personlighet).
@@ -411,6 +459,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "oath", oath)
 	cfg.set_value("progress", "perks", perks)
 	cfg.set_value("progress", "party", party)
+	cfg.set_value("progress", "recruited", recruited)
 	cfg.set_value("progress", "practice_equipped", practice_equipped)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
@@ -446,9 +495,16 @@ static func load_from(path: String) -> Profile:
 	if OATHS.has(saved_oath):
 		p.oath = saved_oath
 	p.perks = cfg.get_value("progress", "perks", {})
+	# 0.23: äldre profiler (utan "recruited") behåller sina fyra följeslagare och sitt sällskap.
+	if cfg.has_section_key("progress", "recruited"):
+		p.recruited.assign(cfg.get_value("progress", "recruited", [STARTER]))
+	else:
+		p.recruited.assign(LEGACY_COMPANIONS)
 	var saved: Array = cfg.get_value("progress", "party", [])
-	if saved.size() == p.party.size():
-		p.party.assign(saved)
+	if saved.size() >= 2 and saved[0] == "paladin":
+		p.party.assign(saved.filter(func(id: String) -> bool: return id == "paladin" or p.recruited.has(id)))
+	elif not cfg.has_section_key("progress", "recruited"):
+		p.party.assign(["paladin", "brokk", "alva", "eira"])
 	p.practice_equipped = cfg.get_value("progress", "practice_equipped", {})
 	p.best_depth = int(cfg.get_value("progress", "best_depth", 0))
 	p.realm = cfg.get_value("progress", "realm", "crypt")

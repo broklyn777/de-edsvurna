@@ -16,6 +16,8 @@ const PLACES := [
 		"text": "Smid en artefakt per hjälte och höj den: nivåerna öppnar platser för bärnsten, trick och Nether Stones."},
 	{"id": "macros", "name": "Makron", "tag": "MACROS",
 		"text": "Skriv om hjältarnas makron: villkor uppifrån och ned, första raden som passar vinner."},
+	{"id": "inn", "name": "Värdshuset", "tag": "MENAGERIE",
+		"text": "Följeslagarna du har befriat. Välj vilka som följer med; de andra stannar och behåller sin nivå."},
 	{"id": "library", "name": "Biblioteket", "tag": "CODEX",
 		"text": "Samlingen: troféerna du har hittat och vad de gör, och sällskapets artefakter."},
 ]
@@ -44,16 +46,19 @@ func _tap(p: Vector2) -> void:
 				run.open_macros(run.BASE_SCENE)
 			"library":
 				run.go(run.LIBRARY_SCENE)
+			"inn":
+				run.go(run.INN_SCENE)
 		return
 
 
+## 0.23: sju platser i två rader (fyra och tre).
 func _place_rect(i: int) -> Rect2:
 	var top := 120.0
-	var h := 220.0
-	var w := (size.x - MARGIN * 2 - GAP * 2) / 3.0
-	if i < 3:
+	var h := 210.0
+	var w := (size.x - MARGIN * 2 - GAP * 3) / 4.0
+	if i < 4:
 		return Rect2(MARGIN + i * (w + GAP), top, w, h)
-	return Rect2(MARGIN + (i - 3) * (w + GAP), top + h + GAP, w, h - 50)
+	return Rect2(MARGIN + (i - 4) * (w + GAP), top + h + GAP, w, h - 40)
 
 
 func _hero_rect(i: int) -> Rect2:
@@ -119,6 +124,8 @@ func _status(id: String) -> String:
 					"" if stones == 0 else " · %d Nether Stones" % stones]
 		"library":
 			return "%d troféer i samlingen" % run.collection.size()
+		"inn":
+			return "%d följeslagare · %d i sällskapet" % [run.profile.recruited.size(), run.profile.party.size() - 1]
 		"practice":
 			return "Senast: " + data.encounters[run.practice_encounter].name
 	return ""

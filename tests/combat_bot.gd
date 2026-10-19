@@ -61,7 +61,9 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 			sim.act("attack")
 			continue
 		var macros: Dictionary = data.macros if skill == Skill.MACRO else TUNED_MACROS
-		var decision := MacroRunner.decide(sim, sim.current, macros.get(sim.current.id, {"lines": []}))
+		# 0.23: följeslagare utan förbättrade makron kör sina startmakron även för TUNED.
+		var macro: Dictionary = macros.get(sim.current.id, data.macros.get(sim.current.id, {"lines": []}))
+		var decision := MacroRunner.decide(sim, sim.current, macro)
 		if decision.ok:
 			sim.act(decision.action, decision.target, decision.ability)
 		else:
@@ -106,6 +108,8 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	state.depth = depth
 	state.instability = int(opts.get("instability", 0))
 	state.rules_visible = opts.get("rules", []).duplicate()
+	if opts.has("party"):
+		state.party.assign(opts.party)  # 0.23: sällskap med 2–4 hjältar
 	state.fill_charges(data)
 	state.start_expedition(data, seed_value)
 	var rng := RandomNumberGenerator.new()
@@ -130,7 +134,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		if RunState.is_battle(r):
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels

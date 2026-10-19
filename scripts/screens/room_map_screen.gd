@@ -8,7 +8,8 @@ const ZOOM_TIME := 0.8
 const ROOM_R := 32.0
 ## Rumstypernas namn (symbolerna ritas i tusch av InkArt).
 const KIND_NAMES := {"battle": "Strid", "elite": "Elit", "treasure": "Skattkammare", "shrine": "Helgedom",
-		"campfire": "Lägereld", "portal": "Portal", "end": "Våningens slut", "portal_battle": "Portalens strid"}
+		"campfire": "Lägereld", "portal": "Portal", "end": "Våningens slut", "portal_battle": "Portalens strid",
+		"prisoner": "Fånge"}
 ## Rum som går att gå till ritas i bläck, de andra blekt som torkat bläck.
 const FADED := 0.32
 ## Paladinpjäsen glider längs stigen till rummet innan man går in.
@@ -26,7 +27,7 @@ var _move_to := Vector2.ZERO
 var _move_t := -1.0
 var _move_id := ""
 ## Rumstyper med ett ögonblick (stridsrum har inget, striden är själv 3D).
-const MOMENT_KINDS := ["treasure", "shrine", "campfire", "portal"]
+const MOMENT_KINDS := ["treasure", "shrine", "campfire", "portal", "prisoner"]
 
 
 func _ready() -> void:
@@ -91,7 +92,8 @@ func _tap(p: Vector2) -> void:
 func _enter(id: String) -> void:
 	# Inne i en portal är nästa rum ett sidorum, som inte finns bland kartans rum.
 	var kind: String = run.state.current_room().kind if run.state.side_index >= 0 else run.state.map.room(id).kind
-	if run.profile.room_moments and MOMENT_KINDS.has(kind):
+	var guarded: bool = run.state.side_index < 0 and run.state.map.room(id).get("guarded", false)
+	if run.profile.room_moments and MOMENT_KINDS.has(kind) and not guarded:
 		await _play_moment(kind)
 	var r: Dictionary = run.enter_room(id)
 	if RunState.is_battle(r):
@@ -117,6 +119,9 @@ func _show_room(r: Dictionary) -> void:
 			_dialog = {"title": "Lägereld", "text": run.campfire(), "options": [{"label": "VIDARE"}]}
 		"treasure":
 			_dialog = {"title": "Skattkammare", "text": run.treasure(), "options": [{"label": "VIDARE"}]}
+		"prisoner":
+			# 0.23: en lärjunge befrias och ansluter (Siralims "enhörningsögonblick").
+			_dialog = {"title": "En fånge befrias", "text": run.rescue_prisoner(), "options": [{"label": "VÄLKOMMEN!"}]}
 		"shrine":
 			_shrine_options = run.state.shrine_options(run.data, run.rng)
 			var options := []
@@ -287,6 +292,10 @@ func _draw_room(r: Dictionary, state: RunState) -> void:
 	var label: String = KIND_NAMES.get(kind, kind)
 	if kind == "end" and boss:
 		label = "Boss: " + run.data.encounters[r.encounter].name
+	if kind == "prisoner" and r.has("hero") and not r.get("rescued", false):
+		# 0.23: fången syns med namn och lyser, så att man vill dit.
+		label = "Fånge: " + String(run.data.heroes[r.hero].get("short", run.data.heroes[r.hero].name)) + (" (bevakad)" if r.get("guarded", false) else "")
+		draw_circle(pos, ROOM_R + 12, Color(1.0, 0.85, 0.4, 0.18 + 0.1 * sin(_t * 3.0)))
 	UiStyle.text(self, pos + Vector2(-90, ROOM_R + 34), label, 14, Color(InkArt.INK, maxf(alpha, 0.5)),
 			HORIZONTAL_ALIGNMENT_CENTER, 180, 0)
 	if r.get("nemesis", false):

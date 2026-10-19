@@ -2,50 +2,377 @@
 	"paladin": {
 		"name": "Paladinen",
 		"lines": [
-			{"subject": "any_ally", "cond": "hp_below", "value": 30, "action": "ability", "ability": "holy_shield", "target": "that"},
-			{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "ability", "ability": "holy_smite", "target": "that"},
-			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "holy_smite", "target": "that"},
-			{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 30,
+				"action": "ability",
+				"ability": "holy_shield",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "has_trait",
+				"value": "grave_pact",
+				"action": "ability",
+				"ability": "holy_smite",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "ability",
+				"ability": "holy_smite",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "not_immune",
+				"action": "attack",
+				"target": "that"
+			}
 		]
 	},
 	"brokk": {
 		"name": "Brokk",
 		"lines": [
-			{"subject": "self", "cond": "own_turn", "value": 1, "action": "ability", "ability": "war_cry"},
-			{"subject": "self", "cond": "hp_below", "value": 50, "action": "ability", "ability": "stone_wall"},
-			{"subject": "self", "cond": "hp_above", "value": 50, "action": "test_next"},
-			{"subject": "self", "cond": "lacks_status", "value": "provoke", "action": "provoke"},
-			{"subject": "self", "cond": "hp_below", "value": 50, "action": "defend"},
-			{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}
+			{
+				"subject": "self",
+				"cond": "own_turn",
+				"value": 1,
+				"action": "ability",
+				"ability": "war_cry"
+			},
+			{
+				"subject": "self",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "ability",
+				"ability": "stone_wall"
+			},
+			{
+				"subject": "self",
+				"cond": "hp_above",
+				"value": 50,
+				"action": "test_next"
+			},
+			{
+				"subject": "self",
+				"cond": "lacks_status",
+				"value": "provoke",
+				"action": "provoke"
+			},
+			{
+				"subject": "self",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "defend"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
 		]
 	},
 	"alva": {
 		"name": "Syster Alva",
 		"lines": [
-			{"subject": "any_ally", "cond": "hp_below", "value": 40, "action": "ability", "ability": "healing_light", "target": "that"},
-			{"subject": "any_ally", "cond": "lacks_status", "value": "mending", "action": "test_next"},
-			{"subject": "any_ally", "cond": "hp_below", "value": 80, "action": "ability", "ability": "renew", "target": "that"},
-			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "judgement", "target": "that"},
-			{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 40,
+				"action": "ability",
+				"ability": "healing_light",
+				"target": "that"
+			},
+			{
+				"subject": "any_ally",
+				"cond": "lacks_status",
+				"value": "mending",
+				"action": "test_next"
+			},
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 80,
+				"action": "ability",
+				"ability": "renew",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "ability",
+				"ability": "judgement",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
 		]
 	},
 	"eira": {
 		"name": "Jägaren Eira",
 		"lines": [
-			{"subject": "enemy_3", "cond": "is_alive", "action": "ability", "ability": "arrow_rain"},
-			{"subject": "any_enemy", "cond": "has_trait", "value": "cultist_ward", "action": "attack", "target": "that"},
-			{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "attack", "target": "that"},
-			{"subject": "any_enemy", "cond": "has_status", "value": "marked", "action": "attack", "target": "that"},
-			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "hunters_mark", "target": "that"},
-			{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}
+			{
+				"subject": "enemy_3",
+				"cond": "is_alive",
+				"action": "ability",
+				"ability": "arrow_rain"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "has_trait",
+				"value": "cultist_ward",
+				"action": "attack",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "has_trait",
+				"value": "grave_pact",
+				"action": "attack",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "has_status",
+				"value": "marked",
+				"action": "attack",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "ability",
+				"ability": "hunters_mark",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "not_immune",
+				"action": "attack",
+				"target": "that"
+			}
 		]
 	},
 	"solveig": {
 		"name": "Solveig",
 		"lines": [
-			{"subject": "enemy_3", "cond": "is_alive", "action": "ability", "ability": "flame_wave"},
-			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "fireball", "target": "that"},
-			{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}
+			{
+				"subject": "enemy_3",
+				"cond": "is_alive",
+				"action": "ability",
+				"ability": "flame_wave"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "ability",
+				"ability": "fireball",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "not_immune",
+				"action": "attack",
+				"target": "that"
+			}
+		]
+	},
+	"ronja": {
+		"name": "Ronja Falkvind",
+		"lines": [
+			{
+				"subject": "any_enemy",
+				"cond": "has_status",
+				"value": "marked",
+				"action": "ability",
+				"ability": "falcon_dive",
+				"target": "that"
+			},
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 40,
+				"action": "ability",
+				"ability": "wing_shadow",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
+		]
+	},
+	"lirien": {
+		"name": "Lirien Silversträng",
+		"lines": [
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 35,
+				"action": "ability",
+				"ability": "heroes_ballad",
+				"target": "that"
+			},
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "test_next"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "highest_attack",
+				"action": "ability",
+				"ability": "lullaby",
+				"target": "that"
+			},
+			{
+				"subject": "ally_1",
+				"cond": "lacks_status",
+				"value": "inspired",
+				"action": "ability",
+				"ability": "battle_song",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
+		]
+	},
+	"tove": {
+		"name": "Broder Tove",
+		"lines": [
+			{
+				"subject": "self",
+				"cond": "has_debuff",
+				"action": "ability",
+				"ability": "still_water",
+				"target": "self"
+			},
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "test_next"
+			},
+			{
+				"subject": "self",
+				"cond": "lacks_status",
+				"value": "agile",
+				"action": "ability",
+				"ability": "wind_step",
+				"target": "self"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
+		]
+	},
+	"hulda": {
+		"name": "Hulda Mossrot",
+		"lines": [
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 45,
+				"action": "ability",
+				"ability": "leaf_shield",
+				"target": "that"
+			},
+			{
+				"subject": "all_enemies",
+				"cond": "is_alive",
+				"action": "test_next"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lacks_status",
+				"value": "poisoned",
+				"action": "ability",
+				"ability": "spore_ring",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
+		]
+	},
+	"ragnhild": {
+		"name": "Ragnhild Ljusdom",
+		"lines": [
+			{
+				"subject": "any_enemy",
+				"cond": "has_buff",
+				"action": "ability",
+				"ability": "dispel_lie",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "has_trait",
+				"value": "grave_pact",
+				"action": "ability",
+				"ability": "brand",
+				"target": "that"
+			},
+			{
+				"subject": "all_enemies",
+				"cond": "is_alive",
+				"action": "ability",
+				"ability": "light_wave",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
+		]
+	},
+	"sefir": {
+		"name": "Sefir av Sanden",
+		"lines": [
+			{
+				"subject": "self",
+				"cond": "lacks_status",
+				"value": "savage",
+				"action": "ability",
+				"ability": "wind_stride",
+				"target": "self"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "ability",
+				"ability": "dancing_steel",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
 		]
 	}
 }

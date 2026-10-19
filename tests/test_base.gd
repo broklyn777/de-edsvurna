@@ -57,6 +57,7 @@ func test_profile_saves_and_loads() -> void:
 	p.artifacts = {"eira": {"type": "boots", "ability": "arrow_rain"}}
 	p.oath = "oath_ward"
 	p.perks = {"oath_ward": ["ward_rest_up"]}
+	p.recruited.assign(["brokk", "alva", "solveig"])
 	p.party.assign(["paladin", "brokk", "alva", "solveig"])
 	p.equip_practice("alva", "bone_rage")
 	assert_eq(p.save(TMP_PROFILE), OK)
