@@ -537,6 +537,7 @@ func _tick_turn_start(u: CombatUnit) -> void:
 		var a: Dictionary = u.auras[aura_id]
 		var source := unit(a.source)
 		if a.hot > 0.0:
+			_heal_ctx = {"base": a.hot, "hot": true}
 			_heal(source if source else u, u, a.hot, aura_id)
 		if a.dot > 0.0:
 			_deal_damage(source if source else u, u, a.dot, a.school, aura_id, false, false, "indirect")
@@ -741,8 +742,23 @@ func _scaled(effect: Dictionary) -> bool:
 ## Helning: Int × power (Siralim: helning är en andel av Intelligence), eller ett fast belopp.
 func _heal_amount(u: CombatUnit, effect: Dictionary) -> float:
 	if not _scaled(effect):
-		return _amount(u, effect)
-	return u.intelligence * _roll() * float(effect.get("power", 1.0))
+		var fixed := _amount(u, effect)
+		_heal_ctx = {"base": fixed, "stat": effect.get("stat", ""), "pct": float(effect.get("pct", 0.0)),
+				"stat_value": u.stat(effect.stat) if effect.has("stat") else 0.0}
+		return fixed
+	var roll := _roll()
+	var power := float(effect.get("power", 1.0))
+	_heal_ctx = {"base": u.stat("intelligence") * roll * power, "stat": "intelligence",
+			"stat_value": u.stat("intelligence"), "roll": roll, "power": power}
+	return _heal_ctx.base
+
+
+## Uträkningen bakom senaste helningens grundbelopp (0.21), läses av _heal.
+var _heal_ctx := {}
+## Uträkningen bakom senaste grundskadan (0.21), läses av _deal_damage.
+var _formula_ctx := {}
+## Namnen på auror som förbrukades av _consume_empower (0.21).
+var _empower_names: Array[String] = []
 
 
 func _roll() -> float:
@@ -802,13 +818,75 @@ static func dodge_chance(ratio: float) -> float:
 
 ## Grundskadan före modifierarna enligt typen. power är förmågans modifierare.
 func _formula(src: CombatUnit, tgt: CombatUnit, kind: String, power: float, ability_id: String) -> float:
+	var roll := _roll()
+	var def_now := tgt.defense_now()
+	_formula_ctx = {"roll": roll, "power": power, "defense": def_now, "defense_base": tgt.defense,
+			"defense_parts": defense_parts(tgt)}
 	match kind:
 		"spell":
-			var tier: Array = SPELL_TIERS.get(data.abilities.get(ability_id, {}).get("tier", ""), [1.0, 0.0])
-			return spell_damage(src.intelligence * tier[0] * _roll(), tgt.defense_now(), power, tier[1])
+			var tier_id: String = data.abilities.get(ability_id, {}).get("tier", "")
+			var tier: Array = SPELL_TIERS.get(tier_id, [1.0, 0.0])
+			_formula_ctx.merge({"stat": "intelligence", "stat_value": src.stat("intelligence"), "tier": tier_id,
+					"tier_mult": tier[0], "ignore": tier[1]})
+			return spell_damage(src.stat("intelligence") * tier[0] * roll, def_now, power, tier[1])
 		"indirect":
-			return src.attack * _roll() * power
-	return attack_damage(src.attack * _roll(), tgt.defense_now(), power)
+			_formula_ctx.merge({"stat": "attack", "stat_value": src.stat("attack")})
+			return src.stat("attack") * roll * power
+	_formula_ctx.merge({"stat": "attack", "stat_value": src.stat("attack")})
+	return attack_damage(src.stat("attack") * roll, def_now, power)
+
+
+## Vad som ändrar figurens Defense just nu: [{name, mult}] (Försvarar ×1,5, Provocerar ×0,65 …).
+func defense_parts(u: CombatUnit) -> Array:
+	var out := []
+	for aura_id in u.auras:
+		var m := float(u.auras[aura_id].get("defense_mult", 1.0))
+		if m != 1.0:
+			out.append({"name": data.auras[aura_id].get("name", aura_id), "mult": m})
+	return out
+
+
+## Medelskadan för en träff (hjältebladet och testerna, 0.21): samma formler och samma modifierare som
+## striden (egenskaper som Benrustning, auror som Försvarar och Sårbar), med variationen 1,0 och utan krit.
+## Rör ingenting (förbrukar inga auror).
+func expected_damage(src: CombatUnit, tgt: CombatUnit, ability_id: String) -> float:
+	var ab: Dictionary = data.abilities.get(ability_id, {})
+	var kind: String = ab.get("kind", "attack")
+	var power := 1.0
+	var school: String = ab.get("school", "physical")
+	for eff in ab.get("effects", []):
+		if eff.type == "damage":
+			power = float(eff.get("power", 1.0))
+			school = eff.get("school", school)
+			break
+	var raw := 0.0
+	match kind:
+		"spell":
+			var tier: Array = SPELL_TIERS.get(ab.get("tier", ""), [1.0, 0.0])
+			raw = spell_damage(src.stat("intelligence") * tier[0], tgt.defense_now(), power, tier[1])
+		"indirect":
+			raw = src.stat("attack") * power
+		_:
+			raw = attack_damage(src.stat("attack"), tgt.defense_now(), power)
+	var probe := {"source": src.id, "target": tgt.id, "ability": ability_id, "school": school, "direct": true,
+			"kind": kind, "from_trait": false, "origin_target": ""}
+	var factors: Array = []
+	for m in _modifiers(src, "modify_damage", probe):
+		if m.has("damage_mult"):
+			factors.append(float(m.damage_mult))
+	for a in src.auras.values():
+		if a.get("damage_mult", 1.0) != 1.0:
+			factors.append(a.damage_mult)
+	for m in _modifiers(tgt, "modify_damage_taken", probe):
+		if m.has("damage_taken_mult"):
+			factors.append(float(m.damage_taken_mult))
+	factors.append_array(tgt.damage_taken_factors())
+	if tgt.damage_taken_mult != 1.0:
+		factors.append(tgt.damage_taken_mult)
+	var dmg := raw * combine_mods(factors)
+	if kind == "indirect":
+		dmg = indirect_damage(dmg, tgt.defense_now())
+	return dmg
 
 
 ## scaled: amount är en modifierare som räknas genom formeln; annars ett fast belopp (följdanfall för
@@ -824,52 +902,85 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	school = probe.school
 	kind = probe.kind
 	var ratio := src.speed / maxf(tgt.speed, 1.0)
-	if kind == "attack" and src.team != tgt.team and rng.randf() < _dodge_for(src, tgt, ratio, probe):
-		_emit({"type": "dodge", "source": src.id, "target": tgt.id, "ability": ability_id})
-		return
+	# Uträkningen (0.21): allt som påverkade siffran, så att spelaren kan se varför.
+	var calc := {"source": src.id, "target": tgt.id, "source_name": src.name, "target_name": tgt.name,
+			"ability": ability_id, "kind": kind, "school": school, "scaled": scaled, "amount_in": amount,
+			"source_speed": src.speed, "target_speed": tgt.speed}
+	if kind == "attack" and src.team != tgt.team:
+		var dodge := _dodge_for(src, tgt, ratio, probe)
+		calc.dodge_chance = dodge
+		if rng.randf() < dodge:
+			_emit({"type": "dodge", "source": src.id, "target": tgt.id, "ability": ability_id, "calc": calc})
+			return
 	if is_immune(tgt):
 		_emit({"type": "immune", "source": src.id, "target": tgt.id, "ability": ability_id})
 		return
-	var factors: Array = []
+	var fx: Array = []  # [{f, name}]
 	if direct:
-		factors.append(_consume_empower(src, probe))
+		var em := _consume_empower(src, probe)
+		if em != 1.0:
+			fx.append({"f": em, "name": ", ".join(_empower_names)})
 	# VAL (Troligt i Siralim): bara attacker kan bli kritiska.
 	var crit_add := 0.0  # Taggsten (0.20)
 	if kind == "attack" and can_crit:
 		for m in _modifiers(src, "modify_damage", probe):
 			crit_add += float(m.get("crit_add", 0.0))
-	var crit: bool = kind == "attack" and can_crit and (rng.randf() < crit_chance_for(src.crit_chance, ratio) + crit_add
+	var crit_chance := crit_chance_for(src.crit_chance, ratio) + crit_add if kind == "attack" and can_crit else 0.0
+	var crit: bool = kind == "attack" and can_crit and (rng.randf() < crit_chance
 			or _modify(src, "modify_damage", probe, "force_crit", false))
+	calc.crit_chance = crit_chance
+	_formula_ctx = {}
 	var raw := _formula(src, tgt, kind, amount, ability_id) if scaled else amount
+	calc.merge(_formula_ctx)
+	calc.raw = raw
 	var additional := 0.0
-	for m in _modifiers(src, "modify_damage", probe):
+	for x in _modifiers_named(src, "modify_damage", probe):
+		var m: Dictionary = x.modify
 		if m.has("damage_mult"):
-			factors.append(float(m.damage_mult))
+			fx.append({"f": float(m.damage_mult), "name": x.name})
 		if m.has("damage_mult_per_aura"):
-			factors.append(1.0 + float(m.damage_mult_per_aura) * _buff_count(src))
+			fx.append({"f": 1.0 + float(m.damage_mult_per_aura) * _buff_count(src), "name": x.name})
 		if m.has("damage_mult_per_dead_ally"):
-			factors.append(1.0 + float(m.damage_mult_per_dead_ally) * _dead_allies(src))
+			fx.append({"f": 1.0 + float(m.damage_mult_per_dead_ally) * _dead_allies(src), "name": x.name})
 		if m.has("damage_mult_per_use"):
-			factors.append(1.0 + float(m.damage_mult_per_use) * src.ability_uses.get(ability_id, 0))
+			fx.append({"f": 1.0 + float(m.damage_mult_per_use) * src.ability_uses.get(ability_id, 0), "name": x.name})
 		if m.has("damage_mult_per_hit_taken"):
-			factors.append(1.0 + float(m.damage_mult_per_hit_taken) * src.times_hit)
+			fx.append({"f": 1.0 + float(m.damage_mult_per_hit_taken) * src.times_hit, "name": x.name})
 		if m.has("additional_from_stat"):
 			additional += src.stat(m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
-	for a in src.auras.values():
+			calc.additional_name = x.name
+	for aura_id in src.auras:
+		var a: Dictionary = src.auras[aura_id]
 		if a.get("damage_mult", 1.0) != 1.0:
-			factors.append(a.damage_mult)
-	for m in _modifiers(tgt, "modify_damage_taken", probe):
-		if m.has("damage_taken_mult"):
-			factors.append(float(m.damage_taken_mult))
-	factors.append_array(tgt.damage_taken_factors())
+			fx.append({"f": float(a.damage_mult), "name": data.auras[aura_id].get("name", aura_id)})
+	for x in _modifiers_named(tgt, "modify_damage_taken", probe):
+		if x.modify.has("damage_taken_mult"):
+			fx.append({"f": float(x.modify.damage_taken_mult), "name": x.name})
+	for aura_id in tgt.auras:
+		var a: Dictionary = tgt.auras[aura_id]
+		if a.damage_taken_mult != 1.0:
+			fx.append({"f": float(a.damage_taken_mult), "name": data.auras[aura_id].get("name", aura_id)})
 	if tgt.damage_taken_mult != 1.0:
-		factors.append(tgt.damage_taken_mult)
+		fx.append({"f": tgt.damage_taken_mult, "name": "%s tar" % tgt.name})
 	if _release_bonus.get("unit", "") == src.id and _release_bonus.ability == ability_id:
-		factors.append(_release_bonus.mult)
-	var dmg := raw * combine_mods(factors) * ((1.0 + crit_bonus(ratio)) if crit else 1.0)
+		fx.append({"f": float(_release_bonus.mult), "name": "laddning"})
+	var factors: Array = fx.map(func(x: Dictionary) -> float: return x.f)
+	var mods := combine_mods(factors)
+	var cb := crit_bonus(ratio) if crit else 0.0
+	var dmg := raw * mods * (1.0 + cb)
+	calc.mods = fx
+	calc.mod_total = mods
+	calc.crit = crit
+	calc.crit_bonus = cb
+	calc.before_defense = dmg
 	if kind == "indirect":
+		calc.indirect_defense = INDIRECT_DEFENSE * tgt.defense_now()
+		calc.defense = tgt.defense_now()
+		calc.defense_base = tgt.defense
+		calc.defense_parts = defense_parts(tgt)
 		dmg = indirect_damage(dmg, tgt.defense_now())
 	var total := maxf(1.0, roundf(dmg)) + roundf(additional)
+	calc.additional = roundf(additional)
 	var absorbed := minf(tgt.barrier, total)
 	if absorbed > 0.0:
 		tgt.barrier -= absorbed
@@ -877,11 +988,14 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			tgt.auras.erase("barrier")
 			_emit({"type": "aura_removed", "unit": tgt.id, "aura": "barrier"})
 	var lost := total - absorbed
+	calc.total = total
+	calc.absorbed = absorbed
+	calc.lost = lost
 	tgt.hp = maxf(0.0, tgt.hp - lost)
 	if direct and lost > 0.0:
 		tgt.times_hit += 1
 	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": lost, "absorbed": absorbed,
-			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct})
+			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct, "calc": calc})
 	if tgt.hp <= 0.0:
 		_kill(tgt)
 	# Speglande ben (våningsregel): en del av skadan från hjältarnas direkta träffar studsar tillbaka.
@@ -922,11 +1036,13 @@ func _dead_allies(u: CombatUnit) -> int:
 ## Auror som förstärker nästa direkta anfall (t.ex. Välsignelse) förbrukas här.
 func _consume_empower(src: CombatUnit, probe: Dictionary) -> float:
 	var mult := 1.0
+	_empower_names.clear()
 	for aura_id in src.auras.keys():
 		var d: Dictionary = data.auras[aura_id]
 		if not d.has("next_attack_mult"):
 			continue
 		mult *= float(d.next_attack_mult)
+		_empower_names.append(d.get("name", aura_id))
 		if d.has("school"):
 			probe.school = d.school
 		src.auras.erase(aura_id)
@@ -962,18 +1078,26 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 	if not tgt.alive:
 		return
 	var crit := false
-	var factors: Array = []
-	for m in _modifiers(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}):
-		if m.has("heal_mult"):
-			factors.append(float(m.heal_mult))
+	var fx: Array = []
+	for x in _modifiers_named(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}):
+		if x.modify.has("heal_mult"):
+			fx.append({"f": float(x.modify.heal_mult), "name": x.name})
 	if _rule("withered_grace"):
 		_rule_hit("withered_grace")
-		factors.append(0.6)
-	var amount := roundf(base * combine_mods(factors))
+		fx.append({"f": 0.6, "name": data.floor_rules.get("withered_grace", {}).get("name", "Vissnad nåd")})
+	var mods := combine_mods(fx.map(func(x: Dictionary) -> float: return x.f))
+	var amount := roundf(base * mods)
 	var effective := minf(amount, tgt.max_hp - tgt.hp)
 	tgt.hp += effective
+	var calc := {"source": src.id, "target": tgt.id, "source_name": src.name, "target_name": tgt.name,
+			"ability": ability_id, "base": base, "mods": fx, "mod_total": mods, "amount": amount, "effective": effective}
+	calc.merge(_heal_ctx)
+	calc.base = base
+	if data.auras.has(ability_id):
+		calc.hot = true
+	_heal_ctx = {}
 	_emit({"type": "heal", "source": src.id, "target": tgt.id, "amount": amount,
-			"effective": effective, "overheal": amount - effective, "crit": crit, "ability": ability_id})
+			"effective": effective, "overheal": amount - effective, "crit": crit, "ability": ability_id, "calc": calc})
 
 
 func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_override := 0.0) -> void:
@@ -988,10 +1112,14 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 	var dot := float(d.get("dot", 0.0))
 	if d.has("dot_stat"):
 		dot = roundf(src.stat(d.dot_stat) * float(d.get("dot_pct", 0.3)))
+	# HoT på samma sätt (0.21: Förnyelse växer med kastarens Intelligence i stället för ett fast belopp).
+	var hot := float(d.get("hot", 0.0))
+	if d.has("hot_stat"):
+		hot = roundf(src.stat(d.hot_stat) * float(d.get("hot_pct", 0.5)))
 	var a := {"remaining": duration, "duration": duration,
 			"haste": float(d.get("haste", 0.0)), "damage_taken_mult": float(d.get("damage_taken_mult", 1.0)),
 			"defense_mult": float(d.get("defense_mult", 1.0)), "damage_mult": float(d.get("damage_mult", 1.0)),
-			"hot": float(d.get("hot", 0.0)), "dot": dot,
+			"hot": hot, "dot": dot,
 			"school": d.get("school", "physical"), "source": src.id}
 	if tgt.resistant and d.get("debuff", false):
 		for key in ["damage_taken_mult", "defense_mult", "damage_mult"]:
@@ -1296,12 +1424,20 @@ func _modify(owner: CombatUnit, trigger: String, probe: Dictionary, key: String,
 ## "modify"-delarna i egenskaperna som gäller för händelsen (egna och sällskapets).
 func _modifiers(owner: CombatUnit, trigger: String, probe: Dictionary) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
+	for x in _modifiers_named(owner, trigger, probe):
+		out.append(x.modify)
+	return out
+
+
+## Som _modifiers, men med egenskapens namn (för uträkningen, 0.21): [{modify, name}].
+func _modifiers_named(owner: CombatUnit, trigger: String, probe: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
 	if not owner.alive:  # en död figurs egenskaper verkar inte (t.ex. brinnande sår från en död)
 		return out
 	for trait_id in traits_of(owner):
 		var t: Dictionary = data.traits[trait_id]
 		if t.trigger == trigger and t.has("modify") and _when(owner, t.get("when", {}), probe):
-			out.append(t.modify)
+			out.append({"modify": t.modify, "name": t.get("name", trait_id)})
 	return out
 
 

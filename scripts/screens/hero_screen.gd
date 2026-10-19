@@ -197,47 +197,55 @@ func _draw_enemy_levels(data: Dictionary, prof: Profile, level: int, at: Vector2
 
 
 ## Vad statsen betyder: skada och helning mot en typisk fiende i vald Realm på valt djup.
-func _draw_meaning(data: Dictionary, prof: Profile, b: Dictionary, level: int, at: Vector2) -> void:
-	var realm: Dictionary = data.realms[prof.realm]
-	var enc_id: String = realm.floors[0]
-	var enc: Dictionary = data.encounters[enc_id]
-	var kind: String = enc.enemies[0]
-	var e: Dictionary = data.enemies[kind]
-	var lm := HeroStats.level_mult(HeroStats.enemy_level(prof.depth, 0))
-	var m := CombatSim.enemy_mult(enc, prof.depth) * lm
-	var e_def := roundf(float(e.stats.defense) * m)
-	var e_hp := roundf(float(e.stats.health) * m)
-	var e_atk := roundf(float(e.stats.attack) * m)
-	var e_spd := roundf(float(e.stats.speed) * lm)
-	var lines: Array[String] = []
-	var h: Dictionary = data.heroes[hero_id]
-	var atk_power := _power(data, h.get("attack_ability", "strike"))
-	var hit := CombatSim.attack_damage(b.attack.total, e_def, atk_power)
-	lines.append("Anfall: ~%d skada (%d träffar för att fälla den)" % [hit, ceili(e_hp / maxf(hit, 1.0))])
-	for ability_id in h.get("abilities", []):
-		var ab: Dictionary = data.abilities[ability_id]
-		for eff in ab.get("effects", []):
-			if eff.type == "damage" and eff.has("power"):
-				var dmg := 0.0
-				if ab.get("kind", "attack") == "spell":
-					var tier: Array = CombatSim.SPELL_TIERS.get(ab.get("tier", ""), [1.0, 0.0])
-					dmg = CombatSim.spell_damage(b.intelligence.total * tier[0], e_def, float(eff.power), tier[1])
-				else:
-					dmg = CombatSim.attack_damage(b.attack.total, e_def, float(eff.power))
-				lines.append("%s: ~%d skada" % [ab.name, dmg])
-			elif eff.type == "heal" and eff.has("power"):
-				lines.append("%s: helar ~%d" % [ab.name, b.intelligence.total * float(eff.power)])
-	var taken := CombatSim.attack_damage(e_atk, b.defense.total, 1.0)
-	lines.append("Fiendens anfall: ~%d skada mot %s (%d av %d liv)" % [taken, h.name, taken, b.health.total])
-	var faster := "snabbare" if b.speed.total > e_spd else ("lika snabb" if b.speed.total == e_spd else "långsammare")
-	lines.append("Speed %d mot %d: %s än fienden – snabbare ger fler krittar och fler undvikanden" % [b.speed.total, e_spd, faster])
+## 0.21: räknas av simulatorn själv (CombatSim.expected_damage) på riktiga figurer, med fiendens egenskaper
+## (t.ex. Benrustning) och artefakten, så att bladet och striden alltid säger samma sak.
+var _meaning_key := ""
+var _meaning_lines: Array[String] = []
+var _meaning_sub := ""
+
+
+func _draw_meaning(data: Dictionary, prof: Profile, _b: Dictionary, level: int, at: Vector2) -> void:
+	var prog := prof.hero(data, hero_id)
+	var art: Dictionary = prof.artifact(hero_id)
+	var key := "%s|%d|%s|%s|%d|%s" % [hero_id, level, prog.personality, str(art), prof.depth, prof.realm]
+	if key != _meaning_key:
+		_meaning_key = key
+		_build_meaning(data, prof, level, prog.personality, art)
 	var w := size.x - MARGIN - at.x
 	draw_rect(Rect2(at - Vector2(18, 28), Vector2(w + 18, 62 * 5 + 8)), Color(1, 1, 1, 0.035))
 	UiStyle.text(self, at, "VAD DET BETYDER", 18, Color(1, 1, 1, 0.65), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
-	var y := at.y + 30 + UiStyle.para(self, Vector2(at.x, at.y + 26), "mot %s i %s, djup %d, våning 1" % [e.name, realm.short,
-			prof.depth], 17, Color(1, 1, 1, 0.55), w)
-	for i in lines.size():
-		y += 6 + UiStyle.para(self, Vector2(at.x, y), lines[i], 19, Color.WHITE, w, 2)
+	var y := at.y + 30 + UiStyle.para(self, Vector2(at.x, at.y + 26), _meaning_sub, 17, Color(1, 1, 1, 0.55), w)
+	for line in _meaning_lines:
+		y += 6 + UiStyle.para(self, Vector2(at.x, y), line, 19, Color.WHITE, w, 2)
+
+
+func _build_meaning(data: Dictionary, prof: Profile, level: int, personality: String, art: Dictionary) -> void:
+	var realm: Dictionary = data.realms[prof.realm]
+	var enc_id: String = realm.floors[0]
+	var arts := {} if art.is_empty() else {hero_id: art}
+	var sim := CombatSim.create(data, enc_id, 1, [hero_id], {}, {}, arts, prof.depth,
+			{"levels": {hero_id: {"level": level, "personality": personality}}, "elite_chance": 0.0, "floor": 0})
+	var hero := sim.unit(hero_id)
+	var foe: CombatUnit = sim.enemies[0]
+	_meaning_sub = "mot %s (nivå %d) i %s, djup %d, våning 1" % [foe.name, roundi(foe.level), realm.short, prof.depth]
+	_meaning_lines.clear()
+	var hit := sim.expected_damage(hero, foe, hero.attack_ability)
+	_meaning_lines.append("Anfall: ~%d skada (%d träffar för att fälla den)" % [hit, ceili(foe.max_hp / maxf(hit, 1.0))])
+	for ability_id in hero.abilities:
+		var ab: Dictionary = sim.data.abilities[ability_id]
+		for eff in ab.get("effects", []):
+			if eff.type == "damage" and eff.has("power"):
+				_meaning_lines.append("%s: ~%d skada" % [ab.name, sim.expected_damage(hero, foe, ability_id)])
+			elif eff.type == "heal" and eff.has("power"):
+				_meaning_lines.append("%s: helar ~%d" % [ab.name, hero.stat("intelligence") * float(eff.power)])
+	var taken := sim.expected_damage(foe, hero, foe.attack_ability)
+	sim._add_aura(hero, hero, "defend")
+	var defended := sim.expected_damage(foe, hero, foe.attack_ability)
+	_meaning_lines.append("Fiendens anfall: ~%d skada mot %s (%d om %s försvarar sig) av %d liv" % [taken, hero.name,
+			defended, hero.name, hero.max_hp])
+	var faster := "snabbare" if hero.speed > foe.speed else ("lika snabb" if hero.speed == foe.speed else "långsammare")
+	_meaning_lines.append("Speed %d mot %d: %s än fienden – snabbare ger fler krittar och fler undvikanden" % [
+			hero.speed, foe.speed, faster])
 
 
 func _power(data: Dictionary, ability_id: String) -> float:
