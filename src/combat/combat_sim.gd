@@ -66,12 +66,16 @@ const DODGE_TRAIT_MAX := 0.75
 const DEPTH_STEP := 0.08
 const SCALED_STATS := ["health", "attack", "intelligence", "defense"]
 ## Elitvarianter (0.17, som Siralims sällsynta varelser): chans och styrka.
-const ELITE_CHANCE := 0.06
+const ELITE_CHANCE := 0.05
 const ELITE_PER_DEPTH := 0.01
 const ELITE_PER_INSTABILITY := 0.03
 const ELITE_MAX := 0.3
-const ELITE_HEALTH := 1.4
-const ELITE_POWER := 1.2
+const ELITE_HEALTH := 1.25
+const ELITE_POWER := 1.1
+## Våningsreglernas styrka (data/floor_rules.json beskriver dem).
+const RISEN_DEAD_HP := 0.1
+const VIGILANT_CHANCE := 0.3
+const CURSED_GROUND := 0.02
 ## Resistant: debuffar på figuren verkar till hälften (skadeökning, DoT, ändrad Defense).
 const RESISTANT := 0.5
 ## Säkerhetsgräns för hur djupt egenskaper kan sätta igång varandra.
@@ -179,7 +183,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 
 # --- Publikt API ------------------------------------------------------------
 
-## Chansen att en vanlig fiende är en elitvariant: 6 % och mer med djup och instabilitet, högst 30 %.
+## Chansen att en vanlig fiende är en elitvariant: 5 % och mer med djup och instabilitet, högst 30 %.
 static func elite_chance(at_depth: int, instability := 0) -> float:
 	return minf(ELITE_CHANCE + ELITE_PER_DEPTH * (maxi(at_depth, 1) - 1) + ELITE_PER_INSTABILITY * instability,
 			ELITE_MAX)
@@ -475,7 +479,7 @@ func _tick_turn_start(u: CombatUnit) -> void:
 		u.cooldowns[key] = maxf(0.0, u.cooldowns[key] - 1.0)
 	if u.team == 0 and _rule("cursed_ground"):
 		_rule_hit("cursed_ground")
-		_deal_damage(u, u, roundf(u.max_hp * 0.05), "shadow", "cursed_ground", false, false, "indirect")
+		_deal_damage(u, u, roundf(u.max_hp * CURSED_GROUND), "shadow", "cursed_ground", false, false, "indirect")
 		if not u.alive:
 			return
 	for aura_id in u.auras.keys():
@@ -501,7 +505,8 @@ func _end_turn() -> void:
 	_check_outcome()
 	if outcome != "":
 		return
-	if current and current.alive and current.team == 1 and _rule("vigilant_guards") and not _rule("no_guard"):
+	if current and current.alive and current.team == 1 and _rule("vigilant_guards") and not _rule("no_guard") \
+			and rng.randf() < VIGILANT_CHANCE:
 		_rule_hit("vigilant_guards")
 		_add_aura(current, current, "defend")
 	if current and current.alive and not order.has(current.id):
@@ -954,7 +959,7 @@ func _kill(u: CombatUnit) -> void:
 	# De döda vaknar (våningsregel) och Kaosets hjärta (trofé): återuppstå en gång.
 	if u.team == 1 and u.revives == 0 and _rule("risen_dead"):
 		_rule_hit("risen_dead")
-		_revive(u, 0.25)
+		_revive(u, RISEN_DEAD_HP)
 		return
 	for trait_id in u.traits:
 		var undying: Dictionary = data.traits[trait_id].get("undying", {})

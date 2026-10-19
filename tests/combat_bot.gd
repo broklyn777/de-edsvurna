@@ -45,8 +45,8 @@ const TUNED_MACROS := {
 
 
 static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter := "crypt_1",
-		party: Array = [], traits := {}, charges := {}, artifacts := {}, depth := 1) -> Dictionary:
-	var sim := CombatSim.create(data, encounter, seed_value, party, traits, charges, artifacts, depth)
+		party: Array = [], traits := {}, charges := {}, artifacts := {}, depth := 1, opts := {}) -> Dictionary:
+	var sim := CombatSim.create(data, encounter, seed_value, party, traits, charges, artifacts, depth, opts)
 	sim.begin()
 	var guard := 0
 	var no_match := 0
@@ -73,12 +73,21 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 
 ## En hel Realm (standard kryptan) i följd med Charges som räcker alla våningarna. Sant om sällskapet klarar den.
 static func run_crypt(data: Dictionary, seed_value: int, skill: Skill, traits := {}, artifacts := {},
-		depth := 1, floors: Array = RunState.FLOORS) -> bool:
+		depth := 1, floors: Array = RunState.FLOORS, opts := {}) -> bool:
 	var state := RunState.new()
 	state.fill_charges(data)
 	for floor in floors:
-		var r := run_fight(data, seed_value, skill, floor, state.party, traits, state.charges, artifacts, depth)
+		var r := run_fight(data, seed_value, skill, floor, state.party, traits, state.charges, artifacts, depth, opts)
 		if r.outcome != "victory":
 			return false
 		state.store_charges(r.sim)
 	return true
+
+
+## Inställningar för en körning med instabilitet: reglerna slumpas med fröet (samma för alla
+## våningar), som när spelaren väljer instabilitet vid Kryptporten.
+static func instability_opts(data: Dictionary, seed_value: int, level: int) -> Dictionary:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value * 31 + level
+	var rolled := RunState.roll_rules(data, level, rng)
+	return {"rules": rolled.visible + rolled.hidden, "instability": level}

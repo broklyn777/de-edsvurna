@@ -70,6 +70,11 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
 | Våning | floor, `FLOORS`, `stat_mult` i encounters.json | – (en del av en Realm) | Våning 2 och 3 har starkare fiender (×1,08, ×1,10). |
 | Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs vid Kryptporten: Kryptan eller Det fördärvade kapellet. |
+| Instabilitet | `Profile.instability`, `RunState.instability`, `roll_rules()` | Realm Instability | 0–3 vid Kryptporten: n synliga och n dolda våningsregler, mer silver och troféchans. |
+| Våningsregel | `data/floor_rules.json`, `CombatSim.rules`, händelsen `rule` | Realm Property | T.ex. De döda vaknar (Resurrect on Death), Förseglade ord (Gems Sealed After Casting), Speglande ben (Reflect Damage Taken), Kaosvind (Stats are Swapped). |
+| Dold regel | `rules_hidden`, `rules_revealed` | hidden Realm Property | Syns först när den slår till. |
+| Elitvariant | `elite` i enemies.json, `CombatUnit.elite`, `CombatSim.elite_chance()` | – (sällsynta varelser; Fused/Nether-varianter) | Benkapten, Benjägare, Gravabbot, Gravfogde, Askbärare, Ockultist, Banshee, Edsbrytare, Häxmästarinna, Självplågare. Egen trofé. |
+| Bosstrofé efter tre segrar | `Profile.boss_wins`, `RunState.BOSS_WINS_FOR_TROPHY` | Master (Trait Material efter tre segrar) | Räknaren syns i Biblioteket och i Inspect. |
 | Tystad | silenced (aura med `silence`), `is_silenced`, makrovillkoret "är tystad" | Silenced | Inga förmågor; fiender bara anfaller; artefakter kastar inte. |
 | Sårbar | vulnerable | Vulnerable | +50 % skada i 2 turer. |
 | Försvagad | weak (aura `damage_mult` 0,5) | Weak | −50 % skada i 2 turer. |
@@ -112,7 +117,7 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Enchanted Wardrobe | byt Specialization och perks | Edsaltaret |
 | Trait Slot, Nether Stone | Artifactens trait-plats; sena trait-platser | – |
 | Master | rasmästare med unikt trait | – |
-| Realm Quest, Realm Instability, Fortune | uppdrag och svårighet i en Realm | – (Realm och Realm Depth, se ovan) |
+| Realm Quest, Fortune | uppdrag och belöning i en Realm | – |
 | Nether Boss, False God | bossar med regelbrytande traits | Benfursten |
 | Minion | staplar som gör Indirect Damage | – |
 | History | händelselista | – |
