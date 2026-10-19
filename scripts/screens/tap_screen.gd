@@ -17,6 +17,7 @@ func _ready() -> void:
 	run = get_node("/root/Run")
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	run.base_music()
 
 
 func _process(delta: float) -> void:
@@ -34,6 +35,7 @@ func _gui_input(event: InputEvent) -> void:
 	if _press_at.distance_to(event.position) > 30.0:
 		return
 	_tap(event.position)
+	run.ui_tap()
 
 
 ## Överskrivs: ett tryck (släpp) på punkten.

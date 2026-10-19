@@ -63,7 +63,8 @@ func _tap(p: Vector2) -> void:
 			return
 	if _forge_rect().has_point(p) and run.profile.forge(hero, type, ability):
 		_flash = 1.0
-		run.save()
+		run.ui("ui_coins", -8.0)
+		run.save("ui_forge")
 
 
 # --- Layout -----------------------------------------------------------------

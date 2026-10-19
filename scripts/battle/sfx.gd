@@ -4,11 +4,15 @@ extends Node
 ##   play("namn") spelar res://assets/audio/namn.wav, eller – om det är en mapp –
 ##   en slumpad variant ur res://assets/audio/namn/ (samma variant spelas inte två gånger i rad).
 ## Rösterna (assets/audio/voice/) har en egen kanal och en vilotid så att de inte tjatar.
+## Musiken (assets/audio/music/<namn>.ogg) har två spelare som korstonar när låten byts; den
+## spelas av autoloaden Run så att den fortsätter mellan scenerna (se docs/ljud.md).
 
 const VOICES := 24
 ## Samma ljud spelas inte oftare än så här (t.ex. volley som träffar fyra hjältar samtidigt).
 const MIN_GAP_MS := 35
 const ROOT := "res://assets/audio/"
+## `-- --log-sfx` skriver ut varje ljud som spelas (och saknade ljud), för att kontrollera inkopplingen.
+var _log := OS.get_cmdline_user_args().has("--log-sfx")
 
 var _players: Array[AudioStreamPlayer] = []
 var _variants := {}
@@ -18,6 +22,10 @@ var _next := 0
 var _voice: AudioStreamPlayer
 var _voice_ready_at := {}
 var _ambience: AudioStreamPlayer
+var _music: Array[AudioStreamPlayer] = []
+var _music_name := ""
+var _music_db := -16.0
+var _music_tween: Tween
 
 
 func _ready() -> void:
@@ -29,6 +37,10 @@ func _ready() -> void:
 	add_child(_voice)
 	_ambience = AudioStreamPlayer.new()
 	add_child(_ambience)
+	for i in 2:
+		var m := AudioStreamPlayer.new()
+		add_child(m)
+		_music.append(m)
 	_setup_master_bus()
 
 
@@ -59,6 +71,8 @@ func stream(sound: String) -> AudioStream:
 
 func play(sound: String, volume_db := 0.0, pitch_jitter := 0.05) -> void:
 	var list := _streams(sound)
+	if _log:
+		print("sfx %s %s" % [sound, "" if not list.is_empty() else "SAKNAS"])
 	if list.is_empty():
 		return
 	var now := Time.get_ticks_msec()
@@ -102,10 +116,51 @@ func start_ambience(sound: String, volume_db := -10.0) -> void:
 		wav.loop_begin = 0
 		wav.loop_end = int(wav.get_length() * wav.mix_rate)
 		s = wav
+	elif s is AudioStreamOggVorbis:
+		s = s.duplicate()
+		s.loop = true
 	_ambience.stream = s
 	_ambience.volume_db = -40.0
 	_ambience.play()
 	create_tween().tween_property(_ambience, "volume_db", volume_db, 2.0)
+
+
+## Byter musik med en korstoning; samma låt startas inte om. Tomt namn tonar ut.
+func play_music(name: String, volume_db := -16.0, fade := 1.5) -> void:
+	if name == _music_name and _music[0].playing:
+		return
+	var path := ROOT + "music/%s.ogg" % name
+	if name != "" and not ResourceLoader.exists(path):
+		return
+	_music_name = name
+	_music_db = volume_db
+	if _log:
+		print("music %s" % name)
+	if _music_tween:
+		_music_tween.kill()
+	_music_tween = create_tween().set_parallel().set_ignore_time_scale()  # inte i hitstop/slowmo
+	var old := _music[0]
+	if old.playing:
+		_music_tween.tween_property(old, "volume_db", -60.0, fade)
+		_music_tween.tween_callback(old.stop).set_delay(fade)
+	if name == "":
+		return
+	var new := _music[1]
+	_music = [new, old]
+	var s := (load(path) as AudioStreamOggVorbis).duplicate() as AudioStreamOggVorbis
+	s.loop = true
+	new.stream = s
+	new.volume_db = -60.0
+	new.play()
+	_music_tween.tween_property(new, "volume_db", volume_db, fade)
+
+
+func stop_music(fade := 1.0) -> void:
+	play_music("", _music_db, fade)
+
+
+func music_name() -> String:
+	return _music_name
 
 
 func _streams(sound: String) -> Array:

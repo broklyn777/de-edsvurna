@@ -37,5 +37,24 @@ altaret, buren, stentavlan, lägerelden och portalen byggs av former i kod. Stat
 - `assets/audio/k_*/` – Kenney "RPG Audio", "Impact Sounds", "Interface Sounds" (kenney.nl), CC0 1.0.
   Licens: `assets/audio/KENNEY_LICENSE.txt`.
 - `assets/audio/*.wav` – syntetiserade i `tools/gen_sfx.py` (egna).
+- `assets/audio/music/*.ogg`, `ambience_chapel/`, `ambience_crypt/` (från gen_sfx.py, omkodad) – egenkomponerade och syntetiserade i `tools/gen_audio.py`
+  (egna). Kapellstämningen har knarr ur Kenney "RPG Audio" (`creak1–3`), CC0 1.0.
+- Handlingsljud byggda i `tools/gen_audio.py` (egna synteslager blandade med Kenney-inspelningar, CC0 1.0):
+  | Mapp | Egen syntes | Kenney-filer (paket) |
+  |---|---|---|
+  | `atk_sword/` | svisch, låg duns | drawKnife1–3, knifeSlice, knifeSlice2 (RPG Audio); impactMetal_medium (Impact Sounds) |
+  | `atk_axe/` | svisch, låg duns | chop (RPG Audio); impactWood_heavy, impactPunch_heavy (Impact Sounds) |
+  | `atk_blunt/` | svisch, låg duns | impactPunch_medium, impactWood_medium (Impact Sounds) |
+  | `bow_shot/` | bågsträng, pilsvisch | beltHandle1–2 (RPG Audio) |
+  | `arrow_hit/` | duns | impactWood_light, impactSoft_medium (Impact Sounds) |
+  | `spell_holy/`, `spell_fire/`, `fire_hit/`, `spell_shadow/`, `shadow_hit/`, `heal_light/` | allt | – |
+  | `spell_nature/`, `nature_hit/` | flöjtdrill, prassel | impactWood_light, impactPlank_medium (Impact Sounds) |
+  | `defend/` | klang, duns | clothBelt, clothBelt2 (RPG Audio); impactPlate_light (Impact Sounds) |
+  | `provoke/` | stridshorn, duns | impactPlate_heavy (Impact Sounds) |
+  | `trophy_*/`, `elite_appears/`, `boss_appears/`, `jingle_victory/`, `jingle_defeat/`, `macro_nomatch/` | allt (egen musik) | trophy_boss: impactBell_heavy_000 (Impact Sounds) |
+- `assets/audio/ui_*/` – Kenney-filer oförändrade, CC0 1.0: `ui_tap` (select_001–003), `ui_back` (back_001–002),
+  `ui_confirm` (confirmation_001–002), `ui_toggle` (toggle_001–002) ur "Interface Sounds"; `ui_page`
+  (bookFlip2–3), `ui_coins` (handleCoins2), `ui_door` (doorOpen_1) ur "RPG Audio";
+  `ui_forge` (impactMetal_heavy_000/002/004) ur "Impact Sounds". Hämtade från kenney.nl 2026-10-19.
 - `assets/audio/voice/*.mp3` – användarens egna röstrepliker, gjorda i ElevenLabs.
   **Kontrollera att ElevenLabs-planen tillåter kommersiell användning före release.**

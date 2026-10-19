@@ -19,6 +19,7 @@ var _press_at := Vector2(-1, -1)
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	run.base_music()
 	var previous: Array[String] = []
 	for id in run.profile.party:
 		if id != "paladin":
@@ -42,6 +43,7 @@ func _gui_input(event: InputEvent) -> void:
 	if _press_at.distance_to(event.position) > 30.0:
 		return
 	_tap(event.position)
+	run.ui_tap()
 
 
 func _tap(p: Vector2) -> void:

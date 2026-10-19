@@ -140,8 +140,13 @@ uppdaterad när nya begrepp tillkommer.
   `node ~/.npm/_npx/425967af1abfabd4/node_modules/@gltf-transform/cli/bin/cli.js dequantize in.glb ut.glb`
   (Godot läser inte meshopt/kvantisering). Se `ASSETS_LICENSE.md`.
 - `assets/audio/` – `sfx.play("namn")` spelar `namn.wav` eller en slumpad variant ur mappen `namn/`
-  (Kenney-ljud ligger i `k_*`-mappar). Kryptstämningen loopar (`ambience_crypt.wav`).
+  (Kenney-ljud ligger i `k_*`-mappar). Stämning per Realm (`ambience_crypt/`, `ambience_chapel/`).
+  Musiken (`music/`) och menyljuden (`ui_*`) spelas av `Run.audio` så att de fortsätter mellan scenerna:
+  `play_music()` korstonar, `Run.ui()`/`ui_tap()` i basens skärmar. Förmågor har `sound` (träffen) och
+  `cue` (när handlingen börjar; annars vapnet eller skolan). Mappning: `docs/ljud.md`.
+  `-- --log-sfx` skriver ut varje ljud som spelas.
 - `tools/gen_sfx.py` – syntetiserar egna ljud och kryptstämningen till `assets/audio/`.
+  `tools/gen_audio.py` – komponerar musiken och bygger handlingsljuden (numpy + soundfile, Kenney CC0).
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
