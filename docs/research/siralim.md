@@ -1036,6 +1036,26 @@ bara +2 %.
    Trick-plats". *Litet eget tillägg:* artefakten syns i 3D på hjälten och får en glöd per öppnad plats,
    bara utseende.
 
+## 16. Att ge upp, fly och gå hem (2026-10-19)
+
+VD:ns fråga (bara diskussion): borde det finnas en "ge upp"-knapp för att gå hem och reparera?
+
+| Fråga | Siralim | Säkerhet |
+|---|---|---|
+| Lämna en Realm när som helst? | Nej, inte via Teleportation Shrine: Realm Quest måste vara klar innan man kan åka hem eller vidare. Vägarna hem utan klar quest är att förlora (laget faller) eller att spara och ladda om, vilket alltid tar en till slottet. | Bekräftat (wiki Realms, Codex); spara och ladda: Troligt (spelare) |
+| Vad förlorar man då? | Realm Quest och framsteget i Realmen. Nästa gång får man en ny quest i en ny, slumpad Realm. Förlorar man en strid nollställs Fortune (resursbonusen) också. Varelser, föremål och resurser behålls. | Bekräftat (wiki Realms, Combat, Codex) |
+| Fly från en strid? | Ja: *Forfeit* (håll E+Q+F i några sekunder). Det räknas som förlust: man skickas hem och förlorar Fortune, men behåller varelser, föremål och resurser. | Bekräftat (wiki Combat, Codex) |
+| Fylls Charges hemma? | Ja. Wikin: "automatically recharged upon returning to your castle". Codex: vid start av varje Realm. | Bekräftat (båda) |
+
+Det som kommer närmast en "ge upp"-knapp i originalet är alltså **Forfeit i striden**. Den kostar
+Fortune och questen men ingenting annat, och man kommer hem med fulla Charges. Siralim har ingen knapp för
+att "åka hem utan att förlora" mitt i en Realm.
+
+**Hos oss** motsvaras det av: Forfeit i striden, som avslutar körningen och skickar hem. Det man förlorar
+är det som motsvarar Fortune och questen (körningens perk-poäng och quest-belöning), medan troféer,
+silver och material från vunna strider behålls. Charges fylls vid nästa körning, som i dag. *Anpassning:*
+ingen.
+
 ---
 
 ## Källor
