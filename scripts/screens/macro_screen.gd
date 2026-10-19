@@ -29,6 +29,7 @@ var _preview: Label
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	data = run.data
+	run.base_music()
 	theme = _make_theme()
 	var bg := ColorRect.new()
 	bg.color = Color(0.04, 0.035, 0.06)
@@ -451,6 +452,7 @@ func _button(text: String, call: Callable, width := 0) -> Button:
 	b.text = text
 	b.custom_minimum_size = Vector2(width, 48)
 	b.pressed.connect(call)
+	b.pressed.connect(run.ui_tap)
 	return b
 
 
