@@ -20,8 +20,9 @@ static var XP_BASE := 17
 const XP_KIND := {"battle": 1.0, "elite": 1.5, "portal_battle": 1.5, "end": 2.0, "boss": 3.0}
 ## Varifrån en stat kommer, i bladets ordning. Nya källor (material, Nether Stone i 0.20) läggs till här och
 ## i breakdown(); bladet visar alla som inte är noll.
-const SOURCES := ["base", "levels", "personality", "artifact"]
-const SOURCE_NAMES := {"base": "bas", "levels": "nivåer", "personality": "personlighet", "artifact": "artefakt"}
+const SOURCES := ["base", "levels", "personality", "artifact", "material", "nether"]
+const SOURCE_NAMES := {"base": "bas", "levels": "nivåer", "personality": "personlighet", "artifact": "artefakt",
+		"material": "material", "nether": "Nether Stone"}
 
 
 ## Tillväxten för en stat med personligheten (40 % uppåt, 20 % nedåt, annars 30 %).
@@ -66,12 +67,15 @@ static func breakdown(data: Dictionary, hero_id: String, level: int, personality
 		var neutral := stat_at(b, level, GROWTH)
 		var with_p := stat_at(b, level, growth(data, personality, stat))
 		out[stat] = {"base": b, "levels": neutral - b, "personality": with_p - neutral, "artifact": 0.0}
-	var kind: Dictionary = data.artifacts.get(artifact.get("type", ""), {})
-	if not kind.is_empty():
-		var stat: String = kind.stat
-		var v: float = out[stat].base + out[stat].levels + out[stat].personality
-		var raised := v * float(kind.get("stat_mult", 1.0)) + float(kind.get("stat_add", 0.0))
-		out[stat].artifact = roundf(raised) - v if stat == "health" else raised - v
+	var values := {}
+	for stat in STATS:
+		out[stat].material = 0.0
+		out[stat].nether = 0.0
+		values[stat] = out[stat].base + out[stat].levels + out[stat].personality
+	var parts := Forge.stat_parts(data, artifact, values)
+	for part in parts:
+		for stat in parts[part]:
+			out[stat][part] = float(parts[part][stat])
 	for stat in STATS:
 		var s: Dictionary = out[stat]
 		s.total = 0.0
