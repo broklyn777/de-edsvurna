@@ -1,0 +1,79 @@
+{
+	"source": "res://assets/illustrations/symbolark.webp",
+	"out": "res://assets/illustrations/icons/",
+	"note": "Rutor i arkets pixlar: [x, y, bredd, höjd]. Ändra här och kör om tools/cut_symbols.gd med ett nytt ark.",
+	"symbols": {
+		"chest": [
+			30,
+			622,
+			215,
+			166
+		],
+		"campfire": [
+			255,
+			620,
+			205,
+			172
+		],
+		"shrine": [
+			468,
+			618,
+			200,
+			174
+		],
+		"battle": [
+			688,
+			616,
+			195,
+			180
+		],
+		"elite": [
+			893,
+			616,
+			155,
+			191
+		],
+		"boss": [
+			1063,
+			620,
+			205,
+			186
+		],
+		"portal": [
+			1265,
+			616,
+			255,
+			168
+		],
+		"paladin": [
+			55,
+			800,
+			160,
+			218
+		],
+		"compass": [
+			300,
+			806,
+			210,
+			197
+		],
+		"cartouche": [
+			528,
+			836,
+			395,
+			156
+		],
+		"dragon": [
+			948,
+			808,
+			285,
+			190
+		],
+		"sword_in_stone": [
+			1248,
+			790,
+			245,
+			228
+		]
+	}
+}

@@ -230,9 +230,9 @@ func _place(node: TextureRect, r: Rect2, zoom: float, focus: Vector2) -> void:
 func _draw_decor() -> void:
 	var ink := Color(InkArt.INK, 0.6)
 	var k := _scale()
-	InkArt.compass(self, Vector2(700, 470) * k, 52, ink)
-	InkArt.dragon(self, Vector2(735, 640) * k, 70, ink)
-	InkArt.sword_in_stone(self, Vector2(560, 650) * k, 56, ink)
+	InkArt.icon(self, "compass", Vector2(700, 470) * k, 130 * k.y, 0.8)
+	InkArt.icon(self, "dragon", Vector2(720, 640) * k, 130 * k.y, 0.8)
+	InkArt.icon(self, "sword_in_stone", Vector2(560, 640) * k, 120 * k.y, 0.75)
 	InkArt.skeleton(self, Vector2(80, 600) * k, 60, ink)
 
 
@@ -254,9 +254,11 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 		var glow := 0.5 + 0.5 * sin(_t * 3.0)
 		draw_rect(r.grow(12), Color(UiStyle.GOLD.darkened(0.2), 0.25 + 0.35 * glow), false, 4.0)
 	var name: String = run.data.realms[realm_id].name
-	var cart := Rect2(center.x - 150, r.end.y + 10, 300, 40)
-	InkArt.cartouche(self, cart, name.to_upper(), InkArt.INK, 17)
-	UiStyle.text(self, Vector2(cart.position.x, cart.end.y + 18), "Djup klarat: %d" % cleared, 14, InkArt.INK,
+	var cart := Rect2(center.x - 190, r.end.y + 2, 380, 58)
+	draw_texture_rect(InkArt.icon_texture("cartouche"), cart, false)
+	UiStyle.text(self, Vector2(cart.position.x, cart.get_center().y + 4), name.to_upper(), 15, InkArt.INK,
+			HORIZONTAL_ALIGNMENT_CENTER, cart.size.x, 0)
+	UiStyle.text(self, Vector2(cart.position.x, cart.end.y + 12), "Djup klarat: %d" % cleared, 14, InkArt.INK,
 			HORIZONTAL_ALIGNMENT_CENTER, cart.size.x, 0)
 	# Sigill för bossen i vinjettens hörn: fylls i takt med segrarna (x/3 till bosstrofén).
 	for boss in _bosses(realm_id):
