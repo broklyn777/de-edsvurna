@@ -118,8 +118,8 @@ func _draw() -> void:
 	var state: RunState = run.state
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.04, 0.035, 0.06))
 	# Nattlägret (Drakvalvets illustration) svagt i bakgrunden.
-	var h := size.x * NIGHT_CAMP.get_height() / NIGHT_CAMP.get_width()
-	draw_texture_rect(NIGHT_CAMP, Rect2(0, (size.y - h) / 2, size.x, h), false, Color(1, 1, 1, 0.13))
+	var bg_h := size.x * NIGHT_CAMP.get_height() / NIGHT_CAMP.get_width()
+	draw_texture_rect(NIGHT_CAMP, Rect2(0, (size.y - bg_h) / 2, size.x, bg_h), false, Color(1, 1, 1, 0.13))
 	UiStyle.text(self, Vector2(0, 44), "SEGER! VÄLJ EN TROFÉ", 34, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
 	for i in run.last_receipt.size():
 		UiStyle.text(self, Vector2(0, 76 + i * 20), run.last_receipt[i], 15, Color(1, 1, 1, 0.75),
