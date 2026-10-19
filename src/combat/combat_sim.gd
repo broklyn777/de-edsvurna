@@ -84,7 +84,7 @@ const MAX_TRAIT_CHAIN := 10
 ## besvärjelser och mottagna helningar, plus en övergripande gräns.
 const TURN_LIMIT := 5
 ## 0.23: fiendernas styrka efter sällskapets storlek (1–4 hjältar). Vårt val, mätt med botarna.
-const PARTY_SCALE := {1: 0.45, 2: 0.64, 3: 0.78, 4: 1.0}
+const PARTY_SCALE := {1: 0.45, 2: 0.56, 3: 0.74, 4: 1.0}
 const TURN_PROC_LIMIT := 60
 ## Handlingar en hjälte kan göra på sin tur ("ability" kräver vilken förmåga).
 const ACTIONS := ["attack", "ability", "defend", "provoke", "skip"]
@@ -1390,6 +1390,23 @@ func _status_effect(effect: Dictionary, t: CombatUnit) -> void:
 			_move_on_timeline(t, "bottom")
 
 
+## Fingerfärdig (0.23, Imma): tar fiendens senaste buff och ger den till den svagaste allierade.
+func _steal_buff(thief: CombatUnit, from: CombatUnit) -> void:
+	var buffs := from.statuses("buff").filter(func(id: String) -> bool: return not data.auras[id].get("cannot_dispel", false))
+	if buffs.is_empty():
+		return
+	var aura_id: String = buffs[-1]
+	var left := float(from.auras[aura_id].get("remaining", 0.0))
+	_remove_aura(from, aura_id, "stolen")
+	var best: CombatUnit = null
+	for a in _allies(thief):
+		if best == null or a.hp_pct() < best.hp_pct():
+			best = a
+	if best:
+		_add_aura(thief, best, aura_id, left if left > 0.0 else 0.0)
+		_emit({"type": "buff_stolen", "unit": thief.id, "from": from.id, "to": best.id, "aura": aura_id})
+
+
 ## Ett steg ned på tidslinjen (0.23, Ronjas falk). Snärjd står redan längst ned.
 func _step_down(u: CombatUnit) -> void:
 	var i := order.find(u.id)
@@ -1767,6 +1784,8 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_status_effect(effect, tgt)
 		"raise_stat":
 			_raise_stat(tgt, effect)
+		"steal_buff":
+			_steal_buff(owner, tgt)
 		"cast":
 			# Utan "target" väljer förmågan själv; annars mot figuren ur händelsen (t.ex. samma fiende).
 			# "ability_from_event": samma förmåga som i händelsen (Mirakel kastar den igen).

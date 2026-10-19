@@ -7,8 +7,8 @@ var _data := GameData.load_all()
 
 func test_a_new_profile_starts_small() -> void:
 	var p := Profile.new()
-	assert_eq(p.party, ["paladin", "brokk"])
-	assert_eq(p.recruited, ["brokk"])
+	assert_eq(p.party, ["paladin", "imma"])
+	assert_eq(p.recruited, ["imma"])
 
 
 func test_old_profiles_keep_their_heroes() -> void:
@@ -18,30 +18,30 @@ func test_old_profiles_keep_their_heroes() -> void:
 	cfg.set_value("progress", "party", ["paladin", "brokk", "alva", "eira"])
 	cfg.save(path)
 	var p := Profile.load_from(path)
-	assert_eq(p.recruited, ["brokk", "alva", "eira", "solveig"])
+	assert_eq(p.recruited, ["brokk", "alva", "eira", "solveig", "imma"], "Imma kommer till Värdshuset")
 	assert_eq(p.party, ["paladin", "brokk", "alva", "eira"])
 	p.recruit(_data, "ronja")
 	p.save(path)
 	var q := Profile.load_from(path)
-	assert_true(q.recruited.has("ronja") and q.recruited.size() == 5)
+	assert_true(q.recruited.has("ronja") and q.recruited.size() == 6)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func test_prisoners_wait_on_their_floors() -> void:
 	var p := Profile.new()
 	var s := RunState.new_run(p, _data)
-	assert_eq(s.prisoners["0"], {"hero": "alva", "first": true})
-	assert_eq(s.prisoners["1"].hero, "eira")
+	assert_eq(s.prisoners["0"].hero, "brokk", "Brokk sitter fången hos skeletten på första våningen")
+	assert_eq(s.prisoners["1"].hero, "alva")
 	s.start_expedition(_data, 5)
 	var first: Array = s.map.steps[0].filter(func(r: Dictionary) -> bool: return r.kind == "prisoner")
 	assert_eq(first.size(), 1, "den första fången finns i första steget")
-	assert_true(not first[0].guarded and not RunState.is_battle(first[0]), "tidig och säker")
+	assert_true(first[0].guarded and RunState.is_battle(first[0]), "Brokk är bevakad av skelett")
 	s.next_floor(_data)
 	var later: Array = s.map.all_rooms().filter(func(r: Dictionary) -> bool: return r.kind == "prisoner")
 	assert_eq(later.size(), 1)
 	assert_true(later[0].guarded and RunState.is_battle(later[0]), "de andra är bevakade")
-	p.recruited.append("alva")
-	assert_true(not RunState.new_run(p, _data).prisoners.has("0") or RunState.new_run(p, _data).prisoners["0"].hero != "alva",
+	p.recruited.append("brokk")
+	assert_true(not RunState.new_run(p, _data).prisoners.has("0") or RunState.new_run(p, _data).prisoners["0"].hero != "brokk",
 			"den man redan har sitter inte fången")
 
 
@@ -51,6 +51,7 @@ func test_deeper_disciples_need_their_depth() -> void:
 	var s := RunState.new_run(p, _data)
 	var heroes: Array = s.prisoners.values().map(func(x: Dictionary) -> String: return x.hero)
 	assert_true(heroes.has("lirien") and not heroes.has("ronja"), "Ronja kräver djup 2")
+	assert_true(not s.prisoners["0"].get("guarded", true), "Lirien är obevakad")
 	p.depth = 2
 	heroes = RunState.new_run(p, _data).prisoners.values().map(func(x: Dictionary) -> String: return x.hero)
 	assert_true(heroes.has("hulda") or heroes.has("ronja"))
@@ -95,7 +96,7 @@ func test_enemies_scale_with_the_party_size() -> void:
 
 
 func test_every_new_companion_is_complete() -> void:
-	for id in ["ronja", "lirien", "tove", "hulda", "ragnhild", "sefir"]:
+	for id in ["imma", "ronja", "lirien", "tove", "hulda", "ragnhild", "sefir"]:
 		var h: Dictionary = _data.heroes[id]
 		assert_true(_data.abilities.has(h.attack_ability), id)
 		assert_eq(h.abilities.size(), 3, id)
@@ -169,3 +170,21 @@ func test_sefir_crit_moves_to_the_top() -> void:
 		return
 	sim._emit({"type": "damage", "source": "sefir", "target": sim.enemies[0].id, "amount": 10.0, "crit": true, "direct": true})
 	assert_eq(sim.order[0], "sefir")
+
+
+func test_imma_steals_a_buff_for_the_weakest() -> void:
+	var sim := _sim(["paladin", "imma", "brokk"])
+	var e := sim.enemies[0]
+	var b := sim.unit("brokk")
+	b.hp = b.max_hp * 0.2
+	sim._add_aura(e, e, "berserk")
+	sim._emit({"type": "damage", "source": "imma", "target": e.id, "amount": 10.0, "direct": true, "crit": false})
+	assert_true(not e.auras.has("berserk"), "buffen är stulen")
+	assert_true(b.auras.has("berserk"), "den svagaste fick den")
+
+
+func test_imma_is_the_fastest_and_her_macro_starts_simple() -> void:
+	for id in _data.heroes:
+		if id != "imma":
+			assert_true(_data.heroes.imma.stats.speed >= _data.heroes[id].stats.speed, id)
+	assert_eq(_data.macros.imma.lines[0].cond, "has_buff")

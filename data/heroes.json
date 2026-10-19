@@ -70,6 +70,52 @@
 			}
 		}
 	},
+	"imma": {
+		"name": "Imma",
+		"short": "Imma",
+		"title": "Bågskytt",
+		"role": "dps",
+		"color": "#ff9a4a",
+		"stats": {
+			"health": 620,
+			"attack": 106,
+			"intelligence": 80,
+			"defense": 18,
+			"speed": 18
+		},
+		"personality": "rastlos",
+		"crit_chance": 0.18,
+		"attack_ability": "imma_arrow",
+		"abilities": [
+			"trick_arrow",
+			"smoke_arrow",
+			"spark_arrow"
+		],
+		"traits": [
+			"imma_sleight"
+		],
+		"visual": {
+			"model": "liria",
+			"weapons": {
+				"grip_l": "Shortbow"
+			},
+			"colors": {
+				"Ranger_Cloak": "#c8402a"
+			},
+			"anims": {
+				"idle": "Bow_Idle",
+				"attack": [
+					"Bow_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
+			}
+		},
+		"placeholder_figure": true
+	},
 	"brokk": {
 		"name": "Brokk",
 		"short": "Brokk",
@@ -292,8 +338,8 @@
 		"color": "#c9a46a",
 		"stats": {
 			"health": 650,
-			"attack": 80,
-			"intelligence": 60,
+			"attack": 92,
+			"intelligence": 69,
 			"defense": 25,
 			"speed": 15
 		},
@@ -338,8 +384,8 @@
 		"color": "#9fd3ff",
 		"stats": {
 			"health": 620,
-			"attack": 60,
-			"intelligence": 85,
+			"attack": 69,
+			"intelligence": 98,
 			"defense": 20,
 			"speed": 13
 		},
@@ -395,8 +441,8 @@
 		"color": "#e2b36b",
 		"stats": {
 			"health": 750,
-			"attack": 85,
-			"intelligence": 40,
+			"attack": 98,
+			"intelligence": 46,
 			"defense": 25,
 			"speed": 16
 		},
@@ -448,8 +494,8 @@
 		"color": "#6fbf73",
 		"stats": {
 			"health": 700,
-			"attack": 50,
-			"intelligence": 90,
+			"attack": 57,
+			"intelligence": 103,
 			"defense": 30,
 			"speed": 8
 		},
@@ -501,8 +547,8 @@
 		"color": "#ffd27a",
 		"stats": {
 			"health": 800,
-			"attack": 75,
-			"intelligence": 80,
+			"attack": 86,
+			"intelligence": 92,
 			"defense": 45,
 			"speed": 9
 		},

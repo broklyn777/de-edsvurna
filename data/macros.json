@@ -374,5 +374,22 @@
 				"target": "that"
 			}
 		]
+	},
+	"imma": {
+		"name": "Imma",
+		"lines": [
+			{
+				"subject": "any_enemy",
+				"cond": "has_buff",
+				"action": "attack",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
+		]
 	}
 }

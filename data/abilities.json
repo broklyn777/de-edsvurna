@@ -742,7 +742,9 @@
 				"type": "damage",
 				"power": 1.0
 			}
-		]
+		],
+		"kind": "spell",
+		"tier": "small"
 	},
 	"battle_song": {
 		"name": "Stridssång",
@@ -869,7 +871,9 @@
 				"type": "damage",
 				"power": 1.0
 			}
-		]
+		],
+		"kind": "spell",
+		"tier": "small"
 	},
 	"snaring_roots": {
 		"name": "Snärjande rötter",
@@ -1057,6 +1061,79 @@
 				"type": "aura",
 				"aura": "bleeding",
 				"duration": 2
+			}
+		]
+	},
+	"imma_arrow": {
+		"name": "Pil",
+		"target": "enemy",
+		"travel": 0.22,
+		"sound": "arrow_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"trick_arrow": {
+		"name": "Trickpil",
+		"target": "enemy",
+		"charges": 6,
+		"icon": "drop",
+		"button_color": "#ff9a4a",
+		"travel": 0.22,
+		"sound": "arrow_hit",
+		"text": "En hullingpil: 80 % skada och målet Blöder (30 % av sitt liv per tur) i 2 turer.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.8
+			},
+			{
+				"type": "aura",
+				"aura": "bleeding",
+				"duration": 2
+			}
+		]
+	},
+	"smoke_arrow": {
+		"name": "Rökpil",
+		"target": "all_enemies",
+		"kind": "spell",
+		"charges": 5,
+		"icon": "diamond",
+		"button_color": "#ff9a4a",
+		"text": "Röken gör alla fiender Förblindade i 2 turer, och Imma blir Smidig.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "blind",
+				"duration": 2
+			},
+			{
+				"type": "aura",
+				"aura": "agile",
+				"target": "self"
+			}
+		]
+	},
+	"spark_arrow": {
+		"name": "Gnistpil",
+		"target": "enemy",
+		"kind": "spell",
+		"tier": "small",
+		"school": "fire",
+		"charges": 8,
+		"icon": "flame",
+		"button_color": "#ff9a4a",
+		"travel": 0.25,
+		"sound": "fire_hit",
+		"text": "En liten besvärjelse i pilspetsen: eldskada (100 % av Intelligence, Liten).",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
 			}
 		]
 	}

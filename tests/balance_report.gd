@@ -167,7 +167,8 @@ func _artifacts(data: Dictionary) -> void:
 
 ## Sällskapets storlek (0.23): Paladinen + 1, 2 och 3 följeslagare på väntad nivå, och en ny profil (nivå 1, två
 ## hjältar som växer). Sist varje ny följeslagare i stället för Eira i ett sällskap om fyra.
-const PARTIES := [["paladin", "brokk"], ["paladin", "brokk", "alva"], ["paladin", "brokk", "alva", "eira"]]
+const PARTIES := [["paladin", "imma"], ["paladin", "imma", "brokk"], ["paladin", "imma", "brokk", "alva"],
+		["paladin", "brokk", "alva", "eira"]]
 
 
 func _party_sizes(data: Dictionary) -> void:
@@ -178,24 +179,34 @@ func _party_sizes(data: Dictionary) -> void:
 	print("=== Sällskapets storlek, djup 1, väntad nivå %d (fienderna ×%s) ===" % [lv, str(CombatSim.PARTY_SCALE)])
 	for realm_id in realms:
 		for party in PARTIES:
-			_party_line(data, realm_id, party, lv, "%d hjältar" % party.size())
-		_party_line(data, realm_id, ["paladin", "brokk"], 1, "ny profil (nivå 1, 2 hjältar)")
+			_party_line(data, realm_id, party, lv, ", ".join(party.slice(1).map(func(id: String) -> String: return data.heroes[id].short)))
+		_party_line(data, realm_id, ["paladin", "imma"], 1, "ny profil, befriar fångar", ["imma"])
 	if OS.get_environment("NIVA_NYA") == "0":
 		return
 	print("=== De nya följeslagarna i stället för Eira (Kryptan, väntad nivå) ===")
-	for id in ["ronja", "lirien", "tove", "hulda", "ragnhild", "sefir"]:
+	for id in ["imma", "ronja", "lirien", "tove", "hulda", "ragnhild", "sefir"]:
 		_party_line(data, "crypt", ["paladin", "brokk", "alva", id], lv, data.heroes[id].short)
 
 
-func _party_line(data: Dictionary, realm_id: String, party: Array, lv: int, label: String) -> void:
-	var line := "  %-10s %-34s" % [data.realms[realm_id].short, label]
+func _party_line(data: Dictionary, realm_id: String, party: Array, lv: int, label: String, recruited := []) -> void:
+	var line := "  %-10s %-30s" % [data.realms[realm_id].short, label]
 	for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
 		var cleared := 0
+		var f0 := 0
+		var f0_won := 0
+		var size := 0
 		for seed_value in range(1, RUNS + 1):
-			var r := Bot.run_expedition(data, seed_value, skill, {}, {}, 1, realm_id,
-					{"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}, "simple")
+			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
+			if not recruited.is_empty():
+				opts.recruited = recruited
+			var r := Bot.run_expedition(data, seed_value, skill, {}, {}, 1, realm_id, opts, "simple")
 			cleared += 1 if r.cleared else 0
-		line += "  %s %3d %%" % [_skill_name(skill), roundi(100.0 * cleared / RUNS)]
+			f0 += r.f0_fights
+			f0_won += r.f0_won
+			size += r.levels.size()
+		line += "  %s %3d %% (v1 %d %%)" % [_skill_name(skill), roundi(100.0 * cleared / RUNS), roundi(100.0 * f0_won / maxi(f0, 1))]
+		if not recruited.is_empty():
+			line += " sällskap %.1f" % (float(size) / RUNS)
 	print(line)
 
 

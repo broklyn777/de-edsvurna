@@ -44,11 +44,12 @@ var oath := "oath_vengeance"
 ## perks i den valda kallet verkar (inom perk-poängen); kärnan verkar alltid. Att återställa är gratis
 ## (poängen kommer tillbaka).
 var perks := {}
-var party: Array[String] = ["paladin", "brokk"]
+var party: Array[String] = ["paladin", "imma"]
 ## 0.23: följeslagarna man har (de som inte följer med bor i Värdshuset och behåller sina nivåer). En ny profil
-## börjar med Paladinen och Brokk; de andra befrias som lärjungar (fånge-rummet). Äldre profiler behåller sina fyra.
-var recruited: Array[String] = ["brokk"]
-const STARTER := "brokk"
+## börjar med Paladinen och Imma (VD:n: barndomsvännen från borgen); de andra befrias som lärjungar (fånge-rummet,
+## Brokk först). Äldre profiler behåller sina fyra och får Imma i Värdshuset.
+var recruited: Array[String] = ["imma"]
+const STARTER := "imma"
 const LEGACY_COMPANIONS := ["brokk", "alva", "eira", "solveig"]
 ## Paladinen och högst så här många följeslagare i sällskapet.
 const MAX_COMPANIONS := 3
@@ -500,6 +501,8 @@ static func load_from(path: String) -> Profile:
 		p.recruited.assign(cfg.get_value("progress", "recruited", [STARTER]))
 	else:
 		p.recruited.assign(LEGACY_COMPANIONS)
+	if not p.recruited.has(STARTER):
+		p.recruited.append(STARTER)  # Imma bor i borgen; äldre profiler hittar henne i Värdshuset
 	var saved: Array = cfg.get_value("progress", "party", [])
 	if saved.size() >= 2 and saved[0] == "paladin":
 		p.party.assign(saved.filter(func(id: String) -> bool: return id == "paladin" or p.recruited.has(id)))

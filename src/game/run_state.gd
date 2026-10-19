@@ -106,7 +106,8 @@ func place_prisoners(data: Dictionary, recruited: Array) -> void:
 		while prisoners.has(str(f)) and f < floor_ids.size() - 1:
 			f += 1
 		if not prisoners.has(str(f)):
-			prisoners[str(f)] = {"hero": d.hero, "first": d.get("first", false)}
+			prisoners[str(f)] = {"hero": d.hero, "first": d.get("first", false),
+					"guarded": d.get("guarded", not d.get("first", false))}
 
 
 ## En strid i Övningsgården: samma sällskap, makron och artefakter, troféer ur samlingen och fulla
@@ -375,7 +376,7 @@ func _place_prisoner_room() -> void:
 	var pool: Array = [r.get("encounter", floor_ids[floor])]
 	r.kind = "prisoner"
 	r.hero = p.hero
-	r.guarded = not first
+	r.guarded = p.get("guarded", not first)
 	r.erase("side")
 	if r.guarded and not r.has("encounter"):
 		r.encounter = pool[0]

@@ -36,20 +36,26 @@
 		},
 		"disciples": [
 			{
-				"hero": "alva",
+				"hero": "brokk",
 				"depth": 1,
 				"floor": 0,
-				"first": true
+				"first": true,
+				"guarded": true
 			},
 			{
-				"hero": "eira",
+				"hero": "alva",
 				"depth": 1,
 				"floor": 1
 			},
 			{
-				"hero": "tove",
+				"hero": "eira",
 				"depth": 1,
 				"floor": 2
+			},
+			{
+				"hero": "tove",
+				"depth": 2,
+				"floor": 0
 			},
 			{
 				"hero": "solveig",

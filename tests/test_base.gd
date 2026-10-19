@@ -77,6 +77,8 @@ func test_profile_saves_and_loads() -> void:
 
 func test_practice_has_full_charges_trophies_and_artifacts() -> void:
 	var p := Profile.new()
+	p.recruited.assign(["imma", "brokk", "alva", "eira"])
+	p.party.assign(["paladin", "brokk", "alva", "eira"])
 	var trophy: String = _data.enemies.skeleton_warrior.trophy
 	p.add_trophy(trophy)
 	p.equip_practice("brokk", trophy)

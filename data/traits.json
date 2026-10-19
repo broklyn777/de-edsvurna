@@ -1199,5 +1199,23 @@
 				"target": "self"
 			}
 		]
+	},
+	"imma_sleight": {
+		"name": "Fingerfärdig",
+		"text": "När Imma träffar en fiende som har en buff stjäl hon den och ger den till den svagaste i sällskapet.",
+		"original": "Vårt val (förebild: Siralims Mesmerist, som \"stjäl styrkor från fienderna\")",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true,
+			"target": "enemy",
+			"target_has_kind": "buff"
+		},
+		"effects": [
+			{
+				"type": "steal_buff",
+				"target": "target"
+			}
+		]
 	}
 }
