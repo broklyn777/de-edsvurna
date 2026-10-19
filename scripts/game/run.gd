@@ -254,8 +254,7 @@ func save_run() -> void:
 
 
 func _clear_run() -> void:
-	if FileAccess.file_exists(RUN_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(RUN_PATH))
+	RunState.delete_saved(RUN_PATH)
 
 
 ## Vid start: en sparad körning fortsätter på rumskartan.

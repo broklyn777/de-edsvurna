@@ -37,6 +37,9 @@ var overlay: BattleOverlay
 var auto_chip: ChipButton
 var macro_log: MacroLog
 var speed_chip: ChipButton
+## Ge upp (0.20.1, Siralims Forfeit), med en bekräftelse.
+var forfeit_chip: ChipButton
+var _dev_ask_forfeit := false
 ## Effekter som väntar på att vapnet eller projektilen ska träffa: [{left, call}].
 var _later: Array[Dictionary] = []
 
@@ -77,6 +80,8 @@ func _ready() -> void:
 			warp_turns = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--seed="):
 			seed_value = int(arg.get_slice("=", 1))
+		elif arg == "--ask-forfeit":
+			_dev_ask_forfeit = true  # visar frågan om att ge upp när striden har börjat (skärmdumpar)
 		elif arg.begins_with("--inspect="):
 			_show_inspect.call_deferred(arg.get_slice("=", 1))  # Inspect direkt (för skärmdumpar)
 	var state: RunState = run.state
@@ -188,8 +193,13 @@ func _build_ui() -> void:
 	speed_chip.setup("1×", 64)
 	speed_chip.pressed.connect(_toggle_speed)
 	ui.add_child(speed_chip)
+	forfeit_chip = ChipButton.new()
+	forfeit_chip.setup("GE UPP", 104)
+	forfeit_chip.pressed.connect(_ask_forfeit)
+	ui.add_child(forfeit_chip)
 	overlay = BattleOverlay.new()
 	overlay.restart_requested.connect(_continue)
+	overlay.forfeit_answered.connect(_on_forfeit_answer)
 	ui.add_child(overlay)
 	overlay.mode = "countdown"
 
@@ -205,12 +215,16 @@ func _layout() -> void:
 	auto_chip.position = Vector2(vs.x - auto_chip.size.x - 12, 12)
 	macro_log.position = Vector2(12, vs.y - macro_log.size.y - 12)
 	speed_chip.position = Vector2(auto_chip.position.x - speed_chip.size.x - 8, 12)
+	forfeit_chip.position = Vector2(speed_chip.position.x - forfeit_chip.size.x - 8, 12)
 	overlay.size = vs
 
 
 # --- Bildruta ---------------------------------------------------------------
 
 func _process(delta: float) -> void:
+	if overlay.mode == "confirm":
+		Engine.time_scale = 0.0  # striden står still medan frågan visas
+		return
 	var now_ms := Time.get_ticks_msec()
 	if _press_ms >= 0 and not _inspecting and _press_unit != "" and now_ms - _press_ms >= INSPECT_HOLD_MS:
 		_inspecting = true
@@ -232,6 +246,9 @@ func _process(delta: float) -> void:
 			_play_events()
 		return
 
+	if _dev_ask_forfeit and sim.turn_no >= 2:
+		_dev_ask_forfeit = false
+		_ask_forfeit()
 	_tick_later(delta)
 	_update_facing()
 	_update_frames()
@@ -464,6 +481,22 @@ func _toggle_auto() -> void:
 		action_bar.visible = false
 		_choosing = ""
 		_targets.clear()
+
+
+func _ask_forfeit() -> void:
+	if not started or sim.outcome != "" or overlay.mode in ["victory", "defeat", "confirm"]:
+		return
+	run.ui("ui_tap", -10.0)
+	overlay.ask_forfeit(run.state.practice)
+
+
+func _on_forfeit_answer(yes: bool) -> void:
+	Engine.time_scale = _speed
+	if not yes:
+		return
+	forfeit_chip.visible = false
+	sim.forfeit()
+	_play_events()
 
 
 func _toggle_speed() -> void:
@@ -730,6 +763,7 @@ func _on_revive(unit_id: String) -> void:
 
 func _on_outcome(result: String) -> void:
 	action_bar.visible = false
+	forfeit_chip.visible = false
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
 	if result == "victory":
 		_slowmo_until = Time.get_ticks_msec() + 1200
@@ -755,7 +789,11 @@ func _on_outcome(result: String) -> void:
 		run.award_battle(sim, false)
 		run.audio.stop_music(1.5)
 		sfx.play("jingle_defeat", -1.0, 0.0)
-		overlay.set_result("defeat", "Sällskapet föll efter %d turer" % sim.turn_no)
+		if sim.forfeited:
+			overlay.set_result("defeat", "Körningen är förlorad – Realmen börjar om från våning 1"
+					if not run.state.practice else "Övningen avslutad", "NI GAV UPP")
+		else:
+			overlay.set_result("defeat", "Sällskapet föll efter %d turer" % sim.turn_no)
 
 
 # --- Hjälpfunktioner --------------------------------------------------------

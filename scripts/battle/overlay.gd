@@ -3,6 +3,8 @@ extends Control
 ## Helskärmstexter: nedräkning, paus, raidvarningar, felmeddelanden och resultat.
 
 signal restart_requested
+## Ge upp (0.20.1): bekräftelsen svarar ja eller nej.
+signal forfeit_answered(yes: bool)
 
 var mode := ""  # "", "countdown", "victory", "defeat"
 var paused := false
@@ -107,7 +109,57 @@ func set_result(result: String, sub: String, title := "") -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
+## Frågar om spelaren vill ge upp (striden står still under tiden).
+func ask_forfeit(practice: bool) -> void:
+	mode = "confirm"
+	_confirm_practice = practice
+	mouse_filter = Control.MOUSE_FILTER_STOP
+
+
+var _confirm_practice := false
+
+
+func confirm_yes_rect() -> Rect2:
+	return Rect2(size.x / 2 - 290, size.y / 2 + 40, 270, 64)
+
+
+func confirm_no_rect() -> Rect2:
+	return Rect2(size.x / 2 + 20, size.y / 2 + 40, 270, 64)
+
+
+func _draw_confirm(w: float, h: float) -> void:
+	draw_rect(Rect2(0, 0, w, h), Color(0, 0, 0, 0.72))
+	var panel := Rect2(w / 2 - 330, h / 2 - 120, 660, 250)
+	draw_rect(panel, Color(0.07, 0.06, 0.09, 0.97))
+	draw_rect(panel, Color("#e0412e", 0.8), false, 2.0)
+	UiStyle.text(self, Vector2(0, h / 2 - 72), "GE UPP?", 34, Color("#e0412e"), HORIZONTAL_ALIGNMENT_CENTER, w, 6)
+	var text := "Övningen avslutas." if _confirm_practice else "Körningen är förlorad och Realmen börjar om från våning 1."
+	UiStyle.text(self, Vector2(0, h / 2 - 30), text, 19, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, w, 4)
+	if not _confirm_practice:
+		UiStyle.text(self, Vector2(0, h / 2 - 4), "Det ni redan har vunnit – erfarenhet, troféer, silver och material – behåller ni.",
+				15, Color(1, 1, 1, 0.65), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
+	UiStyle.big_button(self, confirm_yes_rect(), "GE UPP", _t, true)
+	var no := confirm_no_rect()
+	draw_rect(no, Color(0, 0, 0, 0.7))
+	draw_rect(no, Color(UiStyle.GOLD, 0.9), false, 2.0)
+	UiStyle.text(self, no.position + Vector2(0, no.size.y / 2 + 8), "FORTSÄTT STRIDEN", 21, Color.WHITE,
+			HORIZONTAL_ALIGNMENT_CENTER, no.size.x, 4)
+
+
 func _gui_input(event: InputEvent) -> void:
+	if mode == "confirm" and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		accept_event()
+		if confirm_yes_rect().has_point(event.position):
+			mode = ""
+			forfeit_answered.emit(true)
+		elif confirm_no_rect().has_point(event.position) or not Rect2(size.x / 2 - 330, size.y / 2 - 120, 660, 250).has_point(event.position):
+			mode = ""
+			mouse_filter = Control.MOUSE_FILTER_IGNORE
+			forfeit_answered.emit(false)
+		return
+	if mode == "confirm":
+		accept_event()
+		return
 	if mode in ["victory", "defeat"] and _big_t > 1.0 and event is InputEventMouseButton and event.pressed:
 		restart_requested.emit()
 		accept_event()
@@ -124,6 +176,9 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	var w := size.x
 	var h := size.y
+	if mode == "confirm":
+		_draw_confirm(w, h)
+		return
 	if paused:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.02, 0.06, 0.45))
 		UiStyle.text(self, Vector2(0, h * 0.42), "TAKTISK PAUS", 44, Color(1, 1, 1, 0.9), HORIZONTAL_ALIGNMENT_CENTER, w, 8)
