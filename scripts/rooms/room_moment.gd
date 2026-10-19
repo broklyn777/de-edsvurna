@@ -36,6 +36,10 @@ var hero_ids: Array = []
 ## Hålls kvar på sista bilden efter finished i stället för att tona ut (t.ex. bakom en dialog).
 var hold_last_frame := true
 var play_sound := true
+## 2× MSAA jämnar ut kanterna. Sätt till Viewport.MSAA_DISABLED före add_child om telefonen inte orkar.
+var msaa := Viewport.MSAA_2X
+## Skuggor från figurerna och mittpunkten (ett extra ritpass). false före add_child stänger av dem.
+var shadows := true
 
 var world: RoomWorld
 var camera: Camera3D
@@ -74,13 +78,16 @@ func _ready() -> void:
 	add_child(container)
 	var vp := SubViewport.new()
 	vp.own_world_3d = true
-	vp.msaa_3d = Viewport.MSAA_2X
+	vp.msaa_3d = msaa
 	container.add_child(vp)
 
 	world = RoomWorld.new()
 	world.kind = kind
 	world.style = style
 	vp.add_child(world)
+	if not shadows:
+		for l in world.find_children("*", "DirectionalLight3D", true, false):
+			(l as DirectionalLight3D).shadow_enabled = false
 	camera = Camera3D.new()
 	camera.fov = 48.0
 	camera.current = true
@@ -102,6 +109,12 @@ func _ready() -> void:
 		world.add_child(m)
 		m.setup(u, null, d.visual)
 		m.sfx = sfx
+		# Figurernas egna ljus (kastljus, sken) används inte här och tar av ljusbudgeten.
+		for l in m.find_children("*", "Light3D", true, false):
+			l.visible = false
+		# Blinkningen vid träff (material_overlay) behövs inte här och ritar varje del en gång till.
+		for mesh in m.find_children("*", "MeshInstance3D", true, false):
+			(mesh as MeshInstance3D).material_overlay = null
 		m.position = starts[i]
 		m.face(m.position + Vector3(0, 0, -5))
 		models.append(m)

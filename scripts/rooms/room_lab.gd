@@ -19,6 +19,10 @@ var _data: Dictionary
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	set_process_internal(true)
+	if OS.get_cmdline_user_args().has("--bench"):
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		Engine.max_fps = 0
 	_data = GameData.load_all()
 	var room := "treasure"
 	var style := ""
@@ -52,6 +56,12 @@ func _next() -> void:
 	_moment = RoomMoment.create(item[0], item[1], _party, _data)
 	add_child(_moment)
 	_moment.finished.connect(_on_finished)
+	var args := OS.get_cmdline_user_args()
+	if args.has("--no-msaa"):
+		(_moment.world.get_viewport() as SubViewport).msaa_3d = Viewport.MSAA_DISABLED
+	if args.has("--no-shadow"):
+		for l in _moment.world.find_children("*", "DirectionalLight3D", true, false):
+			l.shadow_enabled = false
 
 
 func _on_finished(skipped: bool) -> void:
@@ -66,7 +76,6 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _process(_delta: float) -> void:
-	if Engine.get_process_frames() % 10 == 0: print("t=", _moment._t, " rev=", _moment.world.revealed, " title=", _moment._title.get_rect(), _moment._title.modulate.a)
 	if _shot != "" and _moment and _moment._t >= _at:
 		var path := _shot
 		_shot = ""
@@ -81,3 +90,58 @@ func _physics_process(_d: float) -> void:
 		for m in _moment.models:
 			var p: AnimationPlayer = m._player
 			print("%.2f %s anim=%s pos=%s moving=%s" % [_moment._t, m.unit.id, p.current_animation, m.global_position, m.is_moving()])
+
+
+# --bench: mäter bildtakten medan händelsen spelas (2,7–4,8 s), skriver ut och avslutar.
+# Bildtiden låses till skärmens takt (macOS släpper inte vsync i GL); --load lägger till extra vyer
+# som belastar grafikkortet, men mätningen spretar. Ljusen och ritanropen är det pålitliga måttet.
+var _bench_frames := 0
+var _bench_start := 0
+var _bench_draws := 0
+var _load_cams: Array[Camera3D] = []
+## Extra vyer av samma rum i 1920×1080 som belastar grafikkortet, så att skillnader i ljus och
+## MSAA syns i bildtiden trots att skärmen låser takten (macOS släpper inte vsync i GL).
+const LOAD_VIEWS := 10
+
+
+func _add_load_views() -> void:
+	var main_vp := _moment.world.get_viewport() as SubViewport
+	for i in LOAD_VIEWS:
+		var vp := SubViewport.new()
+		vp.size = Vector2i(1920, 1080)
+		vp.world_3d = main_vp.world_3d
+		vp.msaa_3d = main_vp.msaa_3d
+		vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+		var cam := Camera3D.new()
+		cam.fov = _moment.camera.fov
+		cam.current = true
+		vp.add_child(cam)
+		add_child(vp)
+		_load_cams.append(cam)
+
+
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_INTERNAL_PROCESS or not _moment or not OS.get_cmdline_user_args().has("--bench"):
+		return
+	var t := _moment._t
+	var vp := _moment.world.get_viewport().get_viewport_rid()
+	if t >= RoomMoment.REVEAL_AT and _bench_start == 0:
+		_bench_start = Time.get_ticks_usec()
+		if OS.get_cmdline_user_args().has("--load"):
+			_add_load_views()
+	elif _bench_start > 0 and t < RoomMoment.LENGTH:
+		_bench_frames += 1
+		for c in _load_cams:
+			c.global_transform = _moment.camera.global_transform
+		_bench_draws = maxi(_bench_draws, int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)))
+	elif _bench_start > 0:
+		var ms := (Time.get_ticks_usec() - _bench_start) / 1000.0 / maxi(_bench_frames, 1)
+		var lights := 0
+		for l in _moment.world.find_children("*", "Light3D", true, false):
+			if l.is_visible_in_tree():
+				lights += 1
+		var n := maxi(_bench_frames, 1)
+		print("BENCH %s/%s ljus=%d msaa=%s bildtid=%.2f ms (%d extra vyer) drawcalls=%d" % [
+				_moment.style, _moment.kind, lights, _moment.world.get_viewport().msaa_3d, ms, _load_cams.size(), _bench_draws])
+		get_tree().quit()
+		_bench_start = -1

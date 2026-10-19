@@ -48,6 +48,8 @@ UnitModel.free_shared()  # när inga fler UnitModel används (som när striden s
   anroparen frigör det – lämpligt att lägga rummets val/dialog ovanpå. Det är anroparens sak att
   frigöra det; trycket efter `finished` fångas fortfarande av ögonblicket (mouse_filter STOP).
 - `play_sound = false` före `add_child` stänger av ljuden (kryptstämning, fotsteg, händelseljud).
+- `msaa` (standard `Viewport.MSAA_2X`) och `shadows` (standard `true`) sätts före `add_child` om
+  telefonen behöver det. Skuggorna kommer bara från figurerna och mittpunkten.
 - Upp till sex hjältar ställer sig i en båge framför mittpunkten (`RoomWorld.party_slots`).
 - Tider (konstanter i `room_moment.gd`): tona in 0,35 s, dörren 0,3 s, sällskapet går 0,75 s,
   händelsen 2,7 s, slut 4,8 s. Kamerans bana är en kubisk kurva i `CAM_PATH`.
@@ -72,4 +74,31 @@ godot --path . res://scripts/rooms/room_lab.tscn -- --room=treasure --style=chap
 - Koppla in i 0.18:s rumskarta (rummets stil från Realm: Kryptan → `crypt`, kapellet → `chapel`).
 - Egna ljud för dörr, kista och lås (nu lånas `k_shield_wall`, `renew`, `k_shield_slam` …).
 - Fler rumstyper (smedja, handlare, fälla) går att lägga till som en ny `_build_<kind>()` i `RoomWorld`.
-- Prestanda på telefonen är inte uppmätt: rummet har 8 (krypta) till 13 (kapell) OmniLight3D och 2× MSAA.
+- Prestanda på telefonen är inte uppmätt (se nedan).
+
+## Prestanda (0.18)
+
+GL Compatibility klarar bara ett fåtal ljus per objekt. Rummen har därför 4 OmniLight3D och månen
+(DirectionalLight3D med skugga). Facklor, ljusstakar och glasfönster lyser med emission och delar på
+ljus (ett per korridor, ett per sida i kryptan, ett i taket och ett vid bakväggen i kapellet). Det fjärde
+ljuset är rummets händelse (i lägerelden är det elden). Figurernas egna ljus och träffblinkningen
+(`material_overlay`) stängs av i ögonblicket. Väggar och utsmyckning kastar ingen skugga, och alla delar
+som står still slås ihop till ett mesh per material (`RoomWorld._merge_static`).
+
+| Mätt med `--bench` (händelsen, 2,7–4,8 s) | Ljus i scenen före → efter | Ritanrop före → efter |
+|---|---|---|
+| Kapellet, helgedom | 21 → 5 | 775 → 348 |
+| Kryptan, helgedom | 16 → 5 | 710 → 422 |
+| Kapellet, skattkammare | 21 → 5 | 848 → 370 |
+| Kryptan, skattkammare | 16 → 5 | 829 → 424 |
+
+Ljusen före räknar också figurernas ljus (släckta men aktiva). Bildtiden går inte att jämföra på iMacen:
+GL-fönstret låses till skärmens 144 Hz, och med extra belastning (`--load`) spretar samma inställning med
+flera millisekunder mellan körningar. Det som går att mäta (ljus per objekt och ritanrop) halverades.
+Om 2× MSAA behövs går inte heller att avgöra här: mobila GPU:er med tile-rendering klarar ofta 2× MSAA
+billigt, men det bör mätas på telefonen. Utan MSAA blir kanterna på golvfogarna och stängerna märkbart
+taggiga. `RoomMoment.msaa` och `RoomMoment.shadows` finns för att kunna stänga av dem.
+
+```bash
+godot --path . res://scripts/rooms/room_lab.tscn -- --room=shrine --style=chapel --bench
+```

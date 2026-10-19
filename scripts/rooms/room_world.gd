@@ -42,7 +42,6 @@ var _rng := RandomNumberGenerator.new()
 var _pal: Dictionary
 var _flicker: Array = []  ## [ljus, grundstyrka]
 var _door_leaves: Array[Node3D] = []
-var _door_light: OmniLight3D
 var _door_open := 0.0
 var _door_speed := 0.0
 var _reveal_light: OmniLight3D
@@ -50,6 +49,8 @@ var _reveal_light: OmniLight3D
 var _reveal_steps: Array[Callable] = []
 var _idle_steps: Array[Callable] = []
 var _bursts: Array[CPUParticles3D] = []
+## Delar som rör sig och därför inte får slås ihop med resten (se _merge_static).
+var _dynamic: Array[Node3D] = []
 
 
 func _ready() -> void:
@@ -59,6 +60,10 @@ func _ready() -> void:
 	_build_shell()
 	_build_door()
 	_build_dressing()
+	# Väggar, golv, dörr och utsmyckning kastar ingen skugga: bara mittpunkten och figurerna gör det.
+	# Skuggpasset ritar annars om hela rummet en gång till.
+	for g in find_children("*", "GeometryInstance3D", true, false):
+		(g as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	match kind:
 		"treasure": _build_treasure()
 		"shrine": _build_shrine()
@@ -66,6 +71,7 @@ func _ready() -> void:
 		"inscription": _build_inscription()
 		"campfire": _build_campfire()
 		"portal": _build_portal()
+	_merge_static()
 
 
 func _process(delta: float) -> void:
@@ -79,7 +85,6 @@ func _process(delta: float) -> void:
 		var k := 1.0 - pow(1.0 - _door_open, 3.0)
 		_door_leaves[0].rotation.y = deg_to_rad(100.0) * k
 		_door_leaves[1].rotation.y = deg_to_rad(-100.0) * k
-		_door_light.light_energy = 2.5 * k
 	if _revealing and revealed < 1.0:
 		revealed = minf(1.0, revealed + delta / REVEAL_TIME)
 	for step in _reveal_steps:
@@ -136,13 +141,13 @@ func focus_point() -> Vector3:
 func _palette() -> Dictionary:
 	if style == "chapel":
 		return {
-			"bg": Color(0.035, 0.03, 0.03), "ambient": Color(0.55, 0.48, 0.42), "ambient_energy": 0.5,
+			"bg": Color(0.035, 0.03, 0.03), "ambient": Color(0.55, 0.48, 0.42), "ambient_energy": 0.52,
 			"fog": Color(0.12, 0.09, 0.07), "stone": Color(0.66, 0.6, 0.52), "stone_dark": Color(0.42, 0.37, 0.32),
 			"floor": Color(0.55, 0.5, 0.45), "trim": Color(0.82, 0.65, 0.32), "torch": Color(1.0, 0.72, 0.4),
 			"accent": Color(1.0, 0.82, 0.45), "wood": Color(0.32, 0.18, 0.1),
 		}
 	return {
-		"bg": Color(0.02, 0.018, 0.03), "ambient": Color(0.4, 0.37, 0.46), "ambient_energy": 0.5,
+		"bg": Color(0.02, 0.018, 0.03), "ambient": Color(0.46, 0.39, 0.42), "ambient_energy": 0.55,
 		"fog": Color(0.08, 0.06, 0.12), "stone": Color(0.38, 0.35, 0.36), "stone_dark": Color(0.24, 0.22, 0.25),
 		"floor": Color(0.4, 0.37, 0.36), "trim": Color(0.55, 0.42, 0.75), "torch": Color(1.0, 0.55, 0.2),
 		"accent": Color(0.6, 0.4, 1.0), "wood": Color(0.25, 0.16, 0.1),
@@ -252,15 +257,11 @@ func _build_door() -> void:
 		ring.position = Vector3(-side * (leaf_w - 0.25), DOOR_H * 0.48, 0.1)
 		hinge.add_child(ring)
 		_door_leaves.append(hinge)
-	# Ljus som strömmar ut genom dörren när den öppnas, och en fackla i korridoren.
-	_door_light = OmniLight3D.new()
-	_door_light.light_color = _pal.torch
-	_door_light.omni_range = 6.0
-	_door_light.light_energy = 0.0
-	_door_light.position = Vector3(0, 2.2, FRONT - 1.0)
-	add_child(_door_light)
+		_dynamic.append(hinge)
+	# Två facklor i korridoren delar på ett ljus.
 	for side in [-1, 1]:
-		_torch(Vector3(side * (DOOR_W / 2.0 + 0.6), 2.4, FRONT + 2.6), Vector3(-side, 0, 0), 1.3)
+		_torch(Vector3(side * (DOOR_W / 2.0 + 0.6), 2.4, FRONT + 2.6), false)
+	_flicker.append([_light(Vector3(0, 2.6, FRONT + 2.4), _pal.torch, 1.8, 5.5), 1.8])
 
 
 ## Det som gör stilen: facklor och benrester i kryptan, ljus, glasfönster och matta i kapellet.
@@ -271,20 +272,26 @@ func _build_dressing() -> void:
 		var hem := _material(_pal.trim, 0.0, 0.3)
 		for side in [-1, 1]:
 			_box(Vector3(0.08, 0.035, FRONT - CENTER.z - 1.4), Vector3(side * 0.76, 0.016, (FRONT + CENTER.z + 1.4) / 2.0), hem)
-		# Spetsbågiga glasfönster på bakväggen och sidorna, med färgat ljus.
+		# Spetsbågiga glasfönster på bakväggen och sidorna. De lyser själva; ett gemensamt
+		# färgat ljus vid bakväggen ger rummet deras sken.
 		var glass := [Color(0.9, 0.25, 0.2), Color(0.25, 0.45, 1.0), Color(1.0, 0.8, 0.3)]
 		var spots := [[Vector3(-2.6, 3.2, BACK + 0.02), 0.0], [Vector3(2.6, 3.2, BACK + 0.02), 0.0],
 				[Vector3(-HALF_W + 0.02, 3.2, 0.0), PI / 2], [Vector3(HALF_W - 0.02, 3.2, 0.0), -PI / 2]]
 		for i in spots.size():
 			_window(spots[i][0], spots[i][1], glass[i % glass.size()])
-		# Ljusstakar längs väggarna.
+		_light(Vector3(0, 3.4, BACK + 1.4), Color(0.8, 0.62, 0.95), 1.0, 6.5)
+		# Ljusstakar längs väggarna; lågorna lyser själva och ett ljus i taket ger skenet.
 		for p in [Vector3(-3.8, 0, -4.8), Vector3(3.8, 0, -4.8), Vector3(-4.0, 0, 3.6), Vector3(4.0, 0, 3.6)]:
 			_candelabra(p)
-		_flicker.append([_light(Vector3(0, 4.2, 0.5), _pal.torch, 0.9, 10.0), 0.9])
+		_flicker.append([_light(Vector3(0, 4.2, 0.5), _pal.torch, 1.4, 11.0), 1.4])
 	else:
 		for p in [Vector3(-HALF_W + 0.1, 2.5, -4.2), Vector3(HALF_W - 0.1, 2.5, -4.2),
 				Vector3(-HALF_W + 0.1, 2.5, 0.0), Vector3(HALF_W - 0.1, 2.5, 0.0)]:
-			_torch(p, Vector3(-signf(p.x), 0, 0), 1.6)
+			_torch(p, false)
+		# Facklorna på varje sida delar på ett ljus mitt emellan sig.
+		for side in [-1, 1]:
+			var at := Vector3(side * (HALF_W - 0.9), 2.5, -2.1)
+			_flicker.append([_light(at, _pal.torch, 2.6, 9.0), 2.6])
 		# Runband längs bakväggen.
 		var runes := _material(_pal.accent, 1.4)
 		_box(Vector3(HALF_W * 2 - 0.4, 0.05, 0.03), Vector3(0, 3.9, BACK + 0.02), runes)
@@ -333,6 +340,7 @@ func _build_treasure() -> void:
 	var lid_hinge := Node3D.new()
 	lid_hinge.position = Vector3(0, 1.05, -0.45)
 	root.add_child(lid_hinge)
+	_dynamic.append(lid_hinge)
 	# Locket: en låg låda med en välvd topp (en tillplattad cylinder vars undre halva göms i lådan).
 	_box(Vector3(1.52, 0.16, 0.92), Vector3(0, 0.08, 0.45), wood, lid_hinge)
 	var dome := MeshInstance3D.new()
@@ -498,6 +506,7 @@ func _build_prisoner() -> void:
 	root.add_child(hook)
 	var door_bars := Node3D.new()  # burdörren: de fyra främre stängerna
 	root.add_child(door_bars)
+	_dynamic.append(door_bars)
 	for i in 16:
 		var a := i * TAU / 16.0
 		var bar := MeshInstance3D.new()
@@ -520,6 +529,7 @@ func _build_prisoner() -> void:
 	lock.material_override = lock_mat
 	lock.position = Vector3(0.0, 1.2, radius + 0.06)
 	root.add_child(lock)
+	_dynamic.append(lock)
 	# Bojor och kedjor på bakväggen bakom buren.
 	for x in [-1.6, 1.6]:
 		for j in 7:
@@ -541,6 +551,10 @@ func _build_prisoner() -> void:
 			"anims": {"idle": "OneHand_Idle", "hit": "Hit_Chest", "walk": "Walk"},
 			"tint": "#7d766e"})
 	prisoner.position = Vector3(0, 0.12, -0.1)
+	for l in prisoner.find_children("*", "Light3D", true, false):
+		l.visible = false
+	for mesh in prisoner.find_children("*", "MeshInstance3D", true, false):
+		(mesh as MeshInstance3D).material_overlay = null
 	prisoner.face(prisoner.global_position + Vector3(0.4, 0, -1))
 	_box(Vector3(0.5, 0.06, 0.04), Vector3(0, 0.95, 0.1), iron, root)  # bojan mellan händerna
 
@@ -761,6 +775,7 @@ func _build_portal() -> void:
 	swirl.material_override = sh
 	swirl.position = Vector3(0, 1.85, 0.0)
 	root.add_child(swirl)
+	_dynamic.append(swirl)
 	_reveal_light = _light(CENTER + Vector3(0, 1.8, 1.0), Color(0.65, 0.3, 1.0), 0.0, 7.0)
 	var pull := _particles(Color(0.8, 0.5, 1.0), 48, 1.2, 0.05)
 	pull.one_shot = false
@@ -787,6 +802,55 @@ func _build_portal() -> void:
 
 
 # --- Byggstenar ----------------------------------------------------------------
+
+## Slår ihop alla stillastående delar med samma material till ett mesh: rummet består av hundratals
+## små lådor och klot, och varje del är annars ett eget ritanrop (dyrt på telefonen).
+## Delar som rör sig (_dynamic) och figurerna (skelett) lämnas orörda.
+func _merge_static() -> void:
+	var groups := {}
+	var inv := global_transform.affine_inverse()
+	for node in find_children("*", "MeshInstance3D", true, false):
+		var m := node as MeshInstance3D
+		if m.material_override == null or m.mesh is ArrayMesh or _is_dynamic(m):
+			continue
+		var key := [m.material_override, m.cast_shadow]
+		if not groups.has(key):
+			groups[key] = []
+		groups[key].append(m)
+	for key in groups:
+		var list: Array = groups[key]
+		if list.size() < 2:
+			continue
+		var st := SurfaceTool.new()
+		for m in list:
+			st.append_from(m.mesh, 0, inv * m.global_transform)
+		var merged := MeshInstance3D.new()
+		merged.mesh = st.commit()
+		merged.material_override = key[0]
+		merged.cast_shadow = key[1]
+		add_child(merged)
+		for m in list:
+			m.get_parent().remove_child(m)
+			m.free()
+
+
+func _is_dynamic(n: Node) -> bool:
+	while n != self and n != null:
+		if n in _dynamic or n is Skeleton3D or n is UnitModel:
+			return true
+		n = n.get_parent()
+	return false
+
+
+var _shared_mats := {}
+
+## Ett material som delas mellan alla anrop med samma värden, så att delarna kan slås ihop.
+## Bara för material som aldrig ändras efteråt.
+func _shared(c: Color, emit := 0.0, metallic := 0.0) -> StandardMaterial3D:
+	var key := [c, emit, metallic]
+	if not _shared_mats.has(key):
+		_shared_mats[key] = _material(c, emit, metallic)
+	return _shared_mats[key]
 
 func _box(size: Vector3, pos: Vector3, mat: Material, parent: Node = null) -> MeshInstance3D:
 	var m := MeshInstance3D.new()
@@ -821,12 +885,15 @@ func _light(pos: Vector3, c: Color, energy: float, rng: float) -> OmniLight3D:
 	return l
 
 
-func _torch(pos: Vector3, out: Vector3, energy: float) -> void:
-	var holder := _material(Color(0.15, 0.13, 0.12))
+## En fackla på väggen. Lågan lyser själv; ljuset läggs ut separat så att flera facklor kan dela
+## på ett (GL Compatibility klarar bara ett fåtal ljus per objekt).
+func _torch(pos: Vector3, lit := true, out := Vector3.ZERO, energy := 1.5) -> void:
+	var holder := _shared(Color(0.15, 0.13, 0.12))
 	_box(Vector3(0.12, 0.45, 0.12), pos - Vector3(0, 0.3, 0), holder)
-	var flame := _sphere(0.11, pos, _material(Color(1.0, 0.7, 0.3), 3.0))
+	var flame := _sphere(0.11, pos, _shared(Color(1.0, 0.7, 0.3), 3.0))
 	flame.scale = Vector3(1, 1.6, 1)
-	_flicker.append([_light(pos + out * 0.5, _pal.torch, energy, 6.0), energy])
+	if lit:
+		_flicker.append([_light(pos + out * 0.5, _pal.torch, energy, 6.0), energy])
 
 
 func _candle(parent: Node3D, pos: Vector3, h: float) -> void:
@@ -836,22 +903,21 @@ func _candle(parent: Node3D, pos: Vector3, h: float) -> void:
 	c.bottom_radius = 0.05
 	c.height = h
 	wax.mesh = c
-	wax.material_override = _material(Color(0.92, 0.88, 0.78))
+	wax.material_override = _shared(Color(0.92, 0.88, 0.78))
 	wax.position = pos + Vector3(0, h / 2.0, 0)
 	parent.add_child(wax)
-	var flame := _sphere(0.035, pos + Vector3(0, h + 0.05, 0), _material(Color(1.0, 0.75, 0.35), 3.0), parent)
+	var flame := _sphere(0.035, pos + Vector3(0, h + 0.05, 0), _shared(Color(1.0, 0.75, 0.35), 3.0), parent)
 	flame.scale = Vector3(1, 1.8, 1)
 
 
 func _candelabra(pos: Vector3) -> void:
-	var iron := _material(Color(0.2, 0.17, 0.14), 0.0, 0.5)
+	var iron := _shared(Color(0.2, 0.17, 0.14), 0.0, 0.5)
 	_box(Vector3(0.08, 1.5, 0.08), pos + Vector3(0, 0.75, 0), iron)
 	_box(Vector3(0.6, 0.06, 0.08), pos + Vector3(0, 1.5, 0), iron)
 	var holder := Node3D.new()
 	add_child(holder)
 	for x in [-0.27, 0.0, 0.27]:
 		_candle(holder, pos + Vector3(x, 1.53, 0), 0.18)
-	_flicker.append([_light(pos + Vector3(0, 1.9, 0.3), _pal.torch, 0.9, 4.0), 0.9])
 
 
 func _window(pos: Vector3, rot_y: float, c: Color) -> void:
@@ -859,11 +925,11 @@ func _window(pos: Vector3, rot_y: float, c: Color) -> void:
 	root.position = pos
 	root.rotation.y = rot_y
 	add_child(root)
-	var frame := _material(_pal.stone_dark)
+	var frame := _shared(_pal.stone_dark)
 	_box(Vector3(1.3, 2.3, 0.1), Vector3(0, 0, 0.02), frame, root)
 	var colors := [c, c.lerp(Color(0.2, 0.4, 1.0), 0.5), c.lerp(Color(1.0, 0.85, 0.3), 0.5)]
 	for i in 6:
-		var pane := _material(colors[i % 3], 1.3)
+		var pane := _shared(colors[i % 3], 1.3)
 		_box(Vector3(0.48, 0.62, 0.02), Vector3(-0.27 + (i % 2) * 0.54, -0.72 + (i / 2) * 0.68, 0.08), pane, root)
 	var arch := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
@@ -885,12 +951,6 @@ func _window(pos: Vector3, rot_y: float, c: Color) -> void:
 	rose.rotation.x = PI / 2
 	rose.position = Vector3(0, 1.15, 0.08)
 	root.add_child(rose)
-	var l := OmniLight3D.new()
-	l.light_color = c
-	l.light_energy = 0.8
-	l.omni_range = 4.0
-	l.position = Vector3(0, -0.4, 1.4)
-	root.add_child(l)
 
 
 func _rune(parent: Node3D, cell: Vector3, mat: Material) -> void:
