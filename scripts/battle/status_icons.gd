@@ -31,14 +31,15 @@ static func draw(ci: CanvasItem, data: Dictionary, u: CombatUnit, pos: Vector2, 
 		ci.draw_rect(r, Color(0.05, 0.04, 0.07, 0.9))
 		ci.draw_rect(r, col, false, 2.0)
 		Glyphs.draw(ci, d.get("glyph", "diamond"), r.get_center(), s * 0.3, col.lerp(Color.WHITE, 0.2))
+		var fs := 15 if s >= 22.0 else 12
 		if float(a.get("remaining", -1)) > 0.0:
 			var n := str(int(a.remaining))
-			ci.draw_string_outline(font, r.position + Vector2(s - 8, s + 2), n, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, 3, Color.BLACK)
-			ci.draw_string(font, r.position + Vector2(s - 8, s + 2), n, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+			ci.draw_string_outline(font, r.position + Vector2(s - fs * 0.6, s + 3), n, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 4, Color.BLACK)
+			ci.draw_string(font, r.position + Vector2(s - fs * 0.6, s + 3), n, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color.WHITE)
 		if int(a.get("stacks", 1)) > 1:
 			var st := "×%d" % int(a.stacks)
-			ci.draw_string_outline(font, r.position + Vector2(s - 10, 9), st, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, 3, Color.BLACK)
-			ci.draw_string(font, r.position + Vector2(s - 10, 9), st, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, col)
+			ci.draw_string_outline(font, r.position + Vector2(s - fs * 0.8, fs * 0.75), st, HORIZONTAL_ALIGNMENT_LEFT, -1, fs - 2, 3, Color.BLACK)
+			ci.draw_string(font, r.position + Vector2(s - fs * 0.8, fs * 0.75), st, HORIZONTAL_ALIGNMENT_LEFT, -1, fs - 2, col)
 		x += s + 4.0
 	return x
 

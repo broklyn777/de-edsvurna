@@ -36,7 +36,6 @@ func _process(delta: float) -> void:
 	camera.v_offset = randf_range(-k, k)
 	for i in _torches.size():
 		_torches[i].light_energy = 2.2 + 0.35 * sin(_t * 11.0 + i * 2.1) + 0.2 * sin(_t * 23.0 + i)
-	_runes.emission_energy_multiplier = 1.2 + 0.4 * sin(_t * 1.3)
 
 
 func project(world_pos: Vector3) -> Vector2:
@@ -150,10 +149,10 @@ func _build_floor() -> void:
 
 	_runes = StandardMaterial3D.new()
 	_runes.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_runes.albedo_color = Color(0.6, 0.4, 1.0)
-	_runes.emission_enabled = true
-	_runes.emission = Color(0.6, 0.4, 1.0)
-	_runes.emission_energy_multiplier = 1.2
+	# 0.22.1: tonad, så att runcirkeln läses som en del av golvet och inte som en markering i striden.
+	_runes.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_runes.albedo_color = Color(0.42, 0.36, 0.55, 0.28)
+	_runes.emission_enabled = false
 	for r in [3.2, 4.4]:
 		var ring := MeshInstance3D.new()
 		var torus := TorusMesh.new()

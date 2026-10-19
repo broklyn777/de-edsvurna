@@ -24,7 +24,7 @@ var _t := 0.0
 func setup(u: CombatUnit, s: CombatSim) -> void:
 	unit = u
 	sim = s
-	size = Vector2(240, 104 if not u.artifact.is_empty() else 90)
+	size = Vector2(240, 112 if not u.artifact.is_empty() else 98)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
@@ -92,7 +92,7 @@ func _draw() -> void:
 		draw_rect(hp_rect, Color(0.5, 1, 0.5, 0.35 * _heal_flash))
 
 	# 0.22: statusikoner under livmätaren (buff ljus kant, debuff röd, turer kvar i hörnet).
-	StatusIcons.draw(self, sim.data, unit, Vector2(10, 50), 18.0, size.x - 20)
+	StatusIcons.draw(self, sim.data, unit, Vector2(10, 50), 25.0, size.x - 20)
 
 	if not unit.traits.is_empty():
 		var shown := unit.traits.filter(func(t: String) -> bool:
@@ -105,15 +105,15 @@ func _draw() -> void:
 		var trait_name := " · ".join(names)
 		var col := Color(UiStyle.TRAIT_GOLD, 0.6).lerp(Color.WHITE, _trait_flash * 0.8)
 		if _trait_flash > 0.0:
-			draw_rect(Rect2(6, 72, size.x - 12, 16), Color(UiStyle.TRAIT_GOLD, 0.25 * _trait_flash))
-		UiStyle.text(self, Vector2(10, 85), trait_name, 13, col)
+			draw_rect(Rect2(6, 80, size.x - 12, 16), Color(UiStyle.TRAIT_GOLD, 0.25 * _trait_flash))
+		UiStyle.text(self, Vector2(10, 93), trait_name, 13, col)
 
 	if not unit.artifact.is_empty():
 		var kind: Dictionary = sim.data.artifacts.get(unit.artifact.type, {})
 		var ab: String = unit.artifact.ability
-		Glyphs.draw(self, kind.get("icon", "diamond"), Vector2(16, 95), 5.0, Color("#b9c4d6"))
+		Glyphs.draw(self, kind.get("icon", "diamond"), Vector2(16, 103), 5.0, Color("#b9c4d6"))
 		var label: String = kind.get("name", "") + ((": " + sim.data.abilities[ab].name) if ab != "" else "")
-		UiStyle.text(self, Vector2(26, 100), label, 12, Color("#b9c4d6"), HORIZONTAL_ALIGNMENT_LEFT, size.x - 34)
+		UiStyle.text(self, Vector2(26, 108), label, 12, Color("#b9c4d6"), HORIZONTAL_ALIGNMENT_LEFT, size.x - 34)
 
 	if not unit.alive:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55))
