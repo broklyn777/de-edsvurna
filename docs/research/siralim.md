@@ -946,6 +946,96 @@ Bara sådant som finns i Siralim. Varje anpassning är märkt.
 6. **Senare, i originalets ordning:** kort (stat-bonus per fiende och samlingsbonus, passar Bestiariet),
    stat scrolls via Byggmästarens projekt, och reliker.
 
+## 15. Artefaktuppgraderingar: vad som gör dem roliga (underlag för 0.20)
+
+VD:ns tvivel: "Jag brukar älska att uppgradera gear … jag kan inte se det roligt att uppgradera en
+artefakt bara. Men det kanske är det. Vi får göra det roligt."
+
+### 15.1 Nivåer 1–50
+
+| Regel | Säkerhet |
+|---|---|
+| Artefakter tillverkas och uppgraderas hos Blacksmith i slottet. De hittas aldrig färdiga. | Bekräftat (Codex) |
+| Varje nivå stärker **alla** egenskaper i artefakten ("en nivå 30-artefakt ger större stat-ökning än en nivå 10"). | Bekräftat (Codex) |
+| Nya platser öppnas vid vissa nivåer: Stat 3, Trick 5, Stat 10, Trait 15, Trick 25, Stat 35, Spell Gem 50, sedan Nether (extra uppgradering). | Bekräftat (wiki) |
+| Kostnad i Brimstone per nivå: 1 000 (nivå 1), 250 (2–10), 500 (11–20), 750 (21–30), 1 000 (31–40), 5 000 (41–50), 25 000 (Nether-platsen). Totalt 75 750 till nivå 50. | Bekräftat (wiki-tabell; exakt nivå för varje plats är något oklar i tabellen) |
+| Smeden själv måste uppgraderas via Projects för att nå nivå 50. | Bekräftat (Codex, wiki Projects) |
+
+### 15.2 Stat Slots och Amber
+
+| Regel | Säkerhet |
+|---|---|
+| Stat Slots tar Stat Materials, *Amber*, i olika färger. Det är **den vanligaste materialtypen** i spelet. En plats kostar 5 Amber. | Bekräftat (Codex, wiki) |
+| Varje färg ger en av de fem stats, eller delar ökningen mellan två. | Bekräftat (Codex) |
+| Storleken följer artefaktens nivå, inte materialet. Amber har inga slumpvärden eller sällsynthetsgrader. | Troligt (inga värden på materialen i någon källa; Codex säger att nivån stärker allt) |
+| Material hittas under vandringen i Realms (marken, kistor, fiender) och kan köpas i butiker. Realms har material i *common, rare, legendary*. | Bekräftat (Codex, wiki Realms) |
+| Man får bonus på föremål bara på det djupaste djup man nått. Realm Instability ger mer (upp till +400 %). | Bekräftat (Codex, wiki Realms) |
+| Att ta ut ett material **förstör** det. Nether Stones överlever. | Bekräftat (Codex) |
+
+### 15.3 Övriga material
+
+| Plats | Material | Vad det gör | När | Säkerhet |
+|---|---|---|---|---|
+| Trick (2) | *Slate of (Buff)*, *Curio of (Debuff)*, *(Class) Crippler*, *Whetstone*, *Jagged Rock*, *Armor Scrap*, *Slippery Stone*, *Pump Drill*, *Arcane Sigil* | Chans till buff när man gör skada, chans till debuff på fienden, klasstyrka, mer anfallsskada, krit, mindre skada, undvikande, fler Spell Gem-platser, potency | "Något mindre vanliga än Stat Materials" | Bekräftat (Codex) |
+| Trait (1) | Trait Materials | Ytterligare ett trait | "Extremely difficult": Masters (efter 3 segrar), Assassination-uppdrag | Bekräftat |
+| Spell (1) | Spell Gem | Chans att kasta spellen vid artefakttypens handling. Gemmets nivå och egenskaper ignoreras. | Nivå 50 | Bekräftat |
+| Nether (1) | Nether Stone | Slumpgenererad, "Diablo-liknande". Kan ge flera traits, spells och stats. Sällsynthet visas med ett tal. | Efter nivå 50. Vanligare med hög instabilitet och djup. | Bekräftat (Codex, wiki); frekvens: Troligt (spelare) |
+
+### 15.4 Vad spelarna säger
+
+- **Tråkigt:** grind. En spelare hade "dumpat alla resurser i artefakter och spell gems och kan inte
+  uppgradera utan timmar av grind". En annan saknar känslan av framsteg. Troligt (Steam).
+- **Roligt:** bredden i byggen ("build diversity far surpasses the other Siralim games"), där artefakter,
+  spells och traits ihop gör lagbygget. Nether Stones beskrivs som slutspelets jakt, med slumpade värden
+  och sällsynthet. Troligt (Steam, wiki).
+- Slutsatsen är densamma som VD:ns: **att höja en procentsiffra är inte roligt. Det roliga är när en
+  uppgradering öppnar ett nytt val** (en ny plats, en ny trigger) och när man hittar något sällsynt.
+
+### 15.5 Koppling till att gå tillbaka
+
+- Material finns på alla djup, så att gå tillbaka ger nivåer, troféer och vanliga material (Amber).
+- **Det bästa bytet finns på det djupaste djupet** (bonus bara där), och Nether Stones med instabilitet.
+  Originalet driver alltså spelaren både bakåt (bli starkare, testa) och framåt (bättre byte). Bekräftat.
+
+### 15.6 Förslag: vår Smed (anpassningar märkta)
+
+**Princip:** varje uppgradering ska **öppna något**: en plats, ett val eller en tydlig ny regel. Inte
+bara +2 %.
+
+1. **Nivåer 1–10** i stället för 1–50. *Anpassning:* vi har få strider per körning. Platserna öppnas i
+   originalets **ordning**:
+
+   | Nivå | Öppnas | Siralim |
+   |---|---|---|
+   | 1 | Typens stat och **förmågeplatsen** (typen avgör triggern) | Spell-plats vid 50 |
+   | 2 | Stat-plats 1 | 3 |
+   | 3 | Trick-plats 1 | 5 |
+   | 5 | Stat-plats 2 | 10 |
+   | 7 | Trick-plats 2 | 25 |
+   | 9 | Stat-plats 3 | 35 |
+   | 10 | Nether-plats (senare) | efter 50 |
+
+   *Anpassning:* förmågeplatsen redan på nivå 1, eftersom vår artefakt redan har den och det är den mest
+   regelbrytande delen. Trait-platsen (Siralim 15) hoppar vi över, eftersom trofén redan är vår
+   trait-plats (beslut i `siralim_innehall.md` §4).
+2. **Varje nivå stärker alla egenskaper** (originalet), t.ex. +10 % per nivå.
+3. **Material från rummen** (originalet):
+   - Amber i fem färger, en per stat. Vanligt: strider och skattkammare.
+   - Trick-material med originalets namn och effekter (Brynsten = Whetstone, Taggsten = Jagged Rock,
+     Rustningsskrot = Armor Scrap, Hal sten = Slippery Stone, Arkant sigill …). Mindre vanligt:
+     elit, skattkammare, portaler.
+   - Bättre chans på det djupaste djupet. 5 Amber per plats, som i originalet.
+4. **Att ta ut förstör materialet** (originalet). Det gör valet viktigt.
+5. **Silver** i stället för Brimstone. *Anpassning:* vi har en valuta. Kostnaden stiger brant per nivå,
+   som i originalet.
+6. **Smedens egen nivå** via Byggmästarens Projects (originalet). Den öppnar artefaktnivå 4–6, 7–9 och
+   10, så att Smeden växer med kampanjen.
+7. **Nether Stones senare**, som jakten i slutspelet: slumpade, med ett sällsynthetstal (originalet).
+   Det är originalets svar på "loot-känslan", och det svar som ligger närmast det VD:n älskar med gear.
+8. **Synligt mål** (originalet visar platserna i smedjan): Smeden visar "nästa nivå öppnar
+   Trick-plats". *Litet eget tillägg:* artefakten syns i 3D på hjälten och får en glöd per öppnad plats,
+   bara utseende.
+
 ---
 
 ## Källor
