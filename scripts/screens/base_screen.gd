@@ -1,14 +1,14 @@
 extends TapScreen
 ## Basen mellan körningarna (Siralims slott, förenklat). Härifrån går man till Kampanjkartan,
-## Övningsgården, Edsaltaret, Smeden, Makron och Biblioteket. Förlust och seger på sista våningen leder hit.
+## Övningsgården, Kallets altare, Smeden, Makron och Biblioteket. Förlust och seger på sista våningen leder hit.
 
 const PLACES := [
 	{"id": "gate", "name": "Kampanjkartan", "tag": "TELEPORTATION SHRINE",
 		"text": "Landet och dess Realms. Välj Realm, djup och instabilitet, förbered sällskapet och gå in."},
 	{"id": "practice", "name": "Övningsgården", "tag": "ARENA",
 		"text": "Prova sällskapet, makrona och troféerna mot valfria fiender. Inget förloras, Charges är fulla."},
-	{"id": "altar", "name": "Edsaltaret", "tag": "ENCHANTED WARDROBE",
-		"text": "Välj Paladinens Ed – den gäller hela sällskapet – och köp perks för silver. Återställ gratis."},
+	{"id": "altar", "name": "Kallets altare", "tag": "ENCHANTED WARDROBE",
+		"text": "Välj Paladinens kall – den gäller hela sällskapet – och köp perks för silver. Återställ gratis."},
 	{"id": "smith", "name": "Smeden", "tag": "BLACKSMITH",
 		"text": "Smid en artefakt per hjälte: svärd, stav, sköld, hjälm eller stövlar, med en förmåga som slår till av sig själv."},
 	{"id": "macros", "name": "Makron", "tag": "MACROS",

@@ -7,7 +7,7 @@ Tre lager:
   hitta både vår kod och originalets beskrivningar.
 - **Research** skriver Siralims engelska termer, gärna med det svenska ordet inom parentes.
 
-Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
+Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 
 ## Strid
 
@@ -49,8 +49,8 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Charges | charges | Charges | Användningar per förmåga, räcker hela körningen (fylls bara vid en ny körning). Siralim-nivå: starkare förmågor 5, medel 6–8 (`docs/research/siralim.md` §3b). Tillbaka bara via Eder, troféer och artefakter (t.ex. Vila upp). |
 | Regelbrytare | convert_damage, parts | t.ex. Outcast No Longer | |
 | Paladinen | `paladin` | spelaren (Siralim Mage) | Medveten avvikelse: Siralims spelare strider aldrig själv. |
-| Ed | oath (`data/oaths.json`, `Profile.oath`) | Specialization | En kärna som alltid verkar plus köpta perks. Hämndens ed ≈ Paladin (Retribution), Gryningens ed ≈ Cleric (Luminesce), Väktarens ed ≈ Siegemaster (Thorns). Bärs av Paladinen och slutar verka när hen stupar (vår avvikelse). |
-| Perk | perk (trait med `"oath"` och `"perk": true`) | Perk | Köps för silver vid Edsaltaret, ett steg per perk (Siralim har ranks). Återställs gratis. |
+| Kall (hette Ed före 0.18) | oath (`data/oaths.json`, `Profile.oath`) | Specialization | En kärna som alltid verkar plus köpta perks. Domens kall ≈ Paladin (Retribution), Gryningens kall ≈ Cleric (Luminesce), Väktarens kall ≈ Siegemaster (Thorns). Bärs av Paladinen och slutar verka när hen stupar (vår avvikelse). |
+| Perk | perk (trait med `"oath"` och `"perk": true`) | Perk | Köps för silver vid Kallets altare, ett steg per perk (Siralim har ranks). Återställs gratis. |
 | Gäller hela sällskapet | `"scope": "party"`, `traits_of()` | Specialization | Egenskapen verkar som om varje levande allierad bar den. |
 | Utförare | `actor`: event_unit / event_target / event_source | – | Vem i händelsen som utför effekten. |
 | När striden börjar | trigger `battle_start` | start of battle | Efter Siralims ordning: buffar ges innan första turen. |
@@ -97,7 +97,7 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Realm Quest | `RunState.quest`, `roll_quest()`, `Profile.quests_done` | Realm Quest | Jakt (Nemesis), Rensa (2 elitstrider), Rening (3 helgedomar). Silver och en perk-poäng per ny Realm och djup. |
 | Nemesis | `nemesis` i rummet, `CombatUnit.nemesis` | Nemesis | En namngiven elit på ett rum (questen Jakt). |
 | Sparad körning | `user://run.cfg`, `RunState.save()` | sparning | Efter varje rum; spelet fortsätter där vid start. |
-| Edsaltaret | altar (`altar_screen`, `Profile.buy_perk`, `reset_perks`) | Enchanted Wardrobe | Välj Ed och köp perks för silver; återställ gratis. |
+| Kallets altare | altar (`altar_screen`, `Profile.buy_perk`, `reset_perks`) | Enchanted Wardrobe | Välj kall och köp perks för silver; återställ gratis. |
 | Övningsgården | practice (`RunState.practice`) | Arena | Strid mot valfritt möte utan risk; makrologgen finns kvar efteråt. |
 | Smeden | smith (`Profile.forge`) | Blacksmith | Smida artefakt (100 silver) eller byta förmåga (40). |
 | Biblioteket | library | Codex / Bestiary | Samlingen av troféer. |
@@ -115,12 +115,12 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Additional damage | går förbi Defense och minskningar | `additional_from_stat` (Bästa försvaret) |
 | Top / Bottom of Timeline | flytta i turordningen | – |
 | Calm Mode | lägre Action Limits | `TURN_LIMIT` = 5 |
-| Retribution | Paladins kärna: slå tillbaka vid skada | Hämndens ed |
-| Perk | förmån i en Specialization | perk vid Edsaltaret |
+| Retribution | Paladins kärna: slå tillbaka vid skada | Domens kall |
+| Perk | förmån i en Specialization | perk vid Kallets altare |
 | Perk rank | perkens nivå (Siralim 1–50) | perk-nivå, `ranks` i oaths.json: 2–3 på rena siffror, 1 på regelbrytare; en post per nivå i listan |
-| Anointment | lånad perk från en annan Specialization efter en False God | lånad perk, `Profile.anoint()`: en plats när en boss (Benfursten) är besegrad, kostar poäng ur Edens pott |
-| Perk Points | poäng att lägga i perks, från Realm Quests | perk-poäng, `Profile.perk_points()`: 2 från start, +1 per klarad quest (ny Realm och djup), per Ed; äldre profiler behåller sina (`bonus_points`) |
-| Enchanted Wardrobe | byt Specialization och perks | Edsaltaret |
+| Anointment | lånad perk från en annan Specialization efter en False God | lånad perk, `Profile.anoint()`: en plats när en boss (Benfursten) är besegrad, kostar poäng ur kallets pott |
+| Perk Points | poäng att lägga i perks, från Realm Quests | perk-poäng, `Profile.perk_points()`: 2 från start, +1 per klarad quest (ny Realm och djup), per kall; äldre profiler behåller sina (`bonus_points`) |
+| Enchanted Wardrobe | byt Specialization och perks | Kallets altare |
 | Trait Slot, Nether Stone | Artifactens trait-plats; sena trait-platser | – |
 | Master | rasmästare med unikt trait | – |
 | Realm Quest, Fortune | uppdrag och belöning i en Realm | – |

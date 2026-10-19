@@ -156,7 +156,7 @@ func test_barrier_absorbs_before_health_and_triggers_nothing() -> void:
 	assert_eq(alva.hp, alva.max_hp, "Barrier tog allt")
 	assert_eq(alva.barrier, 40.0)
 	assert_eq(events.filter(func(e: Dictionary) -> bool: return e.get("ability", "") == "oath_vengeance").size(), 0,
-			"en träff som Barrier tog sätter inte igång Hämndens ed")
+			"en träff som Barrier tog sätter inte igång Domens kall")
 	sim._deal_damage(sim.unit("skeleton_archer_1"), alva, 60.0, "physical", "bone_arrow", false, true)
 	assert_eq(alva.hp, alva.max_hp - 20.0)
 	assert_true(not alva.auras.has("barrier"), "Barrier försvinner när den är slut")

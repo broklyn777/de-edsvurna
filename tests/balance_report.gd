@@ -19,7 +19,7 @@ const ARTIFACTS := {
 	"alva": {"type": "staff", "ability": "judgement"},
 	"eira": {"type": "boots", "ability": "arrow_rain"},
 }
-## Det bästa perk-bygget i 0.17 inom poängen: 2 poäng på djup 1, 3 på djup 3 (Gryningens ed med
+## Det bästa perk-bygget i 0.17 inom poängen: 2 poäng på djup 1, 3 på djup 3 (Gryningens kall med
 ## lånad Krigsmaskin).
 const BEST_PERKS := {1: ["oath_dawn", "ward_war_machine"], 3: ["oath_dawn", "dawn_anointment", "ward_war_machine"]}
 
@@ -44,7 +44,7 @@ func _init() -> void:
 		_line(data, "%s: TUNED" % data.realms[realm_id].short, Bot.Skill.TUNED, {}, {}, 1, realm_id, {}, "simple", 2)
 		_line(data, "%s: TUNED + en artefakt + %s" % [data.realms[realm_id].short, _names(data, BEST_PERKS[1])],
 				Bot.Skill.TUNED, {"paladin": BEST_PERKS[1]}, ONE_ARTIFACT, 1, realm_id, {}, "simple", 2)
-	print("=== Edernas kärnor, djup 1 (MACRO, kryptan, enkel väg) ===")
+	print("=== Kallens kärnor, djup 1 (MACRO, kryptan, enkel väg) ===")
 	for oath_id in data.oaths:
 		_line(data, data.traits[oath_id].name, Bot.Skill.MACRO, {"paladin": [oath_id]}, {}, 1, "crypt", {}, "simple")
 	quit()

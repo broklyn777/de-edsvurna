@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 ## Basen (0.12): silver och Smeden i profilen, Övningsgården, artefakter i striden och att
-## Paladinens Ed slutar verka medan hen är död.
+## Paladinens kall slutar verka medan hen är död.
 
 const TMP_PROFILE := "user://test_profile_tmp.cfg"
 
@@ -210,11 +210,11 @@ func test_oath_stops_while_paladin_dead_and_returns_on_revive() -> void:
 	sim._kill(paladin)
 	sim.drain_events()
 	sim._deal_damage(archer, sim.unit("alva"), 50.0, "physical", "bone_arrow", false, true)
-	assert_eq(vengeance.call(), 0, "Eden verkar inte medan Paladinen är död")
+	assert_eq(vengeance.call(), 0, "Kallet verkar inte medan Paladinen är död")
 	sim._revive(paladin, 0.5)
 	sim.turn_no += 1  # ny tur, så att "en gång per tur" inte spelar in
 	sim._deal_damage(archer, sim.unit("alva"), 50.0, "physical", "bone_arrow", false, true)
-	assert_eq(vengeance.call(), 1, "Eden verkar igen när Paladinen väcks")
+	assert_eq(vengeance.call(), 1, "Kallet verkar igen när Paladinen väcks")
 
 
 func test_party_oath_stops_while_paladin_dead() -> void:
@@ -227,7 +227,7 @@ func test_party_oath_stops_while_paladin_dead() -> void:
 	brokk.auras.clear()
 	sim._kill(paladin)
 	sim._add_aura(brokk, brokk, "provoke")
-	assert_true(not brokk.auras.has("defend"), "Eden verkar inte medan Paladinen är död")
+	assert_true(not brokk.auras.has("defend"), "Kallet verkar inte medan Paladinen är död")
 	sim._revive(paladin, 0.5)
 	brokk.auras.clear()
 	sim._add_aura(brokk, brokk, "provoke")

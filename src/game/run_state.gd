@@ -1,6 +1,6 @@
 class_name RunState
 extends RefCounted
-## En körning genom kryptan: vald Ed, sällskap, våning och troféer. Ren logik utan noder.
+## En körning genom kryptan: valt kall, sällskap, våning och troféer. Ren logik utan noder.
 ##
 ## Varje vunnen strid ger ett val av en trofé bland monstren man just slog. Troféer kan flyttas
 ## fritt mellan hjältarna mellan striderna (en per hjälte).
@@ -21,7 +21,7 @@ const TROPHY_CHANCE_PER_INSTABILITY := 0.1
 const BOSS_WINS_FOR_TROPHY := 3
 
 var oath := "oath_vengeance"
-## Köpta perks i Eden (Edsaltaret). De bärs av Paladinen och verkar som Eden.
+## Köpta perks i Kallet (Kallets altare). De bärs av Paladinen och verkar som Kallet.
 var perks: Array = []
 ## Paladinen först, sedan följeslagarna.
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
@@ -70,7 +70,7 @@ var next_rules: Array = []
 var finished := false
 
 
-## En ny körning från basen: Eden och sällskapet från Kryptporten, artefakterna från Smeden.
+## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
 static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	var s := RunState.new()
 	s.oath = profile.oath
@@ -131,7 +131,7 @@ func is_last_floor() -> bool:
 	return practice or floor >= floor_ids.size() - 1
 
 
-## Egenskaper per hjälte för striden: Paladinens Ed och perks ersätter hens förvalda, och troféer
+## Egenskaper per hjälte för striden: Paladinens kall och perks ersätter hens förvalda, och troféer
 ## läggs till.
 func hero_traits(data: Dictionary) -> Dictionary:
 	var out := {}

@@ -20,7 +20,7 @@ const FORGE_COST := 160
 const RESOCKET_COST := 60
 ## Silver per vunnen strid, per våning (djup 1).
 const FLOOR_REWARD := [15, 20, 30]
-## Perk-poäng per Ed: startvärdet räcker till en eller två perks (perks kostar 1–2 poäng).
+## Perk-poäng per kall: startvärdet räcker till en eller två perks (perks kostar 1–2 poäng).
 const PERK_POINTS_START := 2
 ## Före 0.18: en perk-poäng för varannat klarat djup (räknas om till bonus_points för äldre profiler).
 const DEPTHS_PER_PERK_POINT := 2
@@ -36,8 +36,8 @@ var collection: Array[String] = []
 var artifacts := {}
 ## Senaste uppställningen från Kryptporten (används också i Övningsgården).
 var oath := "oath_vengeance"
-## Edsaltaret (Siralims Enchanted Wardrobe): köpta perks per Ed, oath_id -> [perk_id]. Alla köpta
-## perks i den valda Eden verkar (inom perk-poängen); kärnan verkar alltid. Att återställa är gratis
+## Kallets altare (Siralims Enchanted Wardrobe): köpta perks per kall, oath_id -> [perk_id]. Alla köpta
+## perks i den valda kallet verkar (inom perk-poängen); kärnan verkar alltid. Att återställa är gratis
 ## (poängen kommer tillbaka).
 var perks := {}
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
@@ -62,7 +62,7 @@ var room_moments := true
 ## Perk-poäng från tiden före Realm Quests (0.14.1–0.17), så att äldre profiler behåller sina.
 var bonus_points := 0
 ## Anointments (Siralim): varje besegrad boss (räknas en gång per bosstyp) låser upp en plats där
-## en Ed får låna en perk från en annan Ed. Lånet kostar perk-poäng ur den lånande Edens pott.
+## ett kall får låna en perk från ett annat kall. Lånet kostar perk-poäng ur den lånande Kallets pott.
 var bosses_defeated: Array[String] = []
 ## oath_id -> lånad perk_id.
 var anointed := {}
@@ -121,7 +121,7 @@ func forge(hero_id: String, type: String, ability_id: String) -> bool:
 	return true
 
 
-## Väljer Ed vid Edsaltaret.
+## Väljer kall vid Kallets altare.
 func choose_oath(oath_id: String) -> void:
 	if OATHS.has(oath_id):
 		oath = oath_id
@@ -131,7 +131,7 @@ func owned_perks(oath_id: String) -> Array:
 	return perks.get(oath_id, [])
 
 
-## Perk-poäng att lägga i varje Ed: PERK_POINTS_START, en per klarad quest (ny Realm och djup) och de
+## Perk-poäng att lägga i varje kall: PERK_POINTS_START, en per klarad quest (ny Realm och djup) och de
 ## gamla poängen från före 0.18.
 func perk_points() -> int:
 	return PERK_POINTS_START + quests_done.size() + bonus_points
@@ -149,7 +149,7 @@ func complete_quest(realm_id: String, at_depth: int) -> Dictionary:
 	return {"silver": amount, "point": point}
 
 
-## Hur många perk-poäng Edens köpta perks och lånade perk använder.
+## Hur många perk-poäng Kallets köpta perks och lånade perk använder.
 func points_used(data: Dictionary, oath_id: String) -> int:
 	var used := 0
 	for perk_id in owned_perks(oath_id):
@@ -175,7 +175,7 @@ func active_perks(data: Dictionary, oath_id: String) -> Array:
 	return out
 
 
-## Perkens post i oaths.json med Eden den hör till: {id, cost, ranks, oath}, eller tom.
+## Perkens post i oaths.json med Kallet den hör till: {id, cost, ranks, oath}, eller tom.
 static func perk_entry(data: Dictionary, perk_id: String) -> Dictionary:
 	for oath_id in data.oaths:
 		for p in data.oaths[oath_id].perks:
@@ -186,7 +186,7 @@ static func perk_entry(data: Dictionary, perk_id: String) -> Dictionary:
 	return {}
 
 
-## Vad en nivå av perken kostar i perk-poäng (−1 om den inte hör till Eden).
+## Vad en nivå av perken kostar i perk-poäng (−1 om den inte hör till Kallet).
 static func perk_cost(data: Dictionary, oath_id: String, perk_id: String) -> int:
 	var entry := perk_entry(data, perk_id)
 	return int(entry.cost) if entry.get("oath", "") == oath_id else -1
@@ -203,7 +203,7 @@ func perk_rank(oath_id: String, perk_id: String) -> int:
 
 
 ## Köper perken, eller nästa nivå i den, för perk-poäng. Falskt om den har alla nivåer, inte hör till
-## Eden eller poängen inte räcker.
+## Kallet eller poängen inte räcker.
 func buy_perk(data: Dictionary, oath_id: String, perk_id: String) -> bool:
 	var cost := perk_cost(data, oath_id, perk_id)
 	if cost < 0 or perk_rank(oath_id, perk_id) >= perk_ranks(data, perk_id) \
@@ -215,7 +215,7 @@ func buy_perk(data: Dictionary, oath_id: String, perk_id: String) -> bool:
 	return true
 
 
-## Antal anointment-platser: en per besegrad bosstyp. Vi har en plats per Ed, så fler bossar ger
+## Antal anointment-platser: en per besegrad bosstyp. Vi har en plats per kall, så fler bossar ger
 ## inte fler lån än (VAL; Siralim har fler platser).
 func anointment_slots() -> int:
 	return mini(bosses_defeated.size(), 1)
@@ -233,8 +233,8 @@ func unlocked_boss_trophies() -> Array:
 		return int(boss_wins[k]) >= RunState.BOSS_WINS_FOR_TROPHY)
 
 
-## Lånar perken (nivå 1) från en annan Ed till oath_id, i stället för ett tidigare lån. Falskt om
-## platsen inte är upplåst, perken hör till samma Ed eller poängen inte räcker.
+## Lånar perken (nivå 1) från ett annat kall till oath_id, i stället för ett tidigare lån. Falskt om
+## platsen inte är upplåst, perken hör till samma kall eller poängen inte räcker.
 func anoint(data: Dictionary, oath_id: String, perk_id: String) -> bool:
 	var entry := perk_entry(data, perk_id)
 	if anointment_slots() <= 0 or entry.is_empty() or entry.oath == oath_id:
@@ -249,7 +249,7 @@ func anoint(data: Dictionary, oath_id: String, perk_id: String) -> bool:
 	return true
 
 
-## Återställer Edens perks och lån gratis, som i Siralim: poängen kommer tillbaka. Returnerar antalet poäng.
+## Återställer Kallets perks och lån gratis, som i Siralim: poängen kommer tillbaka. Returnerar antalet poäng.
 func reset_perks(data: Dictionary, oath_id: String) -> int:
 	var refund := points_used(data, oath_id)
 	perks.erase(oath_id)
