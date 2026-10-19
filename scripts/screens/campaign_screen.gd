@@ -287,8 +287,8 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	var x := p.position.x + 20
 	var w := p.size.x - 40
 	UiStyle.text(self, Vector2(x, p.position.y + 34), realm.name.to_upper(), 22, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT, w, 3)
-	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 58), realm.text, HORIZONTAL_ALIGNMENT_LEFT, w, 14, 2,
-			Color(1, 1, 1, 0.75))
+	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 58), realm.text,
+			HORIZONTAL_ALIGNMENT_LEFT, w, 14, 2, Color(1, 1, 1, 0.75))
 
 	# Djup
 	UiStyle.text(self, Vector2(x, p.position.y + 98), "DJUP (DJUPASTE KLARADE %d)" % prof.best_depth, 13, Color(1, 1, 1, 0.6))

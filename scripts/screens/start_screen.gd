@@ -55,6 +55,13 @@ func _tap(p: Vector2) -> void:
 	if _back_rect().has_point(p):
 		_done()
 		return
+	if _sheet_rect(-1).has_point(p):
+		run.open_sheet("paladin", _party(), run.START_SCENE)
+		return
+	for i in COMPANIONS.size():
+		if _sheet_rect(i).has_point(p):
+			run.open_sheet(COMPANIONS[i], ["paladin"] + COMPANIONS, run.START_SCENE)
+			return
 	if _oath_rect().has_point(p):
 		run.go(run.ALTAR_SCENE)
 		return
@@ -111,6 +118,12 @@ func _oath_rect() -> Rect2:
 	return Rect2(MARGIN, 98, size.x - MARGIN * 2, 104)
 
 
+## Knappen till hjältebladet: −1 = Paladinen (i kallets kort), annars följeslagarens kort.
+func _sheet_rect(i: int) -> Rect2:
+	var r := _oath_rect() if i < 0 else _companion_rect(i)
+	return Rect2(r.end.x - 78, r.end.y - 36, 70, 30)
+
+
 func _companion_rect(i: int) -> Rect2:
 	var w := (size.x - MARGIN * 2 - GAP * 3) / 4.0
 	return Rect2(MARGIN + i * (w + GAP), 240, w, 132)
@@ -162,6 +175,7 @@ func _draw() -> void:
 			perks.append(label)
 	var ed_body := "%s\nPerks: %s" % [ed.text, ", ".join(perks) if not perks.is_empty() else "inga (köp vid Kallets altare)"]
 	UiStyle.card(self, _oath_rect(), ed.name, ed_body, true, UiStyle.GOLD, "PALADINENS KALL – TRYCK FÖR KALLETS ALTARE")
+	_sheet_button(_sheet_rect(-1))
 
 	UiStyle.text(self, Vector2(0, 76), "Sällskapet och trofén du tar med. Realm, djup och instabilitet väljer du på kampanjkartan.", 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
@@ -172,7 +186,9 @@ func _draw() -> void:
 		var t: Dictionary = data.traits[h.traits[0]]
 		var names: Array = h.abilities.map(func(id: String) -> String: return data.abilities[id].name)
 		var body := "%s: %s\nFörmågor: %s" % [t.name, t.text, ", ".join(names)]
-		UiStyle.card(self, _companion_rect(i), h.name, body, companions.has(id), Color(h.color), h.title.to_upper())
+		var lv := int(run.profile.hero(data, id).level)
+		UiStyle.card(self, _companion_rect(i), "%s · nivå %d" % [h.name, lv], body, companions.has(id), Color(h.color), h.title.to_upper())
+		_sheet_button(_sheet_rect(i))
 
 	UiStyle.text(self, Vector2(MARGIN, 400), "TA MED EN TROFÉ FRÅN SAMLINGEN (VALFRITT)", 14, Color(1, 1, 1, 0.6))
 	if run.collection.is_empty():
@@ -193,6 +209,12 @@ func _draw() -> void:
 
 	UiStyle.big_button(self, _button_rect(), "KLAR", _t, companions.size() == 3)
 	_small_button(_macro_rect(), "MAKRON")
+
+
+func _sheet_button(r: Rect2) -> void:
+	draw_rect(r, Color(0, 0, 0, 0.7))
+	draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
+	UiStyle.text(self, r.position + Vector2(0, 21), "BLAD", 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
 
 func _small_button(r: Rect2, label: String) -> void:

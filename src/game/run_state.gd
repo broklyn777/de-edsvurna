@@ -68,6 +68,8 @@ var next_auras: Array = []
 var next_rules: Array = []
 ## Klar med körningen (slutet på sista våningen vunnet).
 var finished := false
+## Egenskapernas statistik för hela körningen: trait_id -> {procs, damage, heal, unit} (hjältebladet).
+var trait_totals := {}
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -525,7 +527,7 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "room_id", "visited",
-		"side_index", "quest", "next_auras", "next_rules", "finished"]
+		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals"]
 
 
 func to_dict() -> Dictionary:

@@ -20,6 +20,7 @@ const CAMPAIGN_SCENE := "res://scenes/campaign.tscn"
 const ROOM_MAP_SCENE := "res://scenes/room_map.tscn"
 ## Den pågående körningen sparas efter varje rum, så att den överlever att appen stängs (0.18).
 const RUN_PATH := "user://run.cfg"
+const HERO_SCENE := "res://scenes/hero.tscn"
 
 var data: Dictionary
 var state := RunState.new()
@@ -47,10 +48,18 @@ var camp_chosen := ""
 ## Våningsreglerna för nästa körning, slumpade vid Kryptporten när instabiliteten väljs:
 ## {visible: [regel], hidden: [regel]}.
 var pending_rules := {"visible": [], "hidden": []}
+## Hjältebladet (0.19): vem, vilka man kan bläddra mellan, vart man går tillbaka och om
+## personligheten får bytas (bara från Biblioteket).
+var sheet_hero := "paladin"
+var sheet_heroes: Array = []
+var sheet_return := BASE_SCENE
+var sheet_can_change_personality := false
 ## Trofén som tas med från samlingen in i nästa körning (Förberedelser): {trophy, wearer}.
 var pending_trophy := {}
 ## Questens belöning om den blev klar i senaste rummet: {silver, point} (visas i lägret).
 var quest_reward := {}
+## Erfarenhet från senaste vunna striden (visas i lägret).
+var last_xp := 0
 ## Text om vad som hände i senaste rummet utanför striderna (visas på rumskartan).
 var room_result := ""
 ## Musik och menyljud, som fortsätter mellan scenerna (striden har egna effektljud).
@@ -87,6 +96,13 @@ func _dev_args() -> void:
 			# --anoint låser upp den lånade perken (som om Benfursten var besegrad) och visar valet
 			profile.defeat_boss("bone_lich")
 			get_tree().change_scene_to_file.call_deferred(ALTAR_SCENE)
+		elif arg.begins_with("--xp="):
+			# --xp=<n> ger sällskapet n erfarenhet direkt (för att se nivåuppgångar på segerskärmen)
+			profile.grant_xp(data, state.party, int(arg.get_slice("=", 1)))
+		elif arg.begins_with("--xp-bar="):
+			# --xp-bar=<n> fyller mätaren till n utan att höja nivån (nästa seger ger en nivå)
+			for hero_id in state.party:
+				profile.hero(data, hero_id).xp = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--instability="):
 			# --instability=<n> slumpar n synliga och n dolda våningsregler (bara den här körningen)
 			state.instability = clampi(int(arg.get_slice("=", 1)), 0, RunState.MAX_INSTABILITY)
@@ -121,6 +137,12 @@ func _dev_args() -> void:
 			if OS.get_cmdline_user_args().has("--all-perks"):
 				for p in data.oaths[state.oath].perks:
 					state.perks.append(p.id)
+		elif arg.begins_with("--hero="):
+			# --hero=<id> öppnar hjältebladet (--tab=0–2 väljer flik)
+			sheet_hero = arg.get_slice("=", 1)
+			sheet_heroes = profile.party.duplicate()
+			sheet_can_change_personality = true
+			get_tree().change_scene_to_file.call_deferred(HERO_SCENE)
 		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep"]:
 			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE,
 					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE}[arg]
@@ -174,6 +196,14 @@ func start_run(party: Array[String]) -> void:
 
 
 ## Sparar den pågående körningen (user://run.cfg).
+func open_sheet(hero_id: String, heroes: Array, return_scene: String, can_change := false) -> void:
+	sheet_hero = hero_id
+	sheet_heroes = heroes
+	sheet_return = return_scene
+	sheet_can_change_personality = can_change
+	go(HERO_SCENE)
+
+
 func save_run() -> void:
 	if not state.practice:
 		state.save(RUN_PATH)
@@ -231,6 +261,38 @@ func shrine(option: Dictionary) -> String:
 	_after_quest_check(false)
 	save_run()
 	return room_result
+
+
+## Efter en strid (0.19): räkna strider, segrar, stupade och väckta per hjälte och egenskapernas
+## statistik för körningen, och ge erfarenhet efter en vunnen strid (inte i Övningsgården).
+## Returnerar nivåuppgångarna: [{hero, name, level, gains}].
+func award_battle(sim: CombatSim, victory: bool) -> Array:
+	for u in sim.heroes:
+		var h := profile.hero(data, u.id)
+		h.battles = int(h.battles) + 1
+		h.wins = int(h.wins) + (1 if victory else 0)
+		h.deaths = int(h.deaths) + u.deaths
+		h.revives = int(h.revives) + u.revives
+	for trait_id in sim.trait_stats:
+		var st: Dictionary = sim.trait_stats[trait_id]
+		var tot: Dictionary = state.trait_totals.get(trait_id, {"procs": 0, "damage": 0.0, "heal": 0.0, "unit": st.unit})
+		tot.procs = int(tot.procs) + int(st.procs)
+		tot.damage = float(tot.damage) + float(st.damage)
+		tot.heal = float(tot.heal) + float(st.heal)
+		state.trait_totals[trait_id] = tot
+	var out := []
+	if victory and not state.practice:
+		var r := state.current_room()
+		var xp := HeroStats.battle_xp(r.get("kind", "end"), state.depth, r.get("boss", false))
+		last_xp = xp
+		var ups := profile.grant_xp(data, state.party, xp)
+		for hero_id in state.party:
+			for lv in ups.get(hero_id, []):
+				var p: String = profile.hero(data, hero_id).personality
+				out.append({"hero": hero_id, "name": data.heroes[hero_id].name, "level": lv,
+						"gains": HeroStats.gains(data, hero_id, lv, p)})
+	_save()
+	return out
 
 
 ## Efter lägret: tillbaka till rumskartan, nästa våning, eller hem när körningen är klar.

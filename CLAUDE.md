@@ -56,6 +56,15 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   egna källor i samma fil. Källbilderna (symbolark, sigillet, skelett) exporteras inte (`exclude_filter`).
   **Realm Quest** (Jakt på Nemesis, Rensa 2 elitstrider, Rening 3 helgedomar) ger silver och en perk-poäng
   per ny kombination av Realm och djup. Körningen sparas i `user://run.cfg` efter varje rum.
+- **Nivåer och personlighet** (0.19, Siralim): hjältarna får erfarenhet av vunna strider (rumstyp × djup,
+  även stupade) och varje nivå ger +30 % av basvärdet i varje stat. Taket är 5 × (djupaste klarade + 1).
+  En av 20 personligheter låter en stat växa 40 % och en annan 20 % (byts i Biblioteket, räknas om bakåt).
+  Nivåerna sparas i `Profile.heroes`. *Vårt val:* fienderna möter sällskapets nivå nästan helt
+  (`HeroStats.enemy_level`: väntad nivå + 0,95 × skillnaden + 0,1), annars blev nivåerna allt och
+  makrona inget; en nivå märks som ett par procent övertag. **Hjältebladet** (`hero_screen`, från
+  lägret, Förberedelser och Biblioteket): nivå, erfarenhet, tak, personlighet, stats per källa, vad de
+  betyder i skada och helning mot en typisk fiende, egenskaper med körningens statistik, förmågor,
+  artefakt och historik. Nivåuppgångar syns och hörs på segerskärmen.
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),
   Kallets altare (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
@@ -113,6 +122,8 @@ uppdaterad när nya begrepp tillkommer.
   valt kall och köpta perks per kall (`buy_perk()`, `reset_perks()`, `perk_points()`, `active_perks()`), senaste sällskap, övningstroféer, valt och
   djupaste klarade djup (`choose_depth()`, `clear_depth()`), perk-nivåer (`perk_rank()`) och lånade perks
   (`bosses_defeated`, `anoint()`, `anointed`). Sparas i `user://progress.cfg`.
+  `src/game/hero_stats.gd` – `HeroStats`: nivåer, tillväxt, personlighet, `breakdown()` per källa, erfarenhet,
+  tak och fiendernas nivå. `data/personalities.json` – de 20 personligheterna (namn, up, down, text).
   `src/game/room_map.gd` – `RoomMap`: en våning ur ett frö (`generate()`, `choices()`, `problems()` för kraven).
   RunState håller kartan: `start_expedition()`, `enter()`, `battle_opts()`, `battle_won()`, `campfire()`,
   `treasure()`, `shrine_options()`/`apply_shrine()`, `next_floor()`, questen och `save()`/`load_from()`.
@@ -231,6 +242,10 @@ godot --path . -- --floor=2 --demo --turns=10 --seed=5
 
 # Visa lägret mellan striderna direkt
 godot --path . -- --camp
+
+# Hjältebladet direkt (--tab=0–2), och erfarenhet för att se nivåuppgångar på segerskärmen
+godot --path . -- --hero=brokk --tab=0
+godot --path . -- --xp-bar=25 --floor=0 --demo --turns=300
 
 # Rumskartan med en ny körning (efter --realm, --depth, --instability)
 godot --path . -- --realm=chapel --map

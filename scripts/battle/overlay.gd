@@ -17,6 +17,8 @@ var _t := 0.0
 ## Extra rader under resultatet (kvittot).
 var lines: Array[String] = []
 ## Inspect: en figurs namn och rader (stats och egenskaper) medan spelaren håller fingret på den.
+## Nivåuppgångar efter segern (0.19): [{name, level, gains: {stat: ökning}, xp}]. Siffrorna räknas upp.
+var level_ups: Array = []
 ## Våningsreglerna som gäller (visas uppe till höger under knapparna).
 var rules_text := ""
 var inspect_title := ""
@@ -51,6 +53,29 @@ func show_inspect(title: String, rows: Array[String]) -> void:
 func hide_inspect() -> void:
 	inspect_title = ""
 	inspect_lines = []
+
+
+## "Brokk nådde nivå 5!" med statsen som steg, uppräknade, under kvittot.
+func _draw_level_ups(w: float, h: float, a: float) -> void:
+	var y := h * 0.45 + 100 + lines.size() * 26
+	for i in level_ups.size():
+		var u: Dictionary = level_ups[i]
+		var start := 1.0 + i * 0.35
+		var t := clampf((_big_t - start) / 0.8, 0.0, 1.0)
+		if t <= 0.0:
+			continue
+		var parts: Array = []
+		for stat in HeroStats.STATS:
+			var g := float(u.gains.get(stat, 0))
+			if g > 0.0:
+				parts.append("+%d %s" % [roundi(g * t), HeroStats.STAT_NAMES[stat]])
+		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - t * 4.0)
+		draw_set_transform(Vector2(w / 2, y + i * 40), 0, Vector2.ONE * pop)
+		UiStyle.text(self, Vector2(-w / 2, 0), "%s nådde nivå %d!" % [u.name, u.level], 20, Color(UiStyle.GOLD, a * minf(1.0, t * 3.0)),
+				HORIZONTAL_ALIGNMENT_CENTER, w, 5)
+		draw_set_transform(Vector2.ZERO)
+		UiStyle.text(self, Vector2(0, y + i * 40 + 18), "  ".join(parts), 14, Color(1, 1, 1, 0.85 * a * t),
+				HORIZONTAL_ALIGNMENT_CENTER, w, 4)
 
 
 func set_result(result: String, sub: String, title := "") -> void:
@@ -97,9 +122,10 @@ func _draw() -> void:
 		for i in lines.size():
 			UiStyle.text(self, Vector2(0, h * 0.45 + 90 + i * 26), lines[i], 18, Color(UiStyle.TRAIT_GOLD, a),
 					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
+		_draw_level_ups(w, h, a)
 		if mode in ["victory", "defeat"] and _big_t > 1.0:
 			var blink := 0.6 + 0.4 * sin(_t * 4.0)
-			UiStyle.text(self, Vector2(0, h - 40), "Tryck för att fortsätta", 20, Color(1, 1, 1, blink),
+			UiStyle.text(self, Vector2(0, h - 16), "Tryck för att fortsätta", 20, Color(1, 1, 1, blink),
 					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 	if _announce_t > 0.0:
 		var a := minf(1.0, _announce_t)

@@ -210,8 +210,8 @@ func _draw() -> void:
 		draw_texture_rect(img, Rect2(0, (size.y - h) / 2, size.x, h), false, Color(1, 1, 1, a))
 
 	var realm: Dictionary = data.realms[state.realm]
-	InkArt.cartouche(self, Rect2(MARGIN + 14, 16, 560, 46), "%s · VÅNING %d/%d · DJUP %d" % [realm.name.to_upper(),
-			state.floor + 1, state.floor_ids.size(), state.depth], InkArt.INK, 20)
+	InkArt.cartouche(self, Rect2(MARGIN + 14, 16, 460, 46), "%s · DJUP %d" % [realm.name.to_upper(), state.depth], InkArt.INK, 20)
+	InkArt.floor_markers(self, Vector2(MARGIN + 520, 47), state.floor, state.floor_ids.size(), InkArt.INK, 20)
 	silver_label()
 	var quest := RunState.quest_text(state.quest) + ("  – KLAR!" if state.quest.get("done", false) else "")
 	UiStyle.text(self, Vector2(MARGIN, 88), "QUEST: " + quest, 17, Parchment.SEAL, HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
