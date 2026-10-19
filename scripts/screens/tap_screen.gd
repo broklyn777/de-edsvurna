@@ -70,7 +70,7 @@ func header(title: String, sub := "", backdrop: Texture2D = null) -> void:
 		draw_texture_rect(backdrop, Rect2(0, (size.y - h) / 2, size.x, h), false, Color(1, 1, 1, 0.13))
 	UiStyle.text(self, Vector2(0, 50), title, 36, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
 	if sub != "":
-		UiStyle.text(self, Vector2(0, 78), sub, 16, Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
+		UiStyle.text(self, Vector2(0, 80), sub, 17, Color(1, 1, 1, 0.72), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 	silver_label()
 
 

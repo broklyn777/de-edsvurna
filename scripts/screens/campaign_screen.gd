@@ -288,10 +288,10 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	var w := p.size.x - 40
 	UiStyle.text(self, Vector2(x, p.position.y + 34), realm.name.to_upper(), 22, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT, w, 3)
 	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 58), realm.text,
-			HORIZONTAL_ALIGNMENT_LEFT, w, 14, 2, Color(1, 1, 1, 0.75))
+			HORIZONTAL_ALIGNMENT_LEFT, w, 15, 2, Color(1, 1, 1, 0.8))
 
 	# Djup
-	UiStyle.text(self, Vector2(x, p.position.y + 98), "DJUP (DJUPASTE KLARADE %d)" % prof.best_depth, 13, Color(1, 1, 1, 0.6))
+	UiStyle.text(self, Vector2(x, p.position.y + 98), "DJUP (DJUPASTE KLARADE %d)" % prof.best_depth, 15, Color(1, 1, 1, 0.6))
 	small_button(_depth_rect(-1), "−", prof.depth > 1)
 	small_button(_depth_rect(1), "+", prof.depth < prof.max_depth())
 	UiStyle.text(self, Vector2(x + 44, p.position.y + 138), str(prof.depth), 30, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, 106, 4)
@@ -301,7 +301,7 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 			13, Color(1, 1, 1, 0.75))
 
 	# Instabilitet och regler
-	UiStyle.text(self, Vector2(x, p.position.y + 194), "INSTABILITET", 13, Color(1, 1, 1, 0.6))
+	UiStyle.text(self, Vector2(x, p.position.y + 194), "INSTABILITET", 15, Color(1, 1, 1, 0.6))
 	small_button(_instability_rect(-1), "−", prof.instability > 0)
 	small_button(_instability_rect(1), "+", prof.instability < RunState.MAX_INSTABILITY)
 	UiStyle.text(self, Vector2(x + 44, p.position.y + 234), str(prof.instability), 30,
@@ -314,7 +314,7 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 		for id in rules.visible + rules.hidden:
 			silver += float(data.floor_rules[id].get("silver", 0.0))
 		rule_text = "%s · %d dolda · silver +%d %%" % [", ".join(names), rules.hidden.size(), roundi(silver * 100.0)]
-	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 268), rule_text, HORIZONTAL_ALIGNMENT_LEFT, w, 14, 2,
+	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 268), rule_text, HORIZONTAL_ALIGNMENT_LEFT, w, 16, 2,
 			UiStyle.TRAIT_GOLD)
 
 	# Bossar och quests

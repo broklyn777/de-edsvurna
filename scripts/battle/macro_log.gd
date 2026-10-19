@@ -4,7 +4,7 @@ extends Control
 ## Visar de senaste besluten i ett hörn; tryck för att öppna hela loggen, tryck igen för att stänga.
 
 const SHOWN := 4
-const LINE_H := 19.0
+const LINE_H := 23.0
 
 ## [{text, ok, skipped: [text]}]
 var entries: Array[Dictionary] = []
@@ -15,7 +15,7 @@ var _flash := 0.0
 
 
 func setup() -> void:
-	size = Vector2(740, SHOWN * LINE_H + 26)
+	size = Vector2(740, SHOWN * LINE_H + 30)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
@@ -57,12 +57,12 @@ func _draw() -> void:
 		return
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55))
 	draw_rect(Rect2(Vector2.ZERO, size), Color(UiStyle.TRAIT_GOLD, 0.25 + 0.5 * _flash), false, 1.5)
-	UiStyle.text(self, Vector2(8, 16), "MAKROLOGG – TRYCK FÖR ALLT", 11, Color(1, 1, 1, 0.5))
+	UiStyle.text(self, Vector2(8, 16), "MAKROLOGG – TRYCK FÖR ALLT", 15, Color(1, 1, 1, 0.5))
 	var start := maxi(0, entries.size() - SHOWN)
 	for i in range(start, entries.size()):
 		var e: Dictionary = entries[i]
 		var col := Color(1, 1, 1, 0.9) if e.ok else Color("#ff8a6a")
-		UiStyle.text(self, Vector2(8, 34 + (i - start) * LINE_H), e.text, 13, col, HORIZONTAL_ALIGNMENT_LEFT, size.x - 14, 3)
+		UiStyle.text(self, Vector2(8, 38 + (i - start) * LINE_H), e.text, 17, col, HORIZONTAL_ALIGNMENT_LEFT, size.x - 14, 3)
 
 
 func _draw_expanded() -> void:
@@ -70,7 +70,7 @@ func _draw_expanded() -> void:
 	var top_left := -global_position
 	draw_rect(Rect2(top_left, vs), Color(0.02, 0.02, 0.05, 0.92))
 	UiStyle.text(self, top_left + Vector2(0, 40), "MAKROLOGG", 28, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, vs.x, 6)
-	UiStyle.text(self, top_left + Vector2(0, 64), "Nyast överst. Dra för att bläddra, tryck för att stänga.", 14,
+	UiStyle.text(self, top_left + Vector2(0, 64), "Nyast överst. Dra för att bläddra, tryck för att stänga.", 16,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_CENTER, vs.x, 4)
 	var y := 100.0 - _scroll
 	for i in range(entries.size() - 1, -1, -1):
@@ -78,11 +78,11 @@ func _draw_expanded() -> void:
 		if y > vs.y:
 			break
 		if y > 80.0:
-			UiStyle.text(self, top_left + Vector2(40, y), e.text, 16, Color.WHITE if e.ok else Color("#ff8a6a"),
+			UiStyle.text(self, top_left + Vector2(40, y), e.text, 18, Color.WHITE if e.ok else Color("#ff8a6a"),
 					HORIZONTAL_ALIGNMENT_LEFT, vs.x - 80, 3)
 		y += 24.0
 		for s in e.get("skipped", []):
 			if y > 80.0 and y < vs.y:
-				UiStyle.text(self, top_left + Vector2(70, y), s, 14, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, vs.x - 110, 3)
+				UiStyle.text(self, top_left + Vector2(70, y), s, 16, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, vs.x - 110, 3)
 			y += 20.0
 		y += 8.0

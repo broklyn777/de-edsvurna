@@ -11,8 +11,8 @@ const TYPES := ["sword", "staff", "shield", "helm", "boots"]
 const TABS := ["ARTEFAKT", "SMIDE"]
 const SOCKET_R := 30.0
 ## Hur många alternativ panelen visar (bärnsten och trick i tre kolumner, stenar i två).
-const MAX_OPTIONS := 8
-const MAX_STONES := 6
+const MAX_OPTIONS := 6
+const MAX_STONES := 4
 
 var hero := "paladin"
 var type := "sword"
@@ -298,7 +298,7 @@ func _button_rect() -> Rect2:
 
 func _pip_center(level: int) -> Vector2:
 	var step := (_w() - 40.0) / (Forge.LEVEL_MAX - 1)
-	return Vector2(_x0() + 20 + (level - 1) * step, 222)
+	return Vector2(_x0() + 20 + (level - 1) * step, 218)
 
 
 func _socket_center(s: Dictionary) -> Vector2:
@@ -306,19 +306,19 @@ func _socket_center(s: Dictionary) -> Vector2:
 	var step := 104.0
 	var gap := 40.0 if idx >= 3 else 0.0
 	gap += 40.0 if idx >= 5 else 0.0
-	return Vector2(_x0() + 50 + idx * step + gap, 348)
+	return Vector2(_x0() + 50 + idx * step + gap, 362)
 
 
 func _option_rect(i: int) -> Rect2:
 	if slot.get("kind", "") == "nether":
-		var w := (_w() - 430 - GAP) / 2.0
-		return Rect2(_x0() + (i % 2) * (w + GAP), 462 + (i / 2) * 84, w, 76)
-	var w2 := (_w() - 430 - GAP) / 2.0
-	return Rect2(_x0() + (i % 2) * (w2 + GAP), 462 + (i / 2) * 52, w2, 44)
+		var w := (_w() - 436 - GAP) / 2.0
+		return Rect2(_x0() + (i % 2) * (w + GAP), 476 + (i / 2) * 92, w, 84)
+	var w2 := (_w() - 436 - GAP) / 2.0
+	return Rect2(_x0() + (i % 2) * (w2 + GAP), 476 + (i / 2) * 60, w2, 54)
 
 
 func _remove_rect() -> Rect2:
-	return Rect2(_x0() + _w() - 430 - 150, 422, 150, 34)
+	return Rect2(_x0() + _w() - 450 - 190, 440, 190, 34)
 
 
 # --- Ritning ----------------------------------------------------------------
@@ -336,13 +336,13 @@ func _draw() -> void:
 		var art: Dictionary = profile.artifact(heroes[i])
 		UiStyle.card(self, _hero_rect(i), h.name, ArtifactText.name_of(data, art), hero == heroes[i],
 				Color(h.color), h.title.to_upper(), _flash if hero == heroes[i] else 0.0)
-	_draw_store(data, profile, Vector2(MARGIN, size.y - 60))
+	_draw_store(data, profile, Vector2(MARGIN, size.y - 70))
 
 	var art: Dictionary = profile.artifact(hero)
 	for i in TABS.size():
 		if i == 0 and art.is_empty():
 			continue
-		chip(_tab_rect(i), TABS[i], tab == i, 16)
+		chip(_tab_rect(i), TABS[i], tab == i, 18)
 	if tab == 1 or art.is_empty():
 		_draw_forge(data, profile)
 	else:
@@ -360,9 +360,10 @@ func _draw_store(data: Dictionary, profile: Profile, at: Vector2) -> void:
 			amber += int(profile.materials[id])
 		else:
 			tricks += int(profile.materials[id])
-	UiStyle.text(self, at, "FÖRRÅD", 13, Color(1, 1, 1, 0.55))
-	UiStyle.text(self, at + Vector2(0, 22), "%d bärnsten · %d trick · %d Nether Stones" % [amber, tricks,
-			profile.stones.size()], 15, Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_LEFT, 290, 3)
+	UiStyle.text(self, at - Vector2(0, 8), "FÖRRÅD", 15, Color(1, 1, 1, 0.55))
+	UiStyle.text(self, at + Vector2(0, 18), "%d bärnsten · %d trick\n" % [amber, tricks], 17, Color(1, 1, 1, 0.85),
+			HORIZONTAL_ALIGNMENT_LEFT, 290, 3)
+	UiStyle.text(self, at + Vector2(0, 40), "%d Nether Stones" % profile.stones.size(), 17, Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_LEFT, 290, 3)
 
 
 func _draw_artifact(data: Dictionary, profile: Profile, art: Dictionary) -> void:
@@ -390,17 +391,17 @@ func _draw_artifact(data: Dictionary, profile: Profile, art: Dictionary) -> void
 			draw_circle(c, r + 6.0 + 2.0 * sin(_t * 4.0), Color(UiStyle.GOLD, 0.25))
 		draw_circle(c, r, UiStyle.GOLD if done else Color(0.12, 0.11, 0.15))
 		draw_arc(c, r, 0, TAU, 24, Color(UiStyle.GOLD, 0.9 if done or next else 0.35), 2.0)
-		UiStyle.text(self, c + Vector2(-20, 5), str(l), 13, Color(0, 0, 0) if done else Color(1, 1, 1, 0.6),
+		UiStyle.text(self, c + Vector2(-20, 6), str(l), 15, Color(0, 0, 0) if done else Color(1, 1, 1, 0.6),
 				HORIZONTAL_ALIGNMENT_CENTER, 40, 0)
 		if unlock != "":
-			UiStyle.text(self, c + Vector2(-50, 34), unlock.replace("-plats", "").replace(" ", " "), 12,
+			UiStyle.text(self, c + Vector2(-50, 38), unlock.replace("-plats", "").replace(" ", " "), 16,
 					Color(UiStyle.TRAIT_GOLD, 1.0 if done else (0.95 if next else 0.5)), HORIZONTAL_ALIGNMENT_CENTER, 100, 2)
-	UiStyle.text(self, Vector2(x0, 284), what, 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, w, 3)
+	UiStyle.text(self, Vector2(x0, 290), what, 18, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, w, 3)
 	# Platserna.
 	var labels := {"stat": ["STAT", 0], "trick": ["TRICK", 3], "nether": ["NETHER", 5]}
 	for kind in labels:
 		var s0: Dictionary = _sockets()[labels[kind][1]]
-		UiStyle.text(self, _socket_center(s0) + Vector2(-SOCKET_R, -SOCKET_R - 10), labels[kind][0], 12,
+		UiStyle.text(self, _socket_center(s0) + Vector2(-SOCKET_R, -SOCKET_R - 10), labels[kind][0], 15,
 				Color(1, 1, 1, 0.5), HORIZONTAL_ALIGNMENT_LEFT, 200, 0)
 	for s in _sockets():
 		_draw_socket(data, art, s, level)
@@ -410,7 +411,7 @@ func _draw_artifact(data: Dictionary, profile: Profile, art: Dictionary) -> void
 		var nxt := Forge.next_unlock(level)
 		if nxt > 0:
 			hint += "  Nästa plats: %s på nivå %d." % [Forge.unlock_text(nxt), nxt]
-		UiStyle.text(self, Vector2(x0, 440), hint, 15, Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 3)
+		UiStyle.para(self, Vector2(x0, 470), hint, 18, Color(1, 1, 1, 0.65), w - 450)
 	else:
 		_draw_panel(data, profile, art, level)
 	# Höj nivån.
@@ -421,7 +422,7 @@ func _draw_artifact(data: Dictionary, profile: Profile, art: Dictionary) -> void
 		var opens := Forge.unlock_text(level + 1)
 		var sub := ("Öppnar %s" % opens) if opens != "" else "Stärker allt med 10 %"
 		UiStyle.text(self, _button_rect().position + Vector2(0, -10), sub + ("" if profile.silver >= cost else " · för lite silver"),
-				15, Color(UiStyle.GOLD) if opens != "" else Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER,
+				17, Color(UiStyle.GOLD) if opens != "" else Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER,
 				_button_rect().size.x, 3)
 
 
@@ -453,9 +454,9 @@ func _draw_socket(data: Dictionary, art: Dictionary, s: Dictionary, level: int) 
 	else:
 		var kind := "amber" if s.kind == "stat" else "trick"
 		GemArt.draw_find(self, data, {"kind": kind, "id": cur, "count": 1}, c, 18.0, _t)
-		name = ArtifactText.material_name(data, cur)
-	UiStyle.text(self, c + Vector2(-52, SOCKET_R + 18), name, 12, Color(1, 1, 1, 0.85 if open else 0.4),
-			HORIZONTAL_ALIGNMENT_CENTER, 104, 2)
+		name = _short(ArtifactText.material_name(data, cur))
+	UiStyle.text(self, c + Vector2(-56, SOCKET_R + 20), name, 15, Color(1, 1, 1, 0.85 if open else 0.45),
+			HORIZONTAL_ALIGNMENT_CENTER, 112, 2)
 
 
 func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int) -> void:
@@ -464,7 +465,7 @@ func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int
 			"nether": "NETHER STONE"}[slot.kind]
 	if "%d" in kind_name:
 		kind_name = kind_name % (int(slot.i) + 1)
-	UiStyle.text(self, Vector2(x0, 446), kind_name, 14, Color(1, 1, 1, 0.6))
+	UiStyle.text(self, Vector2(x0, 462), kind_name, 16, Color(1, 1, 1, 0.6))
 	var cur := _current(art, slot)
 	if cur != "":
 		small_button(_remove_rect(), "TA UT" if slot.kind == "nether" else "TA UT (förstörs)")
@@ -473,7 +474,7 @@ func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int
 		UiStyle.text(self, Vector2(x0, 490), "Inget i förrådet än. %s" % ({"stat": "Bärnsten hittas i alla strider och skattkammare.",
 				"trick": "Trick hittas i elitstrider, skattkammare, portaler och hos bossar – bara på det djupaste djupet.",
 				"nether": "Nether Stones hittas i skattkammare, portaler och hos bossar – bara på det djupaste djupet."}[slot.kind]),
-				15, Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, _w() - 440, 3)
+				18, Color(1, 1, 1, 0.65), HORIZONTAL_ALIGNMENT_LEFT, _w() - 460, 3)
 	for i in opts.size():
 		var r := _option_rect(i)
 		var id: String = opts[i]
@@ -483,24 +484,22 @@ func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int
 		if slot.kind == "nether":
 			var st := _stone(id)
 			var col := Color(Forge.rarity_of(data, st).color)
-			GemArt.draw_find(self, data, {"kind": "nether", "stone": st}, r.position + Vector2(22, 26), 13.0, _t)
-			UiStyle.text(self, r.position + Vector2(44, 22), "%s (%d)" % [Forge.rarity_of(data, st).name, st.number], 14,
+			GemArt.draw_find(self, data, {"kind": "nether", "stone": st}, r.position + Vector2(22, 28), 14.0, _t)
+			UiStyle.text(self, r.position + Vector2(44, 26), "%s (%d)" % [Forge.rarity_of(data, st).name, st.number], 18,
 					col, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 50, 2)
-			var lines := Forge.stone_lines(data, st)
-			for j in mini(lines.size(), 3):
-				UiStyle.text(self, r.position + Vector2(44, 40 + j * 13), lines[j], 11, Color(1, 1, 1, 0.75),
-						HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 50, 0)
+			UiStyle.para(self, r.position + Vector2(44, 48), ", ".join(Forge.stone_lines(data, st)), 15, Color(1, 1, 1, 0.75),
+					r.size.x - 52, 2)
 		else:
 			var kind := "amber" if slot.kind == "stat" else "trick"
 			var have := int(profile.materials.get(id, 0))
 			var need := Forge.AMBER_PER_SLOT if slot.kind == "stat" else 1
-			GemArt.draw_find(self, data, {"kind": kind, "id": id, "count": 1}, r.position + Vector2(20, 22), 11.0, _t)
-			UiStyle.text(self, r.position + Vector2(38, 19), _short(ArtifactText.material_name(data, id)), 13,
+			GemArt.draw_find(self, data, {"kind": kind, "id": id, "count": 1}, r.position + Vector2(20, 27), 12.0, _t)
+			UiStyle.text(self, r.position + Vector2(40, 24), _short(ArtifactText.material_name(data, id)), 18,
 					Color.WHITE if have >= need else Color(1, 1, 1, 0.45), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 90, 2)
-			UiStyle.text(self, r.position + Vector2(0, 19), ("%d/%d" % [have, need]) if have < need else "×%d" % have, 13,
+			UiStyle.text(self, r.position + Vector2(0, 24), ("%d/%d" % [have, need]) if have < need else "×%d" % have, 17,
 					Color(1, 1, 1, 0.6) if have >= need else Color("#ff8a6a"), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 10, 2)
-			UiStyle.text(self, r.position + Vector2(38, 36), ArtifactText.material_text(data, id, level), 11,
-					Color(UiStyle.TRAIT_GOLD, 0.85), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 44, 0)
+			UiStyle.text(self, r.position + Vector2(36, 46), ArtifactText.material_text(data, id, level), 15,
+					Color(UiStyle.TRAIT_GOLD, 0.9), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 46, 0)
 	_draw_compare(data, art, level, cur)
 
 
@@ -520,38 +519,29 @@ func _totals(data: Dictionary, art: Dictionary) -> Dictionary:
 
 ## Jämförelsen till höger: det som sitter i platsen mot det valda alternativet.
 func _draw_compare(data: Dictionary, art: Dictionary, level: int, cur: String) -> void:
-	var x := _x0() + _w() - 410
-	var y := 462.0
-	draw_rect(Rect2(x - 12, y - 16, 422, 170), Color(0, 0, 0, 0.35))
-	UiStyle.text(self, Vector2(x, y), "NU", 13, Color(1, 1, 1, 0.5))
-	var now_lines: Array[String] = []
-	var new_lines: Array[String] = []
+	var x := _x0() + _w() - 430
+	var w := 430.0
+	var y := 456.0
+	draw_rect(Rect2(x - 14, y - 22, w + 14, 200), Color(0, 0, 0, 0.35))
+	var now_text := "Tom plats"
+	var new_text := ""
 	if slot.kind == "nether":
 		if cur != "":
-			now_lines = Forge.stone_lines(data, art.nether)
+			now_text = ", ".join(Forge.stone_lines(data, art.nether))
 		if pending != "":
-			new_lines = Forge.stone_lines(data, _stone(pending))
+			new_text = ", ".join(Forge.stone_lines(data, _stone(pending)))
 	else:
 		if cur != "":
-			now_lines.append("%s: %s" % [ArtifactText.material_name(data, cur), ArtifactText.material_text(data, cur, level)])
+			now_text = "%s: %s" % [ArtifactText.material_name(data, cur), ArtifactText.material_text(data, cur, level)]
 		if pending != "":
-			new_lines.append("%s: %s" % [ArtifactText.material_name(data, pending), ArtifactText.material_text(data, pending, level)])
-	if now_lines.is_empty():
-		now_lines.append("Tom plats")
-	for i in now_lines.size():
-		UiStyle.text(self, Vector2(x, y + 20 + i * 17), now_lines[i], 13, Color(1, 1, 1, 0.8), HORIZONTAL_ALIGNMENT_LEFT, 400, 0)
-	var y2 := y + 30 + now_lines.size() * 17
-	UiStyle.text(self, Vector2(x, y2), "VALT", 13, Color(1, 1, 1, 0.5))
-	if new_lines.is_empty():
-		UiStyle.text(self, Vector2(x, y2 + 20), "Tryck på ett alternativ", 13, Color(1, 1, 1, 0.5))
+			new_text = "%s: %s" % [ArtifactText.material_name(data, pending), ArtifactText.material_text(data, pending, level)]
+	UiStyle.text(self, Vector2(x, y), "NU", 15, Color(1, 1, 1, 0.5))
+	y += 6 + UiStyle.para(self, Vector2(x + 40, y), now_text, 16, Color(1, 1, 1, 0.85), w - 40, 2)
+	UiStyle.text(self, Vector2(x, y + 4), "VALT", 15, Color(1, 1, 1, 0.5))
+	if new_text == "":
+		UiStyle.text(self, Vector2(x + 52, y + 4), "Tryck på ett alternativ", 16, Color(1, 1, 1, 0.55))
 		return
-	for i in new_lines.size():
-		UiStyle.text(self, Vector2(x, y2 + 20 + i * 17), new_lines[i], 13, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, 400, 0)
-	var warn := "Tryck igen för att sätta i"
-	if cur != "" and slot.kind != "nether":
-		warn += " – %s förstörs" % ArtifactText.material_name(data, cur)
-	elif cur != "":
-		warn += " – den gamla stenen går till förrådet"
+	y += 10 + UiStyle.para(self, Vector2(x + 52, y + 4), new_text, 16, UiStyle.TRAIT_GOLD, w - 52, 3)
 	# Vad bytet gör med hjältens stats, i siffror.
 	var after := art.duplicate(true)
 	match slot.kind:
@@ -568,36 +558,38 @@ func _draw_compare(data: Dictionary, art: Dictionary, level: int, cur: String) -
 		var d: float = after_t[s] - before_t[s]
 		if absf(d) >= 0.5:
 			changes.append("%s %d → %d" % [HeroStats.STAT_NAMES[s], roundi(before_t[s]), roundi(after_t[s])])
-	var y3 := y2 + 24 + new_lines.size() * 17
 	if not changes.is_empty():
-		UiStyle.text(self, Vector2(x, y3), "%s: %s" % [data.heroes[hero].name, ", ".join(changes)], 13,
-				Color("#8fd18f"), HORIZONTAL_ALIGNMENT_LEFT, 400, 2)
-		y3 += 20
-	UiStyle.text(self, Vector2(x, y3), warn, 13, Color("#ffb070"), HORIZONTAL_ALIGNMENT_LEFT, 400, 2)
+		y += 4 + UiStyle.para(self, Vector2(x, y + 4), ", ".join(changes), 16, Color("#8fd18f"), w, 2)
+	var warn := "Tryck igen för att sätta i"
+	if cur != "" and slot.kind != "nether":
+		warn += " – %s förstörs" % ArtifactText.material_name(data, cur)
+	elif cur != "":
+		warn += " – den gamla stenen går till förrådet"
+	UiStyle.para(self, Vector2(x, y + 6), warn, 16, Color("#ffb070"), w, 2)
 
 
 func _draw_forge(data: Dictionary, profile: Profile) -> void:
 	var x0 := _x0()
-	UiStyle.text(self, Vector2(x0, 164), "TYP", 14, Color(1, 1, 1, 0.6))
+	UiStyle.text(self, Vector2(x0, 164), "TYP", 16, Color(1, 1, 1, 0.6))
 	for i in TYPES.size():
 		var k: Dictionary = data.artifacts[TYPES[i]]
 		var r := _type_rect(i)
 		UiStyle.card(self, r, k.name, "%s\n%s" % [k.stat_text, k.trigger_text], type == TYPES[i], Color("#b9c4d6"))
 		Glyphs.draw(self, k.icon, r.end - Vector2(20, 20), 9.0, Color("#b9c4d6", 0.8))
-	UiStyle.text(self, Vector2(x0, 330), "FÖRMÅGA I ARTEFAKTEN", 14, Color(1, 1, 1, 0.6))
+	UiStyle.text(self, Vector2(x0, 330), "FÖRMÅGA I ARTEFAKTEN", 16, Color(1, 1, 1, 0.6))
 	var abs := _abilities()
 	for i in abs.size():
 		var label: String = "Ingen" if abs[i] == "" else data.abilities[abs[i]].name
-		chip(_ability_rect(i), label, ability == abs[i], 14)
+		chip(_ability_rect(i), label, ability == abs[i], 17)
 	var k: Dictionary = data.artifacts[type]
 	var y := _ability_rect(abs.size() - 1).end.y + 34
 	var what := "%s – %s." % [k.name, k.stat_text]
 	if ability != "":
 		var ab: Dictionary = data.abilities[ability]
 		what = "%s – %s. %s: kastar %s. %s" % [k.name, k.stat_text, k.trigger_text, ab.name, ab.get("text", "")]
-	UiStyle.text(self, Vector2(x0, y), what, 16, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, _w(), 3)
-	UiStyle.text(self, Vector2(x0, y + 24), "Förmågan använder bärarens Attack och Intelligence. Nivån och materialen följer med när typen byts.",
-			14, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, _w(), 3)
+	var hh := UiStyle.para(self, Vector2(x0, y), what, 18, UiStyle.TRAIT_GOLD, _w(), 3)
+	UiStyle.para(self, Vector2(x0, y + hh + 6), "Förmågan använder bärarens Attack och Intelligence. Nivån och materialen följer med när typen byts.",
+			16, Color(1, 1, 1, 0.6), _w() - 440, 3)
 	var cost := profile.forge_cost(hero, type, ability)
 	var label := "SMIDD" if cost == 0 else ("%s – %d SILVER" % ["BYT FÖRMÅGA" if cost == Profile.RESOCKET_COST else "SMID", cost])
 	UiStyle.big_button(self, _button_rect(), label, _t, cost > 0 and profile.silver >= cost)
