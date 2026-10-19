@@ -9,7 +9,7 @@ const INK := Color(0.20, 0.12, 0.06)
 const ICON_DIR := "res://assets/illustrations/icons/"
 ## Rumstyp → symbol.
 const ROOM_ICONS := {"battle": "battle", "portal_battle": "battle", "elite": "elite", "treasure": "chest",
-		"shrine": "shrine", "campfire": "campfire", "portal": "portal", "end": "battle"}
+		"shrine": "shrine", "campfire": "campfire", "portal": "portal", "end": "battle", "prisoner": "paladin"}
 static var _icons := {}
 
 

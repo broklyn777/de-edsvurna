@@ -43,6 +43,33 @@ const TUNED_MACROS := {
 		{"subject": "any_enemy", "cond": "has_status", "value": "marked", "action": "attack", "target": "that"},
 		{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "hunters_mark", "target": "that"},
 		{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}]},
+	# 0.23: förbättrade makron för de nya följeslagarna.
+	"imma": {"name": "Imma+", "lines": [
+		{"subject": "any_enemy", "cond": "has_buff", "action": "attack", "target": "that"},
+		{"subject": "any_ally", "cond": "hp_below", "value": 40, "action": "ability", "ability": "smoke_arrow", "target": "that"},
+		{"subject": "any_enemy", "cond": "highest_defense", "action": "ability", "ability": "spark_arrow", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
+	"ronja": {"name": "Ronja+", "lines": [
+		{"subject": "any_enemy", "cond": "has_status", "value": "marked", "action": "ability", "ability": "falcon_dive", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
+	"lirien": {"name": "Lirien+", "lines": [
+		{"subject": "any_ally", "cond": "hp_below", "value": 40, "action": "test_next"},
+		{"subject": "any_enemy", "cond": "highest_attack", "action": "ability", "ability": "lullaby", "target": "that"},
+		{"subject": "ally_1", "cond": "lacks_status", "value": "inspired", "action": "ability", "ability": "battle_song", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
+	"hulda": {"name": "Hulda+", "lines": [
+		{"subject": "any_ally", "cond": "hp_below", "value": 45, "action": "ability", "ability": "leaf_shield", "target": "that"},
+		{"subject": "all_enemies", "cond": "lacks_status", "value": "poisoned", "action": "ability", "ability": "spore_ring", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
+	"ragnhild": {"name": "Ragnhild+", "lines": [
+		{"subject": "any_enemy", "cond": "has_buff", "action": "ability", "ability": "dispel_lie", "target": "that"},
+		{"subject": "all_enemies", "cond": "is_alive", "action": "ability", "ability": "light_wave", "target": "that"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
+	"tove": {"name": "Tove+", "lines": [
+		{"subject": "self", "cond": "has_debuff", "action": "ability", "ability": "still_water", "target": "self"},
+		{"subject": "any_ally", "cond": "hp_below", "value": 50, "action": "test_next"},
+		{"subject": "self", "cond": "lacks_status", "value": "agile", "action": "ability", "ability": "wind_step", "target": "self"},
+		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
 }
 
 
@@ -61,7 +88,9 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 			sim.act("attack")
 			continue
 		var macros: Dictionary = data.macros if skill == Skill.MACRO else TUNED_MACROS
-		var decision := MacroRunner.decide(sim, sim.current, macros.get(sim.current.id, {"lines": []}))
+		# 0.23: följeslagare utan förbättrade makron kör sina startmakron även för TUNED.
+		var macro: Dictionary = macros.get(sim.current.id, data.macros.get(sim.current.id, {"lines": []}))
+		var decision := MacroRunner.decide(sim, sim.current, macro)
 		if decision.ok:
 			sim.act(decision.action, decision.target, decision.ability)
 		else:
@@ -106,7 +135,11 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	state.depth = depth
 	state.instability = int(opts.get("instability", 0))
 	state.rules_visible = opts.get("rules", []).duplicate()
+	if opts.has("party"):
+		state.party.assign(opts.party)  # 0.23: sällskap med 2–4 hjältar
 	state.fill_charges(data)
+	if opts.has("recruited"):
+		state.place_prisoners(data, opts.recruited)  # 0.23: botarna befriar lärjungar som i spelet
 	state.start_expedition(data, seed_value)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value * 13 + 5
@@ -130,7 +163,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		if RunState.is_battle(r):
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
@@ -153,11 +186,15 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				var xp := HeroStats.battle_xp(r.kind, depth, r.get("boss", false))
 				for hero_id in levels:
 					HeroStats.add_xp(levels[hero_id], xp)
+			if r.kind == "prisoner":
+				_bot_recruit(data, state, levels, r)
 			state.battle_won()
 			if state.floor_cleared():
 				state.next_floor(data)
 		else:
 			match r.kind:
+				"prisoner":
+					_bot_recruit(data, state, levels, r)
 				"campfire":
 					state.campfire(data)
 				"treasure":
@@ -185,12 +222,30 @@ static func party_levels(data: Dictionary, level: int, party: Array = ["paladin"
 	return out
 
 
+## En befriad lärjunge ansluter (som Run.rescue_prisoner): nivå 1, eller 2 om sällskapet är på nivå 4+.
+static func _bot_recruit(data: Dictionary, state: RunState, levels: Dictionary, r: Dictionary) -> void:
+	var hero_id: String = r.get("hero", "")
+	if hero_id == "" or r.get("rescued", false):
+		return
+	r.rescued = true
+	if state.party.size() > Profile.MAX_COMPANIONS:
+		return
+	state.party.append(hero_id)
+	state.add_charges_for(data, hero_id)
+	if not levels.is_empty():
+		levels[hero_id] = {"level": 2 if HeroStats.party_level(levels) >= 4.0 else 1, "xp": 0,
+				"personality": data.heroes[hero_id].get("personality", "")}
+
+
 static func _pick_room(state: RunState, options: Array, policy: String, rng: RandomNumberGenerator) -> String:
 	if options.size() == 1:
 		return options[0]
 	var kinds := {}
 	for id in options:
 		kinds[id] = state.map.room(id).kind
+	for id in options:
+		if kinds[id] == "prisoner":
+			return id  # 0.23: en fånge befrias alltid
 	var order: Array = ["elite", "portal", "treasure", "shrine", "battle", "campfire", "end"] if policy == "greedy" \
 			else ["campfire", "shrine", "treasure", "battle", "end", "portal", "elite"]
 	if policy == "simple":

@@ -21,6 +21,7 @@ const ROOM_MAP_SCENE := "res://scenes/room_map.tscn"
 ## Den pågående körningen sparas efter varje rum, så att den överlever att appen stängs (0.18).
 const RUN_PATH := "user://run.cfg"
 const HERO_SCENE := "res://scenes/hero.tscn"
+const INN_SCENE := "res://scenes/inn.tscn"
 
 var data: Dictionary
 var state := RunState.new()
@@ -82,6 +83,29 @@ func _ready() -> void:
 		_resume_run()
 
 
+## Introduktionen (0.23, Intro): en händelse som kan avsluta aktuellt uppdrag. Repliker för nästa steg visas i borgen.
+var intro_lines := {}
+const INTRO_PRACTICE := "intro_yard"
+
+
+func intro(event: String, value := 0) -> void:
+	var done := Intro.notify(data, profile, event, value)
+	if done.is_empty():
+		return
+	ui("trophy_common", -6.0)
+	var nxt := Intro.current(data, profile)
+	if nxt.is_empty():
+		intro_lines = {"speaker": "Mäster Gorm", "lines": ["Svärdet är ditt, och borgen står öppen. Resten får du upptäcka själv."]}
+	else:
+		intro_lines = {"speaker": nxt.get("speaker", ""), "lines": nxt.get("lines", [])}
+	_save()
+
+
+## Sant när introts övningsstrid gäller (ensam paladin, Övningsgårdens docka).
+func intro_practice() -> bool:
+	return Intro.current(data, profile).get("id", "") == "practice"
+
+
 ## Sant när profilen är påhittad för en skärmdump (--forge-demo): då sparas den inte.
 var dev_profile := false
 
@@ -129,6 +153,31 @@ func _dev_args() -> void:
 			# --artifact=<hjälte>:<typ>:<förmåga>, t.ex. brokk:shield:healing_light (bara den här körningen)
 			var parts := arg.get_slice("=", 1).split(":")
 			state.artifacts[parts[0]] = {"type": parts[1], "ability": parts[2] if parts.size() > 2 else ""}
+		elif arg == "--all-companions":
+			# --all-companions: en påhittad profil (sparas inte) som har befriat alla lärjungar
+			dev_profile = true
+			for id in data.heroes:
+				if id != "paladin":
+					profile.recruit(data, id, 3.0)
+		elif arg == "--new-profile":
+			# --new-profile: börja som en ny spelare (sparas inte): Paladinen och Brokk
+			dev_profile = true
+			profile = Profile.new()
+			state = RunState.new_run(profile, data)
+		elif arg == "--rescue-demo":
+			# --rescue-demo: rumskartan med befrielsedialogen för Alva och hennes makroförslag (sparas inte)
+			dev_profile = true
+			profile = Profile.new()
+			profile.recruit(data, "imma")
+			profile.set_party(["imma"])
+			state = RunState.new_run(profile, data)
+			state.start_expedition(data, 3)
+			profile.recruit(data, "alva")
+			state.party.append("alva")
+			state.add_charges_for(data, "alva")
+			last_recruit = "alva"
+			pending_rescue = "Syster Alva befrias! Präst, Klok. Följer med direkt (nivå 1)."
+			get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
 		elif arg == "--forge-demo":
 			# --forge-demo: en påhittad profil för Smeden (sparas inte): Brokks sköld på nivå 7 med material,
 			# ett förråd och några Nether Stones. Med --smith öppnas Smeden direkt.
@@ -187,8 +236,8 @@ func _dev_args() -> void:
 			sheet_heroes = profile.party.duplicate()
 			sheet_can_change_personality = true
 			get_tree().change_scene_to_file.call_deferred(HERO_SCENE)
-		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep"]:
-			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE,
+		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn"]:
+			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE, "--inn": INN_SCENE,
 					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE}[arg]
 			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--camp":
@@ -342,6 +391,69 @@ func campfire() -> String:
 	return room_result
 
 
+## Befriar fången i rummet (0.23, Siralims rekrytering): lärjungen ansluter direkt på svag nivå om det finns plats,
+## annars väntar hen i Värdshuset. Returnerar texten om vad som hände.
+var last_recruit := ""
+## En befrielse efter en strid visas som en ruta när man kommer tillbaka till rumskartan.
+var pending_rescue := ""
+
+
+## Makroförslaget för en hjälte som just anslöt (0.23): {line, text}, eller {} om raden redan finns.
+func macro_hint(hero_id: String) -> Dictionary:
+	var hint: Dictionary = data.heroes.get(hero_id, {}).get("macro_hint", {})
+	if hint.is_empty():
+		return {}
+	var m: Dictionary = macros.get(assignment.get(hero_id, hero_id), {})
+	for line in m.get("lines", []):
+		if line.get("cond", "") == hint.line.cond and line.get("action", "") == hint.line.action \
+				and line.get("ability", "") == hint.line.get("ability", ""):
+			return {}
+	return hint
+
+
+## Lägger förslagets rad först i hjältens makro.
+func add_macro_hint(hero_id: String) -> void:
+	var hint := macro_hint(hero_id)
+	if hint.is_empty():
+		return
+	var id: String = assignment.get(hero_id, hero_id)
+	if not macros.has(id):
+		macros[id] = {"name": data.heroes[hero_id].name, "lines": []}
+		assignment[hero_id] = id
+	macros[id].lines.insert(0, hint.line.duplicate(true))
+	save_macros()
+	ui("ui_confirm", -8.0)
+
+
+func rescue_prisoner() -> String:
+	var r := state.current_room()
+	var hero_id: String = r.get("hero", "")
+	if hero_id == "" or r.get("rescued", false):
+		return ""
+	r.rescued = true
+	state.prisoners.erase(str(state.floor))
+	var avg := 0.0
+	for id in state.party:
+		avg += float(profile.hero(data, id).level)
+	avg /= maxi(state.party.size(), 1)
+	profile.recruit(data, hero_id, avg)
+	last_recruit = hero_id
+	var h: Dictionary = data.heroes[hero_id]
+	var p: Dictionary = data.personalities.get(profile.hero(data, hero_id).personality, {})
+	var text := "%s befrias! %s, %s." % [h.name, h.get("title", ""), p.get("name", "")]
+	if state.party.size() <= Profile.MAX_COMPANIONS:
+		state.party.append(hero_id)
+		state.add_charges_for(data, hero_id)
+		profile.set_party(state.party.slice(1))
+		text += " Följer med direkt (nivå %d)." % int(profile.hero(data, hero_id).level)
+	else:
+		text += " Sällskapet är fullt – väntar i Värdshuset."
+	ui("room_lock", -4.0)
+	_save()
+	save_run()
+	return text
+
+
 func treasure() -> String:
 	var t := state.treasure(data, rng)
 	var amount := roundi(t.silver * state.silver_mult(data))
@@ -445,6 +557,10 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 	if state.practice:
 		practice_log = log
 		last_receipt = receipt
+		if victory and state.practice_encounter == INTRO_PRACTICE:
+			intro("practice_won")
+			get_tree().change_scene_to_file(BASE_SCENE)
+			return
 		get_tree().change_scene_to_file(PRACTICE_SCENE)
 		return
 	if not victory:
@@ -462,6 +578,9 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
 	quest_reward = {}
 	room_result = ""
+	if state.current_room().get("kind", "") == "prisoner":
+		room_result = rescue_prisoner()  # 0.23: vakterna är besegrade, fången befrias
+		pending_rescue = room_result
 	_after_quest_check(state.battle_won())
 	_trophy_sound()
 	camp_chosen = ""
@@ -519,6 +638,9 @@ func save_macros() -> void:
 	var f := FileAccess.open(MACROS_PATH, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify({"macros": macros, "assignment": assignment, "default_action": default_action}, "\t"))
+	# Introt: Paladinens första makrorad.
+	if not macros.get(assignment.get("paladin", "paladin"), {}).get("lines", []).is_empty():
+		intro("macro_line")
 
 
 ## Startmakron från data/macros.json första gången; sedan spelarens egna.
@@ -534,6 +656,17 @@ func _load_macros() -> void:
 		macros = data.macros.duplicate(true)
 		for hero_id in data.macros:
 			assignment[hero_id] = hero_id
+		# 0.23: en ny profil börjar med få rader (VD:n: "inte många makron i början"). Paladinens första rad skriver
+		# man själv i introt; följeslagarna har en eller två, och spelet föreslår fler när nya sorters hjältar kommer.
+		if not profile.intro_done:
+			macros.paladin.lines = []
+			for hero_id in macros:
+				if hero_id != "paladin":
+					macros[hero_id].lines = macros[hero_id].lines.slice(0, 2)
+	# 0.23: nya följeslagare får sina startmakron även i en sparad makrofil.
+	for hero_id in data.macros:
+		if not macros.has(hero_id):
+			macros[hero_id] = data.macros[hero_id].duplicate(true)
 	# 0.22: Förnyelse blev Läkning och Helig sköld blev Beskyddad; sparade makron frågar efter de nya.
 	const RENAMED := {"renew": "mending", "holy_shield": "protected"}
 	for m in macros.values():

@@ -62,14 +62,20 @@ func _pick_hero(hero_id: String) -> void:
 	pending = ""
 
 
+## Paladinen och de följeslagare man har (0.23).
 func _heroes() -> Array:
-	return run.data.heroes.keys()
+	return ["paladin"] + run.profile.recruited
 
 
-## Förmågor som kan sättas i en artefakt: alla hjältars förmågor.
+## Introt (0.23): bara svärdet går att smida, som originalets "You must forge a Sword".
+func _type_locked(t: String) -> bool:
+	return not run.profile.intro_done and t != "sword"
+
+
+## Förmågor som kan sättas i en artefakt: alla förmågor hos Paladinen och följeslagarna man har.
 func _abilities() -> Array:
 	var out: Array = [""]
-	for hero_id in run.data.heroes:
+	for hero_id in _heroes():  # 0.23: förmågorna hos de hjältar man har
 		for a in run.data.heroes[hero_id].get("abilities", []):
 			if not out.has(a):
 				out.append(a)
@@ -108,6 +114,10 @@ func _tap(p: Vector2) -> void:
 func _tap_forge(p: Vector2) -> void:
 	for i in TYPES.size():
 		if _type_rect(i).has_point(p):
+			if _type_locked(TYPES[i]):
+				_say("Smeden: Först ett svärd. Resten kommer sedan.")
+				run.ui("ui_error", -10.0)
+				return
 			type = TYPES[i]
 			return
 	var abs := _abilities()
@@ -121,6 +131,7 @@ func _tap_forge(p: Vector2) -> void:
 		run.ui("forge_level", -6.0)
 		run.save("ui_forge")
 		tab = 0
+		run.intro("forged")
 
 
 func _tap_artifact(p: Vector2, art: Dictionary) -> void:
@@ -157,6 +168,8 @@ func _tap_artifact(p: Vector2, art: Dictionary) -> void:
 		run.ui("forge_level", -4.0)
 		run.ui("ui_coins", -10.0)
 		var lv := int(run.profile.artifact(hero).level)
+		if hero == "paladin":
+			run.intro("sword_level", lv)
 		if opened != "":
 			for s in _sockets():
 				if _open_level(s) == lv:
@@ -576,6 +589,8 @@ func _draw_forge(data: Dictionary, profile: Profile) -> void:
 		var r := _type_rect(i)
 		UiStyle.card(self, r, k.name, "%s\n%s" % [k.stat_text, k.trigger_text], type == TYPES[i], Color("#b9c4d6"))
 		Glyphs.draw(self, k.icon, r.end - Vector2(20, 20), 9.0, Color("#b9c4d6", 0.8))
+		if _type_locked(TYPES[i]):
+			draw_rect(r, Color(0.02, 0.02, 0.03, 0.72))
 	UiStyle.text(self, Vector2(x0, 330), "FÖRMÅGA I ARTEFAKTEN", 16, Color(1, 1, 1, 0.6))
 	var abs := _abilities()
 	for i in abs.size():

@@ -1,6 +1,7 @@
 {
 	"paladin": {
 		"name": "Paladinen",
+		"short": "Paladinen",
 		"title": "Edsvuren",
 		"role": "leader",
 		"color": "#f2c85b",
@@ -69,8 +70,55 @@
 			}
 		}
 	},
+	"imma": {
+		"name": "Imma",
+		"short": "Imma",
+		"title": "Bågskytt",
+		"role": "dps",
+		"color": "#ff9a4a",
+		"stats": {
+			"health": 620,
+			"attack": 106,
+			"intelligence": 80,
+			"defense": 18,
+			"speed": 18
+		},
+		"personality": "rastlos",
+		"crit_chance": 0.18,
+		"attack_ability": "imma_arrow",
+		"abilities": [
+			"trick_arrow",
+			"smoke_arrow",
+			"spark_arrow"
+		],
+		"traits": [
+			"imma_sleight"
+		],
+		"visual": {
+			"model": "liria",
+			"weapons": {
+				"grip_l": "Shortbow"
+			},
+			"colors": {
+				"Ranger_Cloak": "#c8402a"
+			},
+			"anims": {
+				"idle": "Bow_Idle",
+				"attack": [
+					"Bow_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
+			}
+		},
+		"placeholder_figure": true
+	},
 	"brokk": {
 		"name": "Brokk",
+		"short": "Brokk",
 		"title": "Dvärgkrigare",
 		"role": "tank",
 		"color": "#c69b6d",
@@ -129,10 +177,20 @@
 				"run": "TwoHand_Run",
 				"walk": "TwoHand_Walk"
 			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "provoke"
+			},
+			"text": "Brokk kan skydda de andra: \"Om någon allierad har liv under 50 %: Provocera.\""
 		}
 	},
 	"alva": {
 		"name": "Syster Alva",
+		"short": "Alva",
 		"title": "Präst",
 		"role": "healer",
 		"color": "#f4f4f4",
@@ -184,10 +242,22 @@
 				"run": "Run_Loop",
 				"walk": "Walk_Loop"
 			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "ability",
+				"ability": "healing_light",
+				"target": "that"
+			},
+			"text": "Alva kan hela: \"Om någon allierad har liv under 50 %: Helande ljus på den.\""
 		}
 	},
 	"eira": {
 		"name": "Jägaren Eira",
+		"short": "Eira",
 		"title": "Jägare",
 		"role": "dps",
 		"color": "#7fe05a",
@@ -227,10 +297,22 @@
 				"run": "Run_Loop",
 				"walk": "Walk_Loop"
 			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "any_enemy",
+				"cond": "lacks_status",
+				"value": "marked",
+				"action": "ability",
+				"ability": "hunters_mark",
+				"target": "that"
+			},
+			"text": "Eira märker sitt byte: \"Om någon fiende saknar Märkt: Märk byte.\""
 		}
 	},
 	"solveig": {
 		"name": "Solveig",
+		"short": "Solveig",
 		"title": "Eldmagiker",
 		"role": "dps",
 		"color": "#ff8a2a",
@@ -277,6 +359,368 @@
 				"run": "Staff_Run",
 				"walk": "Staff_Walk"
 			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "all_enemies",
+				"cond": "is_alive",
+				"action": "ability",
+				"ability": "flame_wave",
+				"target": "that"
+			},
+			"text": "Solveig bränner grupper: \"Om alla fiender lever: Eldvåg.\""
 		}
+	},
+	"ronja": {
+		"name": "Ronja Falkvind",
+		"short": "Ronja",
+		"title": "Falkenerare",
+		"role": "control",
+		"color": "#c9a46a",
+		"stats": {
+			"health": 650,
+			"attack": 92,
+			"intelligence": 69,
+			"defense": 25,
+			"speed": 15
+		},
+		"personality": "snabbfotad",
+		"crit_chance": 0.12,
+		"attack_ability": "talon_strike",
+		"abilities": [
+			"falcon_dive",
+			"scout_flight",
+			"wing_shadow"
+		],
+		"traits": [
+			"ronja_falcon_watch"
+		],
+		"visual": {
+			"model": "liria",
+			"weapons": {
+				"grip_l": "Shortbow"
+			},
+			"colors": {
+				"Ranger_Cloak": "#8a6a3a"
+			},
+			"anims": {
+				"idle": "Bow_Idle",
+				"attack": [
+					"Bow_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
+			}
+		},
+		"placeholder_figure": true
+	},
+	"lirien": {
+		"name": "Lirien Silversträng",
+		"short": "Lirien",
+		"title": "Bard",
+		"role": "support",
+		"color": "#9fd3ff",
+		"stats": {
+			"health": 620,
+			"attack": 69,
+			"intelligence": 98,
+			"defense": 20,
+			"speed": 13
+		},
+		"personality": "drommande",
+		"crit_chance": 0.08,
+		"attack_ability": "dissonance",
+		"abilities": [
+			"battle_song",
+			"lullaby",
+			"heroes_ballad"
+		],
+		"traits": [
+			"lirien_chorus"
+		],
+		"visual": {
+			"model": "alva",
+			"anims_from": [
+				"sigrun_delar"
+			],
+			"hide": [
+				"Ako_Staff"
+			],
+			"colors": {
+				"Ako_Robe": "#9fc6e8",
+				"Ako_Cord": "#d8e8ff",
+				"Ako_Gold": "#c8d8f0"
+			},
+			"weapons": {
+				"grip_r": "Shortsword"
+			},
+			"light": "#ffe7a0",
+			"light_energy": 0.6,
+			"anims": {
+				"idle": "OneHand_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"cast": "Spell_Simple_Shoot",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
+			}
+		},
+		"placeholder_figure": true,
+		"macro_hint": {
+			"line": {
+				"subject": "any_ally",
+				"cond": "lacks_status",
+				"value": "inspired",
+				"action": "ability",
+				"ability": "battle_song",
+				"target": "that"
+			},
+			"text": "Lirien sjunger: \"Om en allierad saknar Styrka: Stridssång.\""
+		}
+	},
+	"tove": {
+		"name": "Broder Tove",
+		"short": "Tove",
+		"title": "Munk",
+		"role": "tank",
+		"color": "#e2b36b",
+		"stats": {
+			"health": 750,
+			"attack": 98,
+			"intelligence": 46,
+			"defense": 25,
+			"speed": 16
+		},
+		"personality": "lattfotad",
+		"crit_chance": 0.1,
+		"attack_ability": "palm_strike",
+		"abilities": [
+			"wind_step",
+			"pressure_point",
+			"still_water"
+		],
+		"traits": [
+			"tove_mirror_hand"
+		],
+		"visual": {
+			"model": "solveig",
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"colors": {
+				"Solveig_Robe": "#c8822a",
+				"White.001": "#e2b36b",
+				"Orange": "#8a5a1a",
+				"Solveig_Cloak": "#5a3a1a"
+			},
+			"emit": {
+				"Solveig_Ember": "#ff6a10"
+			},
+			"light": "#ff7a30",
+			"light_energy": 0.8,
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"run": "Staff_Run",
+				"walk": "Staff_Walk"
+			}
+		},
+		"placeholder_figure": true
+	},
+	"hulda": {
+		"name": "Hulda Mossrot",
+		"short": "Hulda",
+		"title": "Druid",
+		"role": "support",
+		"color": "#6fbf73",
+		"stats": {
+			"health": 700,
+			"attack": 57,
+			"intelligence": 103,
+			"defense": 30,
+			"speed": 8
+		},
+		"personality": "klok",
+		"crit_chance": 0.06,
+		"attack_ability": "thorn_whip",
+		"abilities": [
+			"snaring_roots",
+			"leaf_shield",
+			"spore_ring"
+		],
+		"traits": [
+			"hulda_rootwork"
+		],
+		"visual": {
+			"model": "solveig",
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"colors": {
+				"Solveig_Robe": "#3a6a3a",
+				"White.001": "#6fbf73",
+				"Orange": "#2a4a2a",
+				"Solveig_Cloak": "#4a3a24"
+			},
+			"emit": {
+				"Solveig_Ember": "#ff6a10"
+			},
+			"light": "#ff7a30",
+			"light_energy": 0.8,
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"run": "Staff_Run",
+				"walk": "Staff_Walk"
+			}
+		},
+		"placeholder_figure": true,
+		"macro_hint": {
+			"line": {
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "ability",
+				"ability": "leaf_shield",
+				"target": "that"
+			},
+			"text": "Hulda skyddar: \"Om någon allierad har liv under 50 %: Lövskydd.\""
+		}
+	},
+	"ragnhild": {
+		"name": "Ragnhild Ljusdom",
+		"short": "Ragnhild",
+		"title": "Domare",
+		"role": "dps",
+		"color": "#ffd27a",
+		"stats": {
+			"health": 800,
+			"attack": 86,
+			"intelligence": 92,
+			"defense": 45,
+			"speed": 9
+		},
+		"personality": "stadig",
+		"crit_chance": 0.08,
+		"attack_ability": "gavel_strike",
+		"abilities": [
+			"brand",
+			"dispel_lie",
+			"light_wave"
+		],
+		"traits": [
+			"ragnhild_truth_light"
+		],
+		"visual": {
+			"model": "torvald",
+			"weapons": {
+				"grip_r": "Mace",
+				"grip_l": "Shield"
+			},
+			"colors": {
+				"Torvald_Iron": "#c9ced6",
+				"Torvald_Edge": "#e0b24a",
+				"Torvald_Red": "#e8d8a0",
+				"Green.001": "#8c929e",
+				"Brown2.001": "#5a6070",
+				"Brown.002": "#3a3f4e",
+				"Vapen_Wood": "#e8d8a0",
+				"Vapen_Iron": "#e0b24a",
+				"Paladin_Cape": "#f2eee4",
+				"Paladin_Gold": "#ffd36a",
+				"Paladin_Sun": "#ffd36a"
+			},
+			"emit": {
+				"Paladin_Sun": "#d9a030"
+			},
+			"anims": {
+				"idle": "Shield_Idle",
+				"attack": [
+					"Shield_Attack",
+					"Shield_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
+			}
+		},
+		"placeholder_figure": true
+	},
+	"sefir": {
+		"name": "Sefir av Sanden",
+		"short": "Sefir",
+		"title": "Svärdsdansare",
+		"role": "dps",
+		"color": "#ff6f61",
+		"stats": {
+			"health": 600,
+			"attack": 95,
+			"intelligence": 40,
+			"defense": 15,
+			"speed": 17
+		},
+		"personality": "impulsiv",
+		"crit_chance": 0.18,
+		"attack_ability": "scimitar",
+		"abilities": [
+			"dancing_steel",
+			"wind_stride",
+			"thousand_cuts"
+		],
+		"traits": [
+			"sefir_blade_whirl"
+		],
+		"visual": {
+			"model": "torvald",
+			"weapons": {
+				"grip_r": "Shortsword"
+			},
+			"colors": {
+				"Torvald_Iron": "#c9ced6",
+				"Torvald_Edge": "#e0b24a",
+				"Torvald_Red": "#b8302a",
+				"Green.001": "#8c929e",
+				"Brown2.001": "#5a6070",
+				"Brown.002": "#3a3f4e",
+				"Vapen_Wood": "#b8302a",
+				"Vapen_Iron": "#e0b24a",
+				"Paladin_Cape": "#d8603a",
+				"Paladin_Gold": "#ffd36a",
+				"Paladin_Sun": "#ffd36a"
+			},
+			"emit": {
+				"Paladin_Sun": "#d9a030"
+			},
+			"anims": {
+				"idle": "Shield_Idle",
+				"attack": [
+					"Shield_Attack",
+					"Shield_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"run": "Run_Loop",
+				"walk": "Walk_Loop"
+			}
+		},
+		"placeholder_figure": true
 	}
 }

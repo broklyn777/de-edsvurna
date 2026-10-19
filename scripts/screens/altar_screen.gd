@@ -50,6 +50,7 @@ func _tap(p: Vector2) -> void:
 			selected_perk = ""
 			anoint_mode = false
 			run.save("ui_confirm")
+			run.intro("oath_chosen")  # 0.23: att välja kall är edsceremonin
 			return
 	var perks := _perks()
 	for i in perks.size():

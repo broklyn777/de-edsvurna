@@ -1,124 +1,304 @@
 extends TapScreen
-## Basen mellan körningarna (Siralims slott, förenklat). Härifrån går man till Kampanjkartan,
-## Övningsgården, Kallets altare, Smeden, Makron och Biblioteket. Förlust och seger på sista våningen leder hit.
-
-## Borgen med smedja, bibliotekstorn och altargård tonad i bakgrunden (VD:ns illustration).
-const BASE_ART := preload("res://assets/illustrations/basen.webp")
+## Borgen (0.23, Siralims slott): en borggård i 3D med stationerna runt om. Tryck på en station så går paladinen
+## dit (ungefär en sekund) och öppnar den; dubbeltryck hoppar över gången. Hela borgen syns på en skärm, namnen står
+## över stationerna, och den som har något nytt (eller introts aktuella uppdrag) lyser. Kortraden längst ned är en
+## genväg. Sällskapet står vid värdshuset; tryck på en hjälte för hjältebladet. Under introduktionen (Intro) visar
+## ett hörn aktuellt uppdrag, och stationer som inte är aktuella svarar med en replik i stället för att öppnas.
 
 const PLACES := [
-	{"id": "gate", "name": "Kampanjkartan", "tag": "TELEPORTATION SHRINE",
-		"text": "Landet och dess Realms. Välj Realm, djup och instabilitet, förbered sällskapet och gå in."},
-	{"id": "practice", "name": "Övningsgården", "tag": "ARENA",
-		"text": "Prova sällskapet, makrona och troféerna mot valfria fiender. Inget förloras, Charges är fulla."},
-	{"id": "altar", "name": "Kallets altare", "tag": "ENCHANTED WARDROBE",
-		"text": "Välj Paladinens kall – det gäller hela sällskapet – och köp perks för perk-poäng. Återställ gratis."},
-	{"id": "smith", "name": "Smeden", "tag": "BLACKSMITH",
-		"text": "Smid en artefakt per hjälte och höj den: nivåerna öppnar platser för bärnsten, trick och Nether Stones."},
-	{"id": "macros", "name": "Makron", "tag": "MACROS",
-		"text": "Skriv om hjältarnas makron: villkor uppifrån och ned, första raden som passar vinner."},
-	{"id": "library", "name": "Biblioteket", "tag": "CODEX",
-		"text": "Samlingen: troféerna du har hittat och vad de gör, och sällskapets artefakter."},
+	{"id": "gate", "name": "Porten", "tag": "Kampanjkartan"},
+	{"id": "practice", "name": "Övningsgården", "tag": "Arena"},
+	{"id": "altar", "name": "Kallets altare", "tag": "Kall och perks"},
+	{"id": "smith", "name": "Smeden", "tag": "Artefakter"},
+	{"id": "macros", "name": "Makron", "tag": "Krigsbordet"},
+	{"id": "inn", "name": "Värdshuset", "tag": "Följeslagarna"},
+	{"id": "library", "name": "Biblioteket", "tag": "Troféer"},
 ]
+const WALK_TIME := 1.0
+const DOUBLE_TAP_MS := 350
 
+var world: CastleWorld
+var paladin: UnitModel
+var _figures := {}  # id -> UnitModel (sällskapet och borgens folk)
+var _walking_to := ""
+var _walk_left := 0.0
+var _last_tap_ms := -1000
+var _last_tap_station := ""
+## Introts dialog: talare, rader och om slutet avslutar ett samtalssteg.
+var _speaker := ""
+var _lines: Array = []
+var _line_i := 0
+var _talk_step := false
+var _reply := ""
+var _reply_t := 0.0
+
+
+func _ready() -> void:
+	super()
+	world = CastleWorld.new()
+	add_child(world)
+	_build_people()
+	_start_intro_dialog()
+
+
+func _build_people() -> void:
+	var data: Dictionary = run.data
+	paladin = _figure("paladin", data.heroes.paladin.visual, CastleWorld.HOME)
+	# Sällskapet står vid värdshuset.
+	var spots := [Vector3(4.4, 0, -0.9), Vector3(5.2, 0, -0.4), Vector3(3.8, 0, -0.3)]
+	var party: Array = run.profile.party.slice(1)
+	for i in mini(party.size(), spots.size()):
+		var m := _figure(party[i], data.heroes[party[i]].visual, spots[i])
+		m.face(CastleWorld.HOME)
+	# Mäster Gorm vid altaret (platshållare: Alvas kåpa i grått).
+	var gorm := _figure("gorm", {"model": "alva", "anims_from": ["sigrun_delar"], "hide": ["Ako_Staff"],
+			"colors": {"Ako_Robe": "#6a6258", "Ako_Cord": "#c8a050", "Ako_Gold": "#c8a050"},
+			"anims": data.heroes.alva.visual.anims}, Vector3(-3.6, 0, -2.0))
+	gorm.face(CastleWorld.HOME)
+	# Imma väntar vid övningsgården tills hon följer med (introts steg 6).
+	if not run.profile.recruited.has("imma"):
+		var imma := _figure("imma", data.heroes.imma.visual, Vector3(-4.2, 0, 1.8))
+		imma.face(CastleWorld.HOME)
+		imma.visible = Intro.current(data, run.profile).get("id", "") in ["imma", "bells"]
+
+
+func _figure(id: String, vis: Dictionary, at: Vector3) -> UnitModel:
+	var d: Dictionary = run.data.heroes.get(id, {"name": id, "stats": {"health": 1}})
+	var u := CombatUnit.from_data(id, d, 0)
+	var m := UnitModel.new()
+	world.add_child(m)
+	m.setup(u, null, vis)
+	m.position = at
+	_figures[id] = m
+	return m
+
+
+func _process(delta: float) -> void:
+	super(delta)
+	_reply_t = maxf(0.0, _reply_t - delta)
+	if _walking_to != "":
+		_walk_left -= delta
+		if _walk_left <= 0.0:
+			_open(_walking_to)
+	for p in PLACES:
+		world.set_glow(p.id, _glows(p.id))
+
+
+# --- Introduktionen ----------------------------------------------------------
+
+func _start_intro_dialog() -> void:
+	if run.profile.intro_done:
+		if not run.intro_lines.is_empty():
+			_show(run.intro_lines.speaker, run.intro_lines.lines, false)
+			run.intro_lines = {}
+		return
+	var step := Intro.current(run.data, run.profile)
+	if not run.intro_lines.is_empty():
+		_show(run.intro_lines.speaker, run.intro_lines.lines, step.get("station", "") == "base")
+		run.intro_lines = {}
+	elif step.get("station", "") == "base" or run.profile.intro_step == 0:
+		_show(step.get("speaker", ""), step.get("lines", []), step.get("station", "") == "base")
+
+
+func _show(speaker: String, lines: Array, talk: bool) -> void:
+	_speaker = speaker
+	_lines = lines
+	_line_i = 0
+	_talk_step = talk
+
+
+func _advance_dialog() -> void:
+	_line_i += 1
+	if _line_i < _lines.size():
+		run.ui_tap()
+		return
+	_lines = []
+	if _talk_step:
+		run.intro("talked")
+		if _figures.has("imma") and run.profile.recruited.has("imma"):
+			_figures.imma.move_to(Vector3(4.4, 0, -0.9), 1.2, true)
+		_start_intro_dialog()
+
+
+# --- Inmatning ---------------------------------------------------------------
 
 func _tap(p: Vector2) -> void:
-	# Sällskapet (0.20.1): ett tryck öppnar hjältebladet, pilarna där bläddrar mellan hjältarna.
-	var party: Array = run.profile.party
-	for i in party.size():
-		if _hero_rect(i).has_point(p):
-			run.open_sheet(party[i], party, run.BASE_SCENE)
-			return
-	for i in PLACES.size():
-		if not _place_rect(i).has_point(p):
-			continue
-		match PLACES[i].id:
-			"gate":
-				run.go(run.CAMPAIGN_SCENE)
-			"practice":
-				run.go(run.PRACTICE_SCENE)
-			"altar":
-				run.go(run.ALTAR_SCENE)
-			"smith":
-				run.go(run.SMITH_SCENE)
-			"macros":
-				run.open_macros(run.BASE_SCENE)
-			"library":
-				run.go(run.LIBRARY_SCENE)
+	if not _lines.is_empty():
+		_advance_dialog()
 		return
+	var station := _station_at(p)
+	if station != "":
+		_go(station)
+		return
+	for id in _figures:
+		if id in ["gorm", "paladin"] or not run.data.heroes.has(id) or not run.profile.recruited.has(id):
+			continue
+		if world.project(_figures[id].head_position()).distance_to(p) < 60.0:
+			run.open_sheet(id, run.profile.party, run.BASE_SCENE)
+			return
+	if world.project(paladin.head_position()).distance_to(p) < 60.0:
+		run.open_sheet("paladin", run.profile.party, run.BASE_SCENE)
 
 
-func _place_rect(i: int) -> Rect2:
-	var top := 120.0
-	var h := 220.0
-	var w := (size.x - MARGIN * 2 - GAP * 2) / 3.0
-	if i < 3:
-		return Rect2(MARGIN + i * (w + GAP), top, w, h)
-	return Rect2(MARGIN + (i - 3) * (w + GAP), top + h + GAP, w, h - 50)
+## Stationen under fingret: nära namnet eller själva stationen, eller i kortraden.
+func _station_at(p: Vector2) -> String:
+	for i in PLACES.size():
+		if _chip_rect(i).has_point(p):
+			return PLACES[i].id
+	for pl in PLACES:
+		var base_pos: Vector3 = CastleWorld.STATIONS[pl.id]
+		if world.project(base_pos + Vector3(0, 2.6, 0)).distance_to(p) < 80.0 or world.project(base_pos).distance_to(p) < 80.0:
+			return pl.id
+	return ""
 
 
-func _hero_rect(i: int) -> Rect2:
-	var n: int = maxi(run.profile.party.size(), 1)
-	var w := (size.x - MARGIN * 2 - GAP * (n - 1)) / n
-	return Rect2(MARGIN + i * (w + GAP), 572, w, 84)
+func _go(station: String) -> void:
+	var state := Intro.station_state(run.data, run.profile, station)
+	if state == "locked":
+		_reply = Intro.reply(run.data, station)
+		_reply_t = 3.0
+		run.ui("ui_error", -12.0)
+		return
+	var now := Time.get_ticks_msec()
+	var double: bool = now - _last_tap_ms < DOUBLE_TAP_MS and _last_tap_station == station
+	_last_tap_ms = now
+	_last_tap_station = station
+	if double or _walking_to == station:
+		_open(station)  # dubbeltryck (eller tryck igen under gången) hoppar över gången
+		return
+	_walking_to = station
+	_walk_left = WALK_TIME
+	paladin.move_to(world.stand_at(station), WALK_TIME, false)
+	run.ui_tap()
 
 
-## Sällskapets hjältar längst ned: namn, nivå, personlighet och en tunn mätare till nästa nivå.
-func _draw_party() -> void:
-	var data: Dictionary = run.data
-	var party: Array = run.profile.party
-	UiStyle.text(self, Vector2(MARGIN, 562), "SÄLLSKAPET – TRYCK FÖR HJÄLTEBLADET", 13, Color(1, 1, 1, 0.55))
-	for i in party.size():
-		var r := _hero_rect(i)
-		var h: Dictionary = data.heroes[party[i]]
-		var prog: Dictionary = run.profile.hero(data, party[i])
-		var level := int(prog.level)
-		draw_rect(r, Color(0.04, 0.035, 0.06, 0.82))
-		draw_rect(r, Color(Color(h.color), 0.5), false, 1.5)
-		draw_rect(Rect2(r.position, Vector2(5, r.size.y)), Color(h.color))
-		UiStyle.text(self, r.position + Vector2(18, 28), h.name, 18, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 110, 3)
-		UiStyle.text(self, r.position + Vector2(0, 28), "NIVÅ %d" % level, 18, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT,
-				r.size.x - 14, 3)
-		var pers: Dictionary = data.personalities.get(prog.personality, {})
-		UiStyle.text(self, r.position + Vector2(18, 50), "%s · %s" % [h.get("title", h.role), pers.get("name", "")], 13,
-				Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 30, 2)
-		var need := HeroStats.xp_to_next(level)
-		UiStyle.bar(self, Rect2(r.position + Vector2(18, 62), Vector2(r.size.x - 36, 6)), float(prog.xp) / need, UiStyle.GOLD)
-		UiStyle.text(self, r.position + Vector2(0, 80), "%d / %d" % [int(prog.xp), need], 11, Color(1, 1, 1, 0.45),
-				HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 18, 0)
+func _open(station: String) -> void:
+	_walking_to = ""
+	match station:
+		"gate":
+			run.go(run.CAMPAIGN_SCENE)
+		"practice":
+			run.go(run.PRACTICE_SCENE)
+		"altar":
+			run.go(run.ALTAR_SCENE)
+		"smith":
+			run.go(run.SMITH_SCENE)
+		"macros":
+			run.open_macros(run.BASE_SCENE)
+		"library":
+			run.go(run.LIBRARY_SCENE)
+		"inn":
+			run.profile.inn_seen = run.profile.recruited.size()
+			run.go(run.INN_SCENE)
+
+
+## Lyser stationen? Introts aktuella uppdrag, Värdshuset när någon ny har kommit, Smeden när ett material kan sättas in.
+func _glows(station: String) -> bool:
+	if Intro.station_state(run.data, run.profile, station) == "current":
+		return true
+	if not run.profile.intro_done:
+		return false
+	match station:
+		"inn":
+			return run.profile.recruited.size() > run.profile.inn_seen
+		"smith":
+			return _smith_has_news()
+	return false
+
+
+func _smith_has_news() -> bool:
+	var amber := 0
+	var tricks := 0
+	for id in run.profile.materials:
+		if run.data.materials.amber.has(id):
+			amber = maxi(amber, int(run.profile.materials[id]))
+		else:
+			tricks += int(run.profile.materials[id])
+	for hero_id in run.profile.artifacts:
+		var a: Dictionary = run.profile.artifact(hero_id)
+		for i in Forge.STAT_SLOT_LEVELS.size():
+			if Forge.stat_slot_open(int(a.level), i) and a.stat_slots[i] == "" and amber >= Forge.AMBER_PER_SLOT:
+				return true
+		for i in Forge.TRICK_SLOT_LEVELS.size():
+			if Forge.trick_slot_open(int(a.level), i) and a.trick_slots[i] == "" and tricks > 0:
+				return true
+	return false
+
+
+# --- Ritning -----------------------------------------------------------------
+
+func _chip_rect(i: int) -> Rect2:
+	var w := (size.x - MARGIN * 2 - GAP * (PLACES.size() - 1)) / PLACES.size()
+	return Rect2(MARGIN + i * (w + GAP), size.y - 58, w, 46)
 
 
 func _draw() -> void:
-	header("BASEN", "Mellan körningarna. Här byggs sällskapet om – nere i kryptan prövas det.", BASE_ART)
+	var data: Dictionary = run.data
+	silver_label()
+	# Namnen över stationerna.
+	for pl in PLACES:
+		var state := Intro.station_state(data, run.profile, pl.id)
+		var pos := world.project(CastleWorld.STATIONS[pl.id] + Vector3(0, 2.6, 0))
+		var col := UiStyle.GOLD if state == "current" else (Color.WHITE if state == "open" else Color(1, 1, 1, 0.45))
+		UiStyle.text(self, pos + Vector2(-110, 0), pl.name + ("  !" if _glows(pl.id) else ""), 19, col, HORIZONTAL_ALIGNMENT_CENTER, 220, 5)
+		UiStyle.text(self, pos + Vector2(-110, 20), pl.tag, 15, Color(col, col.a * 0.75), HORIZONTAL_ALIGNMENT_CENTER, 220, 4)
+	# Kortraden: genvägar till stationerna.
 	for i in PLACES.size():
-		var pl: Dictionary = PLACES[i]
-		var r := _place_rect(i)
-		var hot: bool = pl.id == "gate"
-		UiStyle.card(self, r, pl.name, pl.text, hot, UiStyle.GOLD, pl.tag)
-		var extra := _status(pl.id)
-		if extra != "":
-			UiStyle.text(self, r.position + Vector2(16, r.size.y - 16), extra, 15, Color("#d8dde6"),
-					HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 28, 3)
-	_draw_party()
-	if run.last_silver > 0:
-		UiStyle.text(self, Vector2(0, size.y - 34), "+%d silver från senaste striden" % run.last_silver, 16,
+		var r := _chip_rect(i)
+		var state := Intro.station_state(data, run.profile, PLACES[i].id)
+		draw_rect(r, Color(0.04, 0.035, 0.06, 0.85 if state != "locked" else 0.55))
+		draw_rect(r, Color(UiStyle.GOLD, 0.9) if _glows(PLACES[i].id) else Color(1, 1, 1, 0.25 if state == "locked" else 0.5),
+				false, 2.0 if _glows(PLACES[i].id) else 1.0)
+		UiStyle.text(self, r.position + Vector2(0, 29), PLACES[i].name, 16,
+				Color(1, 1, 1, 0.4) if state == "locked" else Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
+	if _lines.is_empty():
+		_draw_quest(data)
+	if _reply_t > 0.0:
+		_draw_bubble(_reply, minf(1.0, _reply_t))
+	if not _lines.is_empty():
+		_draw_dialog()
+	elif run.last_silver > 0:
+		UiStyle.text(self, Vector2(0, size.y - 70), "+%d silver från senaste striden" % run.last_silver, 16,
 				Color("#d8dde6"), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 
 
-func _status(id: String) -> String:
-	var data: Dictionary = run.data
-	match id:
-		"gate":
-			return "Djup %d · djupaste klarade %d · %d quests klarade" % [run.profile.depth, run.profile.best_depth,
-					run.profile.quests_done.size()]
-		"altar":
-			return "%s · %d perks" % [data.traits[run.profile.oath].name,
-					run.profile.owned_perks(run.profile.oath).size()]
-		"smith":
-			var stones: int = run.profile.stones.size()
-			return "%d artefakter smidda · %d silver%s" % [run.profile.artifacts.size(), run.profile.silver,
-					"" if stones == 0 else " · %d Nether Stones" % stones]
-		"library":
-			return "%d troféer i samlingen" % run.collection.size()
-		"practice":
-			return "Senast: " + data.encounters[run.practice_encounter].name
-	return ""
+## Aktuellt uppdrag i hörnet (introt), annars ett rykte om en lärjunge som sitter fången.
+func _draw_quest(data: Dictionary) -> void:
+	var title := "UPPDRAG"
+	var text := ""
+	var step := Intro.current(data, run.profile)
+	if not step.is_empty():
+		text = step.get("quest", "")
+	else:
+		title = "RYKTE"
+		for realm_id in data.realms:
+			for d in data.realms[realm_id].get("disciples", []):
+				if text == "" and not run.profile.recruited.has(d.hero):
+					text = "%s sägs sitta fången i %s, djup %d." % [data.heroes[d.hero].get("short", d.hero),
+							String(data.realms[realm_id].short).to_lower(), int(d.depth)]
+	if text == "":
+		return
+	var r := Rect2(MARGIN, size.y - 170, 330, 96)
+	draw_rect(r, Color(0.04, 0.035, 0.06, 0.82))
+	draw_rect(r, Color(UiStyle.GOLD, 0.6), false, 1.5)
+	UiStyle.text(self, r.position + Vector2(14, 24), title, 15, UiStyle.GOLD)
+	UiStyle.para(self, r.position + Vector2(14, 46), text, 17, Color.WHITE, r.size.x - 28, 2)
+
+
+func _draw_bubble(text: String, a: float) -> void:
+	var w := minf(size.x - 80, 760.0)
+	var r := Rect2((size.x - w) / 2.0, 160, w, 56)
+	draw_rect(r, Color(0.05, 0.04, 0.07, 0.9 * a))
+	draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.6 * a), false, 1.5)
+	UiStyle.text(self, r.position + Vector2(0, 35), text, 18, Color(1, 1, 1, a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
+
+
+func _draw_dialog() -> void:
+	var w := minf(size.x - 80, 900.0)
+	var r := Rect2((size.x - w) / 2.0, size.y - 220, w, 140)
+	draw_rect(r, Color(0.05, 0.04, 0.07, 0.94))
+	draw_rect(r, Color(UiStyle.GOLD, 0.8), false, 2.0)
+	UiStyle.text(self, r.position + Vector2(24, 34), _speaker, 20, UiStyle.GOLD)
+	UiStyle.para(self, r.position + Vector2(24, 64), String(_lines[_line_i]), 21, Color.WHITE, w - 48, 2)
+	UiStyle.text(self, r.position + Vector2(0, r.size.y - 12), "Tryck för att fortsätta", 15, Color(1, 1, 1, 0.5 + 0.3 * sin(_t * 4.0)),
+			HORIZONTAL_ALIGNMENT_RIGHT, w - 20, 2)

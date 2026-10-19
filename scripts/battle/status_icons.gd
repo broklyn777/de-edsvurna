@@ -1,7 +1,19 @@
 class_name StatusIcons
 ## Statusikoner (0.22): en liten ruta per status under livmätaren. Ljus kant = buff, röd = debuff, guld =
 ## tillstånd (Försvarar, Provocerar). Siffran nere till höger är turer kvar, uppe till höger staplarna.
-## Glyfer i kod tills riktiga ikoner (tuschark) finns.
+## 0.23: VD:ns tuschikoner (assets/illustrations/icons/status_*.png, utklippta ur statusarket med
+## tools/cut_symbols.gd) ritas på en liten pergamentruta; statusar utan ikon ritas med en glyf i kod.
+
+const PARCHMENT := Color(0.9, 0.84, 0.7)
+static var _tex := {}
+
+
+## Statusens tuschikon, eller null.
+static func texture(aura_id: String) -> Texture2D:
+	if not _tex.has(aura_id):
+		var path := "res://assets/illustrations/icons/status_%s.png" % aura_id
+		_tex[aura_id] = load(path) if ResourceLoader.exists(path) else null
+	return _tex[aura_id]
 
 const BUFF := Color("#e8f0ff")
 const DEBUFF := Color("#e0412e")
@@ -28,9 +40,14 @@ static func draw(ci: CanvasItem, data: Dictionary, u: CombatUnit, pos: Vector2, 
 		var d: Dictionary = data.auras.get(aura_id, {})
 		var r := Rect2(pos + Vector2(x, 0), Vector2(s, s))
 		var col := color_of(a)
-		ci.draw_rect(r, Color(0.05, 0.04, 0.07, 0.9))
+		var tex := texture(aura_id)
+		if tex:
+			ci.draw_rect(r, PARCHMENT)
+			ci.draw_texture_rect(tex, r.grow(-1.0), false)
+		else:
+			ci.draw_rect(r, Color(0.05, 0.04, 0.07, 0.9))
+			Glyphs.draw(ci, d.get("glyph", "diamond"), r.get_center(), s * 0.3, col.lerp(Color.WHITE, 0.2))
 		ci.draw_rect(r, col, false, 2.0)
-		Glyphs.draw(ci, d.get("glyph", "diamond"), r.get_center(), s * 0.3, col.lerp(Color.WHITE, 0.2))
 		var fs := 15 if s >= 22.0 else 12
 		if float(a.get("remaining", -1)) > 0.0:
 			var n := str(int(a.remaining))

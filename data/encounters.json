@@ -324,5 +324,15 @@
 			"witch"
 		],
 		"stat_mult": 0.7
+	},
+	"intro_yard": {
+		"name": "Övningsgårdens docka",
+		"party": [
+			"paladin"
+		],
+		"enemies": [
+			"skeleton_warrior"
+		],
+		"stat_mult": 0.7
 	}
 }
