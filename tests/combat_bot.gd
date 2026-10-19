@@ -28,8 +28,9 @@ const TUNED_MACROS := {
 		{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "attack", "target": "that"},
 		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
 	"alva": {"name": "Syster Alva+", "lines": [
+		{"subject": "any_ally", "cond": "has_status", "value": "blighted", "action": "ability", "ability": "healing_light", "target": "that"},
 		{"subject": "any_ally", "cond": "hp_below", "value": 35, "action": "ability", "ability": "healing_light", "target": "that"},
-		{"subject": "any_ally", "cond": "lacks_status", "value": "renew", "action": "test_next"},
+		{"subject": "any_ally", "cond": "lacks_status", "value": "mending", "action": "test_next"},
 		{"subject": "any_ally", "cond": "hp_below", "value": 60, "action": "ability", "ability": "renew", "target": "that"},
 		{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "ability", "ability": "judgement", "target": "that"},
 		{"subject": "any_enemy", "cond": "has_trait", "value": "bone_armor", "action": "ability", "ability": "judgement", "target": "that"},

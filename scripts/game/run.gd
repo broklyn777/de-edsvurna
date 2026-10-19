@@ -534,6 +534,12 @@ func _load_macros() -> void:
 		macros = data.macros.duplicate(true)
 		for hero_id in data.macros:
 			assignment[hero_id] = hero_id
+	# 0.22: Förnyelse blev Läkning och Helig sköld blev Beskyddad; sparade makron frågar efter de nya.
+	const RENAMED := {"renew": "mending", "holy_shield": "protected"}
+	for m in macros.values():
+		for line in m.get("lines", []):
+			if line.get("cond", "") in ["has_status", "lacks_status"] and RENAMED.has(line.get("value", "")):
+				line.value = RENAMED[line.value]
 	for hero_id in data.heroes:
 		if not assignment.has(hero_id) or not macros.has(assignment[hero_id]):
 			assignment[hero_id] = hero_id if macros.has(hero_id) else ""

@@ -109,6 +109,19 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
   Försvara: −35 % skada och +50 % Defense; Provocera: −35 % Defense. Krit och undvikande från Speed-kvoten
   (vårt val, formeln är inte publicerad). Barriär tar skada före livet. Se `docs/research/siralim.md` §12.
+- **Statusar** (0.22, Siralims buffar och debuffar, `docs/formler.md` §5, `docs/research/siralim.md` §17): 12 buffar
+  (Smidig, Arkan, Bärsärk, Defensiv, Immun, Livstörst, Läkning, Beskyddad, Pånyttfödd, Vildsint, Skyddsskal,
+  Utmanande) och 10 debuffar (Blöder, Fördärvad, Förblindad, Förvirrad, Frusen, Förgiftad, Hånad, Sover, Snärjd,
+  Förstenad) med originalets siffror, plus de vi hade. Auror har typ (`buff`/`debuff`, annars tillstånd),
+  varaktighet i ägarens turer, `stacking`, `removes`, `cannot_dispel` och flaggor (`snare`, `leech`, `freeze`,
+  `sleep`, `stone`, `blind`, `confuse`, `scorn`, `shell`, `rebirth`, `end_turn_aura` …), `text` och `glyph`.
+  Resistent påverkar bara statusarna med en Resistant-version (originalet). Effekter: `dispel` (alla statusar),
+  `purge` (debuffar), `to_top`, `to_bottom` (`_move_on_timeline`: den som stod överst skickas ned, gränserna per
+  tur nollställs, Snärjd hindrar, bossar ett steg; vårt val: en gång per runda). Effekter kan ha `chance`.
+  Händelser `aura_applied`/`aura_removed` (`aura_kind`, `reason`), `timeline_move`, `status_skip`, `shelled`.
+  Villkor: `self_lacks_aura`, `target_lacks_aura`, `self_has_kind`, `target_has_kind`, `unit_has_kind`; makron:
+  har/saknar buff/debuff. Ikoner under livmätarna (`scripts/battle/status_icons.gd`), Inspect listar dem.
+  `-- --statuses` ger några statusar i en strid. Tester: `tests/test_status.gd`, `tests/test_numbers.gd`.
 - **Siffrorna** (0.21): alla formler med svensk förklaring i `docs/formler.md`. Varje skada, helning och
   undvikande bär sin uträkning (`calc` i händelsen); `DamageExplain` (`src/combat/damage_explain.gd`) skriver den
   i klartext. I striden: tryck på en siffra, eller SKADELOGG. Hjältebladet räknar med `CombatSim.expected_damage()`

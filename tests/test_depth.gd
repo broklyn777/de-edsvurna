@@ -74,16 +74,25 @@ func test_silver_and_trophy_chance_grow_with_depth() -> void:
 
 
 func test_boss_is_resistant_to_debuffs() -> void:
+	# 0.22, som originalet: bara statusar med en Resistant-version påverkas; Märkt och Brinner verkar fullt.
 	var sim := _sim("crypt_3")
 	var lich := sim.unit("bone_lich_1")
 	assert_true(lich.resistant)
 	sim._add_aura(sim.unit("eira"), lich, "marked")
-	assert_near(lich.auras.marked.damage_taken_mult, 1.1, 0.001, "Märkt +20 % blir +10 %")
-	var warrior := sim.unit("skeleton_warrior_1")
-	sim._add_aura(sim.unit("eira"), warrior, "marked")
-	assert_near(warrior.auras.marked.damage_taken_mult, 1.2, 0.001, "vanliga fiender tar full effekt")
+	assert_near(lich.auras.marked.damage_taken_mult, 1.2, 0.001, "Märkt verkar fullt")
 	sim._add_aura(sim.unit("alva"), lich, "burning")
-	assert_eq(lich.auras.burning.dot, roundf(roundf(sim.unit("alva").intelligence * 0.3) * 0.5), "halv DoT")
+	assert_eq(lich.auras.burning.dot, roundf(sim.unit("alva").intelligence * 0.3), "Brinner verkar fullt")
+	sim = _sim("crypt_3")
+	lich = sim.unit("bone_lich_1")
+	lich.hp = 1000.0
+	sim._add_aura(sim.unit("eira"), lich, "bleeding")
+	sim.drain_events()
+	sim._tick_turn_start(lich)
+	var bled := 0.0
+	for e in sim.drain_events():
+		if e.type == "damage" and e.ability == "bleeding":
+			bled = e.amount
+	assert_eq(bled, 100.0, "Blöder: resistent tar 10 % av livet i stället för 30 %")
 
 
 func test_every_enemy_has_a_trait() -> void:

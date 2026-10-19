@@ -83,12 +83,77 @@ Fartkvoten = egen Speed / målets Speed.
 - **Undvikande:** bara ett snabbare mål: 10 % per fördubbling av målets fart mot anfallarens, högst 30 %.
   Egenskaper (Hal sten, Gastens Eterisk) adderas, högst 75 %. Bara anfall kan undvikas.
 
-## 5. Barriär
+## 5. Statusar (0.22)
+
+En status är en buff eller en debuff (eller ett tillstånd som Försvarar och Provocerar). Den varar ett antal av
+**ägarens egna turer** och räknas ned i början av ägarens tur. Läggs samma status på igen fylls varaktigheten på;
+de staplas inte (originalet). Siffrorna är originalets (Siralim Ultimate, Codex), se `docs/research/siralim.md` §17.
+
+**Buffar**
+
+| Status | Original | Gör | Turer |
+|---|---|---|---|
+| Smidig | Agile | En extra, oberoende chans att undvika anfall: **25 %** (*vårt val*, originalet anger ingen siffra) | 3 |
+| Arkan | Arcane | Nästa förmåga kostar ingen Charge | tills den används |
+| Bärsärk | Berserk | +50 % skada | 3 |
+| Defensiv | Defensive | Försvarar automatiskt i slutet av sin tur | 3 |
+| Immun | Immune | Kan inte få debuffar | 1 |
+| Livstörst | Leeching | Helas 25 % av skadan den gör | 3 |
+| Läkning | Mending | Helas 25 % av sitt liv i början av sin tur | 3 |
+| Beskyddad | Protected | Tar 50 % mindre skada | 3 |
+| Pånyttfödd | Rebirth | Återuppstår med 50 % liv när den faller | 3 |
+| Vildsint | Savage | En extra, oberoende chans till krit med anfall: **25 %** (*vårt val*) | 3 |
+| Skyddsskal | Shelled | Upphäver nästa anfall eller besvärjelse | tills den träffas |
+| Utmanande | Taunting | Provocerar automatiskt i slutet av sin tur | 3 |
+
+**Debuffar** (Resistent = bossar)
+
+| Status | Original | Gör | Turer | Resistent |
+|---|---|---|---|---|
+| Blöder | Bleeding | Skada = 30 % av *nuvarande* liv i början av varje tur | 3 | 10 % i stället |
+| Fördärvad | Blighted | Kan inte helas; helning gör i stället skada = 50 % av helningen | 3 | – |
+| Förblindad | Blind | Kan inte välja mål för anfall och förmågor mot en fiende (målet slumpas) | 3 | – |
+| Brinner | Burning | Skada = 30 % av källans Intelligence varje tur | 3 | – |
+| Förvirrad | Confused | 50 % chans att anfalla eller kasta skadliga förmågor på sina egna | 3 | – |
+| Frusen | Frozen | Kan inte agera. 25 % chans att tina i början av sin tur, chansen dubblas varje tur | tills den tinar | dubbel chans |
+| Förgiftad | Poisoned | Skada = 30 % av källans Attack varje tur | 3 | – |
+| Hånad | Scorned | Kan inte anfalla. Tar bort Tystad | 1 | kan anfalla, −50 % skada |
+| Tystad | Silenced | Kan inte använda förmågor. Tar bort Hånad | 1 | kan, −50 % skada |
+| Sover | Sleeping | Kan inte agera förrän den tar skada | 3 | vaknar i början av sin tur |
+| Snärjd | Snared | Fast längst ned på tidslinjen; 10 % chans att slita sig loss i början av *varje* figurs tur | 3 | 30 % |
+| Förstenad | Stone | Kan inte undvika eller krita | 1 | halva chansen |
+| Sårbar | Vulnerable | Tar 50 % mer skada | 3 | – |
+| Försvagad | Weak | Gör 50 % mindre skada | 3 | – |
+
+**Resistent** (originalet): bara statusarna med en Resistant-version ovan påverkas. Andra debuffar verkar fullt på
+bossar. (Före 0.22 halverade vi alla debuffar på bossar; det var vårt eget.)
+
+Våra egna statusar ligger kvar: Styrka och Välsignelse (nästa anfall), Märkt (+20 % skada tagen), Skyddad
+(−25 %), Saltad jord (−20 % Defense), Barriär och Vrede. Helig sköld ger nu Beskyddad och Förnyelse ger Läkning.
+
+**Ta bort:** *Dispel* tar bort alla buffar och debuffar på målet (originalet). *Rening* (vårt, effekten "purge") tar
+bort debuffar, de senaste först; Helande ljus tar bort en. Vrede går inte att ta bort.
+
+**Livstörst** (*vårt val* där originalet är okänt): bara liv som faktiskt förlorades räknas, alltså inte det
+Barriären tog och inte överskott mot en nästan död fiende. Alla skadesorter räknas, även DoT som figuren lagt.
+Helningens uträkning pekar på träffen.
+
+Skada från statusar (Blöder, Brinner, Förgiftad, Fördärvad) räknas med modifierarna (t.ex. Sårbar); Brinner och
+Förgiftad är indirekta (−20 % av Defense), Blöder och Fördärvads skada drar ingen Defense (*vårt val*).
+
+**Tidslinjen:** en effekt kan flytta en figur **överst** (den får nästa tur). Den som stod överst skickas då till
+botten, och den flyttades gränser per tur nollställs (originalet). **Snärjd** kan inte flyttas upp. En **boss** som
+tvingas nedåt flyttas bara ett steg, och "till botten" fungerar inte på fiender i bosstrider (originalet). *Vårt
+val:* samma figur kan flyttas till toppen högst en gång per runda (lika många turer som det finns levande
+figurer), så att två effekter inte kan mata varandra i all oändlighet. Gränserna per tur (fem anfall,
+besvärjelser och helningar) nollställs också varje gång figuren får turen.
+
+## 6. Barriär
 
 En Barriär tar skadan före livet. Den starkaste gäller, de staplas inte (originalet). Träffar som Barriären tar
 helt sätter inte igång egenskaper.
 
-## 6. Helning
+## 7. Helning
 
     helning = Intelligence × förmågans styrka × variation × modifierare
 
@@ -99,18 +164,18 @@ Helningar blir aldrig krit. Vissnad nåd (våningsregel) ger −40 %.
 **Förnyelse** (HoT) helar 70 % av kastarens Intelligence i början av målets tre nästa turer. *0.21:* tidigare var
 det fast 45 och växte inte med nivåerna.
 
-## 7. Artefaktens kast
+## 8. Artefaktens kast
 
 Artefaktens förmåga slår till av sig själv vid typens handling (svärd vid Anfall …) med typens chans, gånger
 artefaktnivåns styrka (högst 90 %). Kastet kostar inga Charges men räknas mot gränsen per tur, och skadan räknas
 precis som om hjälten hade använt förmågan själv.
 
-## 8. Fiender
+## 9. Fiender
 
 Fiendernas stats = bas × mötets skalning × djupet (+8 % per djup, inte Speed) × nivån (+30 % per nivå från
 djupets och våningens nivå, även Speed). Elitvarianter har +25 % Health och +10 % Attack och Intelligence.
 
-## 9. Hjältebladets "Vad det betyder"
+## 10. Hjältebladets "Vad det betyder"
 
 Bladet räknar med simulatorns egen funktion (`CombatSim.expected_damage`) på riktiga figurer mot den första
 fienden på valt djup: samma formler och samma egenskaper som i striden, med variationen 1,0 och utan krit. Ett

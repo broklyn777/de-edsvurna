@@ -165,8 +165,9 @@ func test_barrier_absorbs_before_health_and_triggers_nothing() -> void:
 func test_heal_uses_intelligence() -> void:
 	var sim := _sim()
 	var alva := sim.unit("alva")
-	var amount := sim._heal_amount(alva, _data.abilities.healing_light.effects[0])
-	var power: float = _data.abilities.healing_light.effects[0].power
+	var heal: Dictionary = _data.abilities.healing_light.effects.filter(func(e: Dictionary) -> bool: return e.type == "heal")[0]
+	var amount := sim._heal_amount(alva, heal)
+	var power: float = heal.power
 	assert_true(amount >= alva.intelligence * power * 0.9 and amount <= alva.intelligence * power * 1.1)
 
 

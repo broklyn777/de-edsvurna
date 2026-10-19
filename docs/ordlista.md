@@ -62,6 +62,11 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Bärnsten | amber (`data/materials.json`) | Amber (Stat Material) | Tio färger, en eller två stats. 5 per Stat-plats. Förstörs när den tas ut. |
 | Trick | trick (`materials.json` "tricks") | Trick Material | Brynsten (Whetstone), Taggsten (Jagged Rock), Rustningsskrot (Armor Scrap), Hal sten (Slippery Stone), Arkant sigill (Arcane Sigil), Styrkans skiffer (Slate of …), Sårbarhetens kuriosa (Curio of …). |
 | Nether Stone | stone (`Forge.roll_stone`) | Nether Stone | Slumpad sten med 1–4 egenskaper (Vanlig, Magisk, Sällsynt, Legendarisk) och ett sällsynthetstal. Överlever när den tas ut. |
+| Status | aura (`data/auras.json`) | Buff / Debuff | Varar i ägarens turer; ikon under livmätaren, text i Inspect. Se `docs/formler.md` §5. |
+| Smidig, Arkan, Bärsärk, Defensiv, Immun, Livstörst, Läkning, Beskyddad, Pånyttfödd, Vildsint, Skyddsskal, Utmanande | agile, arcane, berserk, defensive, immune, leeching, mending, protected, rebirth, savage, shelled, taunting | Agile, Arcane, Berserk, Defensive, Immune, Leeching, Mending, Protected, Rebirth, Savage, Shelled, Taunting | Buffar (0.22). |
+| Blöder, Fördärvad, Förblindad, Förvirrad, Frusen, Förgiftad, Hånad, Sover, Snärjd, Förstenad | bleeding, blighted, blind, confused, frozen, poisoned, scorned, sleeping, snared, stone | Bleeding, Blighted, Blind, Confused, Frozen, Poisoned, Scorned, Sleeping, Snared, Stone | Debuffar (0.22). |
+| Dispel, Rening | dispel, purge | Dispel, Cleanse | Dispel tar bort alla statusar på målet; Rening bara debuffar. |
+| Överst / sist på tidslinjen | to_top, to_bottom | Top / Bottom of Timeline | Den som stod överst skickas ned; bossar flyttas ett steg. |
 | Uträkning | `calc`, `DamageExplain` | – (vårt tillägg) | Hela vägen till en siffra: stat, variation, Defense, modifierare, krit, barriär. Tryck på en siffra i striden. |
 | Skadelogg | `DamageLog` | – (vårt tillägg) | Alla skador och helningar i striden, nyast överst; en rad öppnar uträkningen. |
 | Ge upp | forfeit (`CombatSim.forfeit()`) | Forfeit | Avslutar striden som förlust; körningen är förlorad och Realmen börjar om från våning 1. Det som redan är vunnet behålls. |

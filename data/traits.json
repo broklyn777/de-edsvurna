@@ -746,7 +746,8 @@
 			{
 				"type": "aura",
 				"aura": "vulnerable",
-				"target": "target"
+				"target": "target",
+				"duration": 2
 			}
 		]
 	},
@@ -781,14 +782,17 @@
 		"name": "Gastens slöja",
 		"trophy": true,
 		"rarity": "common",
-		"text": "Bäraren undviker 20 % av attacker.",
+		"text": "Bäraren undviker 20 % av attacker, och blir Smidig (25 % extra undvikande i 3 turer) varje gång hen undviker.",
 		"trigger": "modify_damage_taken",
 		"when": {
 			"kind": "attack"
 		},
 		"modify": {
 			"dodge_add": 0.2
-		}
+		},
+		"parts": [
+			"wraith_veil_agile"
+		]
 	},
 	"fallen_oath": {
 		"name": "Den fallnes ed",
@@ -1045,5 +1049,20 @@
 		"modify": {
 			"damage_mult_per_hit_taken": 0.1
 		}
+	},
+	"wraith_veil_agile": {
+		"name": "Gastens slöja",
+		"hidden": true,
+		"trigger": "dodge",
+		"when": {
+			"target": "self"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "agile",
+				"target": "self"
+			}
+		]
 	}
 }
