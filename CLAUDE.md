@@ -178,7 +178,11 @@ uppdaterad när nya begrepp tillkommer.
   `src/game/profile.gd` – det som varar mellan körningar: silver, samlingen, artefakter (`forge()`),
   valt kall och köpta perks per kall (`buy_perk()`, `reset_perks()`, `perk_points()`, `active_perks()`), senaste sällskap, övningstroféer, valt och
   djupaste klarade djup (`choose_depth()`, `clear_depth()`), perk-nivåer (`perk_rank()`) och lånade perks
-  (`bosses_defeated`, `anoint()`, `anointed`). Sparas i `user://progress.cfg`.
+  (`bosses_defeated`, `anoint()`, `anointed`). Sparas i `user://slot<n>/progress.cfg`.
+  `src/game/save_slots.gd` – `SaveSlots` (0.23.1): tre sparplatser, var och en med egen progress.cfg, run.cfg och
+  macros.json i `user://slot1/`–`slot3/`; senast använda i `user://slots.cfg`. `migrate()` flyttar filer från före
+  0.23.1 orörda till plats 1. `summary()` ger kortets rader. Huvudscenen är `scenes/slots.tscn` (`slots_screen`):
+  den visas vid start, `Run.choose_slot()` laddar platsen och fortsätter en sparad körning; borgen har ‹ PROFILER.
   `src/game/hero_stats.gd` – `HeroStats`: nivåer, tillväxt, personlighet, `breakdown()` per källa, erfarenhet,
   väntad nivå och fiendernas nivå. `data/personalities.json` – de 20 personligheterna (namn, up, down, text).
   `src/game/room_map.gd` – `RoomMap`: en våning ur ett frö (`generate()`, `choices()`, `problems()` för kraven).
@@ -310,6 +314,9 @@ godot --path . -- --xp-bar=85 --floor=0 --demo --turns=300
 
 # Rumskartan med en ny körning (efter --realm, --depth, --instability)
 godot --path . -- --realm=chapel --map
+
+# Profilskärmen med raderingsbekräftelsen öppen (för skärmdumpar)
+godot --path . -- --confirm-delete=1
 
 # Öppna en plats i basen direkt (--gate = kampanjkartan, --practice, --altar, --smith, --library)
 godot --path . -- --smith

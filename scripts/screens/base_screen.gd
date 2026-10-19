@@ -126,6 +126,11 @@ func _tap(p: Vector2) -> void:
 	if not _lines.is_empty():
 		_advance_dialog()
 		return
+	# 0.23.1: tillbaka till sparplatserna (profilerna).
+	if back_rect().has_point(p):
+		run._save()
+		run.go(run.SLOTS_SCENE)
+		return
 	var station := _station_at(p)
 	if station != "":
 		_go(station)
@@ -235,6 +240,7 @@ func _chip_rect(i: int) -> Rect2:
 func _draw() -> void:
 	var data: Dictionary = run.data
 	silver_label()
+	small_button(back_rect(), "‹ PROFILER")
 	# Namnen över stationerna.
 	for pl in PLACES:
 		var state := Intro.station_state(data, run.profile, pl.id)
