@@ -17,6 +17,11 @@ klädda och beväpnade i Blender för Drakvalvet:
 | alva.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R) med kåpa och huva (Drakvalvet `qt-akolyt.glb`) | Syster Alva |
 | kapa.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), bara kåpan och hänget kvar (Drakvalvet `qt-kultist.glb`, kropp och animationer bortskurna med gltf-transform) | Kåpa åt gravprästen och Benfursten |
 | rustning.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq) utan kropp, med plåtrustning (Drakvalvet `qt-tom_rustning.glb`) | Rustning åt gravväktaren och axelskydd åt Benfursten |
+| kultist.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R) med röd kåpa och huva (Drakvalvet `qt-kultist.glb`) | Kultist i kapellet |
+| gast.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), Drakvalvets akolyt omgjord i Blender: genomskinligt likklädnad, mörkt ansikte, lysande ögon, svävar 18 cm | Gast i kapellet |
+| fallen_riddare.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), torvald.glb omfärgad i Blender (svart rustning, glödande röda kanter) med horn på hjälmen | Fallen riddare i kapellet |
+| haxa.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), Drakvalvets Svala (`qt-svala.glb`) i Blender: spetsig hatt, sumpgrön kappa | Häxa i kapellet |
+| biskop.glb | Quaternius "King" (poly.pizza/m/I1gTjmuK2m), Drakvalvets Ragnvald (`qt-ragnvald.glb`) i Blender: mitra, kräkla i stället för hammare, smutsvit kåpa, grönt sken | Den fallne biskopen |
 | vapen.glb | Vapen från Drakvalvet – **källa ej bekräftad, kontrollera före release** | Vapen i händerna |
 
 Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla figurer har samma rigg

@@ -9,6 +9,7 @@ extends Node3D
 ##   cast:<skola>:<s>  ladda en besvärjelse så länge, sedan släpp
 ##   attack[:s]  hit[:s]  block:<s>  kick[:s]  idle:<s>  walk:<s>
 ##
+## Nya modeller utan data: --models=gast,haxa (spelar Idle_Loop/Sword_Idle och Sword_Attack).
 ## Uppställning: --units=heroes, --units=enemies, --units=all eller --units=paladin,brokk,…
 ## visar flera figurer i rad (alla gör samma sekvens). --shot=<fil.png> sparar en bild efter
 ## --frames=<n> bildrutor och avslutar.
@@ -35,6 +36,20 @@ func _ready() -> void:
 				"enemies": unit_ids = data.enemies.keys()
 				"all": unit_ids = data.heroes.keys() + data.enemies.keys()
 				_: unit_ids = Array(list.split(","))
+		elif arg.begins_with("--models="):
+			unit_ids = []
+			for model_name in arg.get_slice("=", 1).split(","):
+				var id := "model:" + model_name
+				var base: Dictionary = data.enemies.values()[0].duplicate()
+				base.name = model_name
+				base.visual = {"model": model_name, "anims": {"idle": "Idle_Loop", "attack": ["Sword_Attack"],
+						"cast": "Spell_Simple_Shoot", "hit": "Hit_Chest", "death": "Death01", "walk": "Walk_Loop"}}
+				if model_name == "biskop":
+					base.visual.anims.idle = "Sword_Idle"
+				elif model_name == "fallen_riddare":
+					base.visual.anims.merge({"idle": "Shield_Idle", "attack": ["Shield_Attack"]}, true)
+				data.enemies[id] = base
+				unit_ids.append(id)
 		elif arg.begins_with("--seq="):
 			seq = arg.get_slice("=", 1)
 		elif arg.begins_with("--shot="):
