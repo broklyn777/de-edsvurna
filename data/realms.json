@@ -1,22 +1,54 @@
 {
 	"crypt": {
 		"name": "Kryptan",
-		"text": "Benfursten och hans skelett. Tre våningar.",
+		"text": "Benfursten och hans skelett. Tre våningar med vägval.",
 		"floors": [
 			"crypt_1",
 			"crypt_2",
 			"crypt_3"
 		],
-		"short": "Kryptan"
+		"short": "Kryptan",
+		"pools": [
+			[
+				"crypt_1a",
+				"crypt_1b",
+				"crypt_1c"
+			],
+			[
+				"crypt_2a",
+				"crypt_2b",
+				"crypt_2c"
+			],
+			[
+				"crypt_3a",
+				"crypt_3b"
+			]
+		]
 	},
 	"chapel": {
 		"name": "Det fördärvade kapellet",
-		"text": "Kultister, gastar och häxor kring Den fallne biskopen. Tre våningar.",
+		"text": "Kultister, gastar och häxor kring Den fallne biskopen. Tre våningar med vägval.",
 		"floors": [
 			"chapel_1",
 			"chapel_2",
 			"chapel_3"
 		],
-		"short": "Kapellet"
+		"short": "Kapellet",
+		"pools": [
+			[
+				"chapel_1a",
+				"chapel_1b",
+				"chapel_1c"
+			],
+			[
+				"chapel_2a",
+				"chapel_2b",
+				"chapel_2c"
+			],
+			[
+				"chapel_3a",
+				"chapel_3b"
+			]
+		]
 	}
 }

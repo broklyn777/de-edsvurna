@@ -10,7 +10,8 @@ extends RefCounted
 ## Balans (0.14): silvret ska inte räcka till allt efter några körningar. En klarad krypta på djup 1
 ## ger 65 silver och en artefakt kostar 160. Djupare ger mer (SILVER_PER_DEPTH). Perks kostar inte silver
 ## utan perk-poäng (0.14.1, Siralims Perk Points): man börjar med PERK_POINTS_START och får en till för
-## varannat klarat djup (Siralim ger Perk Points från Realm Quests).
+## varje klarad Realm Quest på en ny kombination av Realm och djup (0.18, som i Siralim där questen är
+## enda källan till Perk Points). Äldre profiler behåller poängen de hade (bonus_points).
 
 const START_SILVER := 60
 ## Smida en ny artefakt (eller byta typ, som smälter ned den gamla).
@@ -21,8 +22,10 @@ const RESOCKET_COST := 60
 const FLOOR_REWARD := [15, 20, 30]
 ## Perk-poäng per Ed: startvärdet räcker till en eller två perks (perks kostar 1–2 poäng).
 const PERK_POINTS_START := 2
-## Klarade djup per extra perk-poäng.
+## Före 0.18: en perk-poäng för varannat klarat djup (räknas om till bonus_points för äldre profiler).
 const DEPTHS_PER_PERK_POINT := 2
+## Silver för en klarad Realm Quest (gånger djupets tillägg).
+const QUEST_SILVER := 30
 ## Realm Depth: +25 % silver per djup över 1.
 const SILVER_PER_DEPTH := 0.25
 const OATHS := ["oath_vengeance", "oath_dawn", "oath_ward"]
@@ -50,6 +53,10 @@ var realm := "crypt"
 var instability := 0
 ## Segrar per boss (Siralims Masters): bosstrofén kräver RunState.BOSS_WINS_FOR_TROPHY.
 var boss_wins := {}
+## Klarade Realm Quests, en per kombination av Realm och djup ("crypt:1").
+var quests_done: Array = []
+## Perk-poäng från tiden före Realm Quests (0.14.1–0.17), så att äldre profiler behåller sina.
+var bonus_points := 0
 ## Anointments (Siralim): varje besegrad boss (räknas en gång per bosstyp) låser upp en plats där
 ## en Ed får låna en perk från en annan Ed. Lånet kostar perk-poäng ur den lånande Edens pott.
 var bosses_defeated: Array[String] = []
@@ -118,9 +125,22 @@ func owned_perks(oath_id: String) -> Array:
 	return perks.get(oath_id, [])
 
 
-## Perk-poäng att lägga i varje Ed: PERK_POINTS_START och en till för varannat klarat djup.
+## Perk-poäng att lägga i varje Ed: PERK_POINTS_START, en per klarad quest (ny Realm och djup) och de
+## gamla poängen från före 0.18.
 func perk_points() -> int:
-	return PERK_POINTS_START + best_depth / DEPTHS_PER_PERK_POINT
+	return PERK_POINTS_START + quests_done.size() + bonus_points
+
+
+## En Realm Quest är klarad. Ger silver, och en perk-poäng om kombinationen av Realm och djup är ny.
+## Returnerar {silver, point}.
+func complete_quest(realm_id: String, at_depth: int) -> Dictionary:
+	var key := "%s:%d" % [realm_id, at_depth]
+	var point := not quests_done.has(key)
+	if point:
+		quests_done.append(key)
+	var amount := roundi(QUEST_SILVER * (1.0 + SILVER_PER_DEPTH * (maxi(at_depth, 1) - 1)))
+	silver += amount
+	return {"silver": amount, "point": point}
 
 
 ## Hur många perk-poäng Edens köpta perks och lånade perk använder.
@@ -256,6 +276,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "realm", realm)
 	cfg.set_value("progress", "instability", instability)
 	cfg.set_value("progress", "boss_wins", boss_wins)
+	cfg.set_value("progress", "quests_done", quests_done)
+	cfg.set_value("progress", "bonus_points", bonus_points)
 	cfg.set_value("progress", "bosses_defeated", bosses_defeated)
 	cfg.set_value("progress", "anointed", anointed)
 	return cfg.save(path)
@@ -283,6 +305,12 @@ static func load_from(path: String) -> Profile:
 	p.realm = cfg.get_value("progress", "realm", "crypt")
 	p.instability = clampi(int(cfg.get_value("progress", "instability", 0)), 0, RunState.MAX_INSTABILITY)
 	p.boss_wins = cfg.get_value("progress", "boss_wins", {})
+	if cfg.has_section_key("progress", "quests_done"):
+		p.quests_done = cfg.get_value("progress", "quests_done", [])
+		p.bonus_points = int(cfg.get_value("progress", "bonus_points", 0))
+	else:
+		# Profil från före 0.18: behåll poängen för varannat klarat djup.
+		p.bonus_points = p.best_depth / DEPTHS_PER_PERK_POINT
 	for kind in cfg.get_value("progress", "bosses_defeated", []):
 		p.bosses_defeated.append(kind)
 	p.anointed = cfg.get_value("progress", "anointed", {})

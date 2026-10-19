@@ -93,5 +93,236 @@
 			"witch"
 		],
 		"stat_mult": 1.1
+	},
+	"crypt_1a": {
+		"name": "Benkryptans gång",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"skeleton_warrior",
+			"skeleton_archer"
+		],
+		"stat_mult": 1.0
+	},
+	"crypt_1b": {
+		"name": "Prästens nisch",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"skeleton_warrior",
+			"grave_priest"
+		],
+		"stat_mult": 1.0
+	},
+	"crypt_1c": {
+		"name": "Bågskyttarnas läktare",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"skeleton_archer",
+			"skeleton_archer",
+			"grave_priest"
+		],
+		"stat_mult": 1.0
+	},
+	"crypt_2a": {
+		"name": "Väktarens port",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_warden",
+			"skeleton_archer"
+		],
+		"stat_mult": 1.08
+	},
+	"crypt_2b": {
+		"name": "Glödande schakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"ember_skeleton",
+			"ember_skeleton"
+		],
+		"stat_mult": 1.08
+	},
+	"crypt_2c": {
+		"name": "Askkoret",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"ember_skeleton",
+			"skeleton_warrior",
+			"grave_priest"
+		],
+		"stat_mult": 1.08
+	},
+	"crypt_3a": {
+		"name": "Benvakten",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"skeleton_warrior",
+			"skeleton_warrior",
+			"grave_priest"
+		],
+		"stat_mult": 1.1
+	},
+	"crypt_3b": {
+		"name": "Furstens förgård",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_warden",
+			"ember_skeleton",
+			"skeleton_archer"
+		],
+		"stat_mult": 1.1
+	},
+	"chapel_1a": {
+		"name": "Botgångens gång",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"penitent",
+			"cultist"
+		],
+		"stat_mult": 0.98
+	},
+	"chapel_1b": {
+		"name": "Gastarnas bänkrad",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"wraith",
+			"cultist"
+		],
+		"stat_mult": 0.98
+	},
+	"chapel_1c": {
+		"name": "Gisslarnas valv",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"penitent",
+			"wraith"
+		],
+		"stat_mult": 0.98
+	},
+	"chapel_2a": {
+		"name": "Den fallnes vakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"fallen_knight",
+			"cultist"
+		],
+		"stat_mult": 1.06
+	},
+	"chapel_2b": {
+		"name": "Häxornas cirkel",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"witch",
+			"wraith",
+			"cultist"
+		],
+		"stat_mult": 1.06
+	},
+	"chapel_2c": {
+		"name": "Förbannelsens kor",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"witch",
+			"penitent"
+		],
+		"stat_mult": 1.06
+	},
+	"chapel_3a": {
+		"name": "Biskopens livvakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"fallen_knight",
+			"witch",
+			"cultist"
+		],
+		"stat_mult": 1.08
+	},
+	"chapel_3b": {
+		"name": "Botgörarnas procession",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"penitent",
+			"penitent",
+			"witch"
+		],
+		"stat_mult": 1.08
 	}
 }

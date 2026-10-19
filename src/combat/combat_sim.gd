@@ -110,6 +110,8 @@ var depth := 1
 ## Våningsregler (data/floor_rules.json) som gäller i striden, och de som har slagit till.
 var rules: Array = []
 var rules_triggered: Array = []
+## Auror som sällskapet får när striden börjar (Helgedomens gåva).
+var _start_auras: Array = []
 
 var _by_id := {}
 var _trait_ctx := ""
@@ -128,13 +130,18 @@ var trait_stats := {}
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
 ## hjältens förvalda egenskaper; charges: hero_id -> {ability_id: kvar} (annars fulla);
 ## artifacts: hero_id -> {type, ability}; depth: Realm Depth som skalar fienderna.
-## opts: {"rules": [regel-id], "instability": n, "elite_chance": andel (annars elite_chance())}.
+## opts: {"rules": [regel-id], "instability": n, "elite_chance": andel (annars elite_chance()),
+##   "force_elites": n (de n första vanliga fienderna blir elit – Elit-rum och Nemesis), "nemesis": true
+##   (den första eliten heter Nemesis), "stat_bonus": extra skalning (Portalens strid),
+##   "start_auras": [aura] som sällskapet börjar med (Helgedomens gåva)}.
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		party: Array = [], traits := {}, charges := {}, artifacts := {}, depth := 1, opts := {}) -> CombatSim:
 	var sim := CombatSim.new()
 	sim.data = game_data
 	sim.depth = maxi(depth, 1)
 	sim.rules = opts.get("rules", []).duplicate()
+	sim._start_auras = opts.get("start_auras", []).duplicate()
+	var forced := int(opts.get("force_elites", 0))
 	if not artifacts.is_empty():
 		# Artefakternas egenskaper skapas för den här striden, utan att röra den delade datan.
 		sim.data = game_data.duplicate()
@@ -168,13 +175,18 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		var e := CombatUnit.from_data("%s_%d" % [kind, counts[kind]], game_data.enemies[kind], 1)
 		e.kind = kind
 		e.position = ENEMY_SLOTS[i]
-		scale_unit(e, enemy_mult(enc, sim.depth))
+		scale_unit(e, enemy_mult(enc, sim.depth) * float(opts.get("stat_bonus", 1.0)))
 		# Elitvarianter slumpas med ett eget frö, så att striden i övrigt blir densamma.
 		var chance: float = opts.get("elite_chance", elite_chance(sim.depth, int(opts.get("instability", 0))))
 		var elite_rng := RandomNumberGenerator.new()
 		elite_rng.seed = seed_value * 7919 + i
-		if game_data.enemies[kind].has("elite") and elite_rng.randf() < chance:
+		var roll := elite_rng.randf()
+		if game_data.enemies[kind].has("elite") and (forced > 0 or roll < chance):
 			make_elite(e, game_data.enemies[kind].elite)
+			if forced > 0 and opts.get("nemesis", false):
+				e.name = "Nemesis: " + e.name
+				e.nemesis = true
+			forced -= 1
 		e.traits = expand_traits(game_data, e.traits)
 		sim._add(e)
 		sim.enemies.append(e)
@@ -287,6 +299,9 @@ func begin() -> void:
 			_emit({"type": "elite", "unit": e.id})
 	# Siralim: traits och buffar ges innan striden börjar, sedan börjar turerna.
 	_emit({"type": "battle_start"})
+	for aura_id in _start_auras:
+		for h in heroes:
+			_add_aura(h, h, aura_id)
 	if _rule("fog_weakness"):
 		_rule_hit("fog_weakness")
 		for h in heroes:
