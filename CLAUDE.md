@@ -223,8 +223,7 @@ godot --path . --write-movie /tmp/mov/f.png --fixed-fps 20 --quit-after 200 -- -
 # Animationslabb: filma en figur på nära håll (se tools/anim_lab.gd för steg)
 godot --path . res://tools/anim_lab.tscn --write-movie /tmp/lab/f.png --fixed-fps 20 --quit-after 50 -- --unit=eira --seq=idle:0.2,attack:1.2
 
-# Bygg APK för telefonen. Release-mallen är ~2 MiB mindre än debug och håller filen under 30 MiB
-# (gränsen för att skicka filer till telefonen). Signeras med debug-nyckeln via miljövariabler, så att
+# Bygg APK för telefonen (release-mallen, ~2 MiB mindre än debug). Signeras med debug-nyckeln via miljövariabler, så att
 # den installeras som uppdatering ovanpå tidigare versioner.
 GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$HOME/.android/debug.keystore GODOT_ANDROID_KEYSTORE_RELEASE_USER=androiddebugkey GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=android godot --headless --path . --export-release Android export/rpg007.apk
 
@@ -241,7 +240,11 @@ Homebrew bygger inte längre färdiga paket för macOS 13 – installera inte Ja
 - JDK 17 (Temurin): `~/Library/Java/JavaVirtualMachines/jdk-17.0.20.1+1/Contents/Home`
 - Android SDK: `~/Library/Android/sdk` (platform-tools, build-tools 36.1.0, platforms android-36)
 - Debug-nyckel: `~/.android/debug.keystore` (standard: android/androiddebugkey)
-- APK:n ligger nära gränsen. `sigrun.glb` exporteras inte; Paladinens mantel, Brokks hjälm och Alvas lånade
+- **Storleken styr inte spelet.** 30 MiB är bara gränsen för att skicka filen i chatten; större APK:er
+  läggs som GitHub Release i det privata repot (`gh release create v<version> export/rpg007.apk`) och
+  laddas ned i GitHub-appen. Det som räknas är att spelet flyter och får plats på en telefon (Google Play:
+  200 MB bas, sedan asset packs). Banta det som inte syns, inte det som gör spelet bättre.
+- `sigrun.glb` exporteras inte; Paladinens mantel, Brokks hjälm och Alvas lånade
   animationer kommer från `sigrun_delar.glb` (`node tools/extract_parts.mjs in.glb ut.glb [--anims=A,B] Del …`).
   Modellerna saknar oanvända animationer, och LOD- och skuggmeshar genereras inte (`.glb.import`). Lägg
   till en animation i en modell igen ur originalet i Drakvalvet om en ny figur behöver den.
