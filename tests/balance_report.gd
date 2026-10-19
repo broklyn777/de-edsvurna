@@ -1,5 +1,5 @@
 extends SceneTree
-## Balansrapport (0.16) på djup 1 och 3 (Realm Depth).
+## Balansrapport (0.17) på djup 1 och 3 (Realm Depth).
 ## Per våning: vinstandel, turer och överlevande för BASIC (bara Anfall), MACRO (startmakrona) och
 ## TUNED (de förbättrade makrona i combat_bot.gd, som svarar på fiendernas egenskaper).
 ## Hela kryptan: alla tre våningarna i följd med Charges som räcker hela vägen, med TUNED plus en
@@ -7,7 +7,9 @@ extends SceneTree
 ## får plats): bara nivå 1, med perk-nivåer, och med nivåer och en lånad perk (anointment). Sist allt
 ## (fyra artefakter och det bästa perk-bygget) och varje Eds kärna med startmakrona. På djup 3 prövas
 ## perkarna tillsammans med en artefakt, eftersom inget bygge utan artefakt vinner där. Sist samma
-## byggen i Det fördärvade kapellet (0.16), som ska vara ungefär lika svårt som kryptan.
+## byggen i Det fördärvade kapellet (0.16), som ska vara ungefär lika svårt som kryptan. Därefter
+## elitfiender och instabilitet 0 och 2 (0.17) och varje våningsregel för sig. Alla rader utom "utan
+## elitfiender" har elitvarianter som i spelet.
 ##   godot --headless --path . --script res://tests/balance_report.gd
 ## Mål på djup 1: BASIC förlorar, MACRO ~40 %, TUNED ~65 %, ingenting 100 % utom kanske allt.
 ## Kärnorna inom ±10 procentenheter. Djup 3: ett bra bygge (artefakt + bästa perks) 30–60 %.
@@ -82,6 +84,27 @@ func _init() -> void:
 				ONE_ARTIFACT, depth, chapel)
 		_line(data, "TUNED + fyra artefakter + " + _names(data, best), Bot.Skill.TUNED, {"paladin": best},
 				ARTIFACTS, depth, chapel)
+	# Instabilitet (0.17): våningsregler och elitfiender, djup 1, båda Realms.
+	var best1: Array = _best_by_depth[1]
+	for realm_id in data.realms:
+		var floors: Array = data.realms[realm_id].floors
+		print("=== %s, djup 1: elitfiender och instabilitet ===" % data.realms[realm_id].name)
+		for level in [-2, 0, 2]:
+			var tag: String = {-2: "utan elitfiender", 0: "instabilitet 0", 2: "instabilitet 2"}[level]
+			_line(data, "%s: MACRO" % tag, Bot.Skill.MACRO, {}, {}, 1, floors, level)
+			_line(data, "%s: TUNED" % tag, Bot.Skill.TUNED, {}, {}, 1, floors, level)
+			if level >= 0:
+				_line(data, "%s: TUNED + en artefakt + %s" % [tag, _names(data, best1)], Bot.Skill.TUNED,
+						{"paladin": best1}, ONE_ARTIFACT, 1, floors, level)
+	print("Varje våningsregel för sig (kryptan, djup 1, TUNED, utan elitfiender)")
+	for rule_id in data.floor_rules:
+		var cleared := 0
+		for seed_value in range(1, RUNS + 1):
+			if Bot.run_crypt(data, seed_value, Bot.Skill.TUNED, {}, {}, 1, RunState.FLOORS,
+					{"rules": [rule_id], "elite_chance": 0.0}):
+				cleared += 1
+		print("  %-20s %3d/%d  (silver +%d %%)" % [data.floor_rules[rule_id].name, cleared, RUNS,
+				roundi(float(data.floor_rules[rule_id].silver) * 100.0)])
 	print("Edernas kärnor på djup 1 (MACRO, hela kryptan, utan artefakter och perks)")
 	for oath_id in data.oaths:
 		print("  %-18s %3d/%d" % [data.traits[oath_id].name, _rate(data, Bot.Skill.MACRO, {"paladin": [oath_id]}, {}, 1, RUNS), RUNS])
@@ -160,18 +183,25 @@ func _names(data: Dictionary, list: Array) -> String:
 
 
 func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int,
-		floors: Array = RunState.FLOORS) -> int:
-	var rate := _rate(data, skill, traits, artifacts, depth, RUNS, floors)
+		floors: Array = RunState.FLOORS, level := -1) -> int:
+	var rate := _rate(data, skill, traits, artifacts, depth, RUNS, floors, level)
 	print("  %-72s %3d/%d" % [label, rate, RUNS])
 	return rate
 
 
 ## Seeds efter de som söker perks, så att sökningen inte väljer på samma slump som den mäts med.
+## level: −1 = som spelet i dag utan instabilitet, −2 = utan elitfiender, annars instabiliteten
+## (reglerna slumpas per frö).
 func _rate(data: Dictionary, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int, runs: int,
-		floors: Array = RunState.FLOORS) -> int:
+		floors: Array = RunState.FLOORS, level := -1) -> int:
 	var cleared := 0
 	var first := 1 if runs == RUNS else 1000
 	for seed_value in range(first, first + runs):
-		if Bot.run_crypt(data, seed_value, skill, traits, artifacts, depth, floors):
+		var opts := {}
+		if level == -2:
+			opts = {"elite_chance": 0.0}
+		elif level >= 0:
+			opts = Bot.instability_opts(data, seed_value, level)
+		if Bot.run_crypt(data, seed_value, skill, traits, artifacts, depth, floors, opts):
 			cleared += 1
 	return cleared

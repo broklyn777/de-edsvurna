@@ -41,6 +41,13 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   immun så länge en Kultist lever). Djup och skalning gäller alla Realms. Nya debuffar: Tystad (inga
   förmågor; makrorader med förmågor hoppas över), Sårbar (+50 % skada) och Försvagad (−50 % skada).
   Troféer har `rarity` (common/elite/boss); bossens trofé ändrar en regel med en kostnad.
+- **Instabilitet och våningsregler** (0.17, Siralims Realm Instability och Realm Properties): vid Kryptporten
+  väljs instabilitet 0–3. Nivå n ger n synliga och n dolda regler för hela körningen (`data/floor_rules.json`,
+  t.ex. De döda vaknar, Förseglade ord, Vaksamma vakter, Speglande ben, Kaosvind), mer silver och bättre
+  troféchans. Dolda regler avslöjas när de slår till (händelsen `rule`).
+- **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
+  namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
+  (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens Ed, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
@@ -94,6 +101,8 @@ uppdaterad när nya begrepp tillkommer.
   `cast` (kastar förmågan gratis, action `"artifact"`). Datan kopieras per strid – använd `sim.data`.
   Flöde: `begin()`, sedan `act(action, target, ability)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
 - `data/artifacts.json` – artefakttyperna (stat, utlösande handling, chans).
+- `data/floor_rules.json` – våningsreglerna (namn, text, silver, `min_instability`, `hidden_only`). Effekterna
+  ligger i `CombatSim` (`_rule()`, `_rule_hit()`); `RunState.roll_rules()` slumpar dem.
 - `data/realms.json` – Realms med namn, text och våningar (möten i encounters.json). `RunState.set_realm()`,
   `floor_ids`; `Profile.realm`.
 - `data/oaths.json` – Ederna: Siralims Specialization och perks med pris. Kärnan och perkarna är
@@ -136,13 +145,17 @@ uppdaterad när nya begrepp tillkommer.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
-Balans (0.16, `tests/balance_report.gd`, hela kryptan): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
+Balans (0.17, `tests/balance_report.gd`, hela kryptan, siffror från 0.16 utan elitfiender): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
 resten), startmakrona 42 %, TUNED 66 %, TUNED + en artefakt 93 %, TUNED + bästa perks inom 2 poäng 63–93 %,
 med lånad perk upp till 96 % (Gryningens ed + Krigsmaskin), artefakt + perks 99 %, fyra artefakter + perks
 100 %. Edernas kärnor med startmakrona 36–42 %. Djup 3 (fiender ×1,16, 3 poäng, med en artefakt): bästa
 perks 26–43 %, med lån upp till 68 %, fyra artefakter + perks 94 %.
-Det fördärvade kapellet på djup 1: startmakrona 49 %, TUNED 65 %, med en artefakt 91 %, med artefakt + Krigsmaskin
-100 %; djup 3: artefakt + bästa perks 65 %, fyra artefakter 94 % (kryptan: 42/66/93 och 68/94).
+Det fördärvade kapellet på djup 1: startmakrona 44 %, TUNED 59 %, med en artefakt 89 %, med artefakt + Krigsmaskin
+100 %; djup 3: artefakt + bästa perks 57 %, fyra artefakter 87 %.
+Instabilitet (0.17, djup 1): instabilitet 0 med elitfiender är ungefär som utan (kryptan MACRO 39/42 %, TUNED
+63/66 %). Instabilitet 2: TUNED 5–6 %, artefakt + bästa perks 44–53 %. Reglerna kostar olika mycket och ger
+silver därefter (De döda vaknar −59 procentenheter och +60 % silver; Tung luft och Vissnad nåd nästan
+ingenting och +5 %); Kaosvind (bara instabilitet 3) gör kryptan omöjlig för TUNED.
 **Känd brist:** perk-nivåerna väljs aldrig i de bästa byggena – regelbrytarna (Krigsmaskin, Räkenskap, Ljusets
 hand) slår en extra nivå siffror. Krigsmaskin är starkast och lånas helst. Brokks sköld med Helande ljus
 (fria helningar) väger tungt. I kapellet vinner BASIC ibland mot biskopen (17 %) och första våningen (11 %):
@@ -179,6 +192,10 @@ godot --path . -- --smith
 
 # Edsaltaret med den lånade perken upplåst (som om Benfursten var besegrad)
 godot --path . -- --anoint
+
+# Strid med instabilitet (slumpade regler) eller med bestämda regler
+godot --path . -- --instability=2 --floor=0 --demo
+godot --path . -- --rules=risen_dead,mirror_bones --floor=0 --demo
 
 # Strid i Det fördärvade kapellet (våning 0–2)
 godot --path . -- --realm=chapel --floor=2 --demo
@@ -219,6 +236,10 @@ Homebrew bygger inte längre färdiga paket för macOS 13 – installera inte Ja
 - JDK 17 (Temurin): `~/Library/Java/JavaVirtualMachines/jdk-17.0.20.1+1/Contents/Home`
 - Android SDK: `~/Library/Android/sdk` (platform-tools, build-tools 36.1.0, platforms android-36)
 - Debug-nyckel: `~/.android/debug.keystore` (standard: android/androiddebugkey)
+- APK:n ligger nära gränsen. `sigrun.glb` exporteras inte; Paladinens mantel, Brokks hjälm och Alvas lånade
+  animationer kommer från `sigrun_delar.glb` (`node tools/extract_parts.mjs in.glb ut.glb [--anims=A,B] Del …`).
+  Modellerna saknar oanvända animationer, och LOD- och skuggmeshar genereras inte (`.glb.import`). Lägg
+  till en animation i en modell igen ur originalet i Drakvalvet om en ny figur behöver den.
 - Exporten är utan Gradle (`gradle_build/use_gradle_build=false`), endast arm64-v8a. Oanvända ljud
   (röstrepliker, gamla WoW-ljud) och docs/ utesluts i `exclude_filter` i export_presets.cfg.
 
