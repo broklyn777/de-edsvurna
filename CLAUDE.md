@@ -16,7 +16,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Paladinen** står alltid med i striden och väljer ett **kall** (Siralims Specialization) – en regelbrytare
   för hela sällskapet. Finns (0.13): Domens kall (Paladin), Gryningens kall (Cleric), Väktarens kall
   (Siegemaster). Kärnan verkar alltid; perks kostar perk-poäng (1–3) vid Kallets altare och återställs gratis.
-  Perk-poäng (0.14.1, Siralims Perk Points): 2 från start, +1 för varannat klarat djup, egen pott per kall.
+  Perk-poäng (Siralims Perk Points): 2 från start, +1 per klarad Realm Quest på ny Realm och djup (0.18; förr
+  +1 för varannat klarat djup), egen pott per kall.
   Perk-nivåer (0.15): perks som är rena siffror har 2–3 nivåer som kostar poäng var; regelbrytare har en.
   Lånad perk (0.15, Siralims Anointment): en besegrad boss låser upp en plats där Kallet lånar en perk
   från ett annat kall, för poäng ur den egna potten.
@@ -41,6 +42,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   spelar ett kort 3D-ögonblick (`RoomMoment`) i Realmens stil innan rummets ruta; stridsrum har inget. Ett
   tryck hoppar över; RUMSÖGONBLICK PÅ/AV på rumskartan (`Profile.room_moments`). Ljud: room_door,
   room_chest, room_lock.
+  **Kartornas stil** (0.18): gammal handritad karta i tusch. Rumskartan: små tuschsymboler (`InkArt`:
+  kista, lägereld, altare, korsade svärd, sköld med kranium, dödskalle, virvel), streckade stigar med
+  handdragen ojämnhet, bleka rum som inte nåtts och en paladinpjäs som glider längs stigen. Kampanjkartan:
+  Drakvalvets tuschvinjetter (`assets/illustrations/`, `docs/illustrationer.md`) med tonade kanter och
+  fördärvet som ett flytande bläck i en shader; kompassros, kartuscher, drake, svärd i sten, skelett och
+  häxa bara i marginalen. Sigillet tonas bakom basen och nattlägret bakom lägret.
   **Realm Quest** (Jakt på Nemesis, Rensa 2 elitstrider, Rening 3 helgedomar) ger silver och en perk-poäng
   per ny kombination av Realm och djup. Körningen sparas i `user://run.cfg` efter varje rum.
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),

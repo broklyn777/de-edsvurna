@@ -2,6 +2,9 @@ extends TapScreen
 ## Basen mellan körningarna (Siralims slott, förenklat). Härifrån går man till Kampanjkartan,
 ## Övningsgården, Kallets altare, Smeden, Makron och Biblioteket. Förlust och seger på sista våningen leder hit.
 
+## Sigillet tonat i bakgrunden (Drakvalvets illustration).
+const SIGILL := preload("res://assets/illustrations/sigillet.webp")
+
 const PLACES := [
 	{"id": "gate", "name": "Kampanjkartan", "tag": "TELEPORTATION SHRINE",
 		"text": "Landet och dess Realms. Välj Realm, djup och instabilitet, förbered sällskapet och gå in."},
@@ -48,7 +51,7 @@ func _place_rect(i: int) -> Rect2:
 
 
 func _draw() -> void:
-	header("BASEN", "Mellan körningarna. Här byggs sällskapet om – nere i kryptan prövas det.")
+	header("BASEN", "Mellan körningarna. Här byggs sällskapet om – nere i kryptan prövas det.", SIGILL)
 	for i in PLACES.size():
 		var pl: Dictionary = PLACES[i]
 		var r := _place_rect(i)

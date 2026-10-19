@@ -4,17 +4,15 @@ extends TapScreen
 ## Strider går till striden; lägereld, skattkammare och helgedom avgörs här i en ruta ovanpå kartan.
 ## Kameran glider ut ur kampanjkartans område när skärmen öppnas (samma pergament).
 
-const ZOOM_TIME := 0.55
+const ZOOM_TIME := 0.8
 const ROOM_R := 32.0
-## Rumstypernas namn, färger och tecken (ritas som stämplar i bläck).
+## Rumstypernas namn (symbolerna ritas i tusch av InkArt).
 const KIND_NAMES := {"battle": "Strid", "elite": "Elit", "treasure": "Skattkammare", "shrine": "Helgedom",
 		"campfire": "Lägereld", "portal": "Portal", "end": "Våningens slut", "portal_battle": "Portalens strid"}
-const KIND_COLORS := {"battle": Color("#8a3a28"), "elite": Color("#b01830"), "treasure": Color("#c89a28"),
-		"shrine": Color("#4a7aa8"), "campfire": Color("#d0661a"), "portal": Color("#6a3a9a"), "end": Color("#3a1010"),
-		"portal_battle": Color("#6a3a9a")}
-const KIND_MARKS := {"battle": "S", "elite": "E", "treasure": "$", "shrine": "+", "campfire": "L", "portal": "O", "end": "!",
-		"portal_battle": "S"}
-
+## Rum som går att gå till ritas i bläck, de andra blekt som torkat bläck.
+const FADED := 0.32
+## Paladinpjäsen glider längs stigen till rummet innan man går in.
+const MOVE_TIME := 0.6
 var parchment: Parchment
 var _zoom_t := 0.0
 ## Rutan ovanpå kartan: {title, text, options: [{label, shrine}]} eller tom.
@@ -22,6 +20,11 @@ var _dialog := {}
 var _shrine_options: Array = []
 ## 3D-ögonblicket som spelas när sällskapet går in i ett rum (RoomMoment), eller null.
 var _moment: RoomMoment
+## Pjäsens glidning: från, till och tid (−1 = står still).
+var _move_from := Vector2.ZERO
+var _move_to := Vector2.ZERO
+var _move_t := -1.0
+var _move_id := ""
 ## Rumstyper med ett ögonblick (stridsrum har inget, striden är själv 3D).
 const MOMENT_KINDS := ["treasure", "shrine", "campfire", "portal"]
 
@@ -47,6 +50,11 @@ func _process(delta: float) -> void:
 	if _zoom_t < 1.0:
 		_zoom_t = minf(1.0, _zoom_t + delta / ZOOM_TIME)
 		parchment.set_view(lerpf(3.2, 1.0, _smooth(_zoom_t)), Vector2(0.5, 0.5))
+	if _move_t >= 0.0:
+		_move_t += delta / MOVE_TIME
+		if _move_t >= 1.0:
+			_move_t = -1.0
+			_enter(_move_id)
 
 
 static func _smooth(t: float) -> float:
@@ -57,8 +65,8 @@ static func _smooth(t: float) -> float:
 
 func _tap(p: Vector2) -> void:
 	var state: RunState = run.state
-	if _moment != null:
-		return  # ögonblicket tar själv emot trycket (hoppar över)
+	if _moment != null or _move_t >= 0.0:
+		return  # ögonblicket tar själv emot trycket (hoppar över); pjäsen är på väg
 	if not _dialog.is_empty():
 		_tap_dialog(p)
 		return
@@ -71,7 +79,12 @@ func _tap(p: Vector2) -> void:
 		return
 	for id in state.choices():
 		if _room_pos(id).distance_to(p) < ROOM_R + 14.0:
-			_enter(id)
+			# Pjäsen glider längs stigen, sedan går sällskapet in.
+			_move_from = _piece_pos()
+			_move_to = _room_pos(id)
+			_move_id = id
+			_move_t = 0.0
+			run.ui("ui_page", -14.0)
 			return
 
 
@@ -178,97 +191,104 @@ func _draw() -> void:
 	var z := lerpf(3.2, 1.0, _smooth(_zoom_t))
 	var c := size / 2
 	draw_set_transform(c - c * z, 0.0, Vector2.ONE * z)
+	_draw_decor(state)
 	_draw_paths(m, state)
 	for r in m.all_rooms():
 		_draw_room(r, state)
-	_draw_party_marker(state)
+	var lift := 0.0 if state.room_id == "" and _move_t < 0.0 else -ROOM_R - 20.0
+	InkArt.paladin(self, _piece_pos() + Vector2(0, lift + sin(_t * 3.0) * 2.0), 46, InkArt.INK)
 	draw_set_transform(Vector2.ZERO)
 	if _zoom_t < 1.0:
-		draw_rect(Rect2(Vector2.ZERO, size), Color(0.1, 0.07, 0.04, (1.0 - _smooth(_zoom_t)) * 0.5))
+		# Bilden av området (samma som kampanjkartan tonade fram) tonar bort medan kameran zoomar ut.
+		var a := clampf(1.0 - _zoom_t * 1.25, 0.0, 1.0)
+		var img: Texture2D = load("res://assets/illustrations/%s.webp" % data.realms[state.realm].map.zoom_image)
+		var h := size.x * img.get_height() / img.get_width()
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.93, 0.86, 0.68, a))
+		draw_texture_rect(img, Rect2(0, (size.y - h) / 2, size.x, h), false, Color(1, 1, 1, a))
 
 	var realm: Dictionary = data.realms[state.realm]
-	UiStyle.text(self, Vector2(MARGIN, 46), "%s – VÅNING %d/%d · DJUP %d" % [realm.name.to_upper(), state.floor + 1,
-			state.floor_ids.size(), state.depth], 26, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT, size.x - 300, 0)
+	InkArt.cartouche(self, Rect2(MARGIN + 14, 16, 560, 46), "%s · VÅNING %d/%d · DJUP %d" % [realm.name.to_upper(),
+			state.floor + 1, state.floor_ids.size(), state.depth], InkArt.INK, 20)
 	silver_label()
 	var quest := RunState.quest_text(state.quest) + ("  – KLAR!" if state.quest.get("done", false) else "")
-	UiStyle.text(self, Vector2(MARGIN, 76), "QUEST: " + quest, 17, Parchment.SEAL, HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
+	UiStyle.text(self, Vector2(MARGIN, 88), "QUEST: " + quest, 17, Parchment.SEAL, HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
 	var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
 	var hidden := state.active_rules().size() - known.size()
 	if not state.active_rules().is_empty():
-		UiStyle.text(self, Vector2(MARGIN, 100), "REGLER: %s%s" % [", ".join(known), "" if hidden == 0 else " · %d dolda" % hidden],
+		UiStyle.text(self, Vector2(MARGIN, 110), "REGLER: %s%s" % [", ".join(known), "" if hidden == 0 else " · %d dolda" % hidden],
 				15, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
 	_draw_charges(data, state)
 	if state.side_index >= 0:
-		UiStyle.text(self, Vector2(0, 150), "I PORTALEN – en svårare strid, sedan skatten", 18, Color("#6a3a9a"),
+		UiStyle.text(self, Vector2(0, 160), "I PORTALEN – en svårare strid, sedan skatten", 18, Color("#6a3a9a"),
 				HORIZONTAL_ALIGNMENT_CENTER, size.x, 0)
 	if run.room_result != "" and _dialog.is_empty():
-		UiStyle.text(self, Vector2(MARGIN, size.y - 36), run.room_result, 16, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT,
-				size.x - 520, 0)
+		UiStyle.text(self, Vector2(MARGIN + 150, size.y - 30), run.room_result, 16, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT,
+				size.x - 670, 0)
 	small_button(_macro_rect(), "MAKRON")
 	small_button(_moments_rect(), "RUMSÖGONBLICK: " + ("PÅ" if run.profile.room_moments else "AV"))
 	if not _dialog.is_empty():
 		_draw_dialog()
 
 
+## Var pjäsen står: vid våningens början, i rummet, eller på väg längs stigen.
+func _piece_pos() -> Vector2:
+	if _move_t >= 0.0:
+		var t := _smooth(_move_t)
+		var normal := (_move_to - _move_from).orthogonal().normalized()
+		return _move_from.lerp(_move_to, t) + normal * sin(t * PI) * 10.0
+	var state: RunState = run.state
+	return _start_pos() if state.room_id == "" else _room_pos(state.room_id)
+
+
+## Dekor bara i marginalen (aldrig mellan stigarna): kompassros nere till vänster, Realmens figur
+## (skelett vid kryptan, häxa vid kapellet) och ett svärd i sten i nederkanten.
+func _draw_decor(state: RunState) -> void:
+	var ink := Color(InkArt.INK, 0.55)
+	InkArt.compass(self, Vector2(64, size.y - 72), 44, ink)
+	var figure := Vector2(170, size.y - 70)
+	if state.realm == "chapel":
+		InkArt.witch(self, figure, 56, ink)
+	else:
+		InkArt.skeleton(self, figure, 56, ink)
+	InkArt.sword_in_stone(self, Vector2(250, size.y - 50), 50, ink)
+
+
 func _draw_paths(m: RoomMap, state: RunState) -> void:
+	var choices := state.choices()
 	if state.room_id == "":
 		for id in m.choices(""):
-			_ink_line(_start_pos(), _room_pos(id), true)
+			InkArt.path(self, _start_pos(), _room_pos(id), Color(InkArt.INK, 0.8), false)
 	for r in m.all_rooms():
 		for nxt in r.next:
 			var walked: bool = state.visited.has(r.id) and state.visited.has(nxt)
-			_ink_line(_room_pos(r.id), _room_pos(nxt), walked)
+			var open: bool = r.id == state.room_id and choices.has(nxt)
+			var alpha := 0.9 if walked or open else FADED
+			InkArt.path(self, _room_pos(r.id), _room_pos(nxt), Color(InkArt.INK, alpha), walked)
 
 
-## En bläckstig med en liten båge, heldragen om den är gången, annars streckad.
-func _ink_line(a: Vector2, b: Vector2, solid: bool) -> void:
-	var mid := (a + b) / 2 + (b - a).orthogonal().normalized() * 10.0
-	var pts := PackedVector2Array()
-	for i in 13:
-		var t := i / 12.0
-		pts.append(a.lerp(mid, t).lerp(mid.lerp(b, t), t))
-	if solid:
-		draw_polyline(pts, Color(Parchment.INK, 0.85), 3.0, true)
-	else:
-		for i in range(0, pts.size() - 1, 2):
-			draw_line(pts[i], pts[i + 1], Parchment.INK_LIGHT, 2.0)
-
-
+## Rummet som en liten tuschsymbol. Rum man kan gå till får en pulserande guldring och en tydlig
+## tryckyta; rum man inte nått är bleka.
 func _draw_room(r: Dictionary, state: RunState) -> void:
 	var pos := _room_pos(r.id)
 	var kind: String = r.kind
-	var color: Color = KIND_COLORS.get(kind, Parchment.INK)
 	var visited: bool = state.visited.has(r.id)
 	var available: bool = state.choices().has(r.id)
-	var radius := ROOM_R * (1.25 if kind == "end" else 1.0)
+	var boss: bool = r.get("boss", false)
+	var alpha := 1.0 if available or r.id == state.room_id else (0.55 if visited else FADED)
 	if available:
 		var pulse := 0.5 + 0.5 * sin(_t * 4.0)
-		draw_circle(pos, radius + 10 + 4 * pulse, Color(UiStyle.GOLD, 0.25 + 0.3 * pulse))
-	draw_circle(pos, radius, Color(color, 0.35 if visited else 0.85))
-	draw_arc(pos, radius, 0, TAU, 32, Parchment.INK, 3.0)
-	if kind == "elite" or (kind == "end" and r.get("boss", false)):
-		draw_arc(pos, radius + 5, 0, TAU, 32, UiStyle.GOLD, 2.0)
-	var mark: String = KIND_MARKS.get(kind, "?")
-	if kind == "end" and r.get("boss", false):
-		mark = "B"
-	UiStyle.text(self, pos + Vector2(-radius, 9), mark, 26, Color(1, 0.96, 0.85, 0.5 if visited else 1.0),
-			HORIZONTAL_ALIGNMENT_CENTER, radius * 2, 2)
+		draw_circle(pos, ROOM_R + 6, Color(0.95, 0.86, 0.6, 0.55))
+		InkArt.ring(self, pos, ROOM_R + 6 + 3 * pulse, Color(UiStyle.GOLD.darkened(0.25), 0.6 + 0.4 * pulse), 3.0)
+	var size_px := ROOM_R * (1.5 if kind == "end" else 1.25)
+	InkArt.symbol(self, kind, pos, size_px, Color(InkArt.INK, alpha), boss)
 	var label: String = KIND_NAMES.get(kind, kind)
-	if kind == "end" and r.get("boss", false):
+	if kind == "end" and boss:
 		label = "Boss: " + run.data.encounters[r.encounter].name
-	UiStyle.text(self, pos + Vector2(-80, radius + 22), label, 14, Parchment.INK, HORIZONTAL_ALIGNMENT_CENTER, 160, 0)
+	UiStyle.text(self, pos + Vector2(-90, ROOM_R + 24), label, 14, Color(InkArt.INK, maxf(alpha, 0.5)),
+			HORIZONTAL_ALIGNMENT_CENTER, 180, 0)
 	if r.get("nemesis", false):
-		draw_circle(pos + Vector2(radius * 0.8, -radius * 0.8), 12, Parchment.SEAL)
-		UiStyle.text(self, pos + Vector2(radius * 0.8 - 12, -radius * 0.8 + 6), "N", 16, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, 24, 0)
-
-
-## Sällskapets plats: en röd sigillmarkör i rummet där det står (eller vid våningens början).
-func _draw_party_marker(state: RunState) -> void:
-	var pos := _start_pos() if state.room_id == "" else _room_pos(state.room_id)
-	var bob := sin(_t * 3.0) * 3.0
-	var tip := pos + Vector2(0, -ROOM_R - 6 + bob)
-	draw_colored_polygon(PackedVector2Array([tip, tip + Vector2(-12, -22), tip + Vector2(12, -22)]), Parchment.SEAL)
-	draw_circle(tip + Vector2(0, -24), 12, Parchment.SEAL)
+		draw_circle(pos + Vector2(ROOM_R * 0.9, -ROOM_R * 0.8), 12, Color(Parchment.SEAL, maxf(alpha, 0.6)))
+		UiStyle.text(self, pos + Vector2(ROOM_R * 0.9 - 12, -ROOM_R * 0.8 + 6), "N", 16, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, 24, 0)
 
 
 ## Charges kvar per hjälte (summa av förmågorna mot fullt).
@@ -282,7 +302,7 @@ func _draw_charges(data: Dictionary, state: RunState) -> void:
 			full += int(data.abilities[ability_id].get("charges", 0))
 		if full > 0:
 			parts.append("%s %d/%d" % [data.heroes[hero_id].name, left, full])
-	UiStyle.text(self, Vector2(MARGIN, 124), "CHARGES: " + " · ".join(parts), 15, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT,
+	UiStyle.text(self, Vector2(MARGIN, 132), "CHARGES: " + " · ".join(parts), 15, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT,
 			size.x - 60, 0)
 
 

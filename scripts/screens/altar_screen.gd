@@ -119,7 +119,7 @@ func _draw() -> void:
 	var used := profile.points_used(data, profile.oath)
 	var points := profile.perk_points()
 	var heading := "LÅNA EN PERK FRÅN EN ANNAN ED" if anoint_mode else "PERKS I %s" % data.traits[profile.oath].name.to_upper()
-	UiStyle.text(self, Vector2(_x0(), 114), "%s – PERK-POÄNG %d/%d (FLER FÖR VARANNAT KLARAT DJUP)" % [heading, used, points],
+	UiStyle.text(self, Vector2(_x0(), 114), "%s – PERK-POÄNG %d/%d (EN PER NY KLARAD QUEST)" % [heading, used, points],
 			14, Color(1, 1, 1, 0.6))
 	var perks := _perks()
 	var borrowed: String = profile.anointed.get(profile.oath, "")
@@ -168,7 +168,7 @@ func _draw() -> void:
 		UiStyle.text(self, Vector2(_x0(), _buy_rect().position.y - 22), "Siralim: %s" % data.traits[selected_perk].get("original", ""),
 				14, Color(1, 1, 1, 0.5), HORIZONTAL_ALIGNMENT_LEFT, size.x - _x0() - MARGIN, 3)
 		if not enabled and not label in ["LÅNAD", "VERKAR", "ALLA NIVÅER"]:
-			UiStyle.text(self, _buy_rect().position + Vector2(0, -10), "För få perk-poäng – återställ eller klara djupare", 16,
+			UiStyle.text(self, _buy_rect().position + Vector2(0, -10), "För få perk-poäng – återställ eller klara en ny quest", 16,
 					Color("#ff8a6a"), HORIZONTAL_ALIGNMENT_CENTER, _buy_rect().size.x, 3)
 	UiStyle.big_button(self, _buy_rect(), label, _t, enabled)
 	small_button(_reset_rect(), "ÅTERSTÄLL (+%d POÄNG)" % used, used > 0)
@@ -181,12 +181,12 @@ func _draw_anointment(data: Dictionary, profile: Profile, borrowed: String) -> v
 		UiStyle.card(self, r, "Lånad perk", "Låst. Besegra Benfursten för att få låna en perk från ett annat kall.",
 				false, Color("#8a93a6"), "ANOINTMENT")
 		return
-	var body := "Tryck för att välja en perk från ett annat kall. Den kostar poäng ur den här Kallets pott."
+	var body := "Tryck för att välja en perk från ett annat kall. Den kostar poäng ur det här kallets pott."
 	var title := "Lånad perk"
 	if borrowed != "":
 		var t: Dictionary = data.traits[borrowed]
 		title = "Lånad: %s" % t.name
 		body = "%s (från %s)" % [t.text, data.traits[Profile.perk_entry(data, borrowed).oath].name]
 	if anoint_mode:
-		body = "Välj en perk ovan och tryck LÅNA. Tryck här för att gå tillbaka till Kallets egna perks."
+		body = "Välj en perk ovan och tryck LÅNA. Tryck här för att gå tillbaka till kallets egna perks."
 	UiStyle.card(self, r, title, body, anoint_mode or borrowed != "", UiStyle.GOLD, "ANOINTMENT")

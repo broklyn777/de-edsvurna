@@ -62,8 +62,12 @@ func chip(r: Rect2, label: String, on: bool, size_px := 15) -> void:
 			HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
 
-func header(title: String, sub := "") -> void:
+## Rubrik och bakgrund. backdrop: en tuschbild (assets/illustrations/) som tonas svagt i bakgrunden.
+func header(title: String, sub := "", backdrop: Texture2D = null) -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), BG)
+	if backdrop:
+		var h := size.x * backdrop.get_height() / backdrop.get_width()
+		draw_texture_rect(backdrop, Rect2(0, (size.y - h) / 2, size.x, h), false, Color(1, 1, 1, 0.13))
 	UiStyle.text(self, Vector2(0, 50), title, 36, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
 	if sub != "":
 		UiStyle.text(self, Vector2(0, 78), sub, 16, Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)

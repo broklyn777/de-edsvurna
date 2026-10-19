@@ -4,9 +4,10 @@ extends TapScreen
 ## bossarna x/3 till bosstrofén och klarade quests per djup. Därifrån går man till Förberedelser
 ## (sällskap och trofé) eller rakt in: kameran glider in i området och rumskartan tar vid.
 ##
-## Fördärvets front: varje område är mörkt av fördärv, och för varje klarat djup växer det befriade,
-## ljusa området i mitten (fronten drar sig tillbaka). Områdenas lägen och konturer står i
-## data/realms.json ("map": center, outline i 1280×720).
+## Varje område är en tuschvinjett ur Drakvalvet (data/realms.json "map": rect i 1280×720, vignette)
+## med mjukt tonade kanter mot pergamentet. Fördärvet är ett mörkt bläckflöde över vinjetten som drar
+## sig tillbaka mot kanterna för varje klarat djup. Dekoren (kompassros, kartuscher, drake, svärd i
+## sten, skelett, häxa, Väktaren) ligger i marginalen och aldrig över det man trycker på.
 
 const PANEL_W := 400.0
 const ZOOM_TIME := 0.7
@@ -15,6 +16,35 @@ const FREED_PER_DEPTH := 0.18
 const FREED_MAX := 0.85
 
 var parchment: Parchment
+## Vinjetterna (TextureRect med en kantshader) per Realm, och Väktaren bredvid kryptan.
+var _vignettes := {}
+var _warden: TextureRect
+
+const VIGNETTE_SHADER := """
+shader_type canvas_item;
+render_mode blend_mul;
+uniform float fade = 0.16;
+// Fördärvet: bläck som flyter in från kanterna ända in till "inner" (0 = mitten, 1 = bara kanten).
+uniform float inner = 1.2;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+	vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+float fbm(vec2 p) { float v = 0.0; float a = 0.5; for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.1; a *= 0.5; } return v; }
+void fragment() {
+	vec4 t = texture(TEXTURE, UV);
+	float e = min(min(UV.x, 1.0 - UV.x), min(UV.y, 1.0 - UV.y));
+	float a = smoothstep(0.0, fade, e) * COLOR.a;
+	vec3 c = mix(vec3(1.0), t.rgb, a);
+	float d = max(abs(UV.x - 0.5), abs(UV.y - 0.5)) * 2.0;
+	float n = fbm(UV * vec2(4.0, 3.0) + vec2(TIME * 0.02, -TIME * 0.035));
+	float veins = fbm(UV * vec2(14.0, 10.0) - vec2(0.0, TIME * 0.05));
+	float ink = smoothstep(inner - 0.05, inner + 0.05, d + (n - 0.5) * 0.9 + (veins - 0.5) * 0.25);
+	c = mix(c, vec3(0.14, 0.07, 0.12), ink * 0.85 * smoothstep(0.0, fade * 0.5, e));
+	COLOR = vec4(c, 1.0);
+}
+"""
 ## Kamerans glidning in i området när körningen startar (−1 = ingen).
 var _zoom_t := -1.0
 
@@ -25,6 +55,26 @@ func _ready() -> void:
 	add_child(parchment)
 	if not run.data.realms.has(run.profile.realm):
 		run.profile.realm = "crypt"
+	var shader := Shader.new()
+	shader.code = VIGNETTE_SHADER
+	for realm_id in run.data.realms:
+		_vignettes[realm_id] = _vignette_rect(run.data.realms[realm_id].map.vignette, shader)
+	_warden = _vignette_rect("vaktaren", shader)
+
+
+## En vinjett bakom kartans linjer (blandas med pergamentet så att den vita kanten försvinner).
+func _vignette_rect(name: String, shader: Shader) -> TextureRect:
+	var r := TextureRect.new()
+	r.texture = load("res://assets/illustrations/%s.webp" % name)
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_SCALE
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	r.show_behind_parent = true
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	r.material = mat
+	add_child(r)
+	return r
 
 
 func _process(delta: float) -> void:
@@ -54,7 +104,7 @@ func _tap(p: Vector2) -> void:
 		run.go(run.BASE_SCENE)
 		return
 	for realm_id in run.data.realms:
-		if Geometry2D.is_point_in_polygon(p, _outline(realm_id)):
+		if _rect(realm_id).has_point(p):
 			if prof.realm != realm_id:
 				prof.realm = realm_id
 				run.save()
@@ -87,16 +137,18 @@ func _scale() -> Vector2:
 	return size / Vector2(1280, 720)
 
 
-func _outline(realm_id: String) -> PackedVector2Array:
-	var out := PackedVector2Array()
-	for pt in run.data.realms[realm_id].map.outline:
-		out.append(Vector2(pt[0], pt[1]) * _scale())
-	return out
+func _rect(realm_id: String) -> Rect2:
+	var r: Array = run.data.realms[realm_id].map.rect
+	return Rect2(Vector2(r[0], r[1]) * _scale(), Vector2(r[2], r[3]) * _scale())
 
 
 func _center(realm_id: String) -> Vector2:
-	var c: Array = run.data.realms[realm_id].map.center
-	return Vector2(c[0], c[1]) * _scale()
+	return _rect(realm_id).get_center()
+
+
+## Väktaren (hotet bredvid kryptan) uppe till vänster i marginalen.
+func _warden_rect() -> Rect2:
+	return Rect2(Vector2(26, 104) * _scale(), Vector2(200, 133) * _scale())
 
 
 func _panel() -> Rect2:
@@ -130,12 +182,19 @@ func _draw() -> void:
 	var prof: Profile = run.profile
 	var zoom := 1.0 + 2.2 * _ease(_zoom_t) if _zoom_t >= 0.0 else 1.0
 	var focus := _center(prof.realm)
+	_place_vignettes(zoom, focus)
 	draw_set_transform(focus - focus * zoom, 0.0, Vector2.ONE * zoom)
+	_draw_decor()
 	for realm_id in data.realms:
 		_draw_realm(realm_id, realm_id == prof.realm)
 	draw_set_transform(Vector2.ZERO)
 	if _zoom_t >= 0.0:
-		draw_rect(Rect2(Vector2.ZERO, size), Color(0.1, 0.07, 0.04, _ease(_zoom_t) * 0.5))
+		# Mot slutet av glidningen tonar bilden av området fram (samma bild öppnar rumskartan).
+		var img: Texture2D = load("res://assets/illustrations/%s.webp" % data.realms[prof.realm].map.zoom_image)
+		var a := clampf((_zoom_t - 0.55) / 0.45, 0.0, 1.0)
+		var h := size.x * img.get_height() / img.get_width()
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.93, 0.86, 0.68, a))
+		draw_texture_rect(img, Rect2(0, (size.y - h) / 2, size.x, h), false, Color(1, 1, 1, a))
 		return
 	UiStyle.text(self, Vector2(0, 50), "KAMPANJKARTAN", 36, Parchment.INK, HORIZONTAL_ALIGNMENT_CENTER, size.x - PANEL_W, 0)
 	UiStyle.text(self, Vector2(0, 76), "Tryck på ett område. Fördärvet viker för varje klarat djup.", 16,
@@ -145,48 +204,59 @@ func _draw() -> void:
 	_draw_panel(data, prof)
 
 
-## Ett område: fördärvet, det befriade området i mitten, kontur, namn och stämplar.
+## Vinjetterna följer kamerans glidning (de ritas av egna noder bakom linjerna).
+func _place_vignettes(zoom: float, focus: Vector2) -> void:
+	for realm_id in _vignettes:
+		_place(_vignettes[realm_id], _rect(realm_id), zoom, focus)
+	_place(_warden, _warden_rect(), zoom, focus)
+
+
+func _place(node: TextureRect, r: Rect2, zoom: float, focus: Vector2) -> void:
+	node.position = focus + (r.position - focus) * zoom
+	node.size = r.size * zoom
+
+
+## Dekoren i marginalen: kompassros, drake i hörnet, svärd i sten, skelett vid kryptan, häxa vid kapellet.
+func _draw_decor() -> void:
+	var ink := Color(InkArt.INK, 0.6)
+	var k := _scale()
+	InkArt.compass(self, Vector2(700, 470) * k, 52, ink)
+	InkArt.dragon(self, Vector2(735, 640) * k, 70, ink)
+	InkArt.sword_in_stone(self, Vector2(560, 650) * k, 56, ink)
+	InkArt.skeleton(self, Vector2(80, 600) * k, 60, ink)
+	InkArt.witch(self, Vector2(430, 230) * k, 60, ink)
+
+
+## Ett område: vinjetten (egen nod), fördärvets bläckflöde, ram, kartusch med namnet och bossens sigill.
 func _draw_realm(realm_id: String, selected: bool) -> void:
 	var prof: Profile = run.profile
-	var outline := _outline(realm_id)
-	var center := _center(realm_id)
+	var r := _rect(realm_id)
+	var center := r.get_center()
 	var cleared := int(prof.realm_depth.get(realm_id, 0))
-	draw_colored_polygon(outline, Color(Parchment.CORRUPTION, 0.55))
-	# Fronten: det befriade området växer från mitten med varje klarat djup.
-	var freed := minf(FREED_PER_DEPTH * cleared + 0.08, FREED_MAX)
-	var inner := PackedVector2Array()
-	for i in outline.size():
-		var wobble := 0.92 + 0.08 * sin(i * 2.3 + _t * 0.6)
-		inner.append(center + (outline[i] - center) * freed * wobble)
-	draw_colored_polygon(inner, Color(0.95, 0.88, 0.66, 0.85))
-	_dashed(inner, Color(Parchment.SEAL, 0.7), 2.0)
-	var border := outline.duplicate()
-	border.append(outline[0])
-	draw_polyline(border, Color(Parchment.INK, 0.95 if selected else 0.55), 4.0 if selected else 2.5, true)
+	# Fördärvet ritas av vinjettens shader: bläcket når in till "inner" och drar sig tillbaka per djup.
+	(_vignettes[realm_id].material as ShaderMaterial).set_shader_parameter("inner",
+			0.58 + 0.4 * minf(FREED_PER_DEPTH * cleared, FREED_MAX))
+	var frame := r.grow(6)
+	var pts := PackedVector2Array([frame.position, Vector2(frame.end.x, frame.position.y), frame.end,
+			Vector2(frame.position.x, frame.end.y), frame.position])
+	for i in 4:
+		InkArt.path(self, pts[i], pts[i + 1], Color(InkArt.INK, 0.85 if selected else 0.45), true, 1.6)
 	if selected:
 		var glow := 0.5 + 0.5 * sin(_t * 3.0)
-		draw_polyline(border, Color(UiStyle.GOLD, 0.25 + 0.3 * glow), 9.0, true)
+		draw_rect(r.grow(12), Color(UiStyle.GOLD.darkened(0.2), 0.25 + 0.35 * glow), false, 4.0)
 	var name: String = run.data.realms[realm_id].name
-	UiStyle.text(self, center + Vector2(-160, -6), name.to_upper(), 20, Parchment.INK, HORIZONTAL_ALIGNMENT_CENTER, 320, 0)
-	UiStyle.text(self, center + Vector2(-160, 18), "Djup klarat: %d" % cleared, 15, Parchment.INK, HORIZONTAL_ALIGNMENT_CENTER, 320, 0)
-	# Sigill för bossen: fylls i takt med segrarna (x/3 till bosstrofén).
+	var cart := Rect2(center.x - 150, r.end.y + 10, 300, 40)
+	InkArt.cartouche(self, cart, name.to_upper(), InkArt.INK, 17)
+	UiStyle.text(self, Vector2(cart.position.x, cart.end.y + 18), "Djup klarat: %d" % cleared, 14, InkArt.INK,
+			HORIZONTAL_ALIGNMENT_CENTER, cart.size.x, 0)
+	# Sigill för bossen i vinjettens hörn: fylls i takt med segrarna (x/3 till bosstrofén).
 	for boss in _bosses(realm_id):
 		var wins: int = mini(int(prof.boss_wins.get(boss, 0)), RunState.BOSS_WINS_FOR_TROPHY)
-		var at := center + Vector2(0, 52)
-		draw_circle(at, 18, Color(Parchment.SEAL, 0.25 + 0.25 * wins))
+		var at := Vector2(r.end.x - 24, r.position.y + 24)
+		draw_circle(at, 18, Color(Parchment.SEAL, 0.35 + 0.2 * wins))
 		draw_arc(at, 18, 0, TAU * wins / RunState.BOSS_WINS_FOR_TROPHY, 24, Parchment.SEAL, 4.0)
 		UiStyle.text(self, at + Vector2(-30, 6), "%d/%d" % [wins, RunState.BOSS_WINS_FOR_TROPHY], 14, Color.WHITE,
 				HORIZONTAL_ALIGNMENT_CENTER, 60, 2)
-
-
-func _dashed(points: PackedVector2Array, color: Color, width: float) -> void:
-	for i in points.size():
-		var a := points[i]
-		var b := points[(i + 1) % points.size()]
-		var n := int(a.distance_to(b) / 14.0)
-		for k in n:
-			if k % 2 == 0:
-				draw_line(a.lerp(b, float(k) / n), a.lerp(b, float(k + 1) / n), color, width)
 
 
 func _bosses(realm_id: String) -> Array:
