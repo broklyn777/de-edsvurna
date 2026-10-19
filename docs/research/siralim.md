@@ -927,10 +927,11 @@ traits.
 Bara sådant som finns i Siralim. Varje anpassning är märkt.
 
 1. **Nivåer och erfarenhet** (originalet). Hjältarna får erfarenhet av vunna strider, och varje nivå ger
-   +30 % av basvärdet. Fienderna skalar med djupet som i dag. *Anpassning (vårt val):* ett tak per djup
-   (t.ex. nivå = 5 × högsta klarade djup), eftersom våra körningar är få och korta och fria nivåer annars
-   gör djup 1–2 betydelselösa. Motivering: Siralims eget svar är att fienderna växer snabbare, vilket är
-   svårt att få rätt med få strider.
+   +30 % av basvärdet. **Inget nivåtak**, som i originalet. Fienderna skalar med det valda djupet, inte
+   med hjältarnas nivå. Då kan man gå tillbaka till lägre djup, bli starkare, hitta nya troféer och prova
+   nya kombinationer, och sedan gå djupare igen (VD:ns önskan, 2026-10-19). Mitt tidigare förslag om ett
+   nivåtak per djup är **struket**: det fanns inte i originalet och hindrade just det.
+   Okänt: om originalet ger mindre erfarenhet från lägre djup.
 2. **Personlighet per hjälte** (originalet). Passar namngivna personer extra bra: Brokk "Envis"
    (Health 40 %, Speed 20 %), Eira "Rastlös" (Speed 40 %, Defense 20 %) … Kan bytas med en Personality
    Tome från skattkammare. Syns som pilar vid stats.
