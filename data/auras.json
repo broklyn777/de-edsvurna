@@ -84,5 +84,11 @@
 		"duration": 2,
 		"damage_mult": 0.5,
 		"debuff": true
+	},
+	"salted": {
+		"name": "Saltad jord",
+		"duration": 3,
+		"defense_mult": 0.8,
+		"debuff": true
 	}
 }

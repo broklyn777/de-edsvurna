@@ -64,7 +64,8 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 			sim.act(decision.action, decision.target, decision.ability)
 		else:
 			no_match += 1
-			sim.act("defend")
+			if sim.act("defend") != "":
+				sim.act("attack")  # Inga bönder: Försvara går inte
 		sim.drain_events()
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
 	return {"outcome": sim.outcome, "turns": sim.turn_no, "alive": alive, "no_match": no_match, "sim": sim}

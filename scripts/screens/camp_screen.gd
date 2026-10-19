@@ -151,6 +151,12 @@ func _draw() -> void:
 	for n in names:
 		parts.append(n if names[n] == 1 else "%s ×%d" % [n, names[n]])
 	UiStyle.text(self, Vector2(MARGIN, size.y - 112), "NÄSTA: " + enc.name.to_upper(), 18, Color("#ff8a6a"))
+	var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
+	var unknown := state.active_rules().size() - known.size()
+	if not state.active_rules().is_empty():
+		var rule_line := "REGLER: " + ", ".join(known) + ("" if unknown == 0 else "%s%d dolda" % [", " if not known.is_empty() else "", unknown])
+		UiStyle.text(self, Vector2(MARGIN, size.y - 136), rule_line, 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT,
+				size.x - 420)
 	UiStyle.text(self, Vector2(MARGIN, size.y - 88), ", ".join(parts), 15, Color(1, 1, 1, 0.8))
 	if boss_text != "":
 		UiStyle.text(self, Vector2(MARGIN, size.y - 64), boss_text, 15, Color("#ffb347"), HORIZONTAL_ALIGNMENT_LEFT, size.x - 420)

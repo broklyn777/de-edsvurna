@@ -27,7 +27,14 @@
 				"walk": "Walk_Loop"
 			}
 		},
-		"trophy": "bone_finger"
+		"trophy": "bone_finger",
+		"elite": {
+			"name": "Benkapten",
+			"trophy": "first_strike",
+			"trait": "first_strike",
+			"tint": "#ffd36a",
+			"glow": "#a06a00"
+		}
 	},
 	"skeleton_archer": {
 		"name": "Skelettbågskytt",
@@ -86,7 +93,14 @@
 			{
 				"ability": "aimed_shot"
 			}
-		]
+		],
+		"elite": {
+			"name": "Benjägare",
+			"trophy": "quick_shot",
+			"trait": "quick_shot",
+			"tint": "#c8ff9a",
+			"glow": "#3a8a20"
+		}
 	},
 	"grave_priest": {
 		"name": "Gravpräst",
@@ -152,7 +166,14 @@
 				"walk": "Walk_Loop"
 			}
 		},
-		"trophy": "rosary"
+		"trophy": "rosary",
+		"elite": {
+			"name": "Gravabbot",
+			"trophy": "bearer_of_light",
+			"trait": "bearer_of_light",
+			"tint": "#fff0b0",
+			"glow": "#8a7a20"
+		}
 	},
 	"grave_warden": {
 		"name": "Gravväktare",
@@ -226,6 +247,13 @@
 				"death": "Death01",
 				"walk": "Walk_Loop"
 			}
+		},
+		"elite": {
+			"name": "Gravfogde",
+			"trophy": "salted_earth",
+			"trait": "salted_earth",
+			"tint": "#e0f0ff",
+			"glow": "#3a6aa0"
 		}
 	},
 	"ember_skeleton": {
@@ -286,6 +314,13 @@
 				"death": "Death01",
 				"walk": "Walk_Loop"
 			}
+		},
+		"elite": {
+			"name": "Askbärare",
+			"trophy": "scatter_shot",
+			"trait": "scatter_shot",
+			"tint": "#ffe0a0",
+			"glow": "#ff5a00"
 		}
 	},
 	"bone_lich": {
@@ -405,7 +440,14 @@
 				"walk": "Walk"
 			}
 		},
-		"trophy": "prayer_beads"
+		"trophy": "prayer_beads",
+		"elite": {
+			"name": "Ockultist",
+			"trophy": "phantasm",
+			"trait": "phantasm",
+			"tint": "#ff9ad0",
+			"glow": "#a0207a"
+		}
 	},
 	"wraith": {
 		"name": "Gast",
@@ -437,7 +479,14 @@
 				"walk": "Walk"
 			}
 		},
-		"trophy": "wraith_veil"
+		"trophy": "wraith_veil",
+		"elite": {
+			"name": "Banshee",
+			"trophy": "surprise",
+			"trait": "surprise",
+			"tint": "#e0d0ff",
+			"glow": "#7a4aff"
+		}
 	},
 	"fallen_knight": {
 		"name": "Fallen riddare",
@@ -478,7 +527,14 @@
 				"walk": "Walk"
 			}
 		},
-		"trophy": "fallen_oath"
+		"trophy": "fallen_oath",
+		"elite": {
+			"name": "Edsbrytare",
+			"trophy": "heart_of_chaos",
+			"trait": "heart_of_chaos",
+			"tint": "#ffb0a0",
+			"glow": "#b02010"
+		}
 	},
 	"witch": {
 		"name": "Häxa",
@@ -515,7 +571,14 @@
 				"walk": "Walk"
 			}
 		},
-		"trophy": "witch_tongue"
+		"trophy": "witch_tongue",
+		"elite": {
+			"name": "Häxmästarinna",
+			"trophy": "miracle",
+			"trait": "miracle",
+			"tint": "#e8ffa0",
+			"glow": "#6aa000"
+		}
 	},
 	"penitent": {
 		"name": "Botgörare",
@@ -568,7 +631,14 @@
 				"grip_r": "Flail"
 			}
 		},
-		"trophy": "executioner_hood"
+		"trophy": "executioner_hood",
+		"elite": {
+			"name": "Självplågare",
+			"trophy": "sareas_plot",
+			"trait": "sareas_plot",
+			"tint": "#ffc8a0",
+			"glow": "#b04a10"
+		}
 	},
 	"fallen_bishop": {
 		"name": "Den fallne biskopen",

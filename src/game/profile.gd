@@ -46,6 +46,10 @@ var depth := 1
 var best_depth := 0
 ## Vald Realm vid Kryptporten (data/realms.json). Djupet gäller alla Realms.
 var realm := "crypt"
+## Vald instabilitet 0–3 (RunState.MAX_INSTABILITY).
+var instability := 0
+## Segrar per boss (Siralims Masters): bosstrofén kräver RunState.BOSS_WINS_FOR_TROPHY.
+var boss_wins := {}
 ## Anointments (Siralim): varje besegrad boss (räknas en gång per bosstyp) låser upp en plats där
 ## en Ed får låna en perk från en annan Ed. Lånet kostar perk-poäng ur den lånande Edens pott.
 var bosses_defeated: Array[String] = []
@@ -58,9 +62,9 @@ static func reward(floor: int, at_depth := 1) -> int:
 	return roundi(base * (1.0 + SILVER_PER_DEPTH * (maxi(at_depth, 1) - 1)))
 
 
-## Ger silver för en vunnen strid på våningen och djupet. Returnerar hur mycket.
-func win_battle(floor: int, at_depth := 1) -> int:
-	var amount := reward(floor, at_depth)
+## Ger silver för en vunnen strid på våningen och djupet, gånger våningsreglernas tillägg. Returnerar hur mycket.
+func win_battle(floor: int, at_depth := 1, mult := 1.0) -> int:
+	var amount := roundi(reward(floor, at_depth) * mult)
 	silver += amount
 	return amount
 
@@ -194,6 +198,13 @@ func anointment_slots() -> int:
 func defeat_boss(kind: String) -> void:
 	if not bosses_defeated.has(kind):
 		bosses_defeated.append(kind)
+	boss_wins[kind] = int(boss_wins.get(kind, 0)) + 1
+
+
+## Bossar som har besegrats tillräckligt många gånger för att lämna sin trofé.
+func unlocked_boss_trophies() -> Array:
+	return boss_wins.keys().filter(func(k: String) -> bool:
+		return int(boss_wins[k]) >= RunState.BOSS_WINS_FOR_TROPHY)
 
 
 ## Lånar perken (nivå 1) från en annan Ed till oath_id, i stället för ett tidigare lån. Falskt om
@@ -243,6 +254,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
 	cfg.set_value("progress", "realm", realm)
+	cfg.set_value("progress", "instability", instability)
+	cfg.set_value("progress", "boss_wins", boss_wins)
 	cfg.set_value("progress", "bosses_defeated", bosses_defeated)
 	cfg.set_value("progress", "anointed", anointed)
 	return cfg.save(path)
@@ -268,6 +281,8 @@ static func load_from(path: String) -> Profile:
 	p.practice_equipped = cfg.get_value("progress", "practice_equipped", {})
 	p.best_depth = int(cfg.get_value("progress", "best_depth", 0))
 	p.realm = cfg.get_value("progress", "realm", "crypt")
+	p.instability = clampi(int(cfg.get_value("progress", "instability", 0)), 0, RunState.MAX_INSTABILITY)
+	p.boss_wins = cfg.get_value("progress", "boss_wins", {})
 	for kind in cfg.get_value("progress", "bosses_defeated", []):
 		p.bosses_defeated.append(kind)
 	p.anointed = cfg.get_value("progress", "anointed", {})

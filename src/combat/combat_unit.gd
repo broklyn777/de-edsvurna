@@ -46,6 +46,14 @@ var deaths := 0
 var revives := 0
 ## Hur många egna turer figuren har fått i striden.
 var turns_taken := 0
+## Räknare för troféer: utförda Anfall, användningar per förmåga och direkta träffar man tagit.
+var attacks_done := 0
+var ability_uses := {}
+var times_hit := 0
+## Förmågor som Förseglade ord har låst resten av striden.
+var sealed := {}
+## Elitvariant (0.17): starkare, eget namn, egen trofé och egen egenskap.
+var elite := false
 var alive := true
 ## ability_id -> egna turer kvar.
 var cooldowns := {}

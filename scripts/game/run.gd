@@ -40,6 +40,9 @@ var default_action := {}
 var macro_return := BASE_SCENE
 ## Trofén som är vald i lägret (finns kvar om man går till makroredigeraren och tillbaka).
 var camp_chosen := ""
+## Våningsreglerna för nästa körning, slumpade vid Kryptporten när instabiliteten väljs:
+## {visible: [regel], hidden: [regel]}.
+var pending_rules := {"visible": [], "hidden": []}
 
 
 func _ready() -> void:
@@ -47,6 +50,7 @@ func _ready() -> void:
 	rng.randomize()
 	_load()
 	_load_macros()
+	roll_rules()
 	_dev_args()
 
 
@@ -66,6 +70,17 @@ func _dev_args() -> void:
 			# --anoint låser upp den lånade perken (som om Benfursten var besegrad) och visar valet
 			profile.defeat_boss("bone_lich")
 			get_tree().change_scene_to_file.call_deferred(ALTAR_SCENE)
+		elif arg.begins_with("--instability="):
+			# --instability=<n> slumpar n synliga och n dolda våningsregler (bara den här körningen)
+			state.instability = clampi(int(arg.get_slice("=", 1)), 0, RunState.MAX_INSTABILITY)
+			var rolled := RunState.roll_rules(data, state.instability, rng)
+			state.rules_visible = rolled.visible
+			state.rules_hidden = rolled.hidden
+			profile.instability = state.instability
+			pending_rules = rolled
+		elif arg.begins_with("--rules="):
+			# --rules=a,b gör reglerna synliga i den här körningen (för test)
+			state.rules_visible = Array(arg.get_slice("=", 1).split(","))
 		elif arg.begins_with("--realm="):
 			# --realm=chapel spelar i Det fördärvade kapellet (bara den här körningen)
 			state.set_realm(data, arg.get_slice("=", 1))
@@ -93,10 +108,19 @@ func _dev_args() -> void:
 
 
 ## Eden väljs vid Edsaltaret (profile.oath), sällskapet vid Kryptporten.
+## Slumpar nya våningsregler för vald instabilitet (visas vid Kryptporten).
+func roll_rules() -> void:
+	pending_rules = RunState.roll_rules(data, profile.instability, rng)
+
+
 func start_run(party: Array[String]) -> void:
 	profile.party = party
 	_save()
 	state = RunState.new_run(profile, data)
+	state.instability = profile.instability
+	state.rules_visible = pending_rules.visible.duplicate()
+	state.rules_hidden = pending_rules.hidden.duplicate()
+	roll_rules()  # nästa körning får nya regler
 	get_tree().change_scene_to_file(BATTLE_SCENE)
 
 
@@ -122,16 +146,17 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		get_tree().change_scene_to_file(BASE_SCENE)
 		return
 	last_receipt = receipt
-	last_silver = profile.win_battle(state.floor, state.depth)
-	offer = state.trophy_offer(data, rng)
+	last_silver = profile.win_battle(state.floor, state.depth, state.silver_mult(data))
+	if state.is_last_floor():
+		for kind in data.encounters[state.encounter()].enemies:
+			if data.enemies[kind].get("boss", false):
+				profile.defeat_boss(kind)
+	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
 	camp_chosen = ""
 	for t in offer:
 		profile.add_trophy(t)
 	if state.is_last_floor():
 		profile.clear_depth(state.depth)
-		for kind in data.encounters[state.encounter()].enemies:
-			if data.enemies[kind].get("boss", false):
-				profile.defeat_boss(kind)
 	_save()
 	if state.is_last_floor():
 		get_tree().change_scene_to_file(BASE_SCENE)

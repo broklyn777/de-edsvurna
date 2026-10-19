@@ -15,7 +15,8 @@ const BEAT := 0.45
 ## Extra tid mellan effekter i en kedja, så att man hinner se dem i ordning.
 const CHAIN_STEP := 0.22
 const ERROR_TEXT := {"cooldown": "Inte redo än", "dead": "Hjälten har stupat", "none": "Ingen sådan förmåga",
-		"charges": "Inga Charges kvar", "silenced": "Tystad – förmågor går inte"}
+		"charges": "Inga Charges kvar", "silenced": "Tystad – förmågor går inte",
+		"sealed": "Förseglad (Förseglade ord)", "forbidden": "Inga bönder: ingen kan försvara eller provocera"}
 
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 var run: Node
@@ -76,11 +77,12 @@ func _ready() -> void:
 	if state.charges.is_empty():
 		state.fill_charges(data)
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
-			state.artifacts, state.depth)
+			state.artifacts, state.depth, {"rules": state.active_rules(), "instability": state.instability})
 	data = sim.data  # med artefakternas egenskaper
 	_auto = demo
 	_build_scene()
 	_build_ui()
+	_update_rules_text()
 	get_viewport().size_changed.connect(_layout)
 	sfx.start_ambience("ambience_crypt", -11.0)
 	_layout()
@@ -113,6 +115,13 @@ func _build_scene() -> void:
 	add_child(world)
 	for u in sim.units:
 		var vis: Dictionary = (data.heroes[u.id] if u.team == 0 else data.enemies[u.kind]).visual
+		if u.elite:
+			# Elitvarianten: egen färg, glöd och lite större, så att den syns direkt.
+			var elite: Dictionary = data.enemies[u.kind].elite
+			vis = vis.duplicate()
+			vis.tint = elite.get("tint", "#ffd36a")
+			vis.glow = elite.get("glow", "#a06a00")
+			vis.scale = float(vis.get("scale", 1.0)) * 1.15
 		var m := UnitModel.new()
 		world.add_child(m)
 		m.setup(u, sim, vis)
@@ -298,6 +307,47 @@ func _unit_at(pos: Vector2, ids: Array) -> String:
 	return best
 
 
+## En våningsregel slog till. Dolda regler avslöjas med en skylt.
+func _on_rule(rule_id: String) -> void:
+	var state: RunState = run.state
+	if state.rules_hidden.has(rule_id) and not state.rules_revealed.has(rule_id):
+		state.rules_revealed.append(rule_id)
+		overlay.announce("Dold regel: %s!" % data.floor_rules[rule_id].name)
+		sfx.play("bone_crush", -6.0, 0.0)
+	_update_rules_text()
+
+
+## En elitvariant är med i striden: skylt och ljudsignal.
+func _on_elite(unit_id: String) -> void:
+	overlay.announce("Elitfiende: %s!" % sim.unit(unit_id).name)
+	sfx.play("bloodlust", -4.0, 0.0)
+
+
+## Raden med våningsreglerna (synliga och avslöjade dolda) uppe till höger.
+func _update_rules_text() -> void:
+	var state: RunState = run.state
+	var names: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
+	var unknown := state.rules_hidden.size() - (state.known_rules().size() - state.rules_visible.size())
+	for i in unknown:
+		names.append("?")
+	overlay.rules_text = ("Regler: " + " · ".join(names)) if not names.is_empty() else ""
+
+
+## Vilken trofé fienden kan lämna (Inspect): elitens egen, bossens med räknaren, eller den vanliga.
+func _trophy_line(u: CombatUnit) -> String:
+	var d: Dictionary = data.enemies[u.kind]
+	var trophy_id: String = d.get("elite", {}).get("trophy", "") if u.elite else d.get("trophy", "")
+	if trophy_id == "":
+		return "Lämnar ingen trofé."
+	var name: String = data.traits[trophy_id].name
+	var owned: bool = run.collection.has(trophy_id)
+	if d.get("boss", false):
+		var wins := int(run.profile.boss_wins.get(u.kind, 0))
+		return "Trofé: %s – kräver %d segrar (%d/%d)%s" % [name, RunState.BOSS_WINS_FOR_TROPHY, mini(wins, 3),
+				RunState.BOSS_WINS_FOR_TROPHY, " · i samlingen" if owned else ""]
+	return "Trofé: %s%s" % [name, " · i samlingen" if owned else " · ny!"]
+
+
 ## Visar figurens stats och egenskaper (dolda delar och artefaktens egenskap räknas inte).
 func _show_inspect(unit_id: String) -> void:
 	var u := sim.unit(unit_id)
@@ -310,6 +360,7 @@ func _show_inspect(unit_id: String) -> void:
 	if lines.size() == 1:
 		lines.append("Inga egenskaper.")
 	if u.team == 1:
+		lines.append(_trophy_line(u))
 		lines.append("Djup %d · stats ×%.2f" % [sim.depth, CombatSim.enemy_mult(data.encounters[run.state.encounter()], sim.depth)])
 	overlay.show_inspect(u.name, lines)
 
@@ -403,6 +454,12 @@ func _restart() -> void:
 ## Övningsgården med makrologgen.
 func _continue() -> void:
 	Engine.time_scale = 1.0
+	var state: RunState = run.state
+	for id in sim.rules_triggered:
+		if not state.rules_revealed.has(id):
+			state.rules_revealed.append(id)
+	state.last_elites = sim.enemies.filter(func(e: CombatUnit) -> bool: return e.elite).map(
+			func(e: CombatUnit) -> String: return e.kind)
 	if sim.outcome == "victory" and not run.state.practice:
 		run.state.store_charges(sim)
 	run.battle_finished(sim.outcome == "victory", receipt(), macro_log.entries)
@@ -471,6 +528,10 @@ func _handle(e: Dictionary) -> void:
 				models[e.unit].set_blocking(false)
 		"trait":
 			_after(_effect_delay(e), _on_trait.bind(e))
+		"rule":
+			_after(_effect_delay(e), _on_rule.bind(e.rule))
+		"elite":
+			_after(_cursor + 0.6, _on_elite.bind(e.unit))
 		"release":
 			_after(_effect_delay(e), _on_release.bind(e))
 		"death":

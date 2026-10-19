@@ -89,6 +89,14 @@ func _tap(p: Vector2) -> void:
 		run.profile.choose_depth(run.profile.depth + 1)
 		run.save()
 		return
+	for dir in [-1, 1]:
+		if _instability_rect(dir).has_point(p):
+			var level: int = clampi(run.profile.instability + dir, 0, RunState.MAX_INSTABILITY)
+			if level != run.profile.instability:
+				run.profile.instability = level
+				run.roll_rules()
+				run.save()
+			return
 	if _macro_rect().has_point(p):
 		run.open_macros(run.START_SCENE)
 		return
@@ -144,6 +152,11 @@ func _back_rect() -> Rect2:
 ## Realm Depth: −1 till vänster, +1 till höger om siffran (nere till vänster).
 func _depth_rect(dir: int) -> Rect2:
 	return Rect2(MARGIN + (0.0 if dir < 0 else 170.0), size.y - 70, 50, 50)
+
+
+## Instabilitet (Siralims Realm Instability): −/+ mellan stora knappen och Makron.
+func _instability_rect(dir: int) -> Rect2:
+	return Rect2(size.x - MARGIN - 200 - 236 + (0.0 if dir < 0 else 140.0), size.y - 70, 46, 50)
 
 
 func _macro_rect() -> Rect2:
@@ -212,6 +225,7 @@ func _draw() -> void:
 					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
 	_draw_depth()
+	_draw_instability(data)
 	UiStyle.big_button(self, _button_rect(), "IN I " + str(realm.short).to_upper(), _t, companions.size() == 3)
 	_small_button(_macro_rect(), "MAKRON")
 
@@ -229,6 +243,30 @@ func _draw_depth() -> void:
 			"Troféchans %d %%" % roundi(RunState.trophy_chance(prof.depth) * 100.0)]
 	for i in lines.size():
 		UiStyle.text(self, Vector2(MARGIN + 232, size.y - 56 + i * 18), lines[i], 14, Color(1, 1, 1, 0.7))
+
+
+func _draw_instability(data: Dictionary) -> void:
+	var level: int = run.profile.instability
+	var x := _instability_rect(-1).position.x
+	UiStyle.text(self, Vector2(x, size.y - 80), "INSTABILITET", 14, Color(1, 1, 1, 0.6))
+	_small_button(_instability_rect(-1), "−" if level > 0 else "")
+	_small_button(_instability_rect(1), "+" if level < RunState.MAX_INSTABILITY else "")
+	UiStyle.text(self, Vector2(x + 46, size.y - 36), str(level), 34, Color("#ff8a6a") if level > 0 else UiStyle.GOLD,
+			HORIZONTAL_ALIGNMENT_CENTER, 94, 6)
+	# Reglerna för nästa körning: de synliga med namn och silver, de dolda som frågetecken.
+	var rules: Dictionary = run.pending_rules
+	if level == 0:
+		UiStyle.text(self, Vector2(MARGIN, size.y - 104), "INGA VÅNINGSREGLER (INSTABILITET 0)", 14, Color(1, 1, 1, 0.45))
+		return
+	var parts: Array = rules.visible.map(func(id: String) -> String:
+		return "%s (%s)" % [data.floor_rules[id].name, data.floor_rules[id].text])
+	var silver := 0.0
+	for id in rules.visible + rules.hidden:
+		silver += float(data.floor_rules[id].get("silver", 0.0))
+	var line := "REGLER: %s · %d dolda · silver +%d %% · troféchans +%d" % [" · ".join(parts), rules.hidden.size(),
+			roundi(silver * 100.0), roundi(RunState.TROPHY_CHANCE_PER_INSTABILITY * level * 100.0)]
+	UiStyle.text(self, Vector2(MARGIN, size.y - 104), line, 14, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT,
+			size.x - MARGIN * 2, 3)
 
 
 func _small_button(r: Rect2, label: String) -> void:

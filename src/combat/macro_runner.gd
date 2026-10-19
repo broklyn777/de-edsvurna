@@ -376,4 +376,8 @@ static func _reason_text(sim: CombatSim, u: CombatUnit, action: String, ability_
 			return "%s har stupat" % u.name
 		"silenced":
 			return "%s är tystad" % u.name
+		"sealed":
+			return "%s är förseglad" % name
+		"forbidden":
+			return "ingen kan %s (Inga bönder)" % name.to_lower()
 	return reason

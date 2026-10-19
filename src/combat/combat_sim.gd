@@ -17,6 +17,8 @@ extends RefCounted
 ##          absorbed det Barrier tog. Bara skada på livet sätter igång egenskaper (Siralim).
 ##   dodge {source, target, ability} – målet undvek en attack
 ##   immune {source, target, ability} – målet kan inte skadas just nu (t.ex. Kultens sköld)
+##   rule {rule} – en våningsregel slog till första gången i striden (dolda regler avslöjas då)
+##   elite {unit} – en elitvariant finns i striden (före battle_start)
 ##   heal {source, target, amount, effective, overheal, crit, ability}
 ##   revive {unit}
 ##   charge_restored {unit, ability, amount}
@@ -63,6 +65,13 @@ const DODGE_TRAIT_MAX := 0.75
 ## (våning 2 och 3 är starkare än 1, som i Siralim där fienderna skalar snabbare än laget).
 const DEPTH_STEP := 0.08
 const SCALED_STATS := ["health", "attack", "intelligence", "defense"]
+## Elitvarianter (0.17, som Siralims sällsynta varelser): chans och styrka.
+const ELITE_CHANCE := 0.06
+const ELITE_PER_DEPTH := 0.01
+const ELITE_PER_INSTABILITY := 0.03
+const ELITE_MAX := 0.3
+const ELITE_HEALTH := 1.4
+const ELITE_POWER := 1.2
 ## Resistant: debuffar på figuren verkar till hälften (skadeökning, DoT, ändrad Defense).
 const RESISTANT := 0.5
 ## Säkerhetsgräns för hur djupt egenskaper kan sätta igång varandra.
@@ -94,6 +103,9 @@ var rng := RandomNumberGenerator.new()
 var auto := false
 ## Realm Depth (1 och uppåt).
 var depth := 1
+## Våningsregler (data/floor_rules.json) som gäller i striden, och de som har slagit till.
+var rules: Array = []
+var rules_triggered: Array = []
 
 var _by_id := {}
 var _trait_ctx := ""
@@ -112,11 +124,13 @@ var trait_stats := {}
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
 ## hjältens förvalda egenskaper; charges: hero_id -> {ability_id: kvar} (annars fulla);
 ## artifacts: hero_id -> {type, ability}; depth: Realm Depth som skalar fienderna.
+## opts: {"rules": [regel-id], "instability": n, "elite_chance": andel (annars elite_chance())}.
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
-		party: Array = [], traits := {}, charges := {}, artifacts := {}, depth := 1) -> CombatSim:
+		party: Array = [], traits := {}, charges := {}, artifacts := {}, depth := 1, opts := {}) -> CombatSim:
 	var sim := CombatSim.new()
 	sim.data = game_data
 	sim.depth = maxi(depth, 1)
+	sim.rules = opts.get("rules", []).duplicate()
 	if not artifacts.is_empty():
 		# Artefakternas egenskaper skapas för den här striden, utan att röra den delade datan.
 		sim.data = game_data.duplicate()
@@ -135,6 +149,12 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 			hero.charges[ability_id] = int(charges.get(hero.id, {}).get(ability_id, full))
 		if artifacts.has(hero.id):
 			sim.equip_artifact(hero, artifacts[hero.id])
+		if sim.rules.has("chaos_wind"):
+			var atk := hero.attack
+			hero.attack = hero.defense
+			hero.defense = atk
+			hero.base_stats.attack = hero.attack
+			hero.base_stats.defense = hero.defense
 		sim._add(hero)
 		sim.heroes.append(hero)
 	var counts := {}
@@ -145,6 +165,12 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		e.kind = kind
 		e.position = ENEMY_SLOTS[i]
 		scale_unit(e, enemy_mult(enc, sim.depth))
+		# Elitvarianter slumpas med ett eget frö, så att striden i övrigt blir densamma.
+		var chance: float = opts.get("elite_chance", elite_chance(sim.depth, int(opts.get("instability", 0))))
+		var elite_rng := RandomNumberGenerator.new()
+		elite_rng.seed = seed_value * 7919 + i
+		if game_data.enemies[kind].has("elite") and elite_rng.randf() < chance:
+			make_elite(e, game_data.enemies[kind].elite)
 		e.traits = expand_traits(game_data, e.traits)
 		sim._add(e)
 		sim.enemies.append(e)
@@ -152,6 +178,28 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 
 
 # --- Publikt API ------------------------------------------------------------
+
+## Chansen att en vanlig fiende är en elitvariant: 6 % och mer med djup och instabilitet, högst 30 %.
+static func elite_chance(at_depth: int, instability := 0) -> float:
+	return minf(ELITE_CHANCE + ELITE_PER_DEPTH * (maxi(at_depth, 1) - 1) + ELITE_PER_INSTABILITY * instability,
+			ELITE_MAX)
+
+
+## Gör fienden till sin elitvariant: eget namn, mer liv och skada, och elitens egenskap (samma som
+## dess trofé, som i Siralim där trofén ger monstrets egenskap).
+static func make_elite(e: CombatUnit, def: Dictionary) -> void:
+	e.elite = true
+	e.name = def.get("name", e.name)
+	e.max_hp = roundf(e.max_hp * ELITE_HEALTH)
+	e.hp = e.max_hp
+	e.attack = roundf(e.attack * ELITE_POWER)
+	e.intelligence = roundf(e.intelligence * ELITE_POWER)
+	e.base_stats.health = e.max_hp
+	e.base_stats.attack = e.attack
+	e.base_stats.intelligence = e.intelligence
+	if def.has("trait"):
+		e.traits.append(def.trait)
+
 
 ## Hur mycket fiendernas stats växer på djupet: 1 + 8 % per djup över 1.
 static func depth_mult(depth: int) -> float:
@@ -221,11 +269,24 @@ func begin() -> void:
 	var alive: Array[CombatUnit] = units.duplicate()
 	alive.sort_custom(func(a: CombatUnit, b: CombatUnit) -> bool:
 		return a.speed > b.speed or (a.speed == b.speed and a.team < b.team))
+	# Överraskning! (Siralims Surprise!): figurer med "start_first" börjar överst.
+	var first := alive.filter(func(u: CombatUnit) -> bool:
+		return u.traits.any(func(t: String) -> bool: return data.traits[t].get("start_first", false)))
+	for u in first:
+		alive.erase(u)
+	alive = first + alive
 	order.clear()
 	for u in alive:
 		order.append(u.id)
+	for e in enemies:
+		if e.elite:
+			_emit({"type": "elite", "unit": e.id})
 	# Siralim: traits och buffar ges innan striden börjar, sedan börjar turerna.
 	_emit({"type": "battle_start"})
+	if _rule("fog_weakness"):
+		_rule_hit("fog_weakness")
+		for h in heroes:
+			_add_aura(h, h, "weak")
 	for e in enemies:
 		_choose_intent(e)
 	_next_turn()
@@ -299,6 +360,10 @@ func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 		return "charges"
 	if action == "ability" and is_silenced(u):
 		return "silenced"
+	if action == "ability" and u.sealed.has(id):
+		return "sealed"
+	if action in ["defend", "provoke"] and _rule("no_guard"):
+		return "forbidden"
 	if u.cooldown_left(id) > 0.0:
 		return "cooldown"
 	return ""
@@ -331,6 +396,8 @@ func act(action: String, target_id := "", ability_id := "") -> String:
 	if outcome != "" or current == null:
 		return "over"
 	var reason := can_act(current, action, ability_id)
+	if reason == "forbidden":
+		_rule_hit("no_guard")
 	if reason != "":
 		return reason
 	_perform(current, action_ability(current, action, ability_id), action, target_id)
@@ -406,6 +473,11 @@ func _next_turn() -> void:
 func _tick_turn_start(u: CombatUnit) -> void:
 	for key in u.cooldowns.keys():
 		u.cooldowns[key] = maxf(0.0, u.cooldowns[key] - 1.0)
+	if u.team == 0 and _rule("cursed_ground"):
+		_rule_hit("cursed_ground")
+		_deal_damage(u, u, roundf(u.max_hp * 0.05), "shadow", "cursed_ground", false, false, "indirect")
+		if not u.alive:
+			return
 	for aura_id in u.auras.keys():
 		if not u.auras.has(aura_id):
 			continue  # försvann under turstarten (t.ex. en Barriär som tog slut)
@@ -429,11 +501,25 @@ func _end_turn() -> void:
 	_check_outcome()
 	if outcome != "":
 		return
+	if current and current.alive and current.team == 1 and _rule("vigilant_guards") and not _rule("no_guard"):
+		_rule_hit("vigilant_guards")
+		_add_aura(current, current, "defend")
 	if current and current.alive and not order.has(current.id):
 		order.push_back(current.id)
 		if current.team == 1:
 			_choose_intent(current)
 	_next_turn()
+
+
+func _rule(rule_id: String) -> bool:
+	return rules.has(rule_id)
+
+
+## En regel slog till: första gången i striden blir det en händelse (dolda regler avslöjas).
+func _rule_hit(rule_id: String) -> void:
+	if not rules_triggered.has(rule_id):
+		rules_triggered.append(rule_id)
+		_emit({"type": "rule", "rule": rule_id})
 
 
 func _check_outcome() -> void:
@@ -456,6 +542,10 @@ func _choose_intent(e: CombatUnit) -> void:
 	for rule in ([] if is_silenced(e) else e.rules):
 		var ability_id: String = rule.ability
 		if e.cooldown_left(ability_id) > 0.0 or not _rule_matches(e, rule):
+			continue
+		if _rule("no_guard") and ability(ability_id).get("effects", []).any(func(f: Dictionary) -> bool:
+				return f.get("aura", "") in ["defend", "provoke"]):
+			_rule_hit("no_guard")
 			continue
 		e.intent = {"ability": ability_id, "targets": _pick_targets(e, ability(ability_id))}
 		return
@@ -508,6 +598,14 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 		u.cooldowns[ability_id] = cooldown + 1.0  # räknas ned i början av egna turer
 	_emit({"type": "action", "unit": u.id, "action": action, "ability": ability_id, "targets": targets})
 	_apply_effects(u, ability_id, targets)
+	# Fiender agerar med "intent": deras grundanfall räknas som Anfall, resten som förmågor.
+	if action == "attack" or (action == "intent" and ability_id == u.attack_ability):
+		u.attacks_done += 1
+	elif action in ["ability", "intent"]:
+		u.ability_uses[ability_id] = u.ability_uses.get(ability_id, 0) + 1
+		if u.team == 0 and _rule("sealed_words"):
+			_rule_hit("sealed_words")
+			u.sealed[ability_id] = true
 	if u.alive:
 		_emit({"type": "acted", "unit": u.id, "action": action, "ability": ability_id, "targets": targets})
 
@@ -680,6 +778,10 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			factors.append(1.0 + float(m.damage_mult_per_aura) * _buff_count(src))
 		if m.has("damage_mult_per_dead_ally"):
 			factors.append(1.0 + float(m.damage_mult_per_dead_ally) * _dead_allies(src))
+		if m.has("damage_mult_per_use"):
+			factors.append(1.0 + float(m.damage_mult_per_use) * src.ability_uses.get(ability_id, 0))
+		if m.has("damage_mult_per_hit_taken"):
+			factors.append(1.0 + float(m.damage_mult_per_hit_taken) * src.times_hit)
 		if m.has("additional_from_stat"):
 			additional += src.stat(m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
 	for a in src.auras.values():
@@ -705,14 +807,23 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			_emit({"type": "aura_removed", "unit": tgt.id, "aura": "barrier"})
 	var lost := total - absorbed
 	tgt.hp = maxf(0.0, tgt.hp - lost)
+	if direct and lost > 0.0:
+		tgt.times_hit += 1
 	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": lost, "absorbed": absorbed,
 			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct})
 	if tgt.hp <= 0.0:
 		_kill(tgt)
+	# Speglande ben (våningsregel): en del av skadan från hjältarnas direkta träffar studsar tillbaka.
+	if direct and lost > 0.0 and src.team == 0 and tgt.team == 1 and src.alive and _rule("mirror_bones"):
+		_rule_hit("mirror_bones")
+		_deal_damage(tgt, src, roundf(lost * 0.2), school, "mirror_bones", false, false, "indirect")
 
 
 ## Undvikande: från fartkvoten plus egenskaper med "dodge_add" (t.ex. Gastens Eterisk), högst 75 %.
 func _dodge_for(src: CombatUnit, tgt: CombatUnit, ratio: float, probe: Dictionary) -> float:
+	if _rule("heavy_air"):
+		_rule_hit("heavy_air")
+		return 0.0
 	var chance := dodge_chance(1.0 / ratio)
 	for m in _modifiers(tgt, "modify_damage_taken", probe):
 		chance += float(m.get("dodge_add", 0.0))
@@ -784,6 +895,9 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 	for m in _modifiers(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}):
 		if m.has("heal_mult"):
 			factors.append(float(m.heal_mult))
+	if _rule("withered_grace"):
+		_rule_hit("withered_grace")
+		factors.append(0.6)
 	var amount := roundf(base * combine_mods(factors))
 	var effective := minf(amount, tgt.max_hp - tgt.hp)
 	tgt.hp += effective
@@ -835,6 +949,19 @@ func _kill(u: CombatUnit) -> void:
 	u.barrier = 0.0
 	order.erase(u.id)
 	_emit({"type": "death", "unit": u.id})
+	if outcome != "" and u.team == 1:
+		return
+	# De döda vaknar (våningsregel) och Kaosets hjärta (trofé): återuppstå en gång.
+	if u.team == 1 and u.revives == 0 and _rule("risen_dead"):
+		_rule_hit("risen_dead")
+		_revive(u, 0.25)
+		return
+	for trait_id in u.traits:
+		var undying: Dictionary = data.traits[trait_id].get("undying", {})
+		if not undying.is_empty() and u.revives == 0 and (not undying.get("requires_ability", false)
+				or not u.ability_uses.is_empty()):
+			_revive(u, float(undying.get("pct", 0.5)))
+			return
 
 
 # --- Egenskaper (traits) ----------------------------------------------------
@@ -987,6 +1114,10 @@ func _trait_targets(owner: CombatUnit, where: String, e: Dictionary, ability_tar
 				if not x.alive and x.team == owner.team:
 					out = [x]
 					break
+		"other_enemies":
+			for x in _enemies(owner):
+				if x.id != e.get("target", ""):
+					out.append(x)
 		"other_allies":
 			for a in _allies(owner):
 				if not ability_targets.has(a.id):
@@ -1044,7 +1175,10 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_add_stack(tgt, effect, e)
 		"cast":
 			# Utan "target" väljer förmågan själv; annars mot figuren ur händelsen (t.ex. samma fiende).
-			_auto_cast(owner, effect.ability, tgt.id if effect.has("target") else "")
+			# "ability_from_event": samma förmåga som i händelsen (Mirakel kastar den igen).
+			var cast_id: String = e.get("ability", "") if effect.get("ability_from_event", false) else effect.ability
+			if data.abilities.has(cast_id):
+				_auto_cast(owner, cast_id, tgt.id if effect.has("target") else "")
 
 
 ## Barrier: den starkaste gäller, de staplas inte (Siralim). VAL: högst figurens max liv.
@@ -1126,6 +1260,14 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 			"origin_target_has_aura":
 				var t := unit(e.get("origin_target", ""))
 				if t == null or not t.auras.has(want):
+					return false
+			"ability_not_basic":
+				var who := unit(e.get("unit", ""))
+				if who == null or e.get("ability", "") == who.attack_ability:
+					return false
+			"source_attacks_below":
+				var src := unit(e.get("source", ""))
+				if src == null or src.attacks_done >= int(want):
 					return false
 			"target_not_self":
 				if e.get("target", "") == owner.id:

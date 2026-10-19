@@ -13,6 +13,12 @@ const OFFER_SIZE := 3
 ## plats i erbjudandet kommer med den här chansen, +15 procentenheter per djup över 1.
 const TROPHY_CHANCE := 0.4
 const TROPHY_CHANCE_PER_DEPTH := 0.15
+## Instabilitet (Siralims Realm Instability) 0–3: nivå n ger n synliga och n dolda våningsregler,
+## mer silver (reglernas "silver") och bättre troféchans.
+const MAX_INSTABILITY := 3
+const TROPHY_CHANCE_PER_INSTABILITY := 0.1
+## Bosstroféer kräver så många segrar mot samma boss (Siralims Masters).
+const BOSS_WINS_FOR_TROPHY := 3
 
 var oath := "oath_vengeance"
 ## Köpta perks i Eden (Edsaltaret). De bärs av Paladinen och verkar som Eden.
@@ -23,6 +29,14 @@ var floor := 0
 ## Realm (Siralim): "crypt" eller "chapel" (data/realms.json) och dess våningar.
 var realm := "crypt"
 var floor_ids: Array = FLOORS
+## Instabilitet och våningsreglerna för körningen (data/floor_rules.json). Dolda regler syns först
+## när de slår till; då hamnar de i rules_revealed.
+var instability := 0
+var rules_visible: Array = []
+var rules_hidden: Array = []
+var rules_revealed: Array = []
+## Fiendetyper som var elitvarianter i senaste vunna striden (ger sin elittrofé).
+var last_elites: Array = []
 ## Realm Depth som fienderna skalar med (Profile.depth).
 var depth := 1
 ## Troféer som hittats under körningen.
@@ -108,16 +122,64 @@ func hero_traits(data: Dictionary) -> Dictionary:
 
 
 ## Chansen för varje trofé utöver den första i erbjudandet (högst 100 %).
-static func trophy_chance(at_depth: int) -> float:
-	return minf(1.0, TROPHY_CHANCE + TROPHY_CHANCE_PER_DEPTH * (maxi(at_depth, 1) - 1))
+static func trophy_chance(at_depth: int, at_instability := 0) -> float:
+	return minf(1.0, TROPHY_CHANCE + TROPHY_CHANCE_PER_DEPTH * (maxi(at_depth, 1) - 1)
+			+ TROPHY_CHANCE_PER_INSTABILITY * at_instability)
 
 
-## Troféerna som erbjuds efter att våningen är vunnen: först från monstren i striden, sedan
-## fylls det på med andra som inte redan är tagna. Den första är säker, resten kommer med
-## trophy_chance(depth).
-func trophy_offer(data: Dictionary, rng: RandomNumberGenerator) -> Array[String]:
+## Slumpar våningsregler för instabiliteten: n synliga och n dolda, utan upprepning. Regler med
+## "min_instability" kräver minst den nivån, och "hidden_only" kan bara bli dolda.
+static func roll_rules(data: Dictionary, level: int, rng: RandomNumberGenerator) -> Dictionary:
+	var pool: Array = data.floor_rules.keys().filter(func(id: String) -> bool:
+		return int(data.floor_rules[id].get("min_instability", 0)) <= level)
+	var visible := []
+	var hidden := []
+	for i in level:
+		var open := pool.filter(func(id: String) -> bool: return not data.floor_rules[id].get("hidden_only", false))
+		if not open.is_empty():
+			var id: String = open[rng.randi() % open.size()]
+			visible.append(id)
+			pool.erase(id)
+		if not pool.is_empty():
+			var id: String = pool[rng.randi() % pool.size()]
+			hidden.append(id)
+			pool.erase(id)
+	return {"visible": visible, "hidden": hidden}
+
+
+## Alla regler som gäller i körningen (synliga och dolda).
+func active_rules() -> Array:
+	return rules_visible + rules_hidden
+
+
+## Regler spelaren känner till: de synliga och de dolda som har avslöjats.
+func known_rules() -> Array:
+	return rules_visible + rules_hidden.filter(func(id: String) -> bool: return rules_revealed.has(id))
+
+
+## Silver gånger 1 + reglernas tillägg.
+func silver_mult(data: Dictionary) -> float:
+	var m := 1.0
+	for id in active_rules():
+		m += float(data.floor_rules[id].get("silver", 0.0))
+	return m
+
+
+## Troféerna som erbjuds efter att våningen är vunnen: elittroféer från besegrade elitvarianter
+## (alltid), sedan från monstren i striden och påfyllnad ur samma Realm. Bosstroféer bara om bossen
+## är besegrad BOSS_WINS_FOR_TROPHY gånger (unlocked_bosses). Elittroféerna och den första vanliga är
+## säkra, resten kommer med trophy_chance(depth, instabilitet).
+func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = [],
+		unlocked_bosses: Array = []) -> Array[String]:
+	var sure: Array[String] = []
+	for kind in elites:
+		var t: String = data.enemies[kind].get("elite", {}).get("trophy", "")
+		if t != "" and not sure.has(t) and not trophies.has(t):
+			sure.append(t)
 	var offer: Array[String] = []
 	for kind in data.encounters[encounter()].enemies:
+		if data.enemies[kind].get("boss", false) and not unlocked_bosses.has(kind):
+			continue
 		var t: String = data.enemies[kind].get("trophy", "")
 		if t != "" and not offer.has(t) and not trophies.has(t):
 			offer.append(t)
@@ -133,11 +195,13 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator) -> Array[String]
 			rest.append(t)
 	while offer.size() < OFFER_SIZE and not rest.is_empty():
 		offer.append(rest.pop_at(rng.randi() % rest.size()))
-	var out: Array[String] = []
-	var chance := trophy_chance(depth)
+	var out: Array[String] = sure.duplicate()
+	var chance := trophy_chance(depth, instability)
+	var first := true
 	for t in offer.slice(0, OFFER_SIZE):
-		if out.is_empty() or rng.randf() < chance:
+		if first or rng.randf() < chance:
 			out.append(t)
+		first = false
 	return out
 
 

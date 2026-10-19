@@ -793,7 +793,7 @@
 	"fallen_oath": {
 		"name": "Den fallnes ed",
 		"trophy": true,
-		"rarity": "elite",
+		"rarity": "common",
 		"text": "Medan bäraren försvarar sig slår hen tillbaka mot varje attack för 50 %.",
 		"trigger": "damage",
 		"when": {
@@ -815,7 +815,7 @@
 	"witch_tongue": {
 		"name": "Häxans tunga",
 		"trophy": true,
-		"rarity": "elite",
+		"rarity": "common",
 		"text": "Bärarens direkta besvärjelser har 50 % chans att tysta målet i 1 tur (fiender kan då bara anfalla).",
 		"trigger": "damage",
 		"chance": 0.5,
@@ -836,7 +836,7 @@
 	"executioner_hood": {
 		"name": "Bödelns huva",
 		"trophy": true,
-		"rarity": "elite",
+		"rarity": "common",
 		"text": "Bärarens kritiska träffar gör målet Sårbart: +50 % skada i 2 turer.",
 		"trigger": "damage",
 		"when": {
@@ -873,6 +873,177 @@
 		"scope": "party",
 		"modify": {
 			"damage_mult": 0.75
+		}
+	},
+	"first_strike": {
+		"name": "Kaparens första hugg",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "All In (Skeleton Buccaneer)",
+		"text": "Bärarens första Anfall i striden gör 200 % mer skada.",
+		"trigger": "modify_damage",
+		"when": {
+			"source_attacks_below": 1,
+			"kind": "attack",
+			"direct": true
+		},
+		"modify": {
+			"damage_mult": 3.0
+		}
+	},
+	"quick_shot": {
+		"name": "Snabbt tag",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Quick Shot",
+		"text": "När bäraren träffar med en direkt attack har hen 40 % chans att anfalla samma mål igen (en gång per tur).",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"chance": 0.4,
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0,
+				"kind": "attack",
+				"target": "target"
+			}
+		]
+	},
+	"bearer_of_light": {
+		"name": "Ljusets bärare",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Bearer of Needs",
+		"text": "I början av bärarens tur helas hela sällskapet för 8 % av bärarens max liv.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"stat": "health",
+				"pct": 0.08,
+				"target": "allies"
+			}
+		]
+	},
+	"salted_earth": {
+		"name": "Saltad jord",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Salted Earth",
+		"text": "När bäraren Försvarar eller Provocerar förlorar alla fiender 20 % Defense i 3 turer.",
+		"trigger": "action",
+		"when": {
+			"unit": "self",
+			"action_in": [
+				"defend",
+				"provoke"
+			]
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "salted",
+				"target": "enemies"
+			}
+		]
+	},
+	"scatter_shot": {
+		"name": "Splitterben",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Scatter Shot",
+		"text": "När bäraren träffar med en direkt attack tar alla andra fiender 30 % av skadan (indirekt).",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"pct_of_event": 0.3,
+				"kind": "indirect",
+				"no_crit": true,
+				"target": "other_enemies"
+			}
+		]
+	},
+	"phantasm": {
+		"name": "Fantasm",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Phantasm",
+		"text": "Bärarens förmågor gör 20 % mer skada för varje gång samma förmåga redan använts i striden.",
+		"trigger": "modify_damage",
+		"when": {
+			"direct": true
+		},
+		"modify": {
+			"damage_mult_per_use": 0.2
+		}
+	},
+	"surprise": {
+		"name": "Överraskning!",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Surprise! (Mimic)",
+		"text": "Bäraren börjar alltid striden överst på tidslinjen.",
+		"trigger": "passive",
+		"start_first": true
+	},
+	"heart_of_chaos": {
+		"name": "Kaosets hjärta",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Heart of Steel",
+		"text": "Om bäraren har använt en förmåga i striden återuppstår hen en gång med 50 % liv.",
+		"trigger": "passive",
+		"undying": {
+			"pct": 0.5,
+			"requires_ability": true
+		}
+	},
+	"miracle": {
+		"name": "Mirakel",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Miracle of the Mind",
+		"text": "Bärarens förmågor har 30 % chans att kastas en gång till, utan Charge.",
+		"trigger": "acted",
+		"chance": 0.3,
+		"when": {
+			"unit": "self",
+			"action_in": [
+				"ability",
+				"intent"
+			],
+			"ability_not_basic": true
+		},
+		"effects": [
+			{
+				"type": "cast",
+				"ability_from_event": true
+			}
+		]
+	},
+	"sareas_plot": {
+		"name": "Sareas intrig",
+		"trophy": true,
+		"rarity": "elite",
+		"original": "Sarea's Plot",
+		"text": "Bäraren gör 10 % mer skada för varje direkt träff hen har tagit i striden.",
+		"trigger": "modify_damage",
+		"modify": {
+			"damage_mult_per_hit_taken": 0.1
 		}
 	}
 }

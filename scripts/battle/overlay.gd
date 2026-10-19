@@ -17,6 +17,8 @@ var _t := 0.0
 ## Extra rader under resultatet (kvittot).
 var lines: Array[String] = []
 ## Inspect: en figurs namn och rader (stats och egenskaper) medan spelaren håller fingret på den.
+## Våningsreglerna som gäller (visas uppe till höger under knapparna).
+var rules_text := ""
 var inspect_title := ""
 var inspect_lines: Array[String] = []
 
@@ -105,6 +107,9 @@ func _draw() -> void:
 		draw_set_transform(Vector2(w / 2, 150), 0, Vector2.ONE * pop)
 		UiStyle.text(self, Vector2(-w / 2, 0), _announce, 30, Color(1, 0.55, 0.2, a), HORIZONTAL_ALIGNMENT_CENTER, w, 6)
 		draw_set_transform(Vector2.ZERO)
+	if rules_text != "":
+		UiStyle.text(self, Vector2(0, 92), rules_text, 15, Color(UiStyle.TRAIT_GOLD, 0.9), HORIZONTAL_ALIGNMENT_RIGHT,
+				w - 20, 4)
 	if inspect_title != "":
 		var bw := minf(w - 40.0, 760.0)
 		var r := Rect2((w - bw) / 2.0, 70, bw, 70 + inspect_lines.size() * 46)
