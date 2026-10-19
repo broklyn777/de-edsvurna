@@ -1,12 +1,12 @@
 extends TapScreen
-## Edsaltaret (Siralims Enchanted Wardrobe): välj Paladinens Ed (Siralims Specialization) och köp
-## perks för perk-poäng (Siralims Perk Points, Profile.perk_points). Eden gäller hela sällskapet; kärnan
-## verkar alltid och de köpta perkarna i den valda Eden verkar. Perks som är rena siffror har 2–3
-## nivåer. En besegrad boss låser upp en lånad perk (Siralims Anointment) från en annan Ed. Att
+## Kallets altare (Siralims Enchanted Wardrobe): välj Paladinens kall (Siralims Specialization) och köp
+## perks för perk-poäng (Siralims Perk Points, Profile.perk_points). Kallet gäller hela sällskapet; kärnan
+## verkar alltid och de köpta perkarna i den valda kallet verkar. Perks som är rena siffror har 2–3
+## nivåer. En besegrad boss låser upp en lånad perk (Siralims Anointment) från ett annat kall. Att
 ## återställa är gratis – poängen kommer tillbaka (Profile.reset_perks).
 
 var selected_perk := ""
-## Sant när rutnätet visar de andra Edernas perks att låna.
+## Sant när rutnätet visar de andra Kallens perks att låna.
 var anoint_mode := false
 var _flash := 0.0
 
@@ -25,7 +25,7 @@ func _oaths() -> Array:
 	return run.data.oaths.keys()
 
 
-## Perkarna i rutnätet: Edens egna, eller de andra Edernas när man väljer vad man lånar.
+## Perkarna i rutnätet: Kallets egna, eller de andra Kallens när man väljer vad man lånar.
 func _perks() -> Array:
 	var profile: Profile = run.profile
 	if not anoint_mode:
@@ -106,7 +106,7 @@ func _reset_rect() -> Rect2:
 func _draw() -> void:
 	var data: Dictionary = run.data
 	var profile: Profile = run.profile
-	header("EDSALTARET", "Paladinens Ed gäller hela sällskapet. Kärnan verkar alltid; perks kostar perk-poäng och kan återställas gratis.")
+	header("KALLETS ALTARE", "Paladinens kall gäller hela sällskapet. Kärnan verkar alltid; perks kostar perk-poäng och kan återställas gratis.")
 	small_button(back_rect(), "‹ BASEN")
 
 	var oaths := _oaths()
@@ -119,7 +119,7 @@ func _draw() -> void:
 	var used := profile.points_used(data, profile.oath)
 	var points := profile.perk_points()
 	var heading := "LÅNA EN PERK FRÅN EN ANNAN ED" if anoint_mode else "PERKS I %s" % data.traits[profile.oath].name.to_upper()
-	UiStyle.text(self, Vector2(_x0(), 114), "%s – PERK-POÄNG %d/%d (FLER FÖR VARANNAT KLARAT DJUP)" % [heading, used, points],
+	UiStyle.text(self, Vector2(_x0(), 114), "%s – PERK-POÄNG %d/%d (EN PER NY KLARAD QUEST)" % [heading, used, points],
 			14, Color(1, 1, 1, 0.6))
 	var perks := _perks()
 	var borrowed: String = profile.anointed.get(profile.oath, "")
@@ -168,7 +168,7 @@ func _draw() -> void:
 		UiStyle.text(self, Vector2(_x0(), _buy_rect().position.y - 22), "Siralim: %s" % data.traits[selected_perk].get("original", ""),
 				14, Color(1, 1, 1, 0.5), HORIZONTAL_ALIGNMENT_LEFT, size.x - _x0() - MARGIN, 3)
 		if not enabled and not label in ["LÅNAD", "VERKAR", "ALLA NIVÅER"]:
-			UiStyle.text(self, _buy_rect().position + Vector2(0, -10), "För få perk-poäng – återställ eller klara djupare", 16,
+			UiStyle.text(self, _buy_rect().position + Vector2(0, -10), "För få perk-poäng – återställ eller klara en ny quest", 16,
 					Color("#ff8a6a"), HORIZONTAL_ALIGNMENT_CENTER, _buy_rect().size.x, 3)
 	UiStyle.big_button(self, _buy_rect(), label, _t, enabled)
 	small_button(_reset_rect(), "ÅTERSTÄLL (+%d POÄNG)" % used, used > 0)
@@ -178,15 +178,15 @@ func _draw() -> void:
 func _draw_anointment(data: Dictionary, profile: Profile, borrowed: String) -> void:
 	var r := _anoint_rect()
 	if profile.anointment_slots() <= 0:
-		UiStyle.card(self, r, "Lånad perk", "Låst. Besegra Benfursten för att få låna en perk från en annan Ed.",
+		UiStyle.card(self, r, "Lånad perk", "Låst. Besegra Benfursten för att få låna en perk från ett annat kall.",
 				false, Color("#8a93a6"), "ANOINTMENT")
 		return
-	var body := "Tryck för att välja en perk från en annan Ed. Den kostar poäng ur den här Edens pott."
+	var body := "Tryck för att välja en perk från ett annat kall. Den kostar poäng ur det här kallets pott."
 	var title := "Lånad perk"
 	if borrowed != "":
 		var t: Dictionary = data.traits[borrowed]
 		title = "Lånad: %s" % t.name
 		body = "%s (från %s)" % [t.text, data.traits[Profile.perk_entry(data, borrowed).oath].name]
 	if anoint_mode:
-		body = "Välj en perk ovan och tryck LÅNA. Tryck här för att gå tillbaka till Edens egna perks."
+		body = "Välj en perk ovan och tryck LÅNA. Tryck här för att gå tillbaka till kallets egna perks."
 	UiStyle.card(self, r, title, body, anoint_mode or borrowed != "", UiStyle.GOLD, "ANOINTMENT")

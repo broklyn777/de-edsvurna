@@ -1,0 +1,122 @@
+{
+	"hardad": {
+		"name": "Härdad",
+		"up": "health",
+		"down": "attack",
+		"text": "Tål mycket men slår lite svagare."
+	},
+	"stoisk": {
+		"name": "Stoisk",
+		"up": "health",
+		"down": "intelligence",
+		"text": "Bär smärta utan ord, men tänker långsamt."
+	},
+	"sorglos": {
+		"name": "Sorglös",
+		"up": "health",
+		"down": "defense",
+		"text": "Slits inte ned, men skyddar sig dåligt."
+	},
+	"envis": {
+		"name": "Envis",
+		"up": "health",
+		"down": "speed",
+		"text": "Ger aldrig upp, men tar sin tid."
+	},
+	"hansynslos": {
+		"name": "Hänsynslös",
+		"up": "attack",
+		"down": "health",
+		"text": "Slår hårt och sparar inte sig själv."
+	},
+	"vild": {
+		"name": "Vild",
+		"up": "attack",
+		"down": "intelligence",
+		"text": "Ren styrka, lite eftertanke."
+	},
+	"modig": {
+		"name": "Modig",
+		"up": "attack",
+		"down": "defense",
+		"text": "Går först in i striden, med garden nere."
+	},
+	"grundlig": {
+		"name": "Grundlig",
+		"up": "attack",
+		"down": "speed",
+		"text": "Varje hugg sitter, men det tar tid."
+	},
+	"lard": {
+		"name": "Lärd",
+		"up": "intelligence",
+		"down": "health",
+		"text": "Böckernas vän, inte stridens."
+	},
+	"klok": {
+		"name": "Klok",
+		"up": "intelligence",
+		"down": "attack",
+		"text": "Läker och ser klart, men slår mjukt."
+	},
+	"drommande": {
+		"name": "Drömmande",
+		"up": "intelligence",
+		"down": "defense",
+		"text": "Fylld av eld och tankar, glömmer skölden."
+	},
+	"eftertanksam": {
+		"name": "Eftertänksam",
+		"up": "intelligence",
+		"down": "speed",
+		"text": "Väger varje ord innan hon handlar."
+	},
+	"skygg": {
+		"name": "Skygg",
+		"up": "defense",
+		"down": "health",
+		"text": "Gömmer sig bakom skölden, tål lite."
+	},
+	"forsiktig": {
+		"name": "Försiktig",
+		"up": "defense",
+		"down": "attack",
+		"text": "Skyddar sig hellre än anfaller."
+	},
+	"trofast": {
+		"name": "Trofast",
+		"up": "defense",
+		"down": "intelligence",
+		"text": "Står kvar vid sin plats, frågar inte varför."
+	},
+	"stadig": {
+		"name": "Stadig",
+		"up": "defense",
+		"down": "speed",
+		"text": "Rubbas inte, flyttar sig inte heller."
+	},
+	"snabbfotad": {
+		"name": "Snabbfotad",
+		"up": "speed",
+		"down": "health",
+		"text": "Först på plats, men bräcklig."
+	},
+	"lattfotad": {
+		"name": "Lättfotad",
+		"up": "speed",
+		"down": "attack",
+		"text": "Dansar runt fienden, men slår lätt."
+	},
+	"impulsiv": {
+		"name": "Impulsiv",
+		"up": "speed",
+		"down": "intelligence",
+		"text": "Handlar först, tänker sedan."
+	},
+	"rastlos": {
+		"name": "Rastlös",
+		"up": "speed",
+		"down": "defense",
+		"text": "Kan inte stå still, och glömmer garden."
+	}
+}

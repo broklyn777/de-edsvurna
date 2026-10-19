@@ -36,8 +36,13 @@ static func school_color(school: String) -> Color:
 	return SCHOOL_COLORS.get(school, Color.WHITE)
 
 
+## Minsta textstorlek (0.20.3): på telefonen blir mindre än så svårläst i 1280×720.
+const MIN_SIZE := 15
+
+
 static func text(ci: CanvasItem, pos: Vector2, s: String, size: int, color: Color,
 		align := HORIZONTAL_ALIGNMENT_LEFT, width := -1.0, outline := 0) -> void:
+	size = maxi(size, MIN_SIZE)
 	if outline > 0:
 		ci.draw_string_outline(bold(), pos, s, align, width, size, outline, Color(0, 0, 0, 0.85 * color.a))
 	ci.draw_string(bold(), pos, s, align, width, size, color)
@@ -65,8 +70,9 @@ static func pie(ci: CanvasItem, center: Vector2, radius: float, fraction: float,
 
 
 ## Kort med titel och brödtext (valskärmar). Markerat kort får guldram och guldkant till vänster.
+## reserve: höjd längst ned som texten lämnar fri (t.ex. för en BLAD-knapp i kortet).
 static func card(ci: CanvasItem, r: Rect2, title: String, body: String, selected: bool, accent: Color,
-		tag := "", flash := 0.0) -> void:
+		tag := "", flash := 0.0, reserve := 0.0) -> void:
 	ci.draw_rect(r, Color(0.09, 0.08, 0.12, 0.96) if selected else Color(0.06, 0.055, 0.08, 0.85))
 	if flash > 0.0:
 		ci.draw_rect(r, Color(TRAIT_GOLD, 0.3 * flash))
@@ -76,13 +82,33 @@ static func card(ci: CanvasItem, r: Rect2, title: String, body: String, selected
 	else:
 		ci.draw_rect(r, Color(accent, 0.35), false, 1.5)
 	var a := 1.0 if selected else 0.7
-	text(ci, r.position + Vector2(16, 26), title, 18, Color(TRAIT_GOLD, a), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 24, 4)
+	# Titeln krymper (ned till 16) hellre än att krocka med etiketten till höger.
+	var title_size := 21
+	var room := r.size.x - 32.0
 	if tag != "":
-		text(ci, r.position + Vector2(0, 26), tag, 13, Color(accent, 0.9), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 12, 3)
-	var lines := int((r.size.y - 38.0) / 18.0)
+		room -= bold().get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 10.0
+	while title_size > 16 and bold().get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size).x > room:
+		title_size -= 1
+	text(ci, r.position + Vector2(16, 28), title, title_size, Color(TRAIT_GOLD, a), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 24, 4)
+	if tag != "":
+		text(ci, r.position + Vector2(0, 28), tag, 15, Color(accent, 0.9), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 12, 3)
+	var lines := int((r.size.y - 40.0 - reserve) / 22.0)
 	if lines > 0 and body != "":
-		ci.draw_multiline_string(bold(), r.position + Vector2(16, 48), body, HORIZONTAL_ALIGNMENT_LEFT,
-				r.size.x - 28, 14, lines, Color(1, 1, 1, 0.9 if selected else 0.6))
+		ci.draw_multiline_string(bold(), r.position + Vector2(16, 54), body, HORIZONTAL_ALIGNMENT_LEFT,
+				r.size.x - 28, BODY_SIZE, lines, Color(1, 1, 1, 0.92 if selected else 0.7))
+
+
+## Brödtextens storlek i kort och stycken (0.20.3).
+const BODY_SIZE := 17
+
+
+## Ett stycke som bryts inom bredden. Returnerar höjden det tog.
+static func para(ci: CanvasItem, pos: Vector2, s: String, size: int, color: Color, width: float, max_lines := -1) -> float:
+	size = maxi(size, MIN_SIZE)
+	var f := bold()
+	ci.draw_multiline_string(f, pos, s, HORIZONTAL_ALIGNMENT_LEFT, width, size, max_lines, color)
+	var h := f.get_multiline_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, width, size, max_lines).y
+	return h
 
 
 ## Stor knapp (valskärmar).

@@ -90,7 +90,7 @@ func _draw() -> void:
 	UiStyle.text(self, Vector2(-400, 18), unit.name.to_upper() + "S TUR", 18, unit.color, HORIZONTAL_ALIGNMENT_RIGHT, size.x + 400, 5)
 	var info := _info_text()
 	if info != "":
-		UiStyle.text(self, Vector2(-500, 40), info, 14, Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_RIGHT, size.x + 500, 4)
+		UiStyle.text(self, Vector2(-500, 40), info, 17, Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_RIGHT, size.x + 500, 4)
 	if abilities_open:
 		for i in unit.abilities.size():
 			_draw_ability(i, unit.abilities[i])
@@ -124,9 +124,9 @@ func _draw_ability(i: int, ability_id: String) -> void:
 	draw_rect(r, Color(col.darkened(0.6), 0.95 if usable else 0.5))
 	draw_rect(r, Color(UiStyle.GOLD, 0.9) if selected == ability_id else Color(col.lightened(0.2), 0.8), false, 2.5)
 	Glyphs.draw(self, ab.get("icon", "diamond"), r.position + Vector2(20, r.size.y / 2), 10.0, col.lightened(0.35))
-	UiStyle.text(self, r.position + Vector2(36, 26), ab.name, 15, Color.WHITE if usable else Color(1, 1, 1, 0.4),
+	UiStyle.text(self, r.position + Vector2(36, 26), ab.name, 17, Color.WHITE if usable else Color(1, 1, 1, 0.4),
 			HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 40, 3)
-	UiStyle.text(self, r.position + Vector2(36, 50), "%d / %d" % [left, sim.full_charges(ability_id)], 14,
+	UiStyle.text(self, r.position + Vector2(36, 50), "%d / %d" % [left, sim.full_charges(ability_id)], 16,
 			UiStyle.TRAIT_GOLD if usable else Color(1, 0.4, 0.3), HORIZONTAL_ALIGNMENT_LEFT, -1, 3)
 
 
@@ -164,5 +164,5 @@ func _draw_button(i: int, action: String) -> void:
 	draw_circle(c, r, col.darkened(0.62))
 	draw_circle(c + Vector2(0, -r * 0.08), r * 0.88, col.darkened(0.35))
 	Glyphs.draw(self, icon, c + Vector2(0, -9), r * 0.42, col.lightened(0.35))
-	UiStyle.text(self, Vector2(c.x - r - 10, c.y + r * 0.55), label, 13, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, r * 2 + 20, 4)
+	UiStyle.text(self, Vector2(c.x - r - 10, c.y + r * 0.55), label, 15, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, r * 2 + 20, 4)
 	draw_arc(c, r + 1, 0, TAU, 48, Color(UiStyle.GOLD if lit else col.lightened(0.2), 0.9), 3.0 if lit else 2.0, true)

@@ -1,6 +1,6 @@
 {
 	"oath_vengeance": {
-		"name": "Hämndens ed",
+		"name": "Domens kall",
 		"text": "När en annan i sällskapet tar direkt skada från en fiende slår Paladinen tillbaka för 40 % (en gång per tur).",
 		"trigger": "damage",
 		"once_per_turn": true,
@@ -24,7 +24,7 @@
 		"name": "Iver",
 		"oath": "oath_vengeance",
 		"perk": true,
-		"text": "Hämndens ed slår 50 % hårdare för en allierad som provocerar.",
+		"text": "Domens kall slår 50 % hårdare för en allierad som provocerar.",
 		"original": "Zeal",
 		"trigger": "modify_damage",
 		"when": {
@@ -39,7 +39,7 @@
 		"name": "Vrede",
 		"oath": "oath_vengeance",
 		"perk": true,
-		"text": "Hämndens ed slår 50 % hårdare för en allierad som försvarar sig.",
+		"text": "Domens kall slår 50 % hårdare för en allierad som försvarar sig.",
 		"original": "Wrath",
 		"trigger": "modify_damage",
 		"when": {
@@ -75,7 +75,7 @@
 		"name": "Ljusets hand",
 		"oath": "oath_vengeance",
 		"perk": true,
-		"text": "När Hämndens ed slår tillbaka helas hela sällskapet för 10 % av skadan.",
+		"text": "När Domens kall slår tillbaka helas hela sällskapet för 10 % av skadan.",
 		"original": "Hand of Light",
 		"trigger": "damage",
 		"when": {
@@ -94,7 +94,7 @@
 		"name": "Klockan klämtar",
 		"oath": "oath_vengeance",
 		"perk": true,
-		"text": "När Hämndens ed slår tillbaka har Paladinen 15 % chans att kasta Helig smäll gratis mot samma fiende.",
+		"text": "När Domens kall slår tillbaka har Paladinen 15 % chans att kasta Helig smäll gratis mot samma fiende.",
 		"original": "Divine Toll",
 		"trigger": "damage",
 		"chance": 0.15,
@@ -131,7 +131,7 @@
 		]
 	},
 	"oath_dawn": {
-		"name": "Gryningens ed",
+		"name": "Gryningens kall",
 		"original": "Cleric: Luminesce",
 		"text": "När någon i sällskapet helas får hen en Barriär lika stor som helningen. Paladinens direkta träffar helar den svagaste i sällskapet för 30 % av skadan.",
 		"trigger": "heal",
@@ -151,7 +151,7 @@
 		]
 	},
 	"oath_dawn_light": {
-		"name": "Gryningens ed",
+		"name": "Gryningens kall",
 		"hidden": true,
 		"text": "",
 		"trigger": "damage",
@@ -245,7 +245,7 @@
 		}
 	},
 	"oath_ward": {
-		"name": "Väktarens ed",
+		"name": "Väktarens kall",
 		"original": "Siegemaster: Thorns",
 		"text": "När någon i sällskapet träffas av en attack eller spell slår hen tillbaka för 35 % av sin Defense (indirekt skada).",
 		"trigger": "damage",
@@ -498,7 +498,7 @@
 	"warden_helm": {
 		"name": "Väktarens hjälm",
 		"trophy": true,
-		"text": "När bäraren Försvarar eller Provocerar helas den svagaste i sällskapet för 120.",
+		"text": "När bäraren Försvarar eller Provocerar helas den svagaste i sällskapet för 140 % av bärarens Defense.",
 		"trigger": "action",
 		"when": {
 			"unit": "self",
@@ -510,8 +510,8 @@
 		"effects": [
 			{
 				"type": "heal",
-				"min": 110,
-				"max": 130,
+				"stat": "defense",
+				"pct": 1.4,
 				"target": "weakest_ally"
 			}
 		]
@@ -746,7 +746,8 @@
 			{
 				"type": "aura",
 				"aura": "vulnerable",
-				"target": "target"
+				"target": "target",
+				"duration": 2
 			}
 		]
 	},
@@ -781,14 +782,17 @@
 		"name": "Gastens slöja",
 		"trophy": true,
 		"rarity": "common",
-		"text": "Bäraren undviker 20 % av attacker.",
+		"text": "Bäraren undviker 20 % av attacker, och blir Smidig (25 % extra undvikande i 3 turer) varje gång hen undviker.",
 		"trigger": "modify_damage_taken",
 		"when": {
 			"kind": "attack"
 		},
 		"modify": {
 			"dodge_add": 0.2
-		}
+		},
+		"parts": [
+			"wraith_veil_agile"
+		]
 	},
 	"fallen_oath": {
 		"name": "Den fallnes ed",
@@ -1045,5 +1049,20 @@
 		"modify": {
 			"damage_mult_per_hit_taken": 0.1
 		}
+	},
+	"wraith_veil_agile": {
+		"name": "Gastens slöja",
+		"hidden": true,
+		"trigger": "dodge",
+		"when": {
+			"target": "self"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "agile",
+				"target": "self"
+			}
+		]
 	}
 }

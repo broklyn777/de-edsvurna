@@ -1,28 +1,15 @@
 extends SceneTree
-## Balansrapport (0.17) på djup 1 och 3 (Realm Depth).
-## Per våning: vinstandel, turer och överlevande för BASIC (bara Anfall), MACRO (startmakrona) och
-## TUNED (de förbättrade makrona i combat_bot.gd, som svarar på fiendernas egenskaper).
-## Hela kryptan: alla tre våningarna i följd med Charges som räcker hela vägen, med TUNED plus en
-## artefakt, och för varje Ed de bästa perkarna inom perk-poängen (sökta bland alla kombinationer som
-## får plats): bara nivå 1, med perk-nivåer, och med nivåer och en lånad perk (anointment). Sist allt
-## (fyra artefakter och det bästa perk-bygget) och varje Eds kärna med startmakrona. På djup 3 prövas
-## perkarna tillsammans med en artefakt, eftersom inget bygge utan artefakt vinner där. Sist samma
-## byggen i Det fördärvade kapellet (0.16), som ska vara ungefär lika svårt som kryptan. Därefter
-## elitfiender och instabilitet 0 och 2 (0.17) och varje våningsregel för sig. Alla rader utom "utan
-## elitfiender" har elitvarianter som i spelet.
+## Balansrapport (0.18): hela körningar på rumskartan, där botarna väljer väg (enkelt: undviker elit
+## och portal; girigt: tar elit, portal och skatt först), i båda Realms på djup 1 och 3.
+## MACRO kör startmakrona, TUNED de förbättrade makrona i combat_bot.gd. Raderna visar andelen klarade
+## körningar, snittet strider per körning och hur ofta Realm Questen blev klar.
 ##   godot --headless --path . --script res://tests/balance_report.gd
-## Mål på djup 1: BASIC förlorar, MACRO ~40 %, TUNED ~65 %, ingenting 100 % utom kanske allt.
-## Kärnorna inom ±10 procentenheter. Djup 3: ett bra bygge (artefakt + bästa perks) 30–60 %.
+## Mål på djup 1: startmakrona omkring 40 %, TUNED omkring 65 % (som hela kryptan i 0.17).
+## Sist nivåerna (0.19): nivå 1, väntad nivå, väntad+2 och träning på djup 1 före djup 2 (BALANS=nivaer för bara dem).
+## Den äldre rapporten med perk-sökning och varje våningsregel för sig finns i git (0.17).
 
 const Bot := preload("res://tests/combat_bot.gd")
 const RUNS := 100
-## Körningar per kombination när de bästa perkarna söks.
-const SEARCH_RUNS := 20
-
-## Sökresultat per djup och kombination (str(lista) -> vinster).
-var _search_cache := {}
-## Det bästa perk-bygget i kryptan per djup (prövas också i kapellet).
-var _best_by_depth := {}
 const DEPTHS := [1, 3]
 ## Ett första smide: Brokks sköld med Helande ljus (160 silver).
 const ONE_ARTIFACT := {"brokk": {"type": "shield", "ability": "healing_light"}}
@@ -33,175 +20,231 @@ const ARTIFACTS := {
 	"alva": {"type": "staff", "ability": "judgement"},
 	"eira": {"type": "boots", "ability": "arrow_rain"},
 }
+## Det bästa perk-bygget i 0.17 inom poängen: 2 poäng på djup 1, 3 på djup 3 (Gryningens kall med
+## lånad Krigsmaskin).
+const BEST_PERKS := {1: ["oath_dawn", "ward_war_machine"], 3: ["oath_dawn", "dawn_anointment", "ward_war_machine"]}
 
 
 func _init() -> void:
 	var data := GameData.load_all()
-	for depth in DEPTHS:
-		print("=== Djup %d (fiender ×%.2f) ===" % [depth, CombatSim.depth_mult(depth)])
-		print("--- Kryptan ---")
-		_floor_table(data, RunState.FLOORS, depth)
-		# Perk-poängen för den som spelar på djupet: djupet innan är klarat.
-		var profile := Profile.new()
-		profile.best_depth = depth - 1
-		var points := profile.perk_points()
-		_search_cache.clear()
-		print("Hela kryptan (Charges räcker alla tre våningarna, %d perk-poäng)" % points)
-		_line(data, "MACRO", Bot.Skill.MACRO, {}, {}, depth)
-		_line(data, "TUNED", Bot.Skill.TUNED, {}, {}, depth)
-		_line(data, "TUNED + en artefakt", Bot.Skill.TUNED, {}, ONE_ARTIFACT, depth)
-		# På djup 1 prövas perkarna för sig; på djupare med en artefakt (utan den vinner inget bygge).
-		var base_art: Dictionary = {} if depth == 1 else ONE_ARTIFACT
-		var prefix := "TUNED + " if depth == 1 else "TUNED + en artefakt + "
-		var best_rate := -1
-		var best_traits := []
-		for oath_id in data.oaths:
-			for mode in ["flat", "ranks", "anoint"]:
-				var list := _best_perks(data, oath_id, points, depth, mode, base_art)
-				var tag: String = {"flat": "", "ranks": " [nivåer]", "anoint": " [nivåer + lån]"}[mode]
-				var rate := _line(data, "%s%s%s" % [prefix, _names(data, list), tag], Bot.Skill.TUNED,
-						{"paladin": list}, base_art, depth)
-				if rate > best_rate:
-					best_rate = rate
-					best_traits = list
-		if depth == 1:
-			_line(data, "TUNED + en artefakt + " + _names(data, best_traits), Bot.Skill.TUNED,
-					{"paladin": best_traits}, ONE_ARTIFACT, depth)
-		_line(data, "TUNED + fyra artefakter + " + _names(data, best_traits), Bot.Skill.TUNED,
-				{"paladin": best_traits}, ARTIFACTS, depth)
-		_best_by_depth[depth] = best_traits
-	# Det fördärvade kapellet: samma byggen (de bästa perkarna från kryptan) i den andra Realmen.
-	var chapel: Array = data.realms.chapel.floors
-	for depth in DEPTHS:
-		print("=== Det fördärvade kapellet, djup %d ===" % depth)
-		_floor_table(data, chapel, depth)
-		var best: Array = _best_by_depth[depth]
-		print("Hela kapellet")
-		_line(data, "MACRO", Bot.Skill.MACRO, {}, {}, depth, chapel)
-		_line(data, "TUNED", Bot.Skill.TUNED, {}, {}, depth, chapel)
-		_line(data, "TUNED + en artefakt", Bot.Skill.TUNED, {}, ONE_ARTIFACT, depth, chapel)
-		_line(data, "TUNED + en artefakt + " + _names(data, best), Bot.Skill.TUNED, {"paladin": best},
-				ONE_ARTIFACT, depth, chapel)
-		_line(data, "TUNED + fyra artefakter + " + _names(data, best), Bot.Skill.TUNED, {"paladin": best},
-				ARTIFACTS, depth, chapel)
-	# Instabilitet (0.17): våningsregler och elitfiender, djup 1, båda Realms.
-	var best1: Array = _best_by_depth[1]
-	for realm_id in data.realms:
-		var floors: Array = data.realms[realm_id].floors
-		print("=== %s, djup 1: elitfiender och instabilitet ===" % data.realms[realm_id].name)
-		for level in [-2, 0, 2]:
-			var tag: String = {-2: "utan elitfiender", 0: "instabilitet 0", 2: "instabilitet 2"}[level]
-			_line(data, "%s: MACRO" % tag, Bot.Skill.MACRO, {}, {}, 1, floors, level)
-			_line(data, "%s: TUNED" % tag, Bot.Skill.TUNED, {}, {}, 1, floors, level)
-			if level >= 0:
-				_line(data, "%s: TUNED + en artefakt + %s" % [tag, _names(data, best1)], Bot.Skill.TUNED,
-						{"paladin": best1}, ONE_ARTIFACT, 1, floors, level)
-	print("Varje våningsregel för sig (kryptan, djup 1, TUNED, utan elitfiender)")
-	for rule_id in data.floor_rules:
-		var cleared := 0
-		for seed_value in range(1, RUNS + 1):
-			if Bot.run_crypt(data, seed_value, Bot.Skill.TUNED, {}, {}, 1, RunState.FLOORS,
-					{"rules": [rule_id], "elite_chance": 0.0}):
-				cleared += 1
-		print("  %-20s %3d/%d  (silver +%d %%)" % [data.floor_rules[rule_id].name, cleared, RUNS,
-				roundi(float(data.floor_rules[rule_id].silver) * 100.0)])
-	print("Edernas kärnor på djup 1 (MACRO, hela kryptan, utan artefakter och perks)")
-	for oath_id in data.oaths:
-		print("  %-18s %3d/%d" % [data.traits[oath_id].name, _rate(data, Bot.Skill.MACRO, {"paladin": [oath_id]}, {}, 1, RUNS), RUNS])
+	# BALANS=nivaer kör bara nivåavsnittet (0.19), som går snabbare och värmer mindre.
+	if OS.get_environment("BALANS") == "artefakter":
+		_artifacts(data)
+		quit()
+		return
+	if OS.get_environment("BALANS") != "nivaer":
+		_runs_without_levels(data)
+	_levels(data)
+	if OS.get_environment("BALANS") != "nivaer":
+		_artifacts(data)
 	quit()
 
 
-## Edens bästa perks inom poängen för TUNED (alla kombinationer som får plats, SEARCH_RUNS var).
-## mode: "flat" bara nivå 1, "ranks" med perk-nivåer, "anoint" med nivåer och en lånad perk från en
-## annan Ed (kostar poäng ur samma pott).
-func _best_perks(data: Dictionary, oath_id: String, points: int, depth: int, mode: String,
-		artifacts: Dictionary) -> Array:
-	var combos := _combos(data.oaths[oath_id].perks, 0, points, mode != "flat")
-	if mode == "anoint":
-		# Lånet är frivilligt: de egna kombinationerna är också med.
-		var borrowed := combos.duplicate()
-		for other in data.oaths:
-			if other == oath_id:
-				continue
-			for p in data.oaths[other].perks:
-				for c in _combos(data.oaths[oath_id].perks, 0, points - int(p.cost), true):
-					borrowed.append(c + [p.id])
-		combos = borrowed
-	var best := [oath_id]
-	var best_rate := -1
-	for combo in combos:
-		var list: Array = [oath_id] + combo
-		var rate: int = _search_cache.get(str(list), -1)
-		if rate < 0:
-			rate = _rate(data, Bot.Skill.TUNED, {"paladin": list}, artifacts, depth, SEARCH_RUNS)
-			_search_cache[str(list)] = rate
-		if rate > best_rate:
-			best_rate = rate
-			best = list
-	return best
+## Nivåer (0.19): hela körningar där hjältarna har nivåer och växer av erfarenheten (inget tak), och
+## fienderna har djupets och våningens nivå (HeroStats.enemy_level). "v1" = andelen vunna strider på första
+## våningen. Sist: att gå tillbaka lönar sig – träna på djup 1 från nivå 1 tills sällskapet vunnit X strider,
+## och kör sedan djup 2. NIVA_START, NIVA_STEG, NIVA_XP och NIVA_KURVA prövar andra värden; NIVA_DJUP=1
+## bara djup 1, NIVA_REALM en Realm, NIVA_TRANING=0 hoppar över träningen.
+func _levels(data: Dictionary) -> void:
+	if OS.get_environment("NIVA_START") != "":
+		HeroStats.FLOOR_START = float(OS.get_environment("NIVA_START"))
+	if OS.get_environment("NIVA_STEG") != "":
+		HeroStats.FLOOR_STEP = float(OS.get_environment("NIVA_STEG"))
+	if OS.get_environment("NIVA_XP") != "":
+		HeroStats.XP_BASE = int(OS.get_environment("NIVA_XP"))
+	if OS.get_environment("NIVA_KURVA") != "":
+		var k := OS.get_environment("NIVA_KURVA").split(",")
+		HeroStats.XP_NEED_SQ = int(k[0])
+		HeroStats.XP_NEED_LIN = int(k[1])
+		HeroStats.XP_NEED_FLAT = int(k[2])
+	var realms: Array = data.realms.keys()
+	if OS.get_environment("NIVA_REALM") != "":
+		realms = [OS.get_environment("NIVA_REALM")]
+	var depths: Array = DEPTHS if OS.get_environment("NIVA_DJUP") == "" else [int(OS.get_environment("NIVA_DJUP"))]
+	print("fiendernas nivå: start %.2f, steg %.2f per våning, erfarenhet ×%d × djup², till nästa nivå %s …" % [
+			HeroStats.FLOOR_START, HeroStats.FLOOR_STEP, HeroStats.XP_BASE,
+			", ".join(range(1, 9).map(func(l: int) -> String: return str(HeroStats.xp_to_next(l))))])
+	for depth in depths:
+		var expected := HeroStats.expected_level(depth)
+		print("=== Nivåer, djup %d (fiender nivå %.1f / %.1f / %.1f, väntad nivå %d) ===" % [depth,
+				HeroStats.enemy_level(depth, 0), HeroStats.enemy_level(depth, 1), HeroStats.enemy_level(depth, 2), expected])
+		var cases := [["nivå 1", 1], ["väntad %d" % expected, expected], ["väntad+2 %d" % (expected + 2), expected + 2]]
+		if OS.get_environment("NIVA_BARA_VANTAD") != "":
+			cases = [cases[1]]
+		for realm_id in realms:
+			for c in cases:
+				var opts := {"levels": Bot.party_levels(data, c[1]), "grow": true}
+				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+					_level_line(data, "%s, %s: %s" % [data.realms[realm_id].short, c[0], _skill_name(skill)], skill,
+							depth, realm_id, opts)
+	if OS.get_environment("NIVA_TRANING") == "0":
+		return
+	print("=== Gå tillbaka: träna på djup 1 från nivå 1 tills X vunna strider, sedan djup 2 (väntad nivå %d) ===" %
+			HeroStats.expected_level(2))
+	for realm_id in realms:
+		for wins in [0, 20, 50, 100]:
+			for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+				_training_line(data, "%s, %d strider på djup 1: %s" % [data.realms[realm_id].short, wins, _skill_name(skill)],
+						skill, realm_id, wins)
 
 
-## Alla kombinationer av perkarna från index i som kostar högst points (en post per nivå).
-func _combos(perks: Array, i: int, points: int, ranks: bool) -> Array:
-	if i >= perks.size() or points <= 0:
-		return [[]] if points >= 0 else []
-	var out := []
-	var cost := int(perks[i].cost)
-	var max_rank := int(perks[i].get("ranks", 1)) if ranks else 1
-	for n in range(0, max_rank + 1):
-		if n * cost > points:
-			break
-		var head := []
-		for k in n:
-			head.append(perks[i].id)
-		for rest in _combos(perks, i + 1, points - n * cost, ranks):
-			out.append(head + rest)
-	return out
+## Artefaktnivåer (0.20): en artefakt (Brokks sköld) och en per hjälte på nivå 1, 5 och 10 med material som
+## passar rollen, på väntad nivå (som växer). Sist fynd och silver per körning på och under det djupaste djupet.
+const ROLE_AMBER := {"paladin": ["amber_red", "amber_orange", "amber_green"], "brokk": ["amber_grey", "amber_teal", "amber_green"],
+		"alva": ["amber_blue", "amber_rose", "amber_violet"], "eira": ["amber_red", "amber_yellow", "amber_bronze"]}
+const ROLE_TRICKS := {"paladin": ["whetstone", "jagged_rock"], "brokk": ["armor_scrap", "slippery_stone"],
+		"alva": ["arcane_sigil", "slate_inspired"], "eira": ["jagged_rock", "curio_vulnerable"]}
+## En typisk Magisk sten (två egenskaper, medelkvalitet) per roll.
+const ROLE_STONE := {"paladin": [["stat", "attack"], ["trick", "whetstone"]], "brokk": [["stat", "defense"], ["trick", "armor_scrap"]],
+		"alva": [["stat", "intelligence"], ["trick", "arcane_sigil"]], "eira": [["stat", "speed"], ["trick", "jagged_rock"]]}
 
 
-## Per våning: vinstandel, turer och överlevande för BASIC, MACRO och TUNED (fulla Charges).
-func _floor_table(data: Dictionary, floors: Array, depth: int) -> void:
-	for floor in floors:
-		var enc: Dictionary = data.encounters[floor]
-		print("%s (våning ×%.2f)" % [enc.name, float(enc.get("stat_mult", 1.0))])
-		for skill in [Bot.Skill.BASIC, Bot.Skill.MACRO, Bot.Skill.TUNED]:
-			var wins := 0
-			var turns := 0
-			var alive := 0
+static func built_artifact(base: Dictionary, hero_id: String, level: int) -> Dictionary:
+	var a := Forge.normalize(base)
+	a.level = level
+	for i in Forge.STAT_SLOT_LEVELS.size():
+		a.stat_slots[i] = ROLE_AMBER[hero_id][i] if Forge.stat_slot_open(level, i) else ""
+	for i in Forge.TRICK_SLOT_LEVELS.size():
+		a.trick_slots[i] = ROLE_TRICKS[hero_id][i] if Forge.trick_slot_open(level, i) else ""
+	if Forge.nether_open(level):
+		var affixes := []
+		for x in ROLE_STONE[hero_id]:
+			affixes.append({"kind": "stat", "stat": x[1], "pct": 0.08, "q": 1.0} if x[0] == "stat"
+					else {"kind": "trick", "trick": x[1], "q": 1.0})
+		a.nether = {"id": "bot", "rarity": "magic", "number": 200, "affixes": affixes}
+	return a
+
+
+func _artifacts(data: Dictionary) -> void:
+	var realms: Array = data.realms.keys()
+	if OS.get_environment("NIVA_REALM") != "":
+		realms = [OS.get_environment("NIVA_REALM")]
+	var depths: Array = DEPTHS if OS.get_environment("NIVA_DJUP") == "" else [int(OS.get_environment("NIVA_DJUP"))]
+	for depth in depths:
+		var lv := HeroStats.expected_level(depth)
+		print("=== Artefakter, djup %d, väntad nivå %d (växer) ===" % [depth, lv])
+		for realm_id in realms:
+			for level in [0, 1, 5, 10]:
+				for all in ([false] if level == 0 else [false, true]):
+					var arts := {}
+					if level > 0:
+						for hero_id in (ARTIFACTS if all else ONE_ARTIFACT):
+							arts[hero_id] = built_artifact(ARTIFACTS[hero_id], hero_id, level)
+					var label := "ingen artefakt" if level == 0 else ("%s nivå %d" % ["fyra artefakter" if all else "Brokks sköld", level])
+					for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+						var cleared := 0
+						for seed_value in range(1, RUNS + 1):
+							var r := Bot.run_expedition(data, seed_value, skill, {}, arts, depth, realm_id,
+									{"levels": Bot.party_levels(data, lv), "grow": true}, "simple")
+							cleared += 1 if r.cleared else 0
+						print("  %-50s klarade %3d %%" % ["%s, %s: %s" % [data.realms[realm_id].short, label, _skill_name(skill)],
+								roundi(100.0 * cleared / RUNS)])
+	print("=== Fynd och silver per körning (Kryptan, TUNED, väntad nivå) ===")
+	for depth in depths:
+		for frontier in [true, false]:
+			var sum := {"amber": 0, "trick": 0, "nether": 0, "rare": 0}
+			var silver := 0
 			for seed_value in range(1, RUNS + 1):
-				var r := Bot.run_fight(data, seed_value, skill, floor, [], {}, {}, {}, depth)
-				turns += r.turns
-				if r.outcome == "victory":
-					wins += 1
-					alive += r.alive
-			print("  %-6s vinster %3d/%d  snitt %4.1f turer  överlevande vid seger %.1f" % [
-				Bot.Skill.keys()[skill], wins, RUNS, float(turns) / RUNS, float(alive) / maxf(wins, 1)])
+				var r := Bot.run_expedition(data, seed_value, Bot.Skill.TUNED, {}, {}, depth, "crypt",
+						{"levels": Bot.party_levels(data, HeroStats.expected_level(depth)), "grow": true, "finds": frontier}, "simple")
+				for k in sum:
+					sum[k] += r.finds[k]
+				silver += r.silver
+			print("  djup %d, %-22s bärnsten %4.1f  trick %4.2f  Nether Stones %4.2f (sällsynta %4.2f)  silver %4d" % [depth,
+					"djupaste djupet" if frontier else "under det djupaste", float(sum.amber) / RUNS,
+					float(sum.trick) / RUNS, float(sum.nether) / RUNS, float(sum.rare) / RUNS, silver / RUNS])
+	var total := 0
+	var line := "  silver till nivå:"
+	for l in range(2, Forge.LEVEL_MAX + 1):
+		total += Forge.LEVEL_COST[l - 1]
+		line += " %d=%d" % [l, total]
+	print(line)
+
+
+func _skill_name(skill: int) -> String:
+	return "MACRO" if skill == Bot.Skill.MACRO else "TUNED"
+
+
+func _level_line(data: Dictionary, label: String, skill: int, depth: int, realm_id: String, opts: Dictionary) -> void:
+	var cleared := 0
+	var f0 := 0
+	var f0_won := 0
+	var end_level := 0.0
+	for seed_value in range(1, RUNS + 1):
+		var r := Bot.run_expedition(data, seed_value, skill, {}, {}, depth, realm_id, opts.duplicate(true), "simple")
+		cleared += 1 if r.cleared else 0
+		f0 += r.f0_fights
+		f0_won += r.f0_won
+		end_level += HeroStats.party_level(r.levels)
+	print("  %-40s klarade %3d %%  v1 %3d %%  slutnivå %4.1f" % [label, roundi(100.0 * cleared / RUNS),
+			roundi(100.0 * f0_won / maxi(f0, 1)), end_level / RUNS])
+
+
+## Träning: körningar på djup 1 (med samma makron) tills sällskapet vunnit `wins` strider, sedan en
+## körning på djup 2 med nivåerna det fått. Förlorade körningar ger erfarenhet för striderna som vanns.
+func _training_line(data: Dictionary, label: String, skill: int, realm_id: String, wins: int) -> void:
+	var cleared := 0
+	var start_level := 0.0
+	var runs := 0
+	for seed_value in range(1, RUNS + 1):
+		var levels := Bot.party_levels(data, 1)
+		var won := 0
+		var n := 0
+		while won < wins and n < 60:
+			var r := Bot.run_expedition(data, seed_value * 1000 + n, skill, {}, {}, 1, realm_id,
+					{"levels": levels, "grow": true}, "simple")
+			levels = r.levels
+			won += r.fights - (0 if r.cleared else 1)
+			n += 1
+		runs += n
+		start_level += HeroStats.party_level(levels)
+		var d2 := Bot.run_expedition(data, seed_value, skill, {}, {}, 2, realm_id, {"levels": levels, "grow": true}, "simple")
+		cleared += 1 if d2.cleared else 0
+	print("  %-40s nivå %4.1f efter %4.1f körningar  djup 2 klarade %3d %%" % [label, start_level / RUNS,
+			float(runs) / RUNS, roundi(100.0 * cleared / RUNS)])
+
+
+func _runs_without_levels(data: Dictionary) -> void:
+	for realm_id in data.realms:
+		for depth in DEPTHS:
+			print("=== %s, djup %d (fiender ×%.2f) ===" % [data.realms[realm_id].name, depth, CombatSim.depth_mult(depth)])
+			var best: Array = BEST_PERKS[depth]
+			_line(data, "MACRO, enkel väg", Bot.Skill.MACRO, {}, {}, depth, realm_id, {}, "simple")
+			_line(data, "MACRO, girig väg", Bot.Skill.MACRO, {}, {}, depth, realm_id, {}, "greedy")
+			_line(data, "TUNED, enkel väg", Bot.Skill.TUNED, {}, {}, depth, realm_id, {}, "simple")
+			_line(data, "TUNED, girig väg", Bot.Skill.TUNED, {}, {}, depth, realm_id, {}, "greedy")
+			_line(data, "TUNED + en artefakt", Bot.Skill.TUNED, {}, ONE_ARTIFACT, depth, realm_id, {}, "simple")
+			_line(data, "TUNED + en artefakt + " + _names(data, best), Bot.Skill.TUNED, {"paladin": best},
+					ONE_ARTIFACT, depth, realm_id, {}, "simple")
+			_line(data, "TUNED + fyra artefakter + " + _names(data, best), Bot.Skill.TUNED, {"paladin": best},
+					ARTIFACTS, depth, realm_id, {}, "simple")
+	print("=== Instabilitet 2, djup 1 (reglerna slumpas per körning) ===")
+	for realm_id in data.realms:
+		_line(data, "%s: TUNED" % data.realms[realm_id].short, Bot.Skill.TUNED, {}, {}, 1, realm_id, {}, "simple", 2)
+		_line(data, "%s: TUNED + en artefakt + %s" % [data.realms[realm_id].short, _names(data, BEST_PERKS[1])],
+				Bot.Skill.TUNED, {"paladin": BEST_PERKS[1]}, ONE_ARTIFACT, 1, realm_id, {}, "simple", 2)
+	print("=== Kallens kärnor, djup 1 (MACRO, kryptan, enkel väg) ===")
+	for oath_id in data.oaths:
+		_line(data, data.traits[oath_id].name, Bot.Skill.MACRO, {"paladin": [oath_id]}, {}, 1, "crypt", {}, "simple")
 
 
 func _names(data: Dictionary, list: Array) -> String:
 	return ", ".join(list.map(func(id: String) -> String: return data.traits[id].name))
 
 
+## level: instabilitet (−1 = ingen; reglerna slumpas med fröet).
 func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int,
-		floors: Array = RunState.FLOORS, level := -1) -> int:
-	var rate := _rate(data, skill, traits, artifacts, depth, RUNS, floors, level)
-	print("  %-72s %3d/%d" % [label, rate, RUNS])
-	return rate
-
-
-## Seeds efter de som söker perks, så att sökningen inte väljer på samma slump som den mäts med.
-## level: −1 = som spelet i dag utan instabilitet, −2 = utan elitfiender, annars instabiliteten
-## (reglerna slumpas per frö).
-func _rate(data: Dictionary, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int, runs: int,
-		floors: Array = RunState.FLOORS, level := -1) -> int:
+		realm_id: String, opts: Dictionary, policy: String, level := -1) -> void:
 	var cleared := 0
-	var first := 1 if runs == RUNS else 1000
-	for seed_value in range(first, first + runs):
-		var opts := {}
-		if level == -2:
-			opts = {"elite_chance": 0.0}
-		elif level >= 0:
-			opts = Bot.instability_opts(data, seed_value, level)
-		if Bot.run_crypt(data, seed_value, skill, traits, artifacts, depth, floors, opts):
-			cleared += 1
-	return cleared
+	var fights := 0
+	var quests := 0
+	for seed_value in range(1, RUNS + 1):
+		var o := opts.duplicate()
+		if level >= 0:
+			o = Bot.instability_opts(data, seed_value, level)
+		var r := Bot.run_expedition(data, seed_value, skill, traits, artifacts, depth, realm_id, o, policy)
+		cleared += 1 if r.cleared else 0
+		fights += r.fights
+		quests += 1 if r.quest_done else 0
+	print("  %-62s klarade %3d/%d  strider %4.1f  quest %3d %%" % [label, cleared, RUNS, float(fights) / RUNS,
+			roundi(100.0 * quests / RUNS)])

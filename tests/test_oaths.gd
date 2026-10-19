@@ -1,11 +1,11 @@
 extends "res://tests/test_case.gd"
-## Ederna vid Edsaltaret (docs/research/siralim.md §13): kärnan och varje perk, plus motorns nya delar
+## Kallen vid Kallets altare (docs/research/siralim.md §13): kärnan och varje perk, plus motorns nya delar
 ## (scope party, actor, cast/revive/barrier/restore_charge, battle_start).
 
 var _data := GameData.load_all()
 
 
-## En strid där Paladinen bär Eden och perkarna. Datan kopieras så att testerna kan ändra chanser.
+## En strid där Paladinen bär Kallet och perkarna. Datan kopieras så att testerna kan ändra chanser.
 func _sim(traits: Array, encounter := "crypt_1", begin := true) -> CombatSim:
 	var sim := CombatSim.create(_data, encounter, 7, [], {"paladin": traits})
 	sim.data = _data.duplicate()
@@ -29,7 +29,7 @@ func _no_luck(sim: CombatSim) -> void:
 		u.speed = 10.0  # lika fart: inget undvikande
 
 
-# --- Data och Edsaltaret -------------------------------------------------------
+# --- Data och Kallets altare -------------------------------------------------------
 
 func test_every_oath_has_core_and_perks_in_data() -> void:
 	for oath_id in _data.oaths:
@@ -47,7 +47,7 @@ func test_altar_buys_perks_with_points_and_resets_for_free() -> void:
 	assert_eq(p.perk_points(), Profile.PERK_POINTS_START)
 	assert_true(p.buy_perk(_data, "oath_ward", "ward_rest_up"))
 	assert_true(not p.buy_perk(_data, "oath_ward", "ward_rest_up"), "en perk köps en gång")
-	assert_true(not p.buy_perk(_data, "oath_ward", "dawn_anointment"), "bara Edens egna perks")
+	assert_true(not p.buy_perk(_data, "oath_ward", "dawn_anointment"), "bara Kallets egna perks")
 	assert_true(not p.buy_perk(_data, "oath_ward", "ward_titanic_rage"), "poängen räcker inte")
 	assert_eq(p.points_used(_data, "oath_ward"), Profile.perk_cost(_data, "oath_ward", "ward_rest_up"))
 	assert_eq(p.silver, Profile.START_SILVER, "perks kostar inget silver")
@@ -56,15 +56,31 @@ func test_altar_buys_perks_with_points_and_resets_for_free() -> void:
 	assert_true(p.buy_perk(_data, "oath_ward", "ward_titanic_rage"), "poängen kom tillbaka")
 
 
-func test_perk_points_grow_slowly_with_depth() -> void:
+func test_perk_points_come_from_realm_quests() -> void:
 	var p := Profile.new()
-	p.clear_depth(1)
-	assert_eq(p.perk_points(), Profile.PERK_POINTS_START)
 	p.clear_depth(2)
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START, "djupet ger inga poäng längre")
+	var r := p.complete_quest("crypt", 1)
+	assert_true(r.point)
 	assert_eq(p.perk_points(), Profile.PERK_POINTS_START + 1)
+	assert_true(not p.complete_quest("crypt", 1).point, "samma Realm och djup ger ingen ny poäng")
+	assert_true(p.complete_quest("chapel", 1).point)
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START + 2)
 	p.perks = {"oath_dawn": ["dawn_guiding_light", "dawn_greater_healing"]}
-	p.best_depth = 0
+	p.quests_done = []
 	assert_eq(p.active_perks(_data, "oath_dawn"), ["dawn_guiding_light"], "bara så många som poängen räcker till")
+
+
+func test_old_profiles_keep_their_perk_points() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("progress", "best_depth", 4)
+	var path := "user://test_progress_legacy.cfg"
+	cfg.save(path)
+	var p := Profile.load_from(path)
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START + 2, "4 klarade djup gav 2 poäng före 0.18")
+	p.save(path)
+	assert_eq(Profile.load_from(path).perk_points(), Profile.PERK_POINTS_START + 2, "och behåller dem efter sparning")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func test_run_brings_oath_and_its_perks() -> void:
@@ -73,10 +89,10 @@ func test_run_brings_oath_and_its_perks() -> void:
 	p.buy_perk(_data, "oath_ward", "ward_rest_up")
 	p.choose_oath("oath_dawn")
 	var state := RunState.new_run(p, _data)
-	assert_eq(state.hero_traits(_data).paladin, ["oath_dawn", "dawn_anointment"], "bara den valda Edens perks")
+	assert_eq(state.hero_traits(_data).paladin, ["oath_dawn", "dawn_anointment"], "bara den valda kallets perks")
 
 
-# --- Hämndens ed ----------------------------------------------------------------
+# --- Domens kall ----------------------------------------------------------------
 
 func test_vengeance_zeal_hits_harder_for_a_provoking_ally() -> void:
 	var amounts := []
@@ -133,7 +149,7 @@ func test_vengeance_execution_when_ally_dies() -> void:
 	assert_true(hits.all(func(e: Dictionary) -> bool: return e.kind == "indirect" and e.school == "holy"))
 
 
-# --- Gryningens ed ----------------------------------------------------------------
+# --- Gryningens kall ----------------------------------------------------------------
 
 func test_dawn_core_turns_healing_into_barrier() -> void:
 	var sim := _sim(["oath_dawn"])
@@ -186,7 +202,7 @@ func test_dawn_holy_might_counts_buffs() -> void:
 	assert_eq(sim._buff_count(eira), 2)
 
 
-# --- Väktarens ed ----------------------------------------------------------------
+# --- Väktarens kall ----------------------------------------------------------------
 
 func test_ward_core_strikes_back_with_defense() -> void:
 	var sim := _sim(["oath_ward"])
@@ -254,7 +270,7 @@ func test_only_numeric_perks_have_ranks() -> void:
 
 func test_ranks_are_bought_one_at_a_time() -> void:
 	var p := Profile.new()
-	p.best_depth = 2  # 3 poäng
+	p.bonus_points = 1  # 3 poäng
 	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"))
 	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"), "nivå 2")
 	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"), "nivå 3")
@@ -282,16 +298,16 @@ func test_anointment_unlocks_on_boss_and_borrows_one_perk() -> void:
 	p.defeat_boss("bone_lich")
 	p.defeat_boss("bone_lich")
 	assert_eq(p.anointment_slots(), 1)
-	assert_true(not p.anoint(_data, "oath_dawn", "dawn_anointment"), "inte från samma Ed")
+	assert_true(not p.anoint(_data, "oath_dawn", "dawn_anointment"), "inte från samma kall")
 	assert_true(p.anoint(_data, "oath_dawn", "ward_war_machine"), "regelbrytare får lånas")
-	assert_eq(p.points_used(_data, "oath_dawn"), 2, "kostar poäng ur den lånande Edens pott")
+	assert_eq(p.points_used(_data, "oath_dawn"), 2, "kostar poäng ur den lånande Kallets pott")
 	assert_true(not p.buy_perk(_data, "oath_dawn", "dawn_anointment"), "poängen är slut")
 	assert_true(p.anoint(_data, "oath_dawn", "ward_titanic_rage"), "ett nytt lån ersätter det gamla")
 	assert_eq(p.anointed.oath_dawn, "ward_titanic_rage")
 	assert_true(p.buy_perk(_data, "oath_dawn", "dawn_anointment"))
 	assert_eq(p.active_perks(_data, "oath_dawn"), ["dawn_anointment", "ward_titanic_rage"])
 	var state := RunState.new_run(p, _data)
-	assert_eq(state.hero_traits(_data).paladin, ["oath_vengeance"], "bara den valda Eden")
+	assert_eq(state.hero_traits(_data).paladin, ["oath_vengeance"], "bara den valda kallet")
 	p.choose_oath("oath_dawn")
 	state = RunState.new_run(p, _data)
 	assert_true(state.hero_traits(_data).paladin.has("ward_titanic_rage"), "lånet följer med i körningen")

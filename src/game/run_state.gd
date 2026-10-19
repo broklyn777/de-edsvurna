@@ -1,6 +1,6 @@
 class_name RunState
 extends RefCounted
-## En körning genom kryptan: vald Ed, sällskap, våning och troféer. Ren logik utan noder.
+## En körning genom kryptan: valt kall, sällskap, våning och troféer. Ren logik utan noder.
 ##
 ## Varje vunnen strid ger ett val av en trofé bland monstren man just slog. Troféer kan flyttas
 ## fritt mellan hjältarna mellan striderna (en per hjälte).
@@ -21,7 +21,7 @@ const TROPHY_CHANCE_PER_INSTABILITY := 0.1
 const BOSS_WINS_FOR_TROPHY := 3
 
 var oath := "oath_vengeance"
-## Köpta perks i Eden (Edsaltaret). De bärs av Paladinen och verkar som Eden.
+## Köpta perks i Kallet (Kallets altare). De bärs av Paladinen och verkar som Kallet.
 var perks: Array = []
 ## Paladinen först, sedan följeslagarna.
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
@@ -52,8 +52,32 @@ var artifacts := {}
 var practice := false
 var practice_encounter := ""
 
+# --- Rumskartan och Realm Quest (0.18) ---------------------------------------------
+## Fröet som våningarnas kartor och questen slumpas ur.
+var run_seed := 1
+## Våningens karta, rummet man står i ("" = vid våningens början) och besökta rum.
+var map: RoomMap
+var room_id := ""
+var visited: Array = []
+## Portalens sidodel: index för nästa sidorum (−1 = inte i en portal).
+var side_index := -1
+## Sällskapet har gått in i ett stridsrum men inte vunnit än (körningen sparas före striden). Vid
+## återupptagning går man rakt in i striden igen.
+var battle_pending := false
+## Realm Quest: {type, goal, progress, done, floor (Jakt), room (Jakt), reward_silver}.
+var quest := {}
+## Helgedomens gåvor och förbannelser som gäller nästa strid: auror för sällskapet och regler.
+var next_auras: Array = []
+var next_rules: Array = []
+## Klar med körningen (slutet på sista våningen vunnet).
+var finished := false
+## Egenskapernas statistik för hela körningen: trait_id -> {procs, damage, heal, unit} (hjältebladet).
+var trait_totals := {}
+## Fynden i körningen (0.20), visas på rumskartan: bärnsten, trick och Nether Stones.
+var found := {"amber": 0, "trick": 0, "nether": 0}
 
-## En ny körning från basen: Eden och sällskapet från Kryptporten, artefakterna från Smeden.
+
+## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
 static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	var s := RunState.new()
 	s.oath = profile.oath
@@ -102,14 +126,19 @@ func set_realm(data: Dictionary, realm_id: String) -> void:
 
 
 func encounter() -> String:
-	return practice_encounter if practice else floor_ids[floor]
+	if practice:
+		return practice_encounter
+	var r := current_room()
+	if r.has("encounter"):
+		return r.encounter
+	return floor_ids[floor]
 
 
 func is_last_floor() -> bool:
 	return practice or floor >= floor_ids.size() - 1
 
 
-## Egenskaper per hjälte för striden: Paladinens Ed och perks ersätter hens förvalda, och troféer
+## Egenskaper per hjälte för striden: Paladinens kall och perks ersätter hens förvalda, och troféer
 ## läggs till.
 func hero_traits(data: Dictionary) -> Dictionary:
 	var out := {}
@@ -226,3 +255,329 @@ func wearer(trophy_id: String) -> String:
 		if equipped[hero_id] == trophy_id:
 			return hero_id
 	return ""
+
+
+
+# --- Rumskartan (0.18) --------------------------------------------------------
+# Flöde: start_expedition() → choices() → enter(id) → beroende på rummets typ:
+#   strid (battle, elite, portal_battle, end): battle_opts() till CombatSim, sedan battle_won()
+#   lägereld: campfire(); skattkammare: treasure(); helgedom: shrine_options() + apply_shrine()
+#   portal: enter() går vidare in i sidodelen (side_choice())
+# När slutet är vunnet: next_floor() eller finished.
+
+const QUEST_TYPES := ["hunt", "clear", "purify"]
+## Lägereld: Charges som fylls per förmåga (högst till max). Charges är Siralims (4–8 per förmåga), så
+## lägerelden före våningens slut är det som gör att de räcker en hel körning.
+const CAMPFIRE_CHARGES := 3
+## Silver i vanliga strider och skattkammare, som andel av våningens belöning (slutet ger hela).
+const BATTLE_SILVER := 0.4
+const TREASURE_SILVER := 0.6
+const TREASURE_TROPHY_CHANCE := 0.2
+## Portalens strid: starkare fiender, mer silver och bättre troféchans.
+const PORTAL_STATS := 1.15
+const PORTAL_SILVER := 1.0
+const PORTAL_TROPHY_BONUS := 0.25
+
+
+## Startar kartan och questen för en ny körning.
+func start_expedition(data: Dictionary, seed_value: int) -> void:
+	run_seed = seed_value
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value * 977 + 13
+	quest = roll_quest(data, rng, floor_ids.size())
+	floor = 0
+	finished = false
+	start_floor(data)
+
+
+## Slumpar en Realm Quest (Siralim): Jakt (besegra Nemesis), Rensa (2 elitstrider), Rening (3 helgedomar).
+static func roll_quest(data: Dictionary, rng: RandomNumberGenerator, floors: int) -> Dictionary:
+	var type: String = QUEST_TYPES[rng.randi() % QUEST_TYPES.size()]
+	var q := {"type": type, "progress": 0, "done": false}
+	match type:
+		"hunt":
+			q.goal = 1
+			q.floor = rng.randi() % floors
+		"clear":
+			q.goal = 2
+		"purify":
+			q.goal = 3
+	return q
+
+
+static func quest_text(q: Dictionary) -> String:
+	match q.get("type", ""):
+		"hunt":
+			return "Jakt: besegra Nemesis på våning %d (%d/%d)" % [int(q.floor) + 1, q.progress, q.goal]
+		"clear":
+			return "Rensa: vinn %d elitstrider (%d/%d)" % [q.goal, q.progress, q.goal]
+		"purify":
+			return "Rening: besök %d helgedomar (%d/%d)" % [q.goal, q.progress, q.goal]
+	return ""
+
+
+func start_floor(data: Dictionary) -> void:
+	var pools: Array = data.realms[realm].get("pools", [])
+	var pool: Array = pools[floor] if floor < pools.size() else [floor_ids[floor]]
+	var want_shrines := 1 if quest.get("type", "") == "purify" else 0
+	map = RoomMap.generate(run_seed * 101 + floor * 7 + 1, floor, is_last_floor(), pool, floor_ids[floor], want_shrines)
+	room_id = ""
+	side_index = -1
+	if quest.get("type", "") == "hunt" and int(quest.floor) == floor:
+		# Nemesis i ett av stridsrummen (det i mitten av kartan om det går).
+		var fights := map.all_rooms().filter(func(r: Dictionary) -> bool: return r.kind == "battle")
+		if not fights.is_empty():
+			fights[fights.size() / 2].nemesis = true
+		else:
+			map.end.nemesis = true
+
+
+func current_room() -> Dictionary:
+	if map == null or room_id == "":
+		return {}
+	if side_index >= 0:
+		var portal := map.room(room_id)
+		return portal.side[mini(side_index, portal.side.size() - 1)]
+	return map.room(room_id)
+
+
+## Rummen man kan välja nu. Inne i en portal finns bara nästa sidorum.
+func choices() -> Array:
+	if map == null:
+		return []
+	if side_index >= 0:
+		return [current_room().id]
+	return map.choices(room_id)
+
+
+## Går in i rummet. Returnerar rummet (med "kind").
+func enter(id: String) -> Dictionary:
+	if side_index >= 0:
+		return current_room()
+	room_id = id
+	visited.append(id)
+	var r := map.room(id)
+	if r.kind == "portal":
+		side_index = 0
+		r = current_room()
+	battle_pending = is_battle(r)
+	return r
+
+
+## Sant om rummet är en strid.
+static func is_battle(r: Dictionary) -> bool:
+	return r.get("kind", "") in ["battle", "elite", "portal_battle", "end"]
+
+
+## Inställningar till CombatSim för rummets strid (regler, elit, portal, helgedomens gåva).
+func battle_opts() -> Dictionary:
+	var r := current_room()
+	var opts := {"rules": active_rules() + next_rules, "instability": instability, "start_auras": next_auras.duplicate(),
+			"floor": floor}
+	if r.get("kind", "") == "elite" or r.get("nemesis", false):
+		opts.force_elites = 1
+	if r.get("nemesis", false):
+		opts.nemesis = true
+	if r.get("kind", "") == "portal_battle":
+		opts.stat_bonus = PORTAL_STATS
+	return opts
+
+
+## Silver för rummets strid (gånger våningsreglernas tillägg sätts av den som betalar ut).
+func battle_silver(at_depth: int) -> int:
+	var r := current_room()
+	var kind: String = r.get("kind", "end")
+	var share := 1.0 if kind == "end" else (PORTAL_SILVER if kind == "portal_battle" else BATTLE_SILVER)
+	return roundi(Profile.reward(floor, at_depth) * share)
+
+
+## Efter en vunnen strid: questen räknas, och nästa strid är utan helgedomens gåva. Returnerar sant
+## om questen blev klar nu.
+func battle_won() -> bool:
+	var r := current_room()
+	battle_pending = false
+	next_auras.clear()
+	next_rules.clear()
+	var before: bool = quest.get("done", false)
+	if r.get("nemesis", false) and quest.get("type", "") == "hunt":
+		_quest_step()
+	if r.get("kind", "") in ["elite", "portal_battle"] and quest.get("type", "") == "clear":
+		_quest_step()
+	_after_room()
+	return quest.get("done", false) and not before
+
+
+func _quest_step() -> void:
+	quest.progress = mini(int(quest.progress) + 1, int(quest.goal))
+	if quest.progress >= quest.goal:
+		quest.done = true
+
+
+## Efter ett rum: i en portal går man vidare till nästa sidorum, sedan tillbaka till kartan.
+func _after_room() -> void:
+	if side_index >= 0:
+		side_index += 1
+		if side_index >= map.room(room_id).side.size():
+			side_index = -1
+
+
+## Sant när våningens slut är vunnet.
+func floor_cleared() -> bool:
+	return map != null and room_id == map.end.id and side_index < 0 and not battle_pending
+
+
+## Nästa våning, eller körningen klar efter den sista.
+func next_floor(data: Dictionary) -> void:
+	if is_last_floor():
+		finished = true
+		return
+	floor += 1
+	start_floor(data)
+
+
+## Lägereld: +CAMPFIRE_CHARGES på varje förmåga (högst till max).
+func campfire(data: Dictionary) -> int:
+	var gained := 0
+	for hero_id in charges:
+		for ability_id in charges[hero_id]:
+			var full := int(data.abilities[ability_id].get("charges", 0))
+			var add := mini(CAMPFIRE_CHARGES, full - int(charges[hero_id][ability_id]))
+			if add > 0:
+				charges[hero_id][ability_id] += add
+				gained += add
+	_after_room()
+	return gained
+
+
+## Skattkammare: silver (andel av våningens belöning) och ibland en trofé ur samma Realm.
+## Returnerar {silver, trophy}.
+func treasure(data: Dictionary, rng: RandomNumberGenerator) -> Dictionary:
+	var out := {"silver": roundi(Profile.reward(floor, depth) * TREASURE_SILVER), "trophy": ""}
+	var chance := TREASURE_TROPHY_CHANCE + (PORTAL_TROPHY_BONUS if side_index >= 0 else 0.0)
+	if rng.randf() < chance:
+		var pool := []
+		for enc_id in floor_ids:
+			for kind in data.encounters[enc_id].enemies:
+				var t: String = data.enemies[kind].get("trophy", "")
+				if t != "" and not data.enemies[kind].get("boss", false) and not trophies.has(t) and not pool.has(t):
+					pool.append(t)
+		if not pool.is_empty():
+			out.trophy = pool[rng.randi() % pool.size()]
+	_after_room()
+	return out
+
+
+## Helgedom (Siralims Pandemonium Shrine): två gåvor och en slumpad effekt att välja mellan.
+## [{kind: "charge", hero, ability} | {kind: "blessing", aura} | {kind: "chaos"}]
+func shrine_options(data: Dictionary, rng: RandomNumberGenerator) -> Array:
+	var abilities := []
+	for hero_id in charges:
+		for ability_id in charges[hero_id]:
+			if int(charges[hero_id][ability_id]) < int(data.abilities[ability_id].get("charges", 0)) + 1:
+				abilities.append([hero_id, ability_id])
+	var out := []
+	if not abilities.is_empty():
+		var pick: Array = abilities[rng.randi() % abilities.size()]
+		out.append({"kind": "charge", "hero": pick[0], "ability": pick[1], "amount": 2})
+	out.append({"kind": "blessing", "aura": ["inspired", "warded"][rng.randi() % 2]})
+	out.append({"kind": "chaos"})
+	return out
+
+
+static func shrine_text(data: Dictionary, o: Dictionary) -> String:
+	match o.kind:
+		"charge":
+			return "+%d Charges: %s (%s)" % [o.amount, data.abilities[o.ability].name, data.heroes[o.hero].name]
+		"blessing":
+			return "Sällskapet börjar nästa strid med %s" % data.auras[o.aura].name
+	return "Pandemonium: en slumpad effekt, bra eller dålig"
+
+
+## Tar emot gåvan. Pandemonium slår om: +1 Charge på alla förmågor, Barriär till nästa strid, en
+## förlorad Charge eller en våningsregel i nästa strid. Returnerar en text om vad som hände.
+func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -> String:
+	if quest.get("type", "") == "purify":
+		_quest_step()
+	var text := shrine_text(data, o)
+	match o.kind:
+		"charge":
+			charges[o.hero][o.ability] = int(charges[o.hero][o.ability]) + int(o.amount)
+		"blessing":
+			next_auras.append(o.aura)
+		"chaos":
+			match rng.randi() % 4:
+				0:
+					for hero_id in charges:
+						for ability_id in charges[hero_id]:
+							charges[hero_id][ability_id] = int(charges[hero_id][ability_id]) + 1
+					text = "Pandemonium: +1 Charge på alla förmågor!"
+				1:
+					next_auras.append("holy_shield")
+					text = "Pandemonium: sällskapet börjar nästa strid under Helig sköld!"
+				2:
+					var hero_id: String = charges.keys()[rng.randi() % charges.size()]
+					var list: Array = charges[hero_id].keys()
+					if not list.is_empty():
+						var ab: String = list[rng.randi() % list.size()]
+						charges[hero_id][ab] = maxi(0, int(charges[hero_id][ab]) - 1)
+						text = "Pandemonium: %s förlorar en Charge på %s." % [data.heroes[hero_id].name, data.abilities[ab].name]
+				3:
+					var open: Array = data.floor_rules.keys().filter(func(id: String) -> bool:
+						return int(data.floor_rules[id].get("min_instability", 0)) <= 1 and not active_rules().has(id))
+					var rule: String = open[rng.randi() % open.size()]
+					next_rules.append(rule)
+					text = "Pandemonium: nästa strid gäller %s." % data.floor_rules[rule].name
+	_after_room()
+	return text
+
+
+# --- Sparning (user://run.cfg) -------------------------------------------------
+
+const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
+		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "room_id", "visited",
+		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending"]
+
+
+func to_dict() -> Dictionary:
+	var d := {}
+	for f in SAVED_FIELDS:
+		d[f] = get(f)
+	d.party = Array(party)
+	d.trophies = Array(trophies)
+	d.map = map.to_dict() if map else {}
+	return d
+
+
+static func from_dict(d: Dictionary) -> RunState:
+	var s := RunState.new()
+	for f in SAVED_FIELDS:
+		if d.has(f):
+			s.set(f, d[f])
+	s.party.assign(d.get("party", s.party))
+	s.trophies.assign(d.get("trophies", []))
+	if not d.get("map", {}).is_empty():
+		s.map = RoomMap.from_dict(d.map)
+	if not d.has("battle_pending") and s.map != null and s.room_id != "":
+		# Sparad före 0.20.2: står man i ett stridsrum vet vi inte om det vanns, så striden spelas igen.
+		s.battle_pending = is_battle(s.current_room())
+	return s
+
+
+func save(path: String) -> Error:
+	var cfg := ConfigFile.new()
+	cfg.set_value("run", "state", to_dict())
+	return cfg.save(path)
+
+
+## Tar bort den sparade körningen (förlust eller ge upp): nästa körning börjar om från våning 1.
+static func delete_saved(path: String) -> void:
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+## Läser en sparad körning, eller null.
+static func load_from(path: String) -> RunState:
+	var cfg := ConfigFile.new()
+	if cfg.load(path) != OK or not cfg.has_section_key("run", "state"):
+		return null
+	return from_dict(cfg.get_value("run", "state"))

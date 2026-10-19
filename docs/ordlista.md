@@ -7,7 +7,7 @@ Tre lager:
   hitta både vår kod och originalets beskrivningar.
 - **Research** skriver Siralims engelska termer, gärna med det svenska ordet inom parentes.
 
-Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
+Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 
 ## Strid
 
@@ -46,18 +46,31 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Utlöses / slår till | trigger, `trait`-händelse | triggers | |
 | Kedja | chain, `_trait_depth` | – | |
 | Glöd (egenskapsstaplar) / förlösning | stack / release | – | Vår egen mekanik (kallades charge förut). Inte samma som Charges. |
-| Charges | charges | Charges | Användningar per förmåga, räcker hela körningen (fylls bara vid en ny körning). Siralim-nivå: starkare förmågor 5, medel 6–8 (`docs/research/siralim.md` §3b). Tillbaka bara via Eder, troféer och artefakter (t.ex. Vila upp). |
+| Charges | charges | Charges | Användningar per förmåga, räcker hela körningen (fylls bara vid en ny körning). Siralim-nivå: starkare förmågor 5, medel 6–8 (`docs/research/siralim.md` §3b). Tillbaka bara via kall, troféer och artefakter (t.ex. Vila upp). |
 | Regelbrytare | convert_damage, parts | t.ex. Outcast No Longer | |
 | Paladinen | `paladin` | spelaren (Siralim Mage) | Medveten avvikelse: Siralims spelare strider aldrig själv. |
-| Ed | oath (`data/oaths.json`, `Profile.oath`) | Specialization | En kärna som alltid verkar plus köpta perks. Hämndens ed ≈ Paladin (Retribution), Gryningens ed ≈ Cleric (Luminesce), Väktarens ed ≈ Siegemaster (Thorns). Bärs av Paladinen och slutar verka när hen stupar (vår avvikelse). |
-| Perk | perk (trait med `"oath"` och `"perk": true`) | Perk | Köps för silver vid Edsaltaret, ett steg per perk (Siralim har ranks). Återställs gratis. |
+| Kall (hette Ed före 0.18) | oath (`data/oaths.json`, `Profile.oath`) | Specialization | En kärna som alltid verkar plus köpta perks. Domens kall ≈ Paladin (Retribution), Gryningens kall ≈ Cleric (Luminesce), Väktarens kall ≈ Siegemaster (Thorns). Bärs av Paladinen och slutar verka när hen stupar (vår avvikelse). |
+| Perk | perk (trait med `"oath"` och `"perk": true`) | Perk | Köps för silver vid Kallets altare, ett steg per perk (Siralim har ranks). Återställs gratis. |
 | Gäller hela sällskapet | `"scope": "party"`, `traits_of()` | Specialization | Egenskapen verkar som om varje levande allierad bar den. |
 | Utförare | `actor`: event_unit / event_target / event_source | – | Vem i händelsen som utför effekten. |
 | När striden börjar | trigger `battle_start` | start of battle | Efter Siralims ordning: buffar ges innan första turen. |
 | Får tillbaka en Charge | effekten `restore_charge`, händelsen `charge_restored` | restore Charges | |
 | Följeslagare | hero / companion | Creature | Namngivna personer, inte varelser man samlar. |
 | Trofé | trophy | Trait Material (Masters) | Ger ett trait från ett besegrat monster; fyller den plats som Fusion har i Siralim. |
-| Artefakt | artifact (`data/artifacts.json`, `equip_artifact`) | Artifact | En per hjälte, smids hos Smeden. Typen höjer en stat och avgör när förmågan i den slår till: svärd vid Anfall 25 %, stav vid Förmåga 25 %, sköld vid Försvara 50 %, hjälm vid Provocera 50 %, stövlar i början av turen 15 %. Automatiskt kast kostar inga Charges. |
+| Artefakt | artifact (`data/artifacts.json`, `equip_artifact`) | Artifact | En per hjälte, smids hos Smeden. Typen höjer en stat och avgör när förmågan i den slår till: svärd vid Anfall 25 %, stav vid Förmåga 25 %, sköld vid Försvara 50 %, hjälm vid Provocera 50 %, stövlar i början av turen 15 %. Automatiskt kast kostar inga Charges. Nivå 1–10 hos Smeden (0.20); nivåerna öppnar platser. |
+| Artefaktnivå | `level`, `Forge.LEVEL_COST`, `Profile.level_artifact()` | Artifact Level | 1–10 för silver; +10 % på allt i artefakten per nivå. Platser: Stat 2, 5, 9, Trick 3, 7, Nether 10. |
+| Bärnsten | amber (`data/materials.json`) | Amber (Stat Material) | Tio färger, en eller två stats. 5 per Stat-plats. Förstörs när den tas ut. |
+| Trick | trick (`materials.json` "tricks") | Trick Material | Brynsten (Whetstone), Taggsten (Jagged Rock), Rustningsskrot (Armor Scrap), Hal sten (Slippery Stone), Arkant sigill (Arcane Sigil), Styrkans skiffer (Slate of …), Sårbarhetens kuriosa (Curio of …). |
+| Nether Stone | stone (`Forge.roll_stone`) | Nether Stone | Slumpad sten med 1–4 egenskaper (Vanlig, Magisk, Sällsynt, Legendarisk) och ett sällsynthetstal. Överlever när den tas ut. |
+| Status | aura (`data/auras.json`) | Buff / Debuff | Varar i ägarens turer; ikon under livmätaren, text i Inspect. Se `docs/formler.md` §5. |
+| Smidig, Arkan, Bärsärk, Defensiv, Immun, Livstörst, Läkning, Beskyddad, Pånyttfödd, Vildsint, Skyddsskal, Utmanande | agile, arcane, berserk, defensive, immune, leeching, mending, protected, rebirth, savage, shelled, taunting | Agile, Arcane, Berserk, Defensive, Immune, Leeching, Mending, Protected, Rebirth, Savage, Shelled, Taunting | Buffar (0.22). |
+| Blöder, Fördärvad, Förblindad, Förvirrad, Frusen, Förgiftad, Hånad, Sover, Snärjd, Förstenad | bleeding, blighted, blind, confused, frozen, poisoned, scorned, sleeping, snared, stone | Bleeding, Blighted, Blind, Confused, Frozen, Poisoned, Scorned, Sleeping, Snared, Stone | Debuffar (0.22). |
+| Dispel, Rening | dispel, purge | Dispel, Cleanse | Dispel tar bort alla statusar på målet; Rening bara debuffar. |
+| Överst / sist på tidslinjen | to_top, to_bottom | Top / Bottom of Timeline | Den som stod överst skickas ned; bossar flyttas ett steg. |
+| Uträkning | `calc`, `DamageExplain` | – (vårt tillägg) | Hela vägen till en siffra: stat, variation, Defense, modifierare, krit, barriär. Tryck på en siffra i striden. |
+| Skadelogg | `DamageLog` | – (vårt tillägg) | Alla skador och helningar i striden, nyast överst; en rad öppnar uträkningen. |
+| Ge upp | forfeit (`CombatSim.forfeit()`) | Forfeit | Avslutar striden som förlust; körningen är förlorad och Realmen börjar om från våning 1. Det som redan är vunnet behålls. |
+| Fynd | finds (`Forge.roll_finds`) | Loot | Material och stenar från rummen; trick och stenar bara på det djupaste djupet man nått. |
 | Svärd / Stav / Sköld / Hjälm / Stövlar | sword / staff / shield / helm / boots | Sword / Staff / Shield / Helmet / Boots | Stat: +5 % Attack / +5 % Intelligence / +10 Defense / +5 % Health / +1 Speed (som Siralim). |
 | Automatiskt kast | `cast`-effekt, action `artifact`, händelsen `acted` | automatic cast | |
 | Samling | collection | Codex / Bestiary | Troféer man någonsin hittat. |
@@ -69,8 +82,12 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 |---|---|---|---|
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
 | Våning | floor, `FLOORS`, `stat_mult` i encounters.json | – (en del av en Realm) | Våning 2 och 3 har starkare fiender (×1,08, ×1,10). |
-| Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs vid Kryptporten: Kryptan eller Det fördärvade kapellet. |
-| Instabilitet | `Profile.instability`, `RunState.instability`, `roll_rules()` | Realm Instability | 0–3 vid Kryptporten: n synliga och n dolda våningsregler, mer silver och troféchans. |
+| Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs på kampanjkartan: Kryptan eller Det fördärvade kapellet. |
+| Nivå | level, `Profile.heroes[id].level`, `HeroStats` | Level | +30 % av basvärdet per nivå, inget tak. Fiendernas nivå följer djup och våning. |
+| Erfarenhet | xp, `HeroStats.battle_xp()`, `add_xp()` | Experience | Per vunnen strid efter rumstyp och djup²; hela sällskapet får den. 5 · L² + 10 till nästa nivå. |
+| Personlighet | personality, `data/personalities.json` | Personality | 20 sorter: en stat växer 40 %, en annan 20 %. Byts i Biblioteket (Personality Tome) mot silver. |
+| Hjältebladet | `hero_screen` | varelsens skärm | Nivå, erfarenhet, fiendernas nivå på valt djup, stats per källa, vad de betyder, egenskaper, förmågor, artefakt och historik. |
+| Instabilitet | `Profile.instability`, `RunState.instability`, `roll_rules()` | Realm Instability | 0–3 på kampanjkartan: n synliga och n dolda våningsregler, mer silver och troféchans. |
 | Våningsregel | `data/floor_rules.json`, `CombatSim.rules`, händelsen `rule` | Realm Property | T.ex. De döda vaknar (Resurrect on Death), Förseglade ord (Gems Sealed After Casting), Speglande ben (Reflect Damage Taken), Kaosvind (Stats are Swapped). |
 | Dold regel | `rules_hidden`, `rules_revealed` | hidden Realm Property | Syns först när den slår till. |
 | Elitvariant | `elite` i enemies.json, `CombatUnit.elite`, `CombatSim.elite_chance()` | – (sällsynta varelser; Fused/Nether-varianter) | Benkapten, Benjägare, Gravabbot, Gravfogde, Askbärare, Ockultist, Banshee, Edsbrytare, Häxmästarinna, Självplågare. Egen trofé. |
@@ -81,7 +98,7 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Immun | `immune`-händelse, `is_immune`, makrovillkoren "är immun"/"kan skadas" | (Myrtle, Nether Boss) | Den fallne biskopen så länge en Kultist lever; Biskopens mitra. |
 | Kultist, Gast, Fallen riddare, Häxa, Botgörare, Den fallne biskopen | cultist, wraith, fallen_knight, witch, penitent, fallen_bishop | – (egna) | Kapellets fiender; egenskaper Skyddande bön, Eterisk, Motstöt, Häxans illvilja, Bödelns märke, Kultens sköld. |
 | Vanlig / elit / boss-trofé | `rarity`: common, elite, boss | – (Siralims vanliga/Nether/boss-traits) | Pålitlig byggdel / specialiserad / regeländring med kostnad. |
-| Djup | depth, `Profile.depth`/`best_depth`, `CombatSim.depth_mult` | Realm Depth | Väljs vid Kryptporten. Fiender +8 % stats per djup (utom Speed), silver +25 %, troféchans +15 procentenheter. Nästa djup öppnas när det föregående är klarat. |
+| Djup | depth, `Profile.depth`/`best_depth`, `CombatSim.depth_mult` | Realm Depth | Väljs på kampanjkartan. Fiender +8 % stats per djup (utom Speed), silver +25 %, troféchans +15 procentenheter. Nästa djup öppnas när det föregående är klarat. |
 | Fiendens egenskap | `traits` i enemies.json (`"enemy": true` i traits.json) | creature trait | Alla fiender har minst en, som makrona måste svara på. |
 | Benrustning, Jägarblick, Gravpakt, Taggig utmaning, Glödhetta | bone_armor, deadeye, grave_pact, warden_thorns, ember_heat | – (egna) | Skelettkrigare, bågskytt, Gravpräst, Gravväktare, Glödskelett. |
 | Resistent | resistant, `CombatUnit.resistant`, `CombatSim.RESISTANT` | Resistant | Debuffar på bossen verkar till hälften. |
@@ -90,8 +107,14 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Granska (håll fingret) | `_show_inspect` i battle.gd | Inspect | Visar stats och egenskaper, kostar ingen tur. |
 | Lägret | camp | – (stunden mellan strider i en Realm) | Trofévalet efter varje våning. |
 | Basen | base (`base_screen`) | Castle | Mellan körningarna. Förlust och klarad krypta leder hit. |
-| Kryptporten | gate (`start_screen`) | Teleportation Shrine | Välj följeslagare och trofé; starta körningen. |
-| Edsaltaret | altar (`altar_screen`, `Profile.buy_perk`, `reset_perks`) | Enchanted Wardrobe | Välj Ed och köp perks för silver; återställ gratis. |
+| Kampanjkartan | `campaign_screen`, `realms.json` "map" | Teleportation Shrine (och Siralims karta över Realms) | Landet med Realms som områden; ersätter Kryptporten (0.18). Fördärvets front viker för varje klarat djup. |
+| Förberedelser | `start_screen` | – | Sällskap och trofé att ta med (förr Kryptporten). |
+| Rumskartan | `room_map_screen`, `RoomMap` | Realm-kartan | Våningen som steg med vägval på pergament. |
+| Strid, Elit, Skattkammare, Helgedom, Lägereld, Portal, Våningens slut | battle, elite, treasure, shrine, campfire, portal, end | strider, Nemesis, kistor, Pandemonium Shrine, (liv efter strid), Otherworld Portal, boss | Rumstyperna. Lägereld fyller 1 Charge per förmåga. |
+| Realm Quest | `RunState.quest`, `roll_quest()`, `Profile.quests_done` | Realm Quest | Jakt (Nemesis), Rensa (2 elitstrider), Rening (3 helgedomar). Silver och en perk-poäng per ny Realm och djup. |
+| Nemesis | `nemesis` i rummet, `CombatUnit.nemesis` | Nemesis | En namngiven elit på ett rum (questen Jakt). |
+| Sparad körning | `user://run.cfg`, `RunState.save()` | sparning | Efter varje rum; spelet fortsätter där vid start. |
+| Kallets altare | altar (`altar_screen`, `Profile.buy_perk`, `reset_perks`) | Enchanted Wardrobe | Välj kall och köp perks för silver; återställ gratis. |
 | Övningsgården | practice (`RunState.practice`) | Arena | Strid mot valfritt möte utan risk; makrologgen finns kvar efteråt. |
 | Smeden | smith (`Profile.forge`) | Blacksmith | Smida artefakt (100 silver) eller byta förmåga (40). |
 | Biblioteket | library | Codex / Bestiary | Samlingen av troféer. |
@@ -109,12 +132,12 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Additional damage | går förbi Defense och minskningar | `additional_from_stat` (Bästa försvaret) |
 | Top / Bottom of Timeline | flytta i turordningen | – |
 | Calm Mode | lägre Action Limits | `TURN_LIMIT` = 5 |
-| Retribution | Paladins kärna: slå tillbaka vid skada | Hämndens ed |
-| Perk | förmån i en Specialization | perk vid Edsaltaret |
+| Retribution | Paladins kärna: slå tillbaka vid skada | Domens kall |
+| Perk | förmån i en Specialization | perk vid Kallets altare |
 | Perk rank | perkens nivå (Siralim 1–50) | perk-nivå, `ranks` i oaths.json: 2–3 på rena siffror, 1 på regelbrytare; en post per nivå i listan |
-| Anointment | lånad perk från en annan Specialization efter en False God | lånad perk, `Profile.anoint()`: en plats när en boss (Benfursten) är besegrad, kostar poäng ur Edens pott |
-| Perk Points | poäng att lägga i perks, från Realm Quests | perk-poäng, `Profile.perk_points()`: 2 från start, +1 per två klarade djup, per Ed |
-| Enchanted Wardrobe | byt Specialization och perks | Edsaltaret |
+| Anointment | lånad perk från en annan Specialization efter en False God | lånad perk, `Profile.anoint()`: en plats när en boss (Benfursten) är besegrad, kostar poäng ur kallets pott |
+| Perk Points | poäng att lägga i perks, från Realm Quests | perk-poäng, `Profile.perk_points()`: 2 från start, +1 per klarad quest (ny Realm och djup), per kall; äldre profiler behåller sina (`bonus_points`) |
+| Enchanted Wardrobe | byt Specialization och perks | Kallets altare |
 | Trait Slot, Nether Stone | Artifactens trait-plats; sena trait-platser | – |
 | Master | rasmästare med unikt trait | – |
 | Realm Quest, Fortune | uppdrag och belöning i en Realm | – |

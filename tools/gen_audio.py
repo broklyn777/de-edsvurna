@@ -23,6 +23,8 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "
 KENNEY = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/Downloads/kenney")
 MSR = 22050   # musik
 ASR = 16000   # ambiens (mörkt och lågt, behöver inte mer; håller APK:n under gränsen)
+MQ = 0.05     # Vorbis-kvalitet för musik och ambiens (lägsta som låter rent; lägre blir större i libsndfile)
+SQ = 0.1      # handlingsljud och menyljud
 XSR = 32000   # handlingsljud
 rng = np.random.default_rng(17)
 
@@ -208,9 +210,17 @@ def kenney(name, sr=XSR):
         _kcache[name] = (data.mean(axis=1), rate)
     data, rate = _kcache[name]
     if rate != sr:
-        n = int(len(data) * sr / rate)
-        data = np.interp(np.linspace(0, len(data) - 1, n), np.arange(len(data)), data)
+        data = resample(lowpass(data, sr * 0.42, rate), rate, sr)
     return data
+
+
+def resample(x, rate, sr):
+    n = int(len(x) * sr / rate)
+    return np.interp(np.arange(n) * rate / sr, np.arange(len(x)), x)
+
+
+## k_*-mappar som inte exporteras (export_presets.cfg) och därför lämnas orörda.
+K_UNUSED = {"k_bone_crack", "k_interrupt", "k_kick", "k_queued", "k_shield_slam"}
 
 
 def thump(dur, sr, f0=90, f1=40, amp=1.0):
@@ -413,7 +423,7 @@ def music_boss():
 def ambience_chapel():
     """Kapellets stämning: avlägsen orgelton, viskningar, knarr och droppar i ett stort rum."""
     sr = ASR
-    loop = 24.0
+    loop = 16.0
     n = int((loop + 5) * sr)
     buf = np.zeros(n)
     t = np.arange(n) / sr
@@ -424,7 +434,7 @@ def ambience_chapel():
     wind = lowpass(noise(n), 400, sr) * (0.6 + 0.4 * np.sin(2 * np.pi * t / loop * 2))
     place(buf, fade(wind, sr, 5, 5), 0, sr, 0.05)
     # viskningar: brus genom vokalformanter med stavelserytm
-    for start in (2.0, 7.5, 12.8, 18.4, 21.0):
+    for start in (1.5, 6.0, 10.4, 13.6):
         d = rng.uniform(1.2, 2.2)
         m = int(d * sr)
         tt = np.arange(m) / sr
@@ -432,9 +442,9 @@ def ambience_chapel():
         x = sum(bandpass(noise(m), fc * 0.85, fc * 1.15, sr) for fc in rng.choice([500, 900, 1500, 2600, 3300], 3))
         x *= syll * np.hanning(m)
         place(buf, normalize(x), start, sr, 0.10)
-    for start in (5.0, 15.5):
+    for start in (4.2, 12.0):
         place(buf, kenney("creak%d" % rng.integers(1, 4), sr), start, sr, 0.18)
-    for start in rng.uniform(0, loop, 7):
+    for start in rng.uniform(0, loop, 5):
         place(buf, bell(rng.uniform(1800, 2600), 0.3, sr), start, sr, 0.05)  # droppar
     buf = reverb(buf, sr, 5.0, 0.7, damp=2200, predelay=0.05)
     return fold_loop(buf, int(loop * sr)), sr
@@ -664,6 +674,35 @@ def fanfare(win):
     return normalize(reverb(buf, XSR, 2.0, 0.4))
 
 
+# ---------------------------------------------------------------- rumsögonblick (0.18)
+
+def room_door():
+    """Tung trädörr: knarrande gångjärn, dovt drag och en duns när den slår i stenväggen."""
+    hinge = bandpass(kenney("creak2"), 300, 2500, XSR)
+    draft = lowpass(noise(int(1.3 * XSR)), 500, XSR) * np.hanning(int(1.3 * XSR))
+    return normalize(reverb(mix(1.6, XSR, (kenney("doorOpen_1"), 0, 0.7), (hinge, 0.05, 0.5), (draft, 0.1, 0.25),
+                                (kenney("impactWood_heavy_002"), 1.0, 0.6), (thump(0.4, XSR, 90, 40), 1.0, 0.7)),
+                            XSR, 1.2, 0.3)[: int(1.9 * XSR)])
+
+
+def room_chest():
+    """Kista: spännet släpper, locket knarrar upp och ett litet skimmer av skatten."""
+    buf = mix(1.8, XSR, (kenney("metalLatch"), 0, 0.7), (kenney("creak1"), 0.18, 0.6),
+              (kenney("impactWood_medium_001"), 0.7, 0.4), (kenney("handleCoins2"), 0.75, 0.35))
+    for i, note in enumerate(["E6", "G#6", "B6"]):
+        place(buf, bell(hz(note), 0.9, XSR), 0.8 + i * 0.06, XSR, 0.07)
+    return normalize(reverb(buf, XSR, 1.0, 0.25)[: int(2.2 * XSR)])
+
+
+def room_lock():
+    """Hänglås: nyckeln vrids (klick, klick) och bygeln släpper med en tung metallklang."""
+    ring = additive(hz("A5"), 0.6, XSR, [(1, 1), (2.7, 0.5), (5.1, 0.25)], decay=0.5)
+    ring *= np.exp(-np.arange(len(ring)) / XSR * 7)
+    return normalize(mix(1.0, XSR, (kenney("metalClick"), 0, 0.6), (kenney("metalClick"), 0.16, 0.5),
+                         (kenney("metalLatch"), 0.34, 0.8), (ring, 0.36, 0.15),
+                         (kenney("impactMetal_light_001"), 0.36, 0.5)))
+
+
 # ---------------------------------------------------------------- huvudprogram
 
 def main():
@@ -671,20 +710,18 @@ def main():
     for name, fn in [("music_base", music_base), ("music_crypt", music_crypt),
                      ("music_chapel", music_chapel), ("music_boss", music_boss)]:
         x, sr = fn()
-        write(f"music/{name}.ogg", normalize(x, 0.8), sr, 0.08)
+        write(f"music/{name}.ogg", normalize(x, 0.8), sr, MQ)
     x, sr = ambience_chapel()
-    write("ambience_chapel/ambience_chapel.ogg", normalize(x, 0.7), sr, 0.08)
-    # kryptstämningen från gen_sfx.py: wav -> ogg (sparar ~120 KiB i APK:n)
-    wav = os.path.join(OUT, "ambience_crypt.wav")
-    if os.path.exists(wav):
-        x, sr = sf.read(wav)
-        x = lowpass(x, 6000, sr)
-        n = int(len(x) * ASR / sr)
-        x = np.interp(np.arange(n) * sr / ASR, np.arange(len(x)), x)
-        write("ambience_crypt/ambience_crypt.ogg", x, ASR, 0.08)
-        os.remove(wav)
+    write("ambience_chapel/ambience_chapel.ogg", normalize(x, 0.7), sr, MQ)
+    # kryptstämningen byggs av gen_sfx.py (16 s loop med korstoning), här som ogg i 16 kHz
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    sys.dont_write_bytecode = True
+    import gen_sfx
+    x = np.array(gen_sfx.crypt_ambience(16.0))
+    x = resample(lowpass(x, 6000, gen_sfx.SR), gen_sfx.SR, ASR)
+    write("ambience_crypt/ambience_crypt.ogg", normalize(x, 0.7), ASR, MQ)
 
-    q = 0.2
+    q = SQ
     for v in range(3):
         write(f"atk_sword/atk_sword_{v}.ogg", attack_sword(v), XSR, q)
         write(f"atk_axe/atk_axe_{v}.ogg", attack_axe(v), XSR, q)
@@ -705,19 +742,25 @@ def main():
     write("jingle_victory/jingle_victory.ogg", fanfare(True), XSR, q)
     write("jingle_defeat/jingle_defeat.ogg", fanfare(False), XSR, q)
 
-    # menyljud: Kenney-filerna rakt av (redan små ogg)
+    # rumsögonblicken i 0.18 (inte inkopplade): dörr, kista och hänglås
+    write("room_door/room_door.ogg", room_door(), XSR, q)
+    write("room_chest/room_chest.ogg", room_chest(), XSR, q)
+    write("room_lock/room_lock.ogg", room_lock(), XSR, q)
+
+    # Kenney-filerna i k_*- och ui_*-mapparna: mono, 32 kHz, låg kvalitet (originalen är stereo 44–48 kHz)
+    for folder in sorted(os.listdir(OUT)):
+        if folder.startswith("k_") and folder not in K_UNUSED:
+            for f in sorted(os.listdir(os.path.join(OUT, folder))):
+                if f.endswith(".ogg"):
+                    write(f"{folder}/{f}", kenney(f[:-4]), XSR, q)
     ui = {"ui_tap": ["select_001", "select_002", "select_003"], "ui_back": ["back_001", "back_002"],
           "ui_confirm": ["confirmation_001", "confirmation_002"], "ui_toggle": ["toggle_001", "toggle_002"],
           "ui_page": ["bookFlip2", "bookFlip3"], "ui_coins": ["handleCoins2"],
           "ui_forge": ["impactMetal_heavy_000", "impactMetal_heavy_002", "impactMetal_heavy_004"],
           "ui_door": ["doorOpen_1"]}
-    for folder, names in ui.items():
+    for folder, names in ui.items():  # menyljuden
         for nm in names:
-            src = glob.glob(os.path.join(KENNEY, "**", nm + ".ogg"), recursive=True)[0]
-            dst = os.path.join(OUT, folder, nm + ".ogg")
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
-            with open(src, "rb") as a, open(dst, "wb") as b:
-                b.write(a.read())
+            write(f"{folder}/{nm}.ogg", kenney(nm), XSR, q)
 
 
 if __name__ == "__main__":

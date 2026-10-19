@@ -60,8 +60,12 @@
 		"icon": "cross",
 		"button_color": "#5dff73",
 		"sound": "heal_light",
-		"text": "Helar en allierad (300 % av kraften).",
+		"text": "Tar bort en debuff från en allierad och helar den (230 % av Intelligence).",
 		"effects": [
+			{
+				"type": "purge",
+				"count": 1
+			},
 			{
 				"type": "heal",
 				"power": 2.3
@@ -89,11 +93,15 @@
 		"icon": "bolt",
 		"button_color": "#e9cf3f",
 		"sound": "k_hero_crit",
-		"text": "Märker målet i 3 turer (tar 20 % mer skada) och skjuter för 60 %.",
+		"text": "Märker målet i 3 turer (tar 20 % mer skada), snärjer det längst ned på tidslinjen och skjuter för 60 %.",
 		"effects": [
 			{
 				"type": "aura",
 				"aura": "marked"
+			},
+			{
+				"type": "aura",
+				"aura": "snared"
 			},
 			{
 				"type": "damage",
@@ -198,8 +206,7 @@
 		"effects": [
 			{
 				"type": "heal",
-				"min": 170,
-				"max": 200
+				"power": 1.8
 			}
 		],
 		"kind": "spell"
@@ -246,6 +253,11 @@
 			{
 				"type": "damage",
 				"power": 2.0
+			},
+			{
+				"type": "aura",
+				"aura": "snared",
+				"chance": 1.0
 			}
 		]
 	},
@@ -259,6 +271,11 @@
 			{
 				"type": "damage",
 				"power": 1.0
+			},
+			{
+				"type": "aura",
+				"aura": "stone",
+				"chance": 0.5
 			}
 		]
 	},
@@ -336,6 +353,11 @@
 			{
 				"type": "damage",
 				"power": 0.5
+			},
+			{
+				"type": "aura",
+				"aura": "frozen",
+				"chance": 0.2
 			}
 		]
 	},
@@ -362,11 +384,11 @@
 		"icon": "shield",
 		"button_color": "#f2c85b",
 		"sound": "shield_wall",
-		"text": "En allierad tar 40 % mindre skada till sin nästa tur.",
+		"text": "En allierad blir Beskyddad: tar 50 % mindre skada i 3 turer.",
 		"effects": [
 			{
 				"type": "aura",
-				"aura": "holy_shield"
+				"aura": "protected"
 			}
 		]
 	},
@@ -393,15 +415,15 @@
 		"target": "ally",
 		"kind": "spell",
 		"school": "holy",
-		"charges": 6,
+		"charges": 3,
 		"icon": "drop",
 		"button_color": "#9ff0a8",
 		"sound": "renew",
-		"text": "Målet helas 45 i början av sina tre nästa turer.",
+		"text": "Målet får Läkning: helas 25 % av sitt liv i början av sina tre nästa turer.",
 		"effects": [
 			{
 				"type": "aura",
-				"aura": "renew"
+				"aura": "mending"
 			}
 		]
 	},
@@ -490,6 +512,11 @@
 			{
 				"type": "damage",
 				"power": 1.0
+			},
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"chance": 0.25
 			}
 		]
 	},
@@ -504,6 +531,11 @@
 			{
 				"type": "damage",
 				"power": 1.0
+			},
+			{
+				"type": "aura",
+				"aura": "blind",
+				"chance": 0.4
 			}
 		]
 	},
@@ -517,6 +549,11 @@
 			{
 				"type": "damage",
 				"power": 1.0
+			},
+			{
+				"type": "aura",
+				"aura": "bleeding",
+				"chance": 0.15
 			}
 		]
 	},
@@ -548,6 +585,11 @@
 			{
 				"type": "damage",
 				"power": 1.0
+			},
+			{
+				"type": "aura",
+				"aura": "blighted",
+				"chance": 0.1
 			}
 		]
 	},
@@ -609,7 +651,8 @@
 		"effects": [
 			{
 				"type": "aura",
-				"aura": "weak"
+				"aura": "weak",
+				"duration": 2
 			}
 		]
 	},

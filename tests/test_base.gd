@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 ## Basen (0.12): silver och Smeden i profilen, Övningsgården, artefakter i striden och att
-## Paladinens Ed slutar verka medan hen är död.
+## Paladinens kall slutar verka medan hen är död.
 
 const TMP_PROFILE := "user://test_profile_tmp.cfg"
 
@@ -40,7 +40,7 @@ func test_forge_costs_silver() -> void:
 	assert_eq(p.forge_cost("brokk", "shield", "healing_light"), Profile.FORGE_COST)
 	assert_true(p.forge("brokk", "shield", "healing_light"))
 	assert_eq(p.silver, 10)
-	assert_eq(p.artifacts.brokk, {"type": "shield", "ability": "healing_light"})
+	assert_eq([p.artifacts.brokk.type, p.artifacts.brokk.ability, p.artifacts.brokk.level], ["shield", "healing_light", 1])
 	assert_eq(p.forge_cost("brokk", "shield", "healing_light"), 0, "samma artefakt kostar inget")
 	assert_true(not p.forge("brokk", "shield", "healing_light"), "och smids inte om")
 	assert_eq(p.forge_cost("brokk", "shield", "war_cry"), Profile.RESOCKET_COST, "byta förmåga är billigare")
@@ -64,7 +64,7 @@ func test_profile_saves_and_loads() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TMP_PROFILE))
 	assert_eq(q.silver, 123)
 	assert_eq(q.collection, p.collection)
-	assert_eq(q.artifacts, p.artifacts)
+	assert_eq(q.artifacts, {"eira": Forge.normalize(p.artifacts.eira)}, "äldre artefakter blir nivå 1")
 	assert_eq(q.oath, "oath_ward")
 	assert_eq(q.owned_perks("oath_ward"), ["ward_rest_up"])
 	assert_eq(q.party, p.party)
@@ -210,11 +210,11 @@ func test_oath_stops_while_paladin_dead_and_returns_on_revive() -> void:
 	sim._kill(paladin)
 	sim.drain_events()
 	sim._deal_damage(archer, sim.unit("alva"), 50.0, "physical", "bone_arrow", false, true)
-	assert_eq(vengeance.call(), 0, "Eden verkar inte medan Paladinen är död")
+	assert_eq(vengeance.call(), 0, "Kallet verkar inte medan Paladinen är död")
 	sim._revive(paladin, 0.5)
 	sim.turn_no += 1  # ny tur, så att "en gång per tur" inte spelar in
 	sim._deal_damage(archer, sim.unit("alva"), 50.0, "physical", "bone_arrow", false, true)
-	assert_eq(vengeance.call(), 1, "Eden verkar igen när Paladinen väcks")
+	assert_eq(vengeance.call(), 1, "Kallet verkar igen när Paladinen väcks")
 
 
 func test_party_oath_stops_while_paladin_dead() -> void:
@@ -227,7 +227,7 @@ func test_party_oath_stops_while_paladin_dead() -> void:
 	brokk.auras.clear()
 	sim._kill(paladin)
 	sim._add_aura(brokk, brokk, "provoke")
-	assert_true(not brokk.auras.has("defend"), "Eden verkar inte medan Paladinen är död")
+	assert_true(not brokk.auras.has("defend"), "Kallet verkar inte medan Paladinen är död")
 	sim._revive(paladin, 0.5)
 	brokk.auras.clear()
 	sim._add_aura(brokk, brokk, "provoke")

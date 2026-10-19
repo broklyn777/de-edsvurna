@@ -16,6 +16,11 @@ const ALTAR_SCENE := "res://scenes/altar.tscn"
 const BATTLE_SCENE := "res://scenes/main.tscn"
 const CAMP_SCENE := "res://scenes/camp.tscn"
 const MACRO_SCENE := "res://scenes/macros.tscn"
+const CAMPAIGN_SCENE := "res://scenes/campaign.tscn"
+const ROOM_MAP_SCENE := "res://scenes/room_map.tscn"
+## Den pågående körningen sparas efter varje rum, så att den överlever att appen stängs (0.18).
+const RUN_PATH := "user://run.cfg"
+const HERO_SCENE := "res://scenes/hero.tscn"
 
 var data: Dictionary
 var state := RunState.new()
@@ -43,6 +48,22 @@ var camp_chosen := ""
 ## Våningsreglerna för nästa körning, slumpade vid Kryptporten när instabiliteten väljs:
 ## {visible: [regel], hidden: [regel]}.
 var pending_rules := {"visible": [], "hidden": []}
+## Hjältebladet (0.19): vem, vilka man kan bläddra mellan, vart man går tillbaka och om
+## personligheten får bytas (bara från Biblioteket).
+var sheet_hero := "paladin"
+var sheet_heroes: Array = []
+var sheet_return := BASE_SCENE
+var sheet_can_change_personality := false
+## Trofén som tas med från samlingen in i nästa körning (Förberedelser): {trophy, wearer}.
+var pending_trophy := {}
+## Questens belöning om den blev klar i senaste rummet: {silver, point} (visas i lägret).
+var quest_reward := {}
+## Erfarenhet från senaste vunna striden (visas i lägret).
+## Fynden från senaste striden (0.20).
+var last_finds: Array = []
+var last_xp := 0
+## Text om vad som hände i senaste rummet utanför striderna (visas på rumskartan).
+var room_result := ""
 ## Musik och menyljud, som fortsätter mellan scenerna (striden har egna effektljud).
 var audio: Sfx
 var _ui_frame := -1
@@ -57,6 +78,43 @@ func _ready() -> void:
 	_load_macros()
 	roll_rules()
 	_dev_args()
+	if OS.get_cmdline_user_args().is_empty():
+		_resume_run()
+
+
+## Sant när profilen är påhittad för en skärmdump (--forge-demo): då sparas den inte.
+var dev_profile := false
+
+
+func _forge_demo() -> void:
+	dev_profile = true
+	profile.silver = 640
+	profile.forge("paladin", "sword", "holy_smite")
+	profile.forge("brokk", "shield", "healing_light")
+	profile.artifacts.brokk = Forge.normalize({"type": "shield", "ability": "healing_light", "level": 7,
+			"stat_slots": ["amber_grey", "amber_teal", ""], "trick_slots": ["armor_scrap", ""]})
+	profile.artifacts.paladin.level = 3
+	profile.silver = 640
+	profile.materials = {"amber_red": 6, "amber_grey": 3, "amber_green": 8, "amber_yellow": 5, "amber_teal": 2,
+			"amber_orange": 5, "whetstone": 1, "slippery_stone": 2, "curio_vulnerable": 1}
+	var r := RandomNumberGenerator.new()
+	r.seed = 12
+	for d in [1, 2, 3, 4, 2]:
+		profile.stones.append(Forge.roll_stone(data, d, 1, r, profile.next_stone_id))
+		profile.next_stone_id += 1
+
+
+func _find_demo() -> void:
+	await get_tree().create_timer(0.3).timeout
+	var r := RandomNumberGenerator.new()
+	r.seed = 5
+	var stone := {}
+	for i in 200:
+		stone = Forge.roll_stone(data, 3, 2, r, 99)
+		if stone.rarity == "legendary":
+			break
+	ui("find_rare", -2.0)
+	show_rare_finds([{"kind": "nether", "stone": stone}])
 
 
 ## Utvecklarargument (efter `--`): --floor=<n> startar striden på våning n (0–2), --depth=<n> väljer
@@ -71,10 +129,24 @@ func _dev_args() -> void:
 			# --artifact=<hjälte>:<typ>:<förmåga>, t.ex. brokk:shield:healing_light (bara den här körningen)
 			var parts := arg.get_slice("=", 1).split(":")
 			state.artifacts[parts[0]] = {"type": parts[1], "ability": parts[2] if parts.size() > 2 else ""}
+		elif arg == "--forge-demo":
+			# --forge-demo: en påhittad profil för Smeden (sparas inte): Brokks sköld på nivå 7 med material,
+			# ett förråd och några Nether Stones. Med --smith öppnas Smeden direkt.
+			_forge_demo()
+		elif arg == "--find-demo":
+			# --find-demo visar scenen för ett legendariskt fynd
+			_find_demo.call_deferred()
 		elif arg == "--anoint":
 			# --anoint låser upp den lånade perken (som om Benfursten var besegrad) och visar valet
 			profile.defeat_boss("bone_lich")
 			get_tree().change_scene_to_file.call_deferred(ALTAR_SCENE)
+		elif arg.begins_with("--xp="):
+			# --xp=<n> ger sällskapet n erfarenhet direkt (för att se nivåuppgångar på segerskärmen)
+			profile.grant_xp(data, state.party, int(arg.get_slice("=", 1)))
+		elif arg.begins_with("--xp-bar="):
+			# --xp-bar=<n> fyller mätaren till n utan att höja nivån (nästa seger ger en nivå)
+			for hero_id in state.party:
+				profile.hero(data, hero_id).xp = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--instability="):
 			# --instability=<n> slumpar n synliga och n dolda våningsregler (bara den här körningen)
 			state.instability = clampi(int(arg.get_slice("=", 1)), 0, RunState.MAX_INSTABILITY)
@@ -93,26 +165,39 @@ func _dev_args() -> void:
 		elif arg.begins_with("--depth="):
 			# --depth=<n> spelar på djup n (bara den här körningen)
 			state.depth = maxi(1, int(arg.get_slice("=", 1)))
+		elif arg == "--map":
+			# --map startar en ny körning och visar rumskartan (med --realm, --depth, --instability före)
+			var keep_realm := state.realm
+			state = RunState.new_run(profile, data)
+			state.set_realm(data, keep_realm)
+			state.start_expedition(data, 7)
+			get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
 		elif arg == "--macros":
 			get_tree().change_scene_to_file.call_deferred(MACRO_SCENE)
 		elif arg.begins_with("--oath="):
-			# --oath=<ed> väljer Ed för den här körningen; med --all-perks får den alla perks (bara för test)
+			# --oath=<kall> väljer kall för den här körningen; med --all-perks får den alla perks (bara för test)
 			state.oath = arg.get_slice("=", 1)
 			state.perks = []
 			if OS.get_cmdline_user_args().has("--all-perks"):
 				for p in data.oaths[state.oath].perks:
 					state.perks.append(p.id)
-		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar"]:
+		elif arg.begins_with("--hero="):
+			# --hero=<id> öppnar hjältebladet (--tab=0–2 väljer flik)
+			sheet_hero = arg.get_slice("=", 1)
+			sheet_heroes = profile.party.duplicate()
+			sheet_can_change_personality = true
+			get_tree().change_scene_to_file.call_deferred(HERO_SCENE)
+		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep"]:
 			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE,
-					"--library": LIBRARY_SCENE, "--gate": START_SCENE, "--altar": ALTAR_SCENE}[arg]
+					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE}[arg]
 			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)
-			last_receipt = ["Hämndens ed (Paladinen): slog till 7 gånger – 312 skada"]
+			last_receipt = ["Domens kall (Paladinen): slog till 7 gånger – 312 skada"]
 			get_tree().change_scene_to_file.call_deferred(CAMP_SCENE)
 
 
-## Eden väljs vid Edsaltaret (profile.oath), sällskapet vid Kryptporten.
+## Kallet väljs vid Kallets altare (profile.oath), sällskapet vid Kryptporten.
 ## Slumpar nya våningsregler för vald instabilitet (visas vid Kryptporten).
 func roll_rules() -> void:
 	pending_rules = RunState.roll_rules(data, profile.instability, rng)
@@ -144,7 +229,203 @@ func start_run(party: Array[String]) -> void:
 	state.rules_visible = pending_rules.visible.duplicate()
 	state.rules_hidden = pending_rules.hidden.duplicate()
 	roll_rules()  # nästa körning får nya regler
-	get_tree().change_scene_to_file(BATTLE_SCENE)
+	state.start_expedition(data, rng.randi() % 1000000 + 1)
+	if not pending_trophy.is_empty() and profile.collection.has(pending_trophy.trophy):
+		state.take_trophy(pending_trophy.trophy)
+		state.equip(pending_trophy.wearer, pending_trophy.trophy)
+	quest_reward = {}
+	room_result = ""
+	save_run()
+	get_tree().change_scene_to_file(ROOM_MAP_SCENE)
+
+
+## Sparar den pågående körningen (user://run.cfg).
+func open_sheet(hero_id: String, heroes: Array, return_scene: String, can_change := false) -> void:
+	sheet_hero = hero_id
+	sheet_heroes = heroes
+	sheet_return = return_scene
+	sheet_can_change_personality = can_change
+	go(HERO_SCENE)
+
+
+func save_run() -> void:
+	if not state.practice:
+		state.save(RUN_PATH)
+
+
+func _clear_run() -> void:
+	RunState.delete_saved(RUN_PATH)
+
+
+## Vid start: en sparad körning fortsätter på rumskartan.
+func _resume_run() -> void:
+	var saved := RunState.load_from(RUN_PATH)
+	if saved == null or saved.map == null or saved.finished:
+		return
+	state = saved
+	if state.battle_pending:
+		# Appen stängdes under en strid: striden börjar om, som om man just gått in i rummet.
+		get_tree().change_scene_to_file.call_deferred(BATTLE_SCENE)
+	elif state.floor_cleared():
+		after_camp.call_deferred()  # vunnet våningens slut, men appen stängdes i lägret: vidare
+	else:
+		get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
+
+
+## Spelaren går in i ett rum på rumskartan. Strider går till striden; andra rum avgörs på kartan.
+func enter_room(room_id: String) -> Dictionary:
+	var r := state.enter(room_id)
+	room_result = ""
+	if RunState.is_battle(r):
+		save_run()
+		get_tree().change_scene_to_file(BATTLE_SCENE)
+	return r
+
+
+## Fynd (0.20, Forge): slår fram rummets fynd och lägger dem i förrådet. Bara det djupaste djupet man nått
+## ger trick och Nether Stones (originalets bonus). Returnerar fynden.
+func roll_finds(kind: String) -> Array:
+	if kind == "portal_treasure":
+		kind = "portal_battle"
+	if "--find-luck" in OS.get_cmdline_user_args():
+		kind = "boss"  # för skärmdumpar: fynden som efter en boss
+	var frontier := state.depth > profile.best_depth
+	var finds := Forge.roll_finds(data, kind, state.depth, frontier, state.instability, rng, profile.next_stone_id)
+	for f in finds:
+		if f.kind == "nether":
+			profile.next_stone_id += 1
+		state.found[f.kind] = int(state.found.get(f.kind, 0)) + int(f.get("count", 1))
+	profile.add_finds(finds)
+	return finds
+
+
+## Ljudet för det finaste fyndet, efter delay sekunder.
+func play_find_sound(finds: Array, delay := 0.0) -> void:
+	var best := ""
+	for f in finds:
+		if Forge.is_rare_find(f):
+			best = "find_rare"
+		elif f.kind == "nether" and best != "find_rare":
+			best = "find_nether"
+		elif f.kind == "trick" and best in ["", "find_amber"]:
+			best = "find_trick"
+		elif best == "":
+			best = "find_amber"
+	if best == "":
+		return
+	if delay > 0.0:
+		await get_tree().create_timer(delay).timeout
+	ui(best, -2.0)
+
+
+## Ett sällsynt fynd får en egen liten scen (FindReveal) ovanpå skärmen.
+func show_rare_finds(finds: Array, delay := 0.0) -> void:
+	var rare := finds.filter(func(f: Dictionary) -> bool: return Forge.is_rare_find(f))
+	if rare.is_empty():
+		return
+	if delay > 0.0:
+		await get_tree().create_timer(delay).timeout
+	for f in rare:
+		var layer := CanvasLayer.new()
+		layer.layer = 60
+		var reveal: Control = load("res://scripts/screens/find_reveal.gd").new()
+		reveal.find = f
+		layer.add_child(reveal)
+		get_tree().current_scene.add_child(layer)
+
+
+## Lägereld, skattkammare och helgedom (anropas av rumskartan). Returnerar texten om vad som hände.
+func campfire() -> String:
+	var gained := state.campfire(data)
+	room_result = "Lägerelden: +%d Charges" % gained
+	save_run()
+	return room_result
+
+
+func treasure() -> String:
+	var t := state.treasure(data, rng)
+	var amount := roundi(t.silver * state.silver_mult(data))
+	profile.silver += amount
+	room_result = "Skattkammaren: +%d silver" % amount
+	if t.trophy != "":
+		profile.add_trophy(t.trophy)
+		state.take_trophy(t.trophy)
+		room_result += " och trofén %s!" % data.traits[t.trophy].name
+		_trophy_sound_for([t.trophy])
+	var finds := roll_finds("treasure" if state.side_index < 0 else "portal_treasure")
+	if not finds.is_empty():
+		room_result += "\nFynd: " + ", ".join(finds.map(func(f: Dictionary) -> String: return Forge.find_text(data, f)))
+		play_find_sound(finds, 0.4)
+		show_rare_finds(finds, 0.9)
+	_save()
+	save_run()
+	return room_result
+
+
+func shrine(option: Dictionary) -> String:
+	room_result = state.apply_shrine(data, rng, option)
+	_after_quest_check(false)
+	save_run()
+	return room_result
+
+
+## Efter en strid (0.19): räkna strider, segrar, stupade och väckta per hjälte och egenskapernas
+## statistik för körningen, och ge erfarenhet efter en vunnen strid (inte i Övningsgården).
+## Returnerar nivåuppgångarna: [{hero, name, level, gains}].
+func award_battle(sim: CombatSim, victory: bool) -> Array:
+	for u in sim.heroes:
+		var h := profile.hero(data, u.id)
+		h.battles = int(h.battles) + 1
+		h.wins = int(h.wins) + (1 if victory else 0)
+		h.deaths = int(h.deaths) + u.deaths
+		h.revives = int(h.revives) + u.revives
+	for trait_id in sim.trait_stats:
+		var st: Dictionary = sim.trait_stats[trait_id]
+		var tot: Dictionary = state.trait_totals.get(trait_id, {"procs": 0, "damage": 0.0, "heal": 0.0, "unit": st.unit})
+		tot.procs = int(tot.procs) + int(st.procs)
+		tot.damage = float(tot.damage) + float(st.damage)
+		tot.heal = float(tot.heal) + float(st.heal)
+		state.trait_totals[trait_id] = tot
+	var out := []
+	last_finds = []
+	if victory and not state.practice:
+		var r := state.current_room()
+		last_finds = roll_finds("boss" if r.get("boss", false) else String(r.get("kind", "end")))
+		var xp := HeroStats.battle_xp(r.get("kind", "end"), state.depth, r.get("boss", false))
+		last_xp = xp
+		var ups := profile.grant_xp(data, state.party, xp)
+		for hero_id in state.party:
+			for lv in ups.get(hero_id, []):
+				var p: String = profile.hero(data, hero_id).personality
+				out.append({"hero": hero_id, "name": data.heroes[hero_id].name, "level": lv,
+						"gains": HeroStats.gains(data, hero_id, lv, p)})
+	_save()
+	return out
+
+
+## Efter lägret: tillbaka till rumskartan, nästa våning, eller hem när körningen är klar.
+func after_camp() -> void:
+	ui("ui_confirm", -8.0)
+	if state.floor_cleared():
+		if state.is_last_floor():
+			profile.clear_depth(state.depth, state.realm)
+			state.finished = true
+			_clear_run()
+			_save()
+			get_tree().change_scene_to_file(BASE_SCENE)
+			return
+		state.next_floor(data)
+	save_run()
+	get_tree().change_scene_to_file(ROOM_MAP_SCENE)
+
+
+## Questen blev klar: silver och kanske en perk-poäng.
+func _after_quest_check(just_done: bool) -> void:
+	if just_done or (state.quest.get("done", false) and not state.quest.get("rewarded", false)):
+		state.quest.rewarded = true
+		quest_reward = profile.complete_quest(state.realm, state.depth)
+		room_result += " Questen är klar: +%d silver%s" % [quest_reward.silver, " och en perk-poäng!" if quest_reward.point else "!"]
+		_save()
 
 
 func start_practice(encounter_id: String) -> void:
@@ -168,43 +449,42 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		return
 	if not victory:
 		last_silver = 0
+		_clear_run()
 		get_tree().change_scene_to_file(BASE_SCENE)
 		return
 	last_receipt = receipt
-	last_silver = profile.win_battle(state.floor, state.depth, state.silver_mult(data))
-	if state.is_last_floor():
+	last_silver = roundi(state.battle_silver(state.depth) * state.silver_mult(data))
+	profile.silver += last_silver
+	if state.current_room().get("kind", "") == "end" and state.is_last_floor():
 		for kind in data.encounters[state.encounter()].enemies:
 			if data.enemies[kind].get("boss", false):
 				profile.defeat_boss(kind)
 	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
+	quest_reward = {}
+	room_result = ""
+	_after_quest_check(state.battle_won())
 	_trophy_sound()
 	camp_chosen = ""
 	for t in offer:
 		profile.add_trophy(t)
-	if state.is_last_floor():
-		profile.clear_depth(state.depth)
 	_save()
-	if state.is_last_floor():
-		get_tree().change_scene_to_file(BASE_SCENE)
-	else:
-		get_tree().change_scene_to_file(CAMP_SCENE)
+	save_run()
+	get_tree().change_scene_to_file(CAMP_SCENE)
 
 
 ## Troféfynd: ljudet efter den finaste trofén i erbjudandet.
 func _trophy_sound() -> void:
+	_trophy_sound_for(offer)
+
+
+func _trophy_sound_for(list: Array) -> void:
 	var best := ""
-	for t in offer:
+	for t in list:
 		var r: String = data.traits.get(t, {}).get("rarity", "common")
 		if best == "" or ["common", "elite", "boss"].find(r) > ["common", "elite", "boss"].find(best):
 			best = r
 	if best != "":
 		get_tree().create_timer(0.5).timeout.connect(audio.play.bind("trophy_" + best, -4.0, 0.0))
-
-
-func next_floor() -> void:
-	ui("ui_confirm", -8.0)
-	state.floor += 1
-	get_tree().change_scene_to_file(BATTLE_SCENE)
 
 
 ## Makrot som hjälten kör, eller ett tomt makro.
@@ -254,6 +534,12 @@ func _load_macros() -> void:
 		macros = data.macros.duplicate(true)
 		for hero_id in data.macros:
 			assignment[hero_id] = hero_id
+	# 0.22: Förnyelse blev Läkning och Helig sköld blev Beskyddad; sparade makron frågar efter de nya.
+	const RENAMED := {"renew": "mending", "holy_shield": "protected"}
+	for m in macros.values():
+		for line in m.get("lines", []):
+			if line.get("cond", "") in ["has_status", "lacks_status"] and RENAMED.has(line.get("value", "")):
+				line.value = RENAMED[line.value]
 	for hero_id in data.heroes:
 		if not assignment.has(hero_id) or not macros.has(assignment[hero_id]):
 			assignment[hero_id] = hero_id if macros.has(hero_id) else ""
@@ -277,4 +563,6 @@ func save(sound := "ui_toggle") -> void:
 
 
 func _save() -> void:
+	if dev_profile:
+		return
 	profile.save(PROGRESS_PATH)

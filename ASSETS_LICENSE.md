@@ -32,6 +32,10 @@ Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla 
 (`CharacterArmature`), så `unit_model.gd` kan låna animationer och delar mellan dem (se "visual" i
 `data/heroes.json` och `data/enemies.json`). Benfurstens krona byggs i kod.
 
+Rumsögonblicken (`scripts/rooms/`, se `docs/rum3d.md`) har inga egna modellfiler: rummen, kistan,
+altaret, buren, stentavlan, lägerelden och portalen byggs av former i kod. Statyn i helgedomen är
+`torvald.glb` och fången i buren `alva.glb` (se ovan).
+
 # Ljud
 
 - `assets/audio/k_*/` – Kenney "RPG Audio", "Impact Sounds", "Interface Sounds" (kenney.nl), CC0 1.0.

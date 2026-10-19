@@ -1,0 +1,144 @@
+{
+	"note": "Rutor i källbildens pixlar: [x, y, bredd, höjd] (källan 'ark' om inget annat står). Ändra här och kör om tools/cut_symbols.gd när en ny bild kommer. \"height\" skalar ned utklippet till den höjden.",
+	"out": "res://assets/illustrations/icons/",
+	"sources": {
+		"ark": {
+			"path": "res://assets/illustrations/symbolark.webp",
+			"paper": [
+				[
+					8,
+					600
+				],
+				[
+					1528,
+					600
+				],
+				[
+					768,
+					800
+				],
+				[
+					250,
+					1010
+				],
+				[
+					1300,
+					1010
+				],
+				[
+					760,
+					600
+				]
+			]
+		},
+		"skelett": {
+			"path": "res://assets/illustrations/skelett.webp",
+			"paper": [
+				[
+					20,
+					20
+				],
+				[
+					1234,
+					20
+				],
+				[
+					20,
+					1234
+				],
+				[
+					1234,
+					1234
+				],
+				[
+					627,
+					20
+				]
+			]
+		}
+	},
+	"symbols": {
+		"chest": [
+			30,
+			622,
+			215,
+			166
+		],
+		"campfire": [
+			255,
+			620,
+			205,
+			172
+		],
+		"shrine": [
+			468,
+			618,
+			200,
+			174
+		],
+		"battle": [
+			688,
+			616,
+			195,
+			180
+		],
+		"elite": [
+			893,
+			616,
+			155,
+			191
+		],
+		"boss": [
+			1063,
+			620,
+			205,
+			186
+		],
+		"portal": [
+			1265,
+			616,
+			255,
+			168
+		],
+		"paladin": [
+			55,
+			800,
+			160,
+			218
+		],
+		"compass": [
+			300,
+			806,
+			210,
+			197
+		],
+		"cartouche": [
+			528,
+			836,
+			395,
+			156
+		],
+		"dragon": [
+			948,
+			808,
+			285,
+			190
+		],
+		"sword_in_stone": [
+			1248,
+			790,
+			245,
+			228
+		],
+		"skeleton": {
+			"source": "skelett",
+			"rect": [
+				240,
+				30,
+				790,
+				1180
+			],
+			"height": 360
+		}
+	}
+}

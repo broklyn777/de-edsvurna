@@ -1,7 +1,7 @@
 {
 	"paladin": {
 		"name": "Paladinen",
-		"title": "Hämndens ed",
+		"title": "Edsvuren",
 		"role": "leader",
 		"color": "#f2c85b",
 		"stats": {
@@ -11,6 +11,7 @@
 			"defense": 50,
 			"speed": 10
 		},
+		"personality": "trofast",
 		"crit_chance": 0.1,
 		"attack_ability": "strike",
 		"abilities": [
@@ -80,6 +81,7 @@
 			"defense": 60,
 			"speed": 7
 		},
+		"personality": "envis",
 		"crit_chance": 0.08,
 		"attack_ability": "axe_chop",
 		"abilities": [
@@ -141,6 +143,7 @@
 			"defense": 25,
 			"speed": 11
 		},
+		"personality": "klok",
 		"crit_chance": 0.08,
 		"attack_ability": "holy_bolt",
 		"abilities": [
@@ -195,6 +198,7 @@
 			"defense": 20,
 			"speed": 14
 		},
+		"personality": "rastlos",
 		"crit_chance": 0.15,
 		"attack_ability": "arrow",
 		"abilities": [
@@ -237,6 +241,7 @@
 			"defense": 15,
 			"speed": 12
 		},
+		"personality": "drommande",
 		"crit_chance": 0.12,
 		"attack_ability": "fire_bolt",
 		"abilities": [

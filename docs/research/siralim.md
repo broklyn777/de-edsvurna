@@ -834,6 +834,372 @@ Anointments låter en låna perks från andra Specializations efter segrar mot F
 3. **Delad poängpott: nej, inte nu.** Egen pott per Ed, så att det lönar sig att prova de andra. Tas upp
    igen vid fler än cirka 5 Eder.
 
+
+**Tillägg (2026-10-19, ur [Character Specialization Guide](https://steamcommunity.com/sharedfiles/filedetails/?id=2190265173), version 2.0.37):**
+- *Perk-potten:* "The total amount of perk points you've earned is available to every class." Varje
+  Specialization har alltså **hela** potten för sig. Vårt beslut (egen pott per Ed, punkt 3 ovan)
+  motsvarar originalet exakt. Den "delade potten" i wikin betydde detta. Bekräftat.
+- *Perk Points:* 10 per Realm Quest på djupaste djupet, 50 per besegrad story-boss. Bekräftat (guide).
+- *Anointments:* 5 platser som standard (vissa Specializations får fler). De låses upp gradvis genom
+  segrar mot False Gods via Guilds, långt efter berättelsen. Varje Specializations anointments kommer
+  från en viss False God: Paladin och Cleric från Saint Althea, Monk och Warden från Jotun, Inquisitor
+  från The Ancestor. Inte alla perks kan bli Anointments. Bekräftat (guide).
+- *Start:* varje start-Specialization får två unika startvarelser och en egen startspell. Efter
+  tutorialen får man en varelse till. Paladin börjar med Blood Crusader (Crusader/Life). Bekräftat
+  (guide).
+- *Klasscirkeln:* Life > Death > Chaos > Sorcery > Nature > Life (stark mot, ×2). Bekräftat (guide).
+- Guiden rekommenderar Cleric för den som vill tanka och Monk för den som vill undvika. Det stöder
+  §4 i `siralim_0.19.md` (tank som byggd roll).
+
+## 14. Hur varelser blir starkare, och hur man ser det (2026-10-19)
+
+VD:ns fråga (bara diskussion): hur bygger man upp HP och styrka, vad bygger man utöver troféerna, och hur
+ser man hur en karaktär är uppbyggd? Hos oss är hjältarnas grundstats fasta. Bara artefaktens stat och
+perks höjer dem, och fienderna skalar med djupet.
+
+### 14.1 Nivåer
+
+| Regel | Säkerhet |
+|---|---|
+| Varelser får erfarenhet när en strid vinns. | Bekräftat (Codex) |
+| Varje nivå höjer varje stat med 30 % av basvärdet (värdet på nivå 1). Personligheten gör att en stat växer 40 % och en annan 20 %. | Bekräftat (Codex) |
+| Det finns inget nivåtak. Fienderna skalar också utan tak. | Bekräftat (wiki) |
+| Fienderna stiger i nivå mycket snabbare än ens varelser. Svaret är nya traits och synergi, inte grind. | Bekräftat (wiki FAQ) |
+| Fiendernas nivå följer Realm Depth, och djupet väljer man själv (låga djup går att använda för att träna). | Troligt (spelare) |
+| Från djup 40 kan man betala Power för att höja en varelse till den högsta nivå man har nått (hos Fusionist), så att nya varelser inte behöver tränas från noll. | Bekräftat (wiki Starter guide); var det sker: Troligt |
+| I Gate of the Gods skalas alla till nivå 100. | Bekräftat (Codex) |
+
+### 14.2 Andra källor till stats
+
+| Källa | Hur | Säkerhet |
+|---|---|---|
+| **Personlighet** | 20 sorter. Den ändrar inte stats direkt, bara tillväxten per nivå (+40 % / 20 % i stället för 30 %). Kan bytas med en Personality Tome, och då räknas allt om bakåt. Pilar vid stats visar vilka som påverkas. | Bekräftat (Codex) |
+| **Artefakt** | Typen ger en stat. Uppgradering till nivå 50 stärker allt. Upp till 4 Stat Slots (Amber) med en eller två stats var. Buffen Proficient ger +30 % från Stat Slots. Health fungerar som en ökning vid stridens start. | Bekräftat (Codex, wiki) |
+| **Kort (Cards)** | Varje kort ger en liten stat-bonus efter klass. Kompletta kortsamlingar ger en passiv bonus. Dubbletter ger stats men inte samlingsbonus. | Bekräftat (Codex) |
+| **Reliker** (slutspel) | Stat-bonus till den varelse reliken är fäst vid, och en perk per 10 ranker. Med "Synergy" får alla varelser stat-bonusen från alla reliker. | Bekräftat (Codex) |
+| **Nether Stones** (slutspel) | Kan ge stora stat-ökningar och flera traits. | Bekräftat (Codex) |
+| **Stat scrolls** | Projects-uppdraget Training ger 3 stat scrolls. | Bekräftat (wiki Projects); exakt effekt: Okänt |
+| **Mastery** (per ras) | Mer skada och mindre skada tagen, inga stats. | Bekräftat |
+| **Traits och perks** | Ändrar oftast stats i striden (t.ex. +35 % Attack efter en cast), inte grundvärdet. *Seraphim* (Paladin) lägger Defense på Health vid start. | Bekräftat |
+| **Spell Properties** | Påverkar besvärjelser, inte varelsens stats. | Bekräftat |
+
+Det finns ingen "träning" i slottet som köps med pengar, utom nivå-upphämtningen för Power och Projects
+som ger scrolls. Styrkan byggs över tid genom nivåer, artefakter och samlingar, och i varje strid genom
+traits.
+
+### 14.3 Att granska en varelse
+
+- Siralim har **inget karaktärsblad med många värden** (ingen styrka, smidighet osv. som i D&D). Det
+  finns bara fem stats: Health, Attack, Intelligence, Defense och Speed. Bekräftat (Codex).
+- Varelsens skärm visar nivå, klass och ras, de fem värdena med personlighetens pilar (upp och ned),
+  traits (egen, ihopsmält, artefaktens), artefakten och dess egenskaper, och Spell Gems med Charges.
+  Delarna: Bekräftat (Codex). Exakt layout: Troligt.
+- I striden visar Inspect fiendens stats, traits, artefakt, Spell Gems, buffar, debuffar och minions.
+  Liv syns först från Knowledge-rang E. Håll F för varaktigheter och Realm Properties. Bekräftat (Codex).
+- **Krit- och undvikandechans visas inte som procent.** De beror på Speed mot det aktuella målet, och
+  formeln är inte publicerad. Troligt (wiki: "formeln är okänd", spelare: "ingen fast procent att se").
+
+### 14.4 Trait Materials kontra troféer
+
+- Trait Materials är **sällsynta** i Siralim: "extremely difficult to find". De kommer från Masters (efter
+  3 segrar, sedan en chans per seger) och Assassination-uppdrag (Knowledge-rang S). En varelse kan bära
+  bara ett (artefaktens Trait Slot). Bekräftat (Codex).
+- Däremot får man **många varelser**. Nästan varje besegrad varelse ger Mana, och vid 100 % kan man kalla
+  fram den, med dess trait. Man äger hundratals men använder sex. Bekräftat (Codex).
+- Våra troféer motsvarar alltså två saker: den täta strömmen av nya varelser (nya traits att välja
+  bland) och, för bosstroféerna, de sällsynta Trait Materials (3 segrar, beslut §4 i
+  `siralim_innehall.md`). **Att det kommer många troféer stämmer med originalet**, så länge man bara kan
+  bära en per hjälte. Samlingen ska kännas som Siralims Bestiary, inte som en ryggsäck.
+
+### 14.5 Slottet mellan våningarna
+
+- I Siralim är en Realm en sammanhängande karta utan våningar. Man går inte hem mitt i den. När Realm
+  Quest är klar väljer man vid Teleportation Shrine: en ny Realm direkt, eller hem till slottet.
+  Bekräftat (Codex).
+- Hos oss (0.18.5) går körningen redan från våning till våning via lägret och rumskartan, och man kommer
+  hem till basen först när sista våningen är klar eller sällskapet faller. **Det stämmer med
+  originalet.**
+- Skillnad (Okänt om det behövs): Siralim låter en gå direkt till nästa Realm utan att åka hem. Hos oss
+  går man alltid hem efter körningen.
+
+### 14.6 Vad vi saknar jämfört med originalet
+
+Bara sådant som finns i Siralim. Varje anpassning är märkt.
+
+1. **Nivåer och erfarenhet** (originalet). Hjältarna får erfarenhet av vunna strider, och varje nivå ger
+   +30 % av basvärdet. **Inget nivåtak**, som i originalet. Fienderna skalar med det valda djupet, inte
+   med hjältarnas nivå. Då kan man gå tillbaka till lägre djup, bli starkare, hitta nya troféer och prova
+   nya kombinationer, och sedan gå djupare igen (VD:ns önskan, 2026-10-19). Mitt tidigare förslag om ett
+   nivåtak per djup är **struket**: det fanns inte i originalet och hindrade just det.
+   Okänt: om originalet ger mindre erfarenhet från lägre djup.
+2. **Personlighet per hjälte** (originalet). Passar namngivna personer extra bra: Brokk "Envis"
+   (Health 40 %, Speed 20 %), Eira "Rastlös" (Speed 40 %, Defense 20 %) … Kan bytas med en Personality
+   Tome från skattkammare. Syns som pilar vid stats.
+3. **Nivå-upphämtning i basen** (originalet: Power-uppgradering hos Fusionist). En ny följeslagare från
+   Värdshuset kan höjas till sällskapets högsta nivå för silver, så att den inte måste tränas från noll.
+4. **Artefaktnivåer och Stat Slots hos Smeden** (originalet). I dag ger en artefakt +5 % eller +10. Med
+   nivåer och Stat Slots (Amber) blir Smeden platsen där man bygger upp stats över tid.
+5. **Hjältens blad** (originalet). En skärm per hjälte med nivå, de fem stats och personlighetens pilar,
+   egen egenskap, trofé och artefakt, och förmågor med Charges. Ingen procent för krit eller undvikande,
+   som i originalet. *Möjligt eget tillägg, inte rekommenderat nu:* en hjälptext "Snabbare än målet ger
+   högre krit- och undvikandechans".
+6. **Senare, i originalets ordning:** kort (stat-bonus per fiende och samlingsbonus, passar Bestiariet),
+   stat scrolls via Byggmästarens projekt, och reliker.
+
+## 15. Artefaktuppgraderingar: vad som gör dem roliga (underlag för 0.20)
+
+VD:ns tvivel: "Jag brukar älska att uppgradera gear … jag kan inte se det roligt att uppgradera en
+artefakt bara. Men det kanske är det. Vi får göra det roligt."
+
+### 15.1 Nivåer 1–50
+
+| Regel | Säkerhet |
+|---|---|
+| Artefakter tillverkas och uppgraderas hos Blacksmith i slottet. De hittas aldrig färdiga. | Bekräftat (Codex) |
+| Varje nivå stärker **alla** egenskaper i artefakten ("en nivå 30-artefakt ger större stat-ökning än en nivå 10"). | Bekräftat (Codex) |
+| Nya platser öppnas vid vissa nivåer: Stat 3, Trick 5, Stat 10, Trait 15, Trick 25, Stat 35, Spell Gem 50, sedan Nether (extra uppgradering). | Bekräftat (wiki) |
+| Kostnad i Brimstone per nivå: 1 000 (nivå 1), 250 (2–10), 500 (11–20), 750 (21–30), 1 000 (31–40), 5 000 (41–50), 25 000 (Nether-platsen). Totalt 75 750 till nivå 50. | Bekräftat (wiki-tabell; exakt nivå för varje plats är något oklar i tabellen) |
+| Smeden själv måste uppgraderas via Projects för att nå nivå 50. | Bekräftat (Codex, wiki Projects) |
+
+### 15.2 Stat Slots och Amber
+
+| Regel | Säkerhet |
+|---|---|
+| Stat Slots tar Stat Materials, *Amber*, i olika färger. Det är **den vanligaste materialtypen** i spelet. En plats kostar 5 Amber. | Bekräftat (Codex, wiki) |
+| Varje färg ger en av de fem stats, eller delar ökningen mellan två. | Bekräftat (Codex) |
+| Storleken följer artefaktens nivå, inte materialet. Amber har inga slumpvärden eller sällsynthetsgrader. | Troligt (inga värden på materialen i någon källa; Codex säger att nivån stärker allt) |
+| Material hittas under vandringen i Realms (marken, kistor, fiender) och kan köpas i butiker. Realms har material i *common, rare, legendary*. | Bekräftat (Codex, wiki Realms) |
+| Man får bonus på föremål bara på det djupaste djup man nått. Realm Instability ger mer (upp till +400 %). | Bekräftat (Codex, wiki Realms) |
+| Att ta ut ett material **förstör** det. Nether Stones överlever. | Bekräftat (Codex) |
+
+### 15.3 Övriga material
+
+| Plats | Material | Vad det gör | När | Säkerhet |
+|---|---|---|---|---|
+| Trick (2) | *Slate of (Buff)*, *Curio of (Debuff)*, *(Class) Crippler*, *Whetstone*, *Jagged Rock*, *Armor Scrap*, *Slippery Stone*, *Pump Drill*, *Arcane Sigil* | Chans till buff när man gör skada, chans till debuff på fienden, klasstyrka, mer anfallsskada, krit, mindre skada, undvikande, fler Spell Gem-platser, potency | "Något mindre vanliga än Stat Materials" | Bekräftat (Codex) |
+| Trait (1) | Trait Materials | Ytterligare ett trait | "Extremely difficult": Masters (efter 3 segrar), Assassination-uppdrag | Bekräftat |
+| Spell (1) | Spell Gem | Chans att kasta spellen vid artefakttypens handling. Gemmets nivå och egenskaper ignoreras. | Nivå 50 | Bekräftat |
+| Nether (1) | Nether Stone | Slumpgenererad, "Diablo-liknande". Kan ge flera traits, spells och stats. Sällsynthet visas med ett tal. | Efter nivå 50. Vanligare med hög instabilitet och djup. | Bekräftat (Codex, wiki); frekvens: Troligt (spelare) |
+
+### 15.4 Vad spelarna säger
+
+- **Tråkigt:** grind. En spelare hade "dumpat alla resurser i artefakter och spell gems och kan inte
+  uppgradera utan timmar av grind". En annan saknar känslan av framsteg. Troligt (Steam).
+- **Roligt:** bredden i byggen ("build diversity far surpasses the other Siralim games"), där artefakter,
+  spells och traits ihop gör lagbygget. Nether Stones beskrivs som slutspelets jakt, med slumpade värden
+  och sällsynthet. Troligt (Steam, wiki).
+- Slutsatsen är densamma som VD:ns: **att höja en procentsiffra är inte roligt. Det roliga är när en
+  uppgradering öppnar ett nytt val** (en ny plats, en ny trigger) och när man hittar något sällsynt.
+
+### 15.5 Koppling till att gå tillbaka
+
+- Material finns på alla djup, så att gå tillbaka ger nivåer, troféer och vanliga material (Amber).
+- **Det bästa bytet finns på det djupaste djupet** (bonus bara där), och Nether Stones med instabilitet.
+  Originalet driver alltså spelaren både bakåt (bli starkare, testa) och framåt (bättre byte). Bekräftat.
+
+### 15.6 Förslag: vår Smed (anpassningar märkta)
+
+**Princip:** varje uppgradering ska **öppna något**: en plats, ett val eller en tydlig ny regel. Inte
+bara +2 %.
+
+1. **Nivåer 1–10** i stället för 1–50. *Anpassning:* vi har få strider per körning. Platserna öppnas i
+   originalets **ordning**:
+
+   | Nivå | Öppnas | Siralim |
+   |---|---|---|
+   | 1 | Typens stat och **förmågeplatsen** (typen avgör triggern) | Spell-plats vid 50 |
+   | 2 | Stat-plats 1 | 3 |
+   | 3 | Trick-plats 1 | 5 |
+   | 5 | Stat-plats 2 | 10 |
+   | 7 | Trick-plats 2 | 25 |
+   | 9 | Stat-plats 3 | 35 |
+   | 10 | Nether-plats (senare) | efter 50 |
+
+   *Anpassning:* förmågeplatsen redan på nivå 1, eftersom vår artefakt redan har den och det är den mest
+   regelbrytande delen. Trait-platsen (Siralim 15) hoppar vi över, eftersom trofén redan är vår
+   trait-plats (beslut i `siralim_innehall.md` §4).
+2. **Varje nivå stärker alla egenskaper** (originalet), t.ex. +10 % per nivå.
+3. **Material från rummen** (originalet):
+   - Amber i fem färger, en per stat. Vanligt: strider och skattkammare.
+   - Trick-material med originalets namn och effekter (Brynsten = Whetstone, Taggsten = Jagged Rock,
+     Rustningsskrot = Armor Scrap, Hal sten = Slippery Stone, Arkant sigill …). Mindre vanligt:
+     elit, skattkammare, portaler.
+   - Bättre chans på det djupaste djupet. 5 Amber per plats, som i originalet.
+4. **Att ta ut förstör materialet** (originalet). Det gör valet viktigt.
+5. **Silver** i stället för Brimstone. *Anpassning:* vi har en valuta. Kostnaden stiger brant per nivå,
+   som i originalet.
+6. **Smedens egen nivå** via Byggmästarens Projects (originalet). Den öppnar artefaktnivå 4–6, 7–9 och
+   10, så att Smeden växer med kampanjen.
+7. **Nether Stones senare**, som jakten i slutspelet: slumpade, med ett sällsynthetstal (originalet).
+   Det är originalets svar på "loot-känslan", och det svar som ligger närmast det VD:n älskar med gear.
+8. **Synligt mål** (originalet visar platserna i smedjan): Smeden visar "nästa nivå öppnar
+   Trick-plats". *Litet eget tillägg:* artefakten syns i 3D på hjälten och får en glöd per öppnad plats,
+   bara utseende.
+
+## 16. Att ge upp, fly och gå hem (2026-10-19)
+
+VD:ns fråga (bara diskussion): borde det finnas en "ge upp"-knapp för att gå hem och reparera?
+
+| Fråga | Siralim | Säkerhet |
+|---|---|---|
+| Lämna en Realm när som helst? | Nej, inte via Teleportation Shrine: Realm Quest måste vara klar innan man kan åka hem eller vidare. Vägarna hem utan klar quest är att förlora (laget faller) eller att spara och ladda om, vilket alltid tar en till slottet. | Bekräftat (wiki Realms, Codex); spara och ladda: Troligt (spelare) |
+| Vad förlorar man då? | Realm Quest och framsteget i Realmen. Nästa gång får man en ny quest i en ny, slumpad Realm. Förlorar man en strid nollställs Fortune (resursbonusen) också. Varelser, föremål och resurser behålls. | Bekräftat (wiki Realms, Combat, Codex) |
+| Fly från en strid? | Ja: *Forfeit* (håll E+Q+F i några sekunder). Det räknas som förlust: man skickas hem och förlorar Fortune, men behåller varelser, föremål och resurser. | Bekräftat (wiki Combat, Codex) |
+| Fylls Charges hemma? | Ja. Wikin: "automatically recharged upon returning to your castle". Codex: vid start av varje Realm. | Bekräftat (båda) |
+
+Det som kommer närmast en "ge upp"-knapp i originalet är alltså **Forfeit i striden**. Den kostar
+Fortune och questen men ingenting annat, och man kommer hem med fulla Charges. Siralim har ingen knapp för
+att "åka hem utan att förlora" mitt i en Realm.
+
+**Hos oss** motsvaras det av: Forfeit i striden, som avslutar körningen och skickar hem. Det man förlorar
+är det som motsvarar Fortune och questen (körningens perk-poäng och quest-belöning), medan troféer,
+silver och material från vunna strider behålls. Charges fylls vid nästa körning, som i dag. *Anpassning:*
+ingen.
+
+## 17. Buffar, debuffar och tidslinjen (underlag för 0.22)
+
+Källor: Codex-listorna "List: Buffs" och "List: Debuffs" (spelets egen text, 2.0.37), wikins Buffs-,
+Debuffs- och Combat-sidor, och trait-kompendiet. Allt i tabellerna är **Bekräftat (Codex)** om inget
+annat står.
+
+### 17.1 Buffar (18)
+
+| Buff | Exakt effekt | Varaktighet |
+|---|---|---|
+| Agile | Extra, oberoende chans att undvika anfall | 3 |
+| Arcane | Nästa spell kostar ingen Charge, sedan försvinner buffen | tills den används |
+| Barrier | Absorberar skada tills den är slut. Högst 200 % av högsta stat. Staplas inte, den starkaste gäller (wiki) | tills den är slut |
+| Berserk | +50 % skada | 3 |
+| Defensive | Försvarar automatiskt i slutet av sin tur | 3 |
+| Immune | Kan inte få debuffar | 1 |
+| Invisible | Kan inte väljas som mål för fiendens anfall och spells. Försvinner när figuren agerar | tills den agerar |
+| Leeching | Helas 25 % av skadan den gör | 3 |
+| Mending | Helas 25 % av sitt liv i början av sin tur | 3 |
+| Proficient | +30 % från artefaktens Stat Slots, utom Health | 3 |
+| Protected | Tar 50 % mindre skada | 3 |
+| Rebirth | Återuppstår med 50 % liv när den dör | 3 |
+| Repelling | 50 % chans att ignorera skada från spells | 3 |
+| Savage | Extra, oberoende chans till krit med anfall | 3 |
+| Shelled | Upphäver nästa anfall eller spell | tills den träffas |
+| Splashing | Gör 100 % av skadan på fiender intill målet | 3 |
+| Taunting | Provocerar automatiskt i slutet av sin tur | 3 |
+| Warded | Kan inte förlora stats | 3 |
+
+### 17.2 Debuffar (20)
+
+| Debuff | Exakt effekt | Varaktighet | Resistant (bossar) |
+|---|---|---|---|
+| Bleeding | Skada = 30 % av *nuvarande* liv i början av varje tur | 3 | 66 % mindre skada |
+| Blighted | Kan inte helas. Helning gör i stället skada = 50 % av helningen | 3 | – |
+| Blind | Kan inte välja mål för anfall och enkelmåls-spells | 3 | – |
+| Bomb | I början av sin tur: skada = 80 % av angriparens Speed, sedan bort | tills den smäller | – |
+| Burning | Skada varje tur efter angriparens Int (30 %, wiki) | 3 | – |
+| Confused | 50 % chans att anfalla eller kasta skadliga spells på sina egna | 3 | – |
+| Cursed | När den gör skada med anfall eller spell tar den skada = 100 % av målets Attack | 3 | – |
+| Disarmed | Förlorar alla fördelar från artefakten (artefaktens traits verkar ändå, wiki) | 3 | – |
+| Feared | Kan inte få stats | 3 | – |
+| Frozen | Kan inte agera. 25 % chans att tina i början av sin tur, chansen dubblas varje tur | tills den tinar | dubbel chans att tina |
+| Inverted | Anfall och spells helar fiender och skadar egna, tills tillräckligt har gjorts. Ges inte av slumpade debuffar (wiki) | tills den är förbrukad | – |
+| Mania | Skada i slutet av turen = 3 % av allt liv som alla hade helats när den lades. Ges inte av slumpade debuffar (wiki) | 3 (Codex) / 1 (wiki) | – |
+| Poisoned | Skada varje tur efter angriparens Attack (30 %, wiki) | 3 | – |
+| Scorned | Kan inte anfalla. Skriver över Silenced | 1 | kan anfalla, −50 % skada |
+| Silenced | Kan inte kasta spells. Skriver över Scorned | 1 | kan kasta, −50 % skada |
+| Sleeping | Kan inte agera förrän den tar skada eller debuffen går ut | 3 | vaknar i början av sin tur |
+| Snared | Fast längst ned på Timeline. 10 % chans att slita sig loss i början av *varje figurs* tur | 3 | tredubbel chans |
+| Stone | Kan inte undvika eller krita | 1 | 50 % lägre chans i stället |
+| Vulnerable | Tar 50 % mer skada | 3 | – |
+| Weak | Gör 50 % mindre skada | 3 | – |
+
+### 17.3 Allmänna regler
+
+| Regel | Säkerhet |
+|---|---|
+| Läggs samma buff eller debuff på igen förnyas varaktigheten. De staplas inte. | Bekräftat (wiki) |
+| Immune: kan inte få debuffar alls. | Bekräftat |
+| "Always has": tas den bort kommer den tillbaka direkt, med nollställd potency men utan att on-apply-effekter utlöses. | Bekräftat (wiki) |
+| Slumpade debuff-effekter kan lägga en debuff som målet redan har, och då förnyas varaktigheten. | Bekräftat (wiki) |
+| Varaktighet räknas i ägarens turer. | Troligt (trait-texter som *Sarea's Haste* "förlorar 2 enheter per tur"; inte uttryckligt). Vår motor gör redan så. |
+| Bara Resistant-versionerna ovan påverkas. Andra debuffar verkar fullt på bossar. | Bekräftat (Codex) |
+| Barrier och Shelled: "efter att ha anfallit"-effekter utlöses inte när träffen bara tar Barrier eller Shelled. | Bekräftat (wiki) |
+
+### 17.4 Leeching (VD:ns fråga)
+
+- **25 % av skadan den gör.** Bekräftat (Codex).
+- **Skada som Barrier tar:** Okänt. Siralims egen regel för "efter att ha anfallit" kräver skada på
+  *liv* (Bekräftat). *Förslag (vårt val):* Leeching räknar bara skada som når livet, samma regel som
+  originalet har för anfall. Det gör Barrier till ett riktigt motmedel.
+- **Överskottsskada (mer än målet har kvar):** Okänt. *Förslag (vårt val):* räknas inte. Bara faktiskt
+  förlorat liv. Annars blir ett jättekrit mot en nästan död fiende en fullhelning.
+- **Skadesorter:** Codex säger "the damage they deal", utan undantag. *Förslag:* anfall, spells och
+  traitskada som figuren gör räknas. DoT-tick (Burning, Poisoned) räknas också, eftersom de "görs" av
+  angriparen. Okänt i originalet.
+- Notera: trait-kompendiet har många Leeching-synergier (*Coming Undone*: +10 % stats efter anfall med
+  Leeching, *Blood Weapon*: alltid Mending och Leeching). Det är en riktig byggsten.
+
+### 17.5 Tidslinjen
+
+| Regel | Säkerhet |
+|---|---|
+| Den som står överst agerar och läggs sedan längst ned. Speed ger bara startplatsen. | Bekräftat (Codex) |
+| "Top of Timeline"-effekter flyttar en figur högst upp. Den som stod överst skickas då till botten. Används de på egna kan man förlora turer. | Bekräftat (wiki Combat) |
+| Flyttas en figur till toppen nollställs dess gränser per tur (Action Limits). | Bekräftat (wiki Combat) |
+| En boss som skulle tvingas till botten flyttas bara **ett** steg ned. | Bekräftat (Codex) |
+| Bottom-of-Timeline-effekter fungerar inte på fiender i bosstrider. | Bekräftat (wiki Combat) |
+| Snared: fast längst ned, 10 % chans att slita sig loss i början av varje figurs tur. | Bekräftat (Codex) |
+| Exempel på traits: *Surprise!* (börjar överst), *Contradiction* (+200 % Speed men börjar längst ned), *Break the Cycle* (provocerar → slumpad fiende till botten), *Pocket Frog* (50 % chans att en allierad skickas till toppen). | Kompendium |
+
+**Varning från originalet:** att skicka någon till toppen och nollställa gränserna ger oändliga turer
+om två effekter matar varandra. Vår `TURN_LIMIT` och `once_per_turn` måste ligga kvar, och gränsen ska
+**inte** nollställas av vårt eget "till toppen". *Vårt val, en avvikelse:* utan den regeln blir det
+kedjor som telefonen inte hinner visa.
+
+### 17.6 Ta bort buffar och debuffar
+
+- *Dispel* (Sorcery-spell, 20 Charges): "Target's buffs and debuffs are removed", alltså **båda**
+  sorterna på målet. Bekräftat (wiki).
+- Fler spells för att ta bort, som byggguiden nämner: *Mass Dispel*, *Absolute Corruption*,
+  *Reverse Polarity*. Exakt text: Okänt.
+- Wikin: "Debuffs can be cleansed", utan detaljer. Siegemaster-perken *Shrug Off*: efter Defend tas
+  debuffar bort och man får en slumpad buff per borttagen debuff. Bekräftat.
+- Det finns ingen separat "Purge" i källorna. Okänt.
+
+### 17.7 Visning
+
+- Varje buff och debuff har en egen ikon, och Resistant-versionerna har egna ikoner. Bekräftat (wiki).
+- Varaktigheter, minion-staplar och Realm Properties syns när man håller F i striden. Bekräftat (Codex).
+  Var ikonerna sitter (under livmätaren eller annat): Okänt.
+- *Förslag:* ikoner under livmätaren med en liten siffra för turer kvar, och håll inne för text. Det är
+  Inspect hos oss. Rött för debuffar, guld för buffar.
+
+### 17.8 Förslag: de ~20 som passar oss först (ljust tema)
+
+Vi har redan: Barrier, Warded, Burning, Silenced, Vulnerable, Weak, samt egna (inspired, blessing, marked,
+holy_shield, renew, salted, defend, provoke, lich_wrath).
+
+**Buffar (12):** Agile, Arcane, Berserk, Defensive, Immune, Leeching, Mending, Protected, Rebirth,
+Savage, Shelled, Taunting.
+
+**Debuffar (10):** Bleeding, Blighted, Blind, Confused, Frozen, Poisoned, Scorned, Sleeping, Snared,
+Stone.
+
+Motivering: alla har tydliga regler och är lätta att se, och flera av våra traits och följeslagare väntar
+på dem: Lirien (Sleeping), Tove (Agile, Scorned), Hulda (Snared, Poisoned), Ragnhild (Blighted), Sefir
+(Savage, Bleeding), Arcane i stället för lägereldens Charges, och Taunting.
+
+**Senare:**
+- Proficient (artefakter): lätt, men liten effekt.
+- Invisible: kräver målregler.
+- Repelling, Disarmed och Bomb.
+- Feared: vi har få stat-ökningar än.
+- Splashing: kräver "intill", som vi inte har.
+- Cursed, Inverted och Mania: komplexa. Inverted och Mania ges inte ens av slumpeffekter i originalet.
+
+**Tonen:** inga av dem är ockulta. Bleeding och Poisoned är vanliga strids-effekter. Cursed kan vänta.
+
+**Våra egna auror att mappa** (vårt val): holy_shield ≈ Protected (40 % i stället för 50 %) → byt till
+Protected. renew ≈ Mending (fast 45 i stället för 25 %) → behåll eller byt. inspired (nästa anfall +30 %)
+kan ligga kvar som vår egen, eller bli Berserk (+50 % i 3 turer).
+
 ---
 
 ## Källor

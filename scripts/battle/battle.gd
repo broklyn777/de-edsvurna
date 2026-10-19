@@ -37,6 +37,19 @@ var overlay: BattleOverlay
 var auto_chip: ChipButton
 var macro_log: MacroLog
 var speed_chip: ChipButton
+## Ge upp (0.20.1, Siralims Forfeit), med en bekräftelse.
+var forfeit_chip: ChipButton
+## Skadeloggen och uträkningen bakom siffrorna (0.21).
+var log_chip: ChipButton
+var damage_log: DamageLog
+## Siffror som just visats: [{pos, at_ms, e}] – ett tryck nära en visar dess uträkning.
+var _recent_numbers: Array = []
+var _calc_open := false
+var _dev_calc := false
+var _dev_statuses := false
+var _dev_inspect := ""
+var _dev_log := false
+var _dev_ask_forfeit := false
 ## Effekter som väntar på att vapnet eller projektilen ska träffa: [{left, call}].
 var _later: Array[Dictionary] = []
 
@@ -77,11 +90,24 @@ func _ready() -> void:
 			warp_turns = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--seed="):
 			seed_value = int(arg.get_slice("=", 1))
+		elif arg == "--statuses":
+			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
+		elif arg == "--show-calc":
+			_dev_calc = true  # visar uträkningen för en av hjältarnas träffar (skärmdumpar)
+		elif arg == "--damage-log":
+			_dev_log = true  # öppnar skadeloggen efter några turer (skärmdumpar)
+		elif arg == "--ask-forfeit":
+			_dev_ask_forfeit = true  # visar frågan om att ge upp när striden har börjat (skärmdumpar)
+		elif arg.begins_with("--inspect="):
+			_dev_inspect = arg.get_slice("=", 1)  # Inspect när striden har börjat (skärmdumpar)
 	var state: RunState = run.state
 	if state.charges.is_empty():
 		state.fill_charges(data)
+	var opts: Dictionary = state.battle_opts() if state.map != null and not state.practice \
+			else {"rules": state.active_rules(), "instability": state.instability, "floor": state.floor}
+	opts.levels = run.profile.levels_for(data, state.party)  # 0.19: hjältarnas nivåer
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
-			state.artifacts, state.depth, {"rules": state.active_rules(), "instability": state.instability})
+			state.artifacts, state.depth, opts)
 	data = sim.data  # med artefakternas egenskaper
 	_auto = demo
 	_build_scene()
@@ -107,6 +133,8 @@ func _ready() -> void:
 		for u in sim.units:
 			if not u.alive:
 				models[u.id].die()
+		if sim.outcome != "":
+			_on_outcome.call_deferred(sim.outcome)  # spolat till slutet: visa resultatet direkt
 		started = true
 		_countdown = 0.0
 	auto_chip.on = _auto
@@ -181,9 +209,22 @@ func _build_ui() -> void:
 	speed_chip.setup("1×", 64)
 	speed_chip.pressed.connect(_toggle_speed)
 	ui.add_child(speed_chip)
+	forfeit_chip = ChipButton.new()
+	forfeit_chip.setup("GE UPP", 104)
+	forfeit_chip.pressed.connect(_ask_forfeit)
+	ui.add_child(forfeit_chip)
+	log_chip = ChipButton.new()
+	log_chip.setup("SKADELOGG", 140)
+	log_chip.pressed.connect(_open_damage_log)
+	ui.add_child(log_chip)
 	overlay = BattleOverlay.new()
 	overlay.restart_requested.connect(_continue)
+	overlay.forfeit_answered.connect(_on_forfeit_answer)
 	ui.add_child(overlay)
+	damage_log = DamageLog.new()
+	damage_log.data = data
+	damage_log.hero_ids = sim.heroes.map(func(h: CombatUnit) -> String: return h.id)
+	ui.add_child(damage_log)
 	overlay.mode = "countdown"
 
 
@@ -198,12 +239,20 @@ func _layout() -> void:
 	auto_chip.position = Vector2(vs.x - auto_chip.size.x - 12, 12)
 	macro_log.position = Vector2(12, vs.y - macro_log.size.y - 12)
 	speed_chip.position = Vector2(auto_chip.position.x - speed_chip.size.x - 8, 12)
+	forfeit_chip.position = Vector2(speed_chip.position.x - forfeit_chip.size.x - 8, 12)
+	log_chip.position = Vector2(vs.x - log_chip.size.x - 12, 64)
 	overlay.size = vs
 
 
 # --- Bildruta ---------------------------------------------------------------
 
 func _process(delta: float) -> void:
+	if damage_log.open:
+		Engine.time_scale = 0.0  # striden står still medan loggen är öppen
+		return
+	if overlay.mode == "confirm":
+		Engine.time_scale = 0.0  # striden står still medan frågan visas
+		return
 	var now_ms := Time.get_ticks_msec()
 	if _press_ms >= 0 and not _inspecting and _press_unit != "" and now_ms - _press_ms >= INSPECT_HOLD_MS:
 		_inspecting = true
@@ -222,9 +271,16 @@ func _process(delta: float) -> void:
 			overlay.show_big("STRID!")
 			sfx.play("go", -2.0, 0.0)
 			sim.begin()
+			if _dev_statuses:
+				_give_dev_statuses()
+			if _dev_inspect != "":
+				_show_inspect.call_deferred(_dev_inspect)
 			_play_events()
 		return
 
+	if _dev_ask_forfeit and sim.turn_no >= 2:
+		_dev_ask_forfeit = false
+		_ask_forfeit()
 	_tick_later(delta)
 	_update_facing()
 	_update_frames()
@@ -284,6 +340,12 @@ func _unhandled_input(event: InputEvent) -> void:
 					.map(func(u: CombatUnit) -> String: return u.id))
 			return
 		_press_ms = -1
+		if _calc_open:
+			_calc_open = false
+			overlay.hide_calc()
+			return
+		if _choosing == "" and _show_calc_near(event.position):
+			return
 		if _inspecting:
 			_inspecting = false
 			overlay.hide_inspect()
@@ -293,6 +355,66 @@ func _unhandled_input(event: InputEvent) -> void:
 		var best := _unit_at(event.position, _targets)
 		if best != "":
 			_do(_choosing, best)
+
+
+## Ett tryck nära en siffra som just visats öppnar dess uträkning (0.21).
+func _show_calc_near(pos: Vector2) -> bool:
+	var now := Time.get_ticks_msec()
+	var best: Dictionary = {}
+	var best_d := 70.0
+	for n in _recent_numbers:
+		if now - int(n.at_ms) > 3500:
+			continue
+		var d: float = pos.distance_to(n.pos)
+		if d < best_d:
+			best_d = d
+			best = n
+	if best.is_empty():
+		return false
+	overlay.show_calc(DamageExplain.title(data, best.e), DamageExplain.lines(data, best.e))
+	_calc_open = true
+	return true
+
+
+func _remember_number(e: Dictionary) -> void:
+	if not e.has("calc"):
+		return
+	var p := world.project(models[e.target].head_position()) + Vector2(0, -56)
+	_recent_numbers.append({"pos": p, "at_ms": Time.get_ticks_msec(), "e": e})
+	if _recent_numbers.size() > 16:
+		_recent_numbers.pop_front()
+	damage_log.add(e)
+	if _dev_calc and e.type == "damage" and sim.unit(e.source).team == 0 and e.calc.get("scaled", false) \
+			and e.calc.get("kind", "") == "attack" and sim.turn_no >= 4:
+		_dev_calc = false
+		overlay.show_calc(DamageExplain.title(data, e), DamageExplain.lines(data, e))
+		_calc_open = true
+	if _dev_log and damage_log.entries.size() >= 10:
+		_dev_log = false
+		damage_log.show_log()
+		damage_log._open_rows[damage_log.entries.size() - 1] = true
+		damage_log._open_rows[damage_log.entries.size() - 3] = true
+
+
+func _give_dev_statuses() -> void:
+	var p := sim.heroes[0]
+	for id in ["protected", "mending", "leeching"]:
+		sim._add_aura(p, p, id)
+	sim._add_aura(p, sim.heroes[1], "berserk")
+	sim._add_aura(p, sim.heroes[1], "shelled")
+	sim._add_aura(sim.enemies[0], sim.heroes[2], "poisoned")
+	sim._add_aura(sim.enemies[0], sim.heroes[2], "blind")
+	sim._add_aura(p, sim.enemies[0], "bleeding")
+	sim._add_aura(p, sim.enemies[0], "vulnerable")
+	sim._add_aura(p, sim.enemies[1 % sim.enemies.size()], "snared")
+	sim._add_aura(p, sim.enemies[2 % sim.enemies.size()], "frozen")
+
+
+func _open_damage_log() -> void:
+	if overlay.mode == "confirm":
+		return
+	run.ui("ui_page", -10.0)
+	damage_log.show_log()
 
 
 ## Figuren närmast punkten bland ids (inom 80 px), eller "".
@@ -369,12 +491,17 @@ func _show_inspect(unit_id: String) -> void:
 	var u := sim.unit(unit_id)
 	var lines: Array[String] = ["Liv %d/%d · Attack %d · Intelligence %d · Defense %d · Speed %d" % [
 			u.hp, u.max_hp, u.attack, u.intelligence, u.defense_now(), u.speed]]
+	if u.team == 0 and u.personality != "":
+		var p: Dictionary = data.personalities[u.personality]
+		lines.append("Nivå %d · %s (%s 40 %%, %s 20 %%)" % [int(u.level), p.name, HeroStats.STAT_NAMES[p.up],
+				HeroStats.STAT_NAMES[p.down]])
 	for trait_id in u.traits:
 		var t: Dictionary = data.traits[trait_id]
 		if not t.get("hidden", false):
 			lines.append("%s: %s" % [t.name, t.text])
 	if lines.size() == 1:
 		lines.append("Inga egenskaper.")
+	lines.append_array(StatusIcons.lines(data, u))  # 0.22: statusarna med text och turer kvar
 	if u.team == 1:
 		lines.append(_trophy_line(u))
 		lines.append("Djup %d · stats ×%.2f" % [sim.depth, CombatSim.enemy_mult(data.encounters[run.state.encounter()], sim.depth)])
@@ -455,6 +582,22 @@ func _toggle_auto() -> void:
 		_targets.clear()
 
 
+func _ask_forfeit() -> void:
+	if not started or sim.outcome != "" or overlay.mode in ["victory", "defeat", "confirm"]:
+		return
+	run.ui("ui_tap", -10.0)
+	overlay.ask_forfeit(run.state.practice)
+
+
+func _on_forfeit_answer(yes: bool) -> void:
+	Engine.time_scale = _speed
+	if not yes:
+		return
+	forfeit_chip.visible = false
+	sim.forfeit()
+	_play_events()
+
+
 func _toggle_speed() -> void:
 	_speed = 2.0 if _speed == 1.0 else 1.0
 	speed_chip.label = "%d×" % int(_speed)
@@ -529,8 +672,14 @@ func _handle(e: Dictionary) -> void:
 			_on_action(e)
 		"damage":
 			_after(_effect_delay(e), _on_damage.bind(e))
+		"timeline_move":
+			_after(_cursor + 0.1, _float.bind(e.unit, "↑ ÖVERST" if e.dir == "top" else "↓ SIST",
+					Color("#bcd2ff"), 20, false))
+		"timeline_blocked":
+			_after(_cursor + 0.1, _float.bind(e.unit, "SNÄRJD", StatusIcons.DEBUFF, 20, false))
 		"dodge":
 			_after(_effect_delay(e), _float.bind(e.target, "UNDVEK", Color("#d8e6ff"), 22, false))
+			_after(_effect_delay(e), _remember_number.bind(e))
 		"immune":
 			_after(_effect_delay(e), _float.bind(e.target, "IMMUN", Color("#ffe48a"), 22, false))
 		"charge_restored":
@@ -646,6 +795,7 @@ func _on_damage(e: Dictionary) -> void:
 		_float(e.target, "(%d)" % int(absorbed), Color("#bfe3ff"), 18, false)
 	if e.amount > 0.0 or absorbed <= 0.0:
 		_float(e.target, str(int(e.amount)) + ("!" if crit else ""), color, size, crit or heavy)
+	_remember_number(e)
 	if on_hero:
 		frames[e.target].on_damage(e.amount)
 	if is_dot:
@@ -665,6 +815,7 @@ func _on_heal(e: Dictionary) -> void:
 		return
 	var p := _pos(e.target)
 	_float(e.target, "+" + str(int(e.effective)) + ("!" if e.crit else ""), UiStyle.school_color("heal"), 26 if e.crit else 22, e.crit)
+	_remember_number(e)
 	if sim.unit(e.target).team == 0:
 		frames[e.target].on_heal()
 	sfx.play("heal_light", -6.0, 0.03)
@@ -719,21 +870,37 @@ func _on_revive(unit_id: String) -> void:
 
 func _on_outcome(result: String) -> void:
 	action_bar.visible = false
+	forfeit_chip.visible = false
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
 	if result == "victory":
 		_slowmo_until = Time.get_ticks_msec() + 1200
 		run.audio.stop_music(0.8)
 		sfx.play("jingle_victory", -1.0, 0.0)
 		world.add_shake(10.0)
-		var title := "KRYPTAN RENSAD!" if run.state.is_last_floor() else "SEGER!"
+		var last: bool = run.state.is_last_floor() and run.state.current_room().get("kind", "end") == "end"
+		var title := ("%s RENSAD!" % run.data.realms[run.state.realm].short.to_upper()) if last else "SEGER!"
 		if run.state.practice:
 			title = "ÖVNINGEN VUNNEN"
 		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
 		overlay.lines = receipt()
+		# 0.19: erfarenhet och nivåuppgångar syns och hörs på segerskärmen.
+		overlay.level_ups = run.award_battle(sim, true)
+		if not overlay.level_ups.is_empty():
+			get_tree().create_timer(1.3).timeout.connect(sfx.play.bind("trophy_elite", -3.0, 0.0))
+		# 0.20: fynden syns till höger med eget ljud; ett sällsynt fynd får en egen liten scen.
+		overlay.data = data
+		overlay.finds = run.last_finds
+		run.play_find_sound(run.last_finds, 1.7)
+		run.show_rare_finds(run.last_finds, 2.6)
 	else:
+		run.award_battle(sim, false)
 		run.audio.stop_music(1.5)
 		sfx.play("jingle_defeat", -1.0, 0.0)
-		overlay.set_result("defeat", "Sällskapet föll efter %d turer" % sim.turn_no)
+		if sim.forfeited:
+			overlay.set_result("defeat", "Körningen är förlorad – Realmen börjar om från våning 1"
+					if not run.state.practice else "Övningen avslutad", "NI GAV UPP")
+		else:
+			overlay.set_result("defeat", "Sällskapet föll efter %d turer" % sim.turn_no)
 
 
 # --- Hjälpfunktioner --------------------------------------------------------
