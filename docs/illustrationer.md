@@ -15,8 +15,13 @@ till Huvudtråden, så läggs de i `assets/illustrations/`.
 
 För symboler och dekor (transparent bakgrund):
 
-> Hand-drawn sepia ink icon on a transparent background, old map style, bold clean outlines with light
-> cross-hatching, readable at small size, no text, centered, square 512×512.
+> Antique pen-and-ink engraving in the style of an old map illustration: fine sepia ink linework with
+> delicate cross-hatching for shading, no solid color fills, no cartoon outlines, monochrome sepia on a
+> transparent background. Simple clear silhouette that stays readable when small. No text. Centered,
+> square 512×512.
+
+Om bilden blir för tecknad: klistra in kapellbilden i chatten och skriv *"Match the engraving style of
+this illustration."* (Första försöket med "bold clean outlines" gav en tecknad, fylld stil.)
 
 ## Vinjetter (3:2)
 
