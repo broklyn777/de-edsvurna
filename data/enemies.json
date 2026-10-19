@@ -391,44 +391,18 @@
 			"cultist_ward"
 		],
 		"visual": {
-			"model": "skelett",
-			"scale": 0.95,
-			"tint": "#e0a0a0",
-			"anims_from": [
-				"solveig"
-			],
-			"hide": [
-				"Ske_Sword",
-				"Ske_Shield"
-			],
-			"parts": [
-				"kapa/Kult_Robe",
-				"kapa/Kult_Pendant"
-			],
-			"colors": {
-				"Kult_Robe": "#5a1010",
-				"Kult_DarkBrown": "#8a2020",
-				"Kult_Black": "#1a0606",
-				"Kult_LightBrown": "#3a0c0c",
-				"Kult_Metal": "#6a3030"
-			},
-			"emit": {
-				"Kult_Glow": "#ff4a3a"
-			},
-			"weapons": {
-				"grip_r": "Handaxe"
-			},
+			"model": "kultist",
+			"scale": 1.0,
 			"light": "#ff3a2a",
 			"light_energy": 0.6,
 			"anims": {
-				"idle": "Staff_Idle",
+				"idle": "Idle",
 				"attack": [
 					"Spell_Simple_Shoot"
 				],
-				"cast": "Staff_Cast",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk_Loop"
+				"walk": "Walk"
 			}
 		},
 		"trophy": "prayer_beads"
@@ -449,37 +423,18 @@
 			"wraith_ethereal"
 		],
 		"visual": {
-			"model": "skelett",
-			"scale": 0.9,
-			"tint": "#bfe6ff",
-			"glow": "#2a6a9a",
-			"hide": [
-				"Ske_Sword",
-				"Ske_Shield"
-			],
-			"colors": {
-				"Ske_Bone": "#9fc4dd",
-				"Ske_BoneDark": "#4a6a80"
-			},
-			"emit": {
-				"Ske_Eye": "#9ff0ff",
-				"Ske_Void": "#5ad0ff",
-				"Vapen_Steel": "#9ff0ff"
-			},
-			"weapons": {
-				"grip_r": "Shortsword",
-				"grip_l": "Shortsword"
-			},
+			"model": "gast",
+			"scale": 1.0,
 			"light": "#6ad0ff",
 			"light_energy": 1.0,
 			"anims": {
-				"idle": "Sword_Idle",
+				"idle": "Idle",
 				"attack": [
 					"Sword_Attack"
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk_Loop"
+				"walk": "Walk"
 			}
 		},
 		"trophy": "wraith_veil"
@@ -505,38 +460,8 @@
 			}
 		],
 		"visual": {
-			"model": "skelett",
-			"scale": 1.15,
-			"tint": "#806070",
-			"anims_from": [
-				"torvald"
-			],
-			"hide": [
-				"Ske_Sword",
-				"Ske_Shield"
-			],
-			"parts": [
-				"rustning/Tom_Helm",
-				"rustning/Tom_Breast",
-				"rustning/Tom_Fauld",
-				"rustning/Tom_Tassets",
-				"rustning/Tom_Pauldron_L",
-				"rustning/Tom_Pauldron_R",
-				"rustning/Tom_Rerebrace_L",
-				"rustning/Tom_Rerebrace_R",
-				"rustning/Tom_Vambrace_L",
-				"rustning/Tom_Vambrace_R",
-				"rustning/Tom_Cuisse_L",
-				"rustning/Tom_Cuisse_R",
-				"rustning/Tom_Greave_L",
-				"rustning/Tom_Greave_R"
-			],
-			"colors": {
-				"Tom_Steel": "#2e2830",
-				"Tom_Edge": "#8a2a2a",
-				"Tom_Guard": "#3a1a1a",
-				"Vapen_Wood": "#2a1a1a"
-			},
+			"model": "fallen_riddare",
+			"scale": 1.1,
 			"weapons": {
 				"grip_r": "Longsword",
 				"grip_l": "Shield"
@@ -550,10 +475,7 @@
 				"block": "Shield_Block",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk_Loop"
-			},
-			"emit": {
-				"Ske_Eye": "#ff3a2a"
+				"walk": "Walk"
 			}
 		},
 		"trophy": "fallen_oath"
@@ -579,45 +501,18 @@
 			}
 		],
 		"visual": {
-			"model": "skelett",
-			"scale": 0.95,
-			"tint": "#b8e0a0",
-			"anims_from": [
-				"solveig"
-			],
-			"hide": [
-				"Ske_Sword",
-				"Ske_Shield"
-			],
-			"parts": [
-				"kapa/Kult_Robe",
-				"kapa/Kult_Pendant"
-			],
-			"colors": {
-				"Kult_Robe": "#16301a",
-				"Kult_DarkBrown": "#2a5a2a",
-				"Kult_Black": "#081208",
-				"Kult_LightBrown": "#1a2a14",
-				"Kult_Metal": "#3a5a2a"
-			},
-			"emit": {
-				"Kult_Glow": "#7aff5a",
-				"Ske_Eye": "#9aff6a"
-			},
-			"weapons": {
-				"grip_r": "Staff"
-			},
+			"model": "haxa",
+			"scale": 1.0,
 			"light": "#6aff4a",
 			"light_energy": 0.8,
 			"anims": {
-				"idle": "Staff_Idle",
+				"idle": "Idle",
 				"attack": [
 					"Spell_Simple_Shoot"
 				],
-				"cast": "Staff_Cast",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk_Loop"
+				"walk": "Walk"
 			}
 		},
 		"trophy": "witch_tongue"
@@ -702,53 +597,18 @@
 		"boss": true,
 		"boss_text": "Resistent. Kan inte skadas så länge en Kultist lever. Försvagar sällskapet och håller mörk mässa.",
 		"visual": {
-			"model": "skelett",
-			"scale": 1.9,
-			"tint": "#f0e6c8",
-			"glow": "#8a6a20",
-			"anims_from": [
-				"torvald"
-			],
-			"hide": [
-				"Ske_Sword",
-				"Ske_Shield"
-			],
-			"parts": [
-				"kapa/Kult_Robe",
-				"rustning/Tom_Pauldron_L",
-				"rustning/Tom_Pauldron_R",
-				"rustning/Tom_Rerebrace_L",
-				"rustning/Tom_Rerebrace_R"
-			],
-			"crown": "#f0d070",
-			"colors": {
-				"Kult_Robe": "#e8e0d0",
-				"Kult_DarkBrown": "#a08040",
-				"Kult_Black": "#2a2418",
-				"Kult_LightBrown": "#c8b890",
-				"Kult_Metal": "#c8a040",
-				"Tom_Steel": "#c8a040",
-				"Tom_Edge": "#f0d070",
-				"Tom_Guard": "#806020"
-			},
-			"emit": {
-				"Kult_Glow": "#ffd060",
-				"Ske_Eye": "#ff4a2a"
-			},
-			"weapons": {
-				"grip_r": "Staff"
-			},
+			"model": "biskop",
+			"scale": 1.7,
 			"light": "#ffc040",
 			"light_energy": 1.5,
 			"anims": {
-				"idle": "Staff_Idle",
+				"idle": "Sword_Idle",
 				"attack": [
 					"Spell_Simple_Shoot"
 				],
-				"cast": "Staff_Cast",
 				"hit": "Hit_Chest",
 				"death": "Death01",
-				"walk": "Walk_Loop"
+				"walk": "Walk"
 			}
 		},
 		"trophy": "bishop_mitre"
