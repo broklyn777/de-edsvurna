@@ -60,6 +60,40 @@ func hide_inspect() -> void:
 	inspect_lines = []
 
 
+## Uträkningen bakom en siffra (0.21): visas tills nästa tryck.
+var calc_title := ""
+var calc_lines: Array[String] = []
+
+
+func show_calc(title: String, rows: Array[String]) -> void:
+	calc_title = title
+	calc_lines = rows
+
+
+func hide_calc() -> void:
+	calc_title = ""
+	calc_lines = []
+
+
+func _draw_calc(w: float) -> void:
+	var bw := minf(w - 40.0, 860.0)
+	var font := UiStyle.bold()
+	var h := 64.0
+	for line in calc_lines:
+		h += font.get_multiline_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, bw - 40, 18).y + 6
+	var r := Rect2((w - bw) / 2.0, 66, bw, h + 34)
+	draw_rect(r, Color(0.03, 0.025, 0.05, 0.95))
+	draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.85), false, 2.0)
+	UiStyle.text(self, r.position + Vector2(20, 36), calc_title, 22, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT, bw - 40, 4)
+	var y := r.position.y + 70
+	for i in calc_lines.size():
+		var last := i == calc_lines.size() - 1
+		y += 6 + UiStyle.para(self, Vector2(r.position.x + 20, y), calc_lines[i], 19 if last else 18,
+				UiStyle.GOLD if last else Color(1, 1, 1, 0.9), bw - 40)
+	UiStyle.text(self, Vector2(r.position.x, r.end.y - 10), "Tryck för att stänga", 15, Color(1, 1, 1, 0.5),
+			HORIZONTAL_ALIGNMENT_CENTER, bw, 0)
+
+
 ## "Brokk nådde nivå 5!" med statsen som steg, uppräknade, under kvittot.
 func _draw_level_ups(w: float, h: float, a: float) -> void:
 	var y := h * 0.45 + 100 + lines.size() * 26
@@ -225,6 +259,8 @@ func _draw() -> void:
 			var font := UiStyle.bold()
 			var pos := r.position + Vector2(20, 76 + i * 46)
 			draw_multiline_string(font, pos, inspect_lines[i], HORIZONTAL_ALIGNMENT_LEFT, bw - 40, 17, 2, Color(1, 1, 1, 0.9))
+	if calc_title != "":
+		_draw_calc(w)
 	if _message_t > 0.0:
 		UiStyle.text(self, Vector2(0, h - 150), _message, 20, Color(1, 0.35, 0.3, minf(1.0, _message_t * 2.0)),
 				HORIZONTAL_ALIGNMENT_CENTER, w, 5)

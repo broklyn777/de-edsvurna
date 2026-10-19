@@ -53,7 +53,8 @@
 	"renew": {
 		"name": "Förnyelse",
 		"duration": 3,
-		"hot": 45,
+		"hot_stat": "intelligence",
+		"hot_pct": 0.7,
 		"buff": true
 	},
 	"barrier": {

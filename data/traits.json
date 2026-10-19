@@ -498,7 +498,7 @@
 	"warden_helm": {
 		"name": "Väktarens hjälm",
 		"trophy": true,
-		"text": "När bäraren Försvarar eller Provocerar helas den svagaste i sällskapet för 120.",
+		"text": "När bäraren Försvarar eller Provocerar helas den svagaste i sällskapet för 140 % av bärarens Defense.",
 		"trigger": "action",
 		"when": {
 			"unit": "self",
@@ -510,8 +510,8 @@
 		"effects": [
 			{
 				"type": "heal",
-				"min": 110,
-				"max": 130,
+				"stat": "defense",
+				"pct": 1.4,
 				"target": "weakest_ally"
 			}
 		]

@@ -198,8 +198,7 @@
 		"effects": [
 			{
 				"type": "heal",
-				"min": 170,
-				"max": 200
+				"power": 1.8
 			}
 		],
 		"kind": "spell"
@@ -397,7 +396,7 @@
 		"icon": "drop",
 		"button_color": "#9ff0a8",
 		"sound": "renew",
-		"text": "Målet helas 45 i början av sina tre nästa turer.",
+		"text": "Målet helas 70 % av kastarens Intelligence i början av sina tre nästa turer.",
 		"effects": [
 			{
 				"type": "aura",
