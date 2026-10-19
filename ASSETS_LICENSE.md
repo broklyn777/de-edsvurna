@@ -30,7 +30,7 @@ Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla 
 
 Rumsögonblicken (`scripts/rooms/`, se `docs/rum3d.md`) har inga egna modellfiler: rummen, kistan,
 altaret, buren, stentavlan, lägerelden och portalen byggs av former i kod. Statyn i helgedomen är
-`torvald.glb` och fången i buren `sigrun.glb` (se ovan).
+`torvald.glb` och fången i buren `alva.glb` (se ovan).
 
 # Ljud
 

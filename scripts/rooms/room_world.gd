@@ -2,7 +2,7 @@ class_name RoomWorld
 extends Node3D
 ## Ett rum på rumskartan i 3D: väggar, golv, en dörr i främre väggen och rummets mittpunkt
 ## (kista, altare, bur, stentavla, lägereld eller portal). Byggs i kod som CryptWorld, utan modellfiler
-## utom statyn och fången, som lånar figurerna i assets/models/ (torvald, sigrun).
+## utom statyn och fången, som lånar figurerna i assets/models/ (torvald, alva).
 ##
 ##   var room := RoomWorld.new()
 ##   room.kind = "treasure"   # KINDS
@@ -536,9 +536,10 @@ func _build_prisoner() -> void:
 	var prisoner := UnitModel.new()
 	var u := CombatUnit.from_data("prisoner", {"name": "Fånge", "stats": {"health": 1}}, 0)
 	root.add_child(prisoner)
-	prisoner.setup(u, null, {"model": "sigrun", "scale": 0.95,
-			"anims": {"idle": "OneHand_Idle", "hit": "Hit_Chest", "walk": "Walk_Loop"},
-			"tint": "#9a8a7a"})
+	# sigrun.glb följer inte med i APK:n; fången är Alvas kåpklädda figur i smutsgrått.
+	prisoner.setup(u, null, {"model": "alva", "scale": 0.95, "anims_from": ["sigrun_delar"],
+			"anims": {"idle": "OneHand_Idle", "hit": "Hit_Chest", "walk": "Walk"},
+			"tint": "#7d766e"})
 	prisoner.position = Vector3(0, 0.12, -0.1)
 	prisoner.face(prisoner.global_position + Vector3(0.4, 0, -1))
 	_box(Vector3(0.5, 0.06, 0.04), Vector3(0, 0.95, 0.1), iron, root)  # bojan mellan händerna

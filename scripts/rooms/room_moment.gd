@@ -24,6 +24,10 @@ const CAMERA_TIME := 3.0
 const REVEAL_AT := 2.7
 const LENGTH := 4.8
 
+## Ungefärlig fart (m/s) i gånganimationen vid normal uppspelning; gången spelas snabbare eller
+## långsammare så att stegen följer marken och figurerna inte glider.
+const WALK_PACE := 1.6
+
 const CAM_PATH := [Vector3(0, 2.7, 14.5), Vector3(0, 3.1, 8.0), Vector3(0.15, 3.3, 4.0), Vector3(2.7, 4.1, 3.9)]
 
 var kind := "treasure"
@@ -96,7 +100,7 @@ func _ready() -> void:
 		var u := CombatUnit.from_data(id, d, 0)
 		var m := UnitModel.new()
 		world.add_child(m)
-		m.setup(u, null, d.visual)
+		m.setup(u, null, _walkable(d.visual))
 		m.sfx = sfx
 		m.position = starts[i]
 		m.face(m.position + Vector3(0, 0, -5))
@@ -177,6 +181,10 @@ func _walk_later(m: UnitModel, target: Vector3, at: float) -> void:
 	var dur := WALK_TIME - (at - WALK_AT)
 	m.move_to(target, dur, false)
 	m.face(world.focus_point())
+	# move_to startar gånganimationen i jämn takt; anpassa den efter sträckan. Rörelsen bromsar in
+	# mot slutet (smoothstep), så medelfarten räknas om till toppfarten (× 1,5) för stegen.
+	var pace := m.position.distance_to(target) / dur * 1.5
+	m._player.speed_scale = clampf(pace / WALK_PACE, 0.7, 1.8)
 
 
 ## Kameran åker längs en kubisk kurva genom dörren och svänger upp mot rummets mittpunkt,
@@ -192,6 +200,18 @@ func _place_camera(t: float) -> void:
 	var look := Vector3(0, 1.4, RoomWorld.FRONT - 1.0).lerp(world.focus_point(), k)
 	camera.position = pos
 	camera.look_at(look)
+
+
+## Godot tar bort ändelsen _Loop ur animationsnamnen vid importen (Walk_Loop blir Walk). Hjältarnas
+## visual i data/heroes.json använder ibland det långa namnet, så slå upp det som faktiskt finns.
+func _walkable(vis: Dictionary) -> Dictionary:
+	var fixed := vis.duplicate(true)
+	var anims: Dictionary = fixed.get("anims", {})
+	for key in ["walk", "run", "idle"]:
+		var anim_name := String(anims.get(key, ""))
+		if anim_name.ends_with("_Loop"):
+			anims[key] = anim_name.trim_suffix("_Loop")
+	return fixed
 
 
 func _reveal_sound() -> String:

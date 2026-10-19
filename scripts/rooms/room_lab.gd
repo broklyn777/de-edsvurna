@@ -6,6 +6,7 @@ extends Control
 ##   godot --path . res://scripts/rooms/room_lab.tscn -- --room=portal --shot=/tmp/portal.png --at=4.5
 ##
 ## --party=paladin,brokk,alva väljer sällskapet (standard: alla fem hjältarna).
+## --debug-walk skriver ut varje figurs animation och position under gången.
 ## --shot sparar en bild när ögonblicket kommit så långt (--at sekunder) och avslutar.
 
 var _queue: Array = []
@@ -73,3 +74,10 @@ func _process(_delta: float) -> void:
 		get_viewport().get_texture().get_image().save_png(path)
 		_moment.world.get_viewport().get_texture().get_image().save_png(path.replace(".png", "_vp.png"))
 		get_tree().quit()
+
+
+func _physics_process(_d: float) -> void:
+	if OS.get_cmdline_user_args().has("--debug-walk") and _moment and Engine.get_physics_frames() % 15 == 0:
+		for m in _moment.models:
+			var p: AnimationPlayer = m._player
+			print("%.2f %s anim=%s pos=%s moving=%s" % [_moment._t, m.unit.id, p.current_animation, m.global_position, m.is_moving()])

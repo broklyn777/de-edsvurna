@@ -10,7 +10,7 @@ Inget är inkopplat i spelflödet ännu – allt ligger i `scripts/rooms/`.
 
 - `scripts/rooms/room_world.gd` – `RoomWorld` (Node3D): rummet byggt i kod som `CryptWorld`.
   Väggar, golv, korridor, dubbeldörr i främre väggen och mittpunkten. Ingen ny modellfil:
-  statyn i helgedomen är `torvald.glb` i sten, fången i buren är `sigrun.glb` (via `UnitModel`).
+  statyn i helgedomen är `torvald.glb` i sten, fången i buren är `alva.glb` i grått (via `UnitModel`; `sigrun.glb` följer inte med i APK:n).
 - `scripts/rooms/room_moment.gd` – `RoomMoment` (Control): ögonblicksspelaren. Lägger rummet i en
   egen `SubViewport` (egen 3D-värld) och täcker hela skärmen, så den kan läggas ovanpå vilken
   2D-skärm som helst, t.ex. rumskartan.
