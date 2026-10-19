@@ -263,7 +263,13 @@ func _resume_run() -> void:
 	if saved == null or saved.map == null or saved.finished:
 		return
 	state = saved
-	get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
+	if state.battle_pending:
+		# Appen stängdes under en strid: striden börjar om, som om man just gått in i rummet.
+		get_tree().change_scene_to_file.call_deferred(BATTLE_SCENE)
+	elif state.floor_cleared():
+		after_camp.call_deferred()  # vunnet våningens slut, men appen stängdes i lägret: vidare
+	else:
+		get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
 
 
 ## Spelaren går in i ett rum på rumskartan. Strider går till striden; andra rum avgörs på kartan.

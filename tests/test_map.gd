@@ -202,3 +202,32 @@ func test_portal_side_rooms_are_the_only_choice_inside_the_portal() -> void:
 			assert_eq(s.choices(), [r.side[1].id], "skatten är nästa val")
 			assert_true(s.map.room(s.choices()[0]).is_empty(), "sidorummet finns inte bland kartans rum")
 	assert_true(found > 0, "några kartor börjar med en portal")
+
+
+## 0.20.1 fastnade vid våningens slut: appen stängdes under striden, och den sparade körningen stod i
+## stridsrummet utan något att trycka på. Nu minns körningen att striden inte är vunnen.
+func test_unfinished_battle_is_pending_after_resume() -> void:
+	var s := _state("chapel", 11)
+	s.room_id = s.map.end.id
+	s.visited.append(s.room_id)
+	s.battle_pending = true
+	assert_true(not s.floor_cleared(), "våningen är inte klar förrän striden är vunnen")
+	var path := "user://test_pending.cfg"
+	s.save(path)
+	var t := RunState.load_from(path)
+	assert_true(t.battle_pending, "striden väntar efter återupptagning")
+	t.battle_won()
+	assert_true(t.floor_cleared(), "klar efter segern")
+	# En körning sparad före 0.20.2 (utan fältet) som står i ett stridsrum spelar striden igen.
+	var old := s.to_dict()
+	old.erase("battle_pending")
+	assert_true(RunState.from_dict(old).battle_pending, "gamla sparningar i stridsrum")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func test_entering_a_battle_room_marks_it_pending() -> void:
+	var s := _state()
+	for id in s.choices():
+		var t := _state()
+		var r := t.enter(id)
+		assert_eq(t.battle_pending, RunState.is_battle(r), "rum %s (%s)" % [id, r.kind])

@@ -61,6 +61,9 @@ var room_id := ""
 var visited: Array = []
 ## Portalens sidodel: index för nästa sidorum (−1 = inte i en portal).
 var side_index := -1
+## Sällskapet har gått in i ett stridsrum men inte vunnit än (körningen sparas före striden). Vid
+## återupptagning går man rakt in i striden igen.
+var battle_pending := false
 ## Realm Quest: {type, goal, progress, done, floor (Jakt), room (Jakt), reward_silver}.
 var quest := {}
 ## Helgedomens gåvor och förbannelser som gäller nästa strid: auror för sällskapet och regler.
@@ -356,7 +359,8 @@ func enter(id: String) -> Dictionary:
 	var r := map.room(id)
 	if r.kind == "portal":
 		side_index = 0
-		return current_room()
+		r = current_room()
+	battle_pending = is_battle(r)
 	return r
 
 
@@ -391,6 +395,7 @@ func battle_silver(at_depth: int) -> int:
 ## om questen blev klar nu.
 func battle_won() -> bool:
 	var r := current_room()
+	battle_pending = false
 	next_auras.clear()
 	next_rules.clear()
 	var before: bool = quest.get("done", false)
@@ -418,7 +423,7 @@ func _after_room() -> void:
 
 ## Sant när våningens slut är vunnet.
 func floor_cleared() -> bool:
-	return map != null and room_id == map.end.id and side_index < 0
+	return map != null and room_id == map.end.id and side_index < 0 and not battle_pending
 
 
 ## Nästa våning, eller körningen klar efter den sista.
@@ -530,7 +535,7 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "room_id", "visited",
-		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found"]
+		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending"]
 
 
 func to_dict() -> Dictionary:
@@ -552,6 +557,9 @@ static func from_dict(d: Dictionary) -> RunState:
 	s.trophies.assign(d.get("trophies", []))
 	if not d.get("map", {}).is_empty():
 		s.map = RoomMap.from_dict(d.map)
+	if not d.has("battle_pending") and s.map != null and s.room_id != "":
+		# Sparad före 0.20.2: står man i ett stridsrum vet vi inte om det vanns, så striden spelas igen.
+		s.battle_pending = is_battle(s.current_room())
 	return s
 
 
