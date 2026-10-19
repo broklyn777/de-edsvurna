@@ -100,7 +100,7 @@ func _ready() -> void:
 		var u := CombatUnit.from_data(id, d, 0)
 		var m := UnitModel.new()
 		world.add_child(m)
-		m.setup(u, null, _walkable(d.visual))
+		m.setup(u, null, d.visual)
 		m.sfx = sfx
 		m.position = starts[i]
 		m.face(m.position + Vector3(0, 0, -5))
@@ -200,18 +200,6 @@ func _place_camera(t: float) -> void:
 	var look := Vector3(0, 1.4, RoomWorld.FRONT - 1.0).lerp(world.focus_point(), k)
 	camera.position = pos
 	camera.look_at(look)
-
-
-## Godot tar bort ändelsen _Loop ur animationsnamnen vid importen (Walk_Loop blir Walk). Hjältarnas
-## visual i data/heroes.json använder ibland det långa namnet, så slå upp det som faktiskt finns.
-func _walkable(vis: Dictionary) -> Dictionary:
-	var fixed := vis.duplicate(true)
-	var anims: Dictionary = fixed.get("anims", {})
-	for key in ["walk", "run", "idle"]:
-		var anim_name := String(anims.get(key, ""))
-		if anim_name.ends_with("_Loop"):
-			anims[key] = anim_name.trim_suffix("_Loop")
-	return fixed
 
 
 func _reveal_sound() -> String:
