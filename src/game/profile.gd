@@ -44,6 +44,11 @@ var practice_equipped := {}
 ## Nästa djup öppnas när det föregående är klarat.
 var depth := 1
 var best_depth := 0
+## Anointments (Siralim): varje besegrad boss (räknas en gång per bosstyp) låser upp en plats där
+## en Ed får låna en perk från en annan Ed. Lånet kostar perk-poäng ur den lånande Edens pott.
+var bosses_defeated: Array[String] = []
+## oath_id -> lånad perk_id.
+var anointed := {}
 
 
 static func reward(floor: int, at_depth := 1) -> int:
@@ -112,38 +117,65 @@ func perk_points() -> int:
 	return PERK_POINTS_START + best_depth / DEPTHS_PER_PERK_POINT
 
 
-## Hur många perk-poäng Edens köpta perks använder.
+## Hur många perk-poäng Edens köpta perks och lånade perk använder.
 func points_used(data: Dictionary, oath_id: String) -> int:
 	var used := 0
 	for perk_id in owned_perks(oath_id):
 		used += maxi(perk_cost(data, oath_id, perk_id), 0)
+	if anointed.has(oath_id):
+		used += maxi(int(perk_entry(data, anointed[oath_id]).get("cost", 0)), 0)
 	return used
 
 
-## Perkarna som verkar: de köpta i köpordning så långt poängen räcker (äldre sparfiler kan ha fler).
+## Perkarna som verkar: de köpta i köpordning (en post per nivå) och sist den lånade, så långt
+## poängen räcker (äldre sparfiler kan ha fler).
 func active_perks(data: Dictionary, oath_id: String) -> Array:
 	var out := []
 	var left := perk_points()
-	for perk_id in owned_perks(oath_id):
-		var cost := perk_cost(data, oath_id, perk_id)
+	var list: Array = owned_perks(oath_id).duplicate()
+	if anointed.has(oath_id) and anointment_slots() > 0:
+		list.append(anointed[oath_id])
+	for perk_id in list:
+		var cost := int(perk_entry(data, perk_id).get("cost", -1))
 		if cost >= 0 and cost <= left:
 			out.append(perk_id)
 			left -= cost
 	return out
 
 
-## Vad perken kostar i perk-poäng (−1 om den inte hör till Eden).
+## Perkens post i oaths.json med Eden den hör till: {id, cost, ranks, oath}, eller tom.
+static func perk_entry(data: Dictionary, perk_id: String) -> Dictionary:
+	for oath_id in data.oaths:
+		for p in data.oaths[oath_id].perks:
+			if p.id == perk_id:
+				var out: Dictionary = p.duplicate()
+				out.oath = oath_id
+				return out
+	return {}
+
+
+## Vad en nivå av perken kostar i perk-poäng (−1 om den inte hör till Eden).
 static func perk_cost(data: Dictionary, oath_id: String, perk_id: String) -> int:
-	for p in data.oaths.get(oath_id, {}).get("perks", []):
-		if p.id == perk_id:
-			return int(p.cost)
-	return -1
+	var entry := perk_entry(data, perk_id)
+	return int(entry.cost) if entry.get("oath", "") == oath_id else -1
 
 
-## Köper perken för perk-poäng. Falskt om den redan är köpt, inte hör till Eden eller poängen inte räcker.
+## Hur många nivåer perken har (rena siffror 2–3, regelbrytare 1, som i Siralim).
+static func perk_ranks(data: Dictionary, perk_id: String) -> int:
+	return int(perk_entry(data, perk_id).get("ranks", 1))
+
+
+## Köpt nivå i perken (0 = inte köpt).
+func perk_rank(oath_id: String, perk_id: String) -> int:
+	return owned_perks(oath_id).count(perk_id)
+
+
+## Köper perken, eller nästa nivå i den, för perk-poäng. Falskt om den har alla nivåer, inte hör till
+## Eden eller poängen inte räcker.
 func buy_perk(data: Dictionary, oath_id: String, perk_id: String) -> bool:
 	var cost := perk_cost(data, oath_id, perk_id)
-	if cost < 0 or owned_perks(oath_id).has(perk_id) or points_used(data, oath_id) + cost > perk_points():
+	if cost < 0 or perk_rank(oath_id, perk_id) >= perk_ranks(data, perk_id) \
+			or points_used(data, oath_id) + cost > perk_points():
 		return false
 	var list: Array = owned_perks(oath_id).duplicate()
 	list.append(perk_id)
@@ -151,10 +183,38 @@ func buy_perk(data: Dictionary, oath_id: String, perk_id: String) -> bool:
 	return true
 
 
-## Återställer Edens perks gratis, som i Siralim: poängen kommer tillbaka. Returnerar antalet poäng.
+## Antal anointment-platser: en per besegrad bosstyp. Vi har en plats per Ed, så fler bossar ger
+## inte fler lån än (VAL; Siralim har fler platser).
+func anointment_slots() -> int:
+	return mini(bosses_defeated.size(), 1)
+
+
+func defeat_boss(kind: String) -> void:
+	if not bosses_defeated.has(kind):
+		bosses_defeated.append(kind)
+
+
+## Lånar perken (nivå 1) från en annan Ed till oath_id, i stället för ett tidigare lån. Falskt om
+## platsen inte är upplåst, perken hör till samma Ed eller poängen inte räcker.
+func anoint(data: Dictionary, oath_id: String, perk_id: String) -> bool:
+	var entry := perk_entry(data, perk_id)
+	if anointment_slots() <= 0 or entry.is_empty() or entry.oath == oath_id:
+		return false
+	var before: Variant = anointed.get(oath_id)
+	anointed.erase(oath_id)
+	if points_used(data, oath_id) + int(entry.cost) > perk_points():
+		if before != null:
+			anointed[oath_id] = before
+		return false
+	anointed[oath_id] = perk_id
+	return true
+
+
+## Återställer Edens perks och lån gratis, som i Siralim: poängen kommer tillbaka. Returnerar antalet poäng.
 func reset_perks(data: Dictionary, oath_id: String) -> int:
 	var refund := points_used(data, oath_id)
 	perks.erase(oath_id)
+	anointed.erase(oath_id)
 	return refund
 
 
@@ -180,6 +240,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "practice_equipped", practice_equipped)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
+	cfg.set_value("progress", "bosses_defeated", bosses_defeated)
+	cfg.set_value("progress", "anointed", anointed)
 	return cfg.save(path)
 
 
@@ -202,5 +264,8 @@ static func load_from(path: String) -> Profile:
 		p.party.assign(saved)
 	p.practice_equipped = cfg.get_value("progress", "practice_equipped", {})
 	p.best_depth = int(cfg.get_value("progress", "best_depth", 0))
+	for kind in cfg.get_value("progress", "bosses_defeated", []):
+		p.bosses_defeated.append(kind)
+	p.anointed = cfg.get_value("progress", "anointed", {})
 	p.choose_depth(int(cfg.get_value("progress", "depth", 1)))
 	return p

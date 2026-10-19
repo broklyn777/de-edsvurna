@@ -1,11 +1,19 @@
 extends TapScreen
 ## Edsaltaret (Siralims Enchanted Wardrobe): välj Paladinens Ed (Siralims Specialization) och köp
 ## perks för perk-poäng (Siralims Perk Points, Profile.perk_points). Eden gäller hela sällskapet; kärnan
-## verkar alltid och de köpta perkarna i den valda Eden verkar. Att återställa är gratis – poängen
-## kommer tillbaka (Profile.reset_perks).
+## verkar alltid och de köpta perkarna i den valda Eden verkar. Perks som är rena siffror har 2–3
+## nivåer. En besegrad boss låser upp en lånad perk (Siralims Anointment) från en annan Ed. Att
+## återställa är gratis – poängen kommer tillbaka (Profile.reset_perks).
 
 var selected_perk := ""
+## Sant när rutnätet visar de andra Edernas perks att låna.
+var anoint_mode := false
 var _flash := 0.0
+
+
+func _ready() -> void:
+	super()
+	anoint_mode = OS.get_cmdline_user_args().has("--anoint")
 
 
 func _process(delta: float) -> void:
@@ -17,12 +25,21 @@ func _oaths() -> Array:
 	return run.data.oaths.keys()
 
 
+## Perkarna i rutnätet: Edens egna, eller de andra Edernas när man väljer vad man lånar.
 func _perks() -> Array:
-	return run.data.oaths[run.profile.oath].perks
+	var profile: Profile = run.profile
+	if not anoint_mode:
+		return run.data.oaths[profile.oath].perks
+	var out := []
+	for oath_id in run.data.oaths:
+		if oath_id != profile.oath:
+			out.append_array(run.data.oaths[oath_id].perks)
+	return out
 
 
 func _tap(p: Vector2) -> void:
 	var profile: Profile = run.profile
+	var data: Dictionary = run.data
 	if back_rect().has_point(p):
 		run.go(run.BASE_SCENE)
 		return
@@ -31,6 +48,7 @@ func _tap(p: Vector2) -> void:
 		if _oath_rect(i).has_point(p):
 			profile.choose_oath(oaths[i])
 			selected_perk = ""
+			anoint_mode = false
 			run.save()
 			return
 	var perks := _perks()
@@ -38,13 +56,19 @@ func _tap(p: Vector2) -> void:
 		if _perk_rect(i).has_point(p):
 			selected_perk = perks[i].id
 			return
+	if _anoint_rect().has_point(p) and profile.anointment_slots() > 0:
+		anoint_mode = not anoint_mode
+		selected_perk = ""
+		return
 	if _buy_rect().has_point(p) and selected_perk != "":
-		if profile.buy_perk(run.data, profile.oath, selected_perk):
+		var ok: bool = profile.anoint(data, profile.oath, selected_perk) if anoint_mode \
+				else profile.buy_perk(data, profile.oath, selected_perk)
+		if ok:
 			_flash = 1.0
 			run.save()
 		return
-	if _reset_rect().has_point(p) and not profile.owned_perks(profile.oath).is_empty():
-		profile.reset_perks(run.data, profile.oath)
+	if _reset_rect().has_point(p) and profile.points_used(data, profile.oath) > 0:
+		profile.reset_perks(data, profile.oath)
 		run.save()
 
 
@@ -59,8 +83,14 @@ func _x0() -> float:
 
 
 func _perk_rect(i: int) -> Rect2:
-	var w := (size.x - MARGIN - _x0() - GAP) / 2.0
-	return Rect2(_x0() + (i % 2) * (w + GAP), 124 + (i / 2) * 120, w, 108)
+	var cols := 3 if anoint_mode else 2
+	var h := 84.0 if anoint_mode else 108.0
+	var w := (size.x - MARGIN - _x0() - GAP * (cols - 1)) / cols
+	return Rect2(_x0() + (i % cols) * (w + GAP), 124 + (i / cols) * (h + 8 if anoint_mode else 120), w, h)
+
+
+func _anoint_rect() -> Rect2:
+	return Rect2(_x0(), 492, size.x - MARGIN - _x0(), 92)
 
 
 func _buy_rect() -> Rect2:
@@ -83,38 +113,80 @@ func _draw() -> void:
 	for i in oaths.size():
 		var t: Dictionary = data.traits[oaths[i]]
 		var on: bool = profile.oath == oaths[i]
-		var owned := profile.owned_perks(oaths[i]).size()
-		var tag := "%s · %d/%d PERKS" % [data.oaths[oaths[i]].specialization.to_upper(), owned, data.oaths[oaths[i]].perks.size()]
+		var tag := "%s · %d POÄNG" % [data.oaths[oaths[i]].specialization.to_upper(), profile.points_used(data, oaths[i])]
 		UiStyle.card(self, _oath_rect(i), t.name, t.text, on, UiStyle.GOLD, tag)
 
 	var used := profile.points_used(data, profile.oath)
 	var points := profile.perk_points()
-	UiStyle.text(self, Vector2(_x0(), 114), "PERKS I %s – PERK-POÄNG %d/%d (FLER FÖR VARANNAT KLARAT DJUP)" % [
-			data.traits[profile.oath].name.to_upper(), used, points], 14, Color(1, 1, 1, 0.6))
+	var heading := "LÅNA EN PERK FRÅN EN ANNAN ED" if anoint_mode else "PERKS I %s" % data.traits[profile.oath].name.to_upper()
+	UiStyle.text(self, Vector2(_x0(), 114), "%s – PERK-POÄNG %d/%d (FLER FÖR VARANNAT KLARAT DJUP)" % [heading, used, points],
+			14, Color(1, 1, 1, 0.6))
 	var perks := _perks()
-	var owned_list := profile.owned_perks(profile.oath)
+	var borrowed: String = profile.anointed.get(profile.oath, "")
 	for i in perks.size():
-		var t: Dictionary = data.traits[perks[i].id]
-		var owned := owned_list.has(perks[i].id)
-		var tag := "VERKAR" if owned else "%d POÄNG" % int(perks[i].cost)
-		var sel: bool = selected_perk == perks[i].id
-		UiStyle.card(self, _perk_rect(i), t.name, t.text, owned or sel, UiStyle.TRAIT_GOLD if owned else Color("#8a93a6"),
+		var entry: Dictionary = perks[i]
+		var t: Dictionary = data.traits[entry.id]
+		var ranks := int(entry.get("ranks", 1))
+		var rank := profile.perk_rank(profile.oath, entry.id)
+		var owned: bool = (borrowed == entry.id) if anoint_mode else rank > 0
+		var tag := "%d POÄNG" % int(entry.cost)
+		if anoint_mode:
+			tag = "LÅNAD" if owned else tag
+		elif owned:
+			tag = "NIVÅ %d/%d" % [rank, ranks] if ranks > 1 else "VERKAR"
+		elif ranks > 1:
+			tag += " · %d NIVÅER" % ranks
+		var body: String = t.text + (" Per nivå." if ranks > 1 and not anoint_mode else "")
+		var sel: bool = selected_perk == entry.id
+		UiStyle.card(self, _perk_rect(i), t.name, body, owned or sel, UiStyle.TRAIT_GOLD if owned else Color("#8a93a6"),
 				tag, _flash if sel and owned else 0.0)
 		if sel and not owned:
 			draw_rect(_perk_rect(i).grow(3), Color(UiStyle.GOLD, 0.8), false, 2.0)
 
-	if selected_perk != "":
-		var t: Dictionary = data.traits[selected_perk]
-		UiStyle.text(self, Vector2(_x0(), _buy_rect().position.y - 22), "Siralim: %s" % t.get("original", ""), 14,
-				Color(1, 1, 1, 0.5), HORIZONTAL_ALIGNMENT_LEFT, size.x - _x0() - MARGIN, 3)
-	var cost := Profile.perk_cost(data, profile.oath, selected_perk) if selected_perk != "" else 0
-	var owned_sel := owned_list.has(selected_perk)
+	_draw_anointment(data, profile, borrowed)
+
+	var cost := 0
 	var label := "VÄLJ EN PERK"
+	var enabled := false
 	if selected_perk != "":
-		label = "VERKAR" if owned_sel else "VÄLJ – %d POÄNG" % cost
-	var affordable := used + cost <= points
-	UiStyle.big_button(self, _buy_rect(), label, _t, selected_perk != "" and not owned_sel and affordable)
-	if selected_perk != "" and not owned_sel and not affordable:
-		UiStyle.text(self, _buy_rect().position + Vector2(0, -10), "För få perk-poäng – återställ eller klara djupare", 16,
-				Color("#ff8a6a"), HORIZONTAL_ALIGNMENT_CENTER, _buy_rect().size.x, 3)
+		var entry := Profile.perk_entry(data, selected_perk)
+		cost = int(entry.cost)
+		if anoint_mode:
+			var freed := int(Profile.perk_entry(data, borrowed).get("cost", 0)) if borrowed != "" else 0
+			enabled = borrowed != selected_perk and used - freed + cost <= points
+			label = "LÅNAD" if borrowed == selected_perk else "LÅNA – %d POÄNG" % cost
+		else:
+			var rank := profile.perk_rank(profile.oath, selected_perk)
+			var ranks := int(entry.get("ranks", 1))
+			enabled = rank < ranks and used + cost <= points
+			if rank >= ranks:
+				label = "ALLA NIVÅER" if ranks > 1 else "VERKAR"
+			elif rank > 0:
+				label = "NIVÅ %d – %d POÄNG" % [rank + 1, cost]
+			else:
+				label = "VÄLJ – %d POÄNG" % cost
+		UiStyle.text(self, Vector2(_x0(), _buy_rect().position.y - 22), "Siralim: %s" % data.traits[selected_perk].get("original", ""),
+				14, Color(1, 1, 1, 0.5), HORIZONTAL_ALIGNMENT_LEFT, size.x - _x0() - MARGIN, 3)
+		if not enabled and not label in ["LÅNAD", "VERKAR", "ALLA NIVÅER"]:
+			UiStyle.text(self, _buy_rect().position + Vector2(0, -10), "För få perk-poäng – återställ eller klara djupare", 16,
+					Color("#ff8a6a"), HORIZONTAL_ALIGNMENT_CENTER, _buy_rect().size.x, 3)
+	UiStyle.big_button(self, _buy_rect(), label, _t, enabled)
 	small_button(_reset_rect(), "ÅTERSTÄLL (+%d POÄNG)" % used, used > 0)
+
+
+## Platsen för den lånade perken (Siralims Anointment): låst tills en boss är besegrad.
+func _draw_anointment(data: Dictionary, profile: Profile, borrowed: String) -> void:
+	var r := _anoint_rect()
+	if profile.anointment_slots() <= 0:
+		UiStyle.card(self, r, "Lånad perk", "Låst. Besegra Benfursten för att få låna en perk från en annan Ed.",
+				false, Color("#8a93a6"), "ANOINTMENT")
+		return
+	var body := "Tryck för att välja en perk från en annan Ed. Den kostar poäng ur den här Edens pott."
+	var title := "Lånad perk"
+	if borrowed != "":
+		var t: Dictionary = data.traits[borrowed]
+		title = "Lånad: %s" % t.name
+		body = "%s (från %s)" % [t.text, data.traits[Profile.perk_entry(data, borrowed).oath].name]
+	if anoint_mode:
+		body = "Välj en perk ovan och tryck LÅNA. Tryck här för att gå tillbaka till Edens egna perks."
+	UiStyle.card(self, r, title, body, anoint_mode or borrowed != "", UiStyle.GOLD, "ANOINTMENT")

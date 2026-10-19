@@ -152,7 +152,16 @@ func _draw() -> void:
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 
 	var ed: Dictionary = data.traits[run.profile.oath]
-	var perks: Array = run.profile.owned_perks(run.profile.oath).map(func(id: String) -> String: return data.traits[id].name)
+	# Perkarna som verkar, med nivå ("Vrede ×2") och den lånade sist.
+	var active: Array = run.profile.active_perks(data, run.profile.oath)
+	var perks: Array = []
+	for id in active:
+		var label: String = data.traits[id].name + (" (lånad)" if run.profile.anointed.get(run.profile.oath, "") == id else "")
+		var n: int = active.count(id)
+		if n > 1:
+			label += " ×%d" % n
+		if not perks.has(label):
+			perks.append(label)
 	var ed_body := "%s\nPerks: %s" % [ed.text, ", ".join(perks) if not perks.is_empty() else "inga (köp vid Edsaltaret)"]
 	UiStyle.card(self, _oath_rect(), ed.name, ed_body, true, UiStyle.GOLD, "PALADINENS ED – TRYCK FÖR EDSALTARET")
 

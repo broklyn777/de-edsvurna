@@ -238,3 +238,68 @@ func test_ward_titanic_rage_and_best_offense() -> void:
 	sim._deal_damage(brokk, warrior, 100.0, "physical", "axe_chop", true, true)
 	var raged: float = sim.drain_events().filter(func(e: Dictionary) -> bool: return e.type == "damage")[0].amount
 	assert_eq(raged, roundf(100.0 * 1.5 * 0.65) + roundf(brokk.defense * 0.3), "Titanisk vrede mot en som försvarar sig")
+
+
+# --- Perk-nivåer och lånade perks (0.15) ------------------------------------------
+
+func test_only_numeric_perks_have_ranks() -> void:
+	for oath_id in _data.oaths:
+		for p in _data.oaths[oath_id].perks:
+			var ranks := int(p.get("ranks", 1))
+			if ranks > 1:
+				assert_true(_data.traits[p.id].has("modify") and not _data.traits[p.id].has("effects"),
+						"%s har nivåer men är ingen ren siffra" % p.id)
+	assert_eq(Profile.perk_ranks(_data, "vengeance_reckoning"), 1, "regelbrytare har en nivå")
+
+
+func test_ranks_are_bought_one_at_a_time() -> void:
+	var p := Profile.new()
+	p.best_depth = 2  # 3 poäng
+	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"))
+	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"), "nivå 2")
+	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"), "nivå 3")
+	assert_true(not p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"), "bara tre nivåer")
+	assert_eq(p.perk_rank("oath_vengeance", "vengeance_wrath"), 3)
+	assert_eq(p.points_used(_data, "oath_vengeance"), 3)
+	assert_eq(p.active_perks(_data, "oath_vengeance").count("vengeance_wrath"), 3)
+
+
+func test_ranks_add_up_in_combat() -> void:
+	var sim := _sim(["oath_dawn", "dawn_greater_healing", "dawn_greater_healing"])
+	var probe := {"source": "alva", "target": "brokk", "ability": "healing_light"}
+	assert_near(sim._modify(sim.unit("paladin"), "modify_heal", probe, "heal_mult", 1.0), 2.25, 0.001,
+			"_modify multiplicerar posterna")
+	var factors := []
+	for m in sim._modifiers(sim.unit("alva"), "modify_heal", probe):
+		factors.append(float(m.heal_mult))
+	assert_eq(factors.size(), 2, "två nivåer räknas även för en annan i sällskapet")
+	assert_near(CombatSim.combine_mods(factors), 2.0, 0.001, "ökningar adderas: +50 % och +50 %")
+
+
+func test_anointment_unlocks_on_boss_and_borrows_one_perk() -> void:
+	var p := Profile.new()
+	assert_true(not p.anoint(_data, "oath_dawn", "ward_war_machine"), "låst innan bossen är besegrad")
+	p.defeat_boss("bone_lich")
+	p.defeat_boss("bone_lich")
+	assert_eq(p.anointment_slots(), 1)
+	assert_true(not p.anoint(_data, "oath_dawn", "dawn_anointment"), "inte från samma Ed")
+	assert_true(p.anoint(_data, "oath_dawn", "ward_war_machine"), "regelbrytare får lånas")
+	assert_eq(p.points_used(_data, "oath_dawn"), 2, "kostar poäng ur den lånande Edens pott")
+	assert_true(not p.buy_perk(_data, "oath_dawn", "dawn_anointment"), "poängen är slut")
+	assert_true(p.anoint(_data, "oath_dawn", "ward_titanic_rage"), "ett nytt lån ersätter det gamla")
+	assert_eq(p.anointed.oath_dawn, "ward_titanic_rage")
+	assert_true(p.buy_perk(_data, "oath_dawn", "dawn_anointment"))
+	assert_eq(p.active_perks(_data, "oath_dawn"), ["dawn_anointment", "ward_titanic_rage"])
+	var state := RunState.new_run(p, _data)
+	assert_eq(state.hero_traits(_data).paladin, ["oath_vengeance"], "bara den valda Eden")
+	p.choose_oath("oath_dawn")
+	state = RunState.new_run(p, _data)
+	assert_true(state.hero_traits(_data).paladin.has("ward_titanic_rage"), "lånet följer med i körningen")
+	var path := "user://test_progress_anoint.cfg"
+	p.save(path)
+	var q := Profile.load_from(path)
+	assert_eq(q.bosses_defeated, ["bone_lich"])
+	assert_eq(q.anointed, {"oath_dawn": "ward_titanic_rage"})
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	assert_eq(p.reset_perks(_data, "oath_dawn"), 2)
+	assert_true(not p.anointed.has("oath_dawn"), "återställningen tar också lånet")

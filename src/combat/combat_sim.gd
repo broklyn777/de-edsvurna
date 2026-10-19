@@ -809,6 +809,9 @@ func _kill(u: CombatUnit) -> void:
 # "once_per_turn"/"max_per_turn" begränsar per tur (vems tur som helst); "internal_cooldown"
 # räknas i turer (allas).
 #
+# Perk-nivåer (Siralims perk ranks): en perk med flera nivåer står en gång per nivå i listan, och
+# "modify"-delarna räknas en gång per post (ökningar adderas). Bara rena siffror har nivåer.
+#
 # "scope": "party" (Siralims Specialization): egenskapen gäller som om varje levande allierad bar den,
 # så "self" i villkoren betyder var och en av dem. Den verkar bara medan bäraren lever.
 # En effekt kan ha "actor": event_unit/event_target/event_source – den i händelsen som utför
@@ -891,8 +894,11 @@ func traits_of(u: CombatUnit) -> Array:
 	for x in units:
 		if x == u or not x.alive or x.team != u.team:
 			continue
+		# En perk med flera nivåer står flera gånger i bärarens lista och räknas lika många gånger;
+		# samma egenskap från en annan bärare räknas inte igen.
+		var seen := shared.duplicate()
 		for trait_id in x.traits:
-			if data.traits[trait_id].get("scope", "") == "party" and not out.has(trait_id) and not shared.has(trait_id):
+			if data.traits[trait_id].get("scope", "") == "party" and not out.has(trait_id) and not seen.has(trait_id):
 				shared.append(trait_id)
 	if shared.is_empty():
 		return out

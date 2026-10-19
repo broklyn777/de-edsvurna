@@ -62,6 +62,10 @@ func _dev_args() -> void:
 			# --artifact=<hjälte>:<typ>:<förmåga>, t.ex. brokk:shield:healing_light (bara den här körningen)
 			var parts := arg.get_slice("=", 1).split(":")
 			state.artifacts[parts[0]] = {"type": parts[1], "ability": parts[2] if parts.size() > 2 else ""}
+		elif arg == "--anoint":
+			# --anoint låser upp den lånade perken (som om Benfursten var besegrad) och visar valet
+			profile.defeat_boss("bone_lich")
+			get_tree().change_scene_to_file.call_deferred(ALTAR_SCENE)
 		elif arg.begins_with("--depth="):
 			# --depth=<n> spelar på djup n (bara den här körningen)
 			state.depth = maxi(1, int(arg.get_slice("=", 1)))
@@ -121,6 +125,9 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		profile.add_trophy(t)
 	if state.is_last_floor():
 		profile.clear_depth(state.depth)
+		for kind in data.encounters[state.encounter()].enemies:
+			if data.enemies[kind].get("boss", false):
+				profile.defeat_boss(kind)
 	_save()
 	if state.is_last_floor():
 		get_tree().change_scene_to_file(BASE_SCENE)

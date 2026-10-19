@@ -5,11 +5,13 @@
 		"perks": [
 			{
 				"id": "vengeance_wrath",
-				"cost": 1
+				"cost": 1,
+				"ranks": 3
 			},
 			{
 				"id": "vengeance_zeal",
-				"cost": 1
+				"cost": 1,
+				"ranks": 3
 			},
 			{
 				"id": "vengeance_execution",
@@ -39,7 +41,8 @@
 			},
 			{
 				"id": "dawn_holy_might",
-				"cost": 1
+				"cost": 1,
+				"ranks": 3
 			},
 			{
 				"id": "dawn_guiding_light",
@@ -51,7 +54,8 @@
 			},
 			{
 				"id": "dawn_greater_healing",
-				"cost": 2
+				"cost": 2,
+				"ranks": 2
 			}
 		]
 	},
@@ -61,7 +65,8 @@
 		"perks": [
 			{
 				"id": "ward_titanic_rage",
-				"cost": 1
+				"cost": 1,
+				"ranks": 2
 			},
 			{
 				"id": "ward_in_formation",
@@ -69,7 +74,8 @@
 			},
 			{
 				"id": "ward_best_offense",
-				"cost": 2
+				"cost": 2,
+				"ranks": 2
 			},
 			{
 				"id": "ward_rest_up",
