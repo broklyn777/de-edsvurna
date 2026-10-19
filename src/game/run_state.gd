@@ -259,8 +259,9 @@ func wearer(trophy_id: String) -> String:
 # När slutet är vunnet: next_floor() eller finished.
 
 const QUEST_TYPES := ["hunt", "clear", "purify"]
-## Lägereld: Charges som fylls per förmåga (högst till max).
-const CAMPFIRE_CHARGES := 1
+## Lägereld: Charges som fylls per förmåga (högst till max). Charges är Siralims (4–8 per förmåga), så
+## lägerelden före våningens slut är det som gör att de räcker en hel körning.
+const CAMPFIRE_CHARGES := 3
 ## Silver i vanliga strider och skattkammare, som andel av våningens belöning (slutet ger hela).
 const BATTLE_SILVER := 0.4
 const TREASURE_SILVER := 0.6
@@ -424,7 +425,7 @@ func next_floor(data: Dictionary) -> void:
 	start_floor(data)
 
 
-## Lägereld: +1 Charge på varje förmåga (högst till max).
+## Lägereld: +CAMPFIRE_CHARGES på varje förmåga (högst till max).
 func campfire(data: Dictionary) -> int:
 	var gained := 0
 	for hero_id in charges:

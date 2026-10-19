@@ -125,7 +125,8 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					state.charges, artifacts, depth, battle_opts)
 			fights += 1
 			if result.outcome != "victory":
-				return {"cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms}
+				return {"cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
+						"lost_at": "f%d_%s" % [state.floor, r.kind]}
 			state.store_charges(result.sim)
 			state.battle_won()
 			if state.floor_cleared():

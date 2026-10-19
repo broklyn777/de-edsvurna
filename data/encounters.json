@@ -29,7 +29,7 @@
 			"ember_skeleton",
 			"skeleton_archer"
 		],
-		"stat_mult": 1.08
+		"stat_mult": 1.04
 	},
 	"crypt_3": {
 		"name": "Benfurstens sal",
@@ -44,7 +44,7 @@
 			"skeleton_warrior",
 			"grave_priest"
 		],
-		"stat_mult": 1.1
+		"stat_mult": 1.06
 	},
 	"chapel_1": {
 		"name": "Kapellets förgård",
@@ -106,7 +106,7 @@
 			"skeleton_warrior",
 			"skeleton_archer"
 		],
-		"stat_mult": 1.0
+		"stat_mult": 0.65
 	},
 	"crypt_1b": {
 		"name": "Prästens nisch",
@@ -120,7 +120,7 @@
 			"skeleton_warrior",
 			"grave_priest"
 		],
-		"stat_mult": 1.0
+		"stat_mult": 0.65
 	},
 	"crypt_1c": {
 		"name": "Bågskyttarnas läktare",
@@ -135,7 +135,7 @@
 			"skeleton_archer",
 			"grave_priest"
 		],
-		"stat_mult": 1.0
+		"stat_mult": 0.65
 	},
 	"crypt_2a": {
 		"name": "Väktarens port",
@@ -149,7 +149,7 @@
 			"grave_warden",
 			"skeleton_archer"
 		],
-		"stat_mult": 1.08
+		"stat_mult": 0.7
 	},
 	"crypt_2b": {
 		"name": "Glödande schakt",
@@ -163,7 +163,7 @@
 			"ember_skeleton",
 			"ember_skeleton"
 		],
-		"stat_mult": 1.08
+		"stat_mult": 0.7
 	},
 	"crypt_2c": {
 		"name": "Askkoret",
@@ -178,7 +178,7 @@
 			"skeleton_warrior",
 			"grave_priest"
 		],
-		"stat_mult": 1.08
+		"stat_mult": 0.7
 	},
 	"crypt_3a": {
 		"name": "Benvakten",
@@ -193,7 +193,7 @@
 			"skeleton_warrior",
 			"grave_priest"
 		],
-		"stat_mult": 1.1
+		"stat_mult": 0.72
 	},
 	"crypt_3b": {
 		"name": "Furstens förgård",
@@ -208,7 +208,7 @@
 			"ember_skeleton",
 			"skeleton_archer"
 		],
-		"stat_mult": 1.1
+		"stat_mult": 0.72
 	},
 	"chapel_1a": {
 		"name": "Botgångens gång",
@@ -222,7 +222,7 @@
 			"penitent",
 			"cultist"
 		],
-		"stat_mult": 0.98
+		"stat_mult": 0.64
 	},
 	"chapel_1b": {
 		"name": "Gastarnas bänkrad",
@@ -236,7 +236,7 @@
 			"wraith",
 			"cultist"
 		],
-		"stat_mult": 0.98
+		"stat_mult": 0.64
 	},
 	"chapel_1c": {
 		"name": "Gisslarnas valv",
@@ -250,7 +250,7 @@
 			"penitent",
 			"wraith"
 		],
-		"stat_mult": 0.98
+		"stat_mult": 0.64
 	},
 	"chapel_2a": {
 		"name": "Den fallnes vakt",
@@ -264,7 +264,7 @@
 			"fallen_knight",
 			"cultist"
 		],
-		"stat_mult": 1.06
+		"stat_mult": 0.69
 	},
 	"chapel_2b": {
 		"name": "Häxornas cirkel",
@@ -279,7 +279,7 @@
 			"wraith",
 			"cultist"
 		],
-		"stat_mult": 1.06
+		"stat_mult": 0.69
 	},
 	"chapel_2c": {
 		"name": "Förbannelsens kor",
@@ -293,7 +293,7 @@
 			"witch",
 			"penitent"
 		],
-		"stat_mult": 1.06
+		"stat_mult": 0.69
 	},
 	"chapel_3a": {
 		"name": "Biskopens livvakt",
@@ -308,7 +308,7 @@
 			"witch",
 			"cultist"
 		],
-		"stat_mult": 1.08
+		"stat_mult": 0.7
 	},
 	"chapel_3b": {
 		"name": "Botgörarnas procession",
@@ -323,6 +323,6 @@
 			"penitent",
 			"witch"
 		],
-		"stat_mult": 1.08
+		"stat_mult": 0.7
 	}
 }

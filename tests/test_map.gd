@@ -69,12 +69,12 @@ func test_walking_a_whole_run_reaches_the_end() -> void:
 	assert_eq(floors_seen, [0, 1, 2])
 
 
-func test_campfire_restores_one_charge_per_ability() -> void:
+func test_campfire_restores_charges_per_ability() -> void:
 	var s := _state()
 	s.charges.alva.healing_light = 0
 	s.charges.alva.renew = int(_data.abilities.renew.charges)
 	s.campfire(_data)
-	assert_eq(s.charges.alva.healing_light, 1)
+	assert_eq(s.charges.alva.healing_light, RunState.CAMPFIRE_CHARGES)
 	assert_eq(s.charges.alva.renew, int(_data.abilities.renew.charges), "aldrig över max")
 
 
