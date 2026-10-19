@@ -119,7 +119,8 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Strid, Elit, Skattkammare, Helgedom, Lägereld, Portal, Våningens slut | battle, elite, treasure, shrine, campfire, portal, end | strider, Nemesis, kistor, Pandemonium Shrine, (liv efter strid), Otherworld Portal, boss | Rumstyperna. Lägereld fyller 1 Charge per förmåga. |
 | Realm Quest | `RunState.quest`, `roll_quest()`, `Profile.quests_done` | Realm Quest | Jakt (Nemesis), Rensa (2 elitstrider), Rening (3 helgedomar). Silver och en perk-poäng per ny Realm och djup. |
 | Nemesis | `nemesis` i rummet, `CombatUnit.nemesis` | Nemesis | En namngiven elit på ett rum (questen Jakt). |
-| Sparad körning | `user://run.cfg`, `RunState.save()` | sparning | Efter varje rum; spelet fortsätter där vid start. |
+| Sparad körning | `user://slot<n>/run.cfg`, `RunState.save()` | sparning | Efter varje rum; spelet fortsätter där när profilen väljs. |
+| Profil (sparplats) | slot, `SaveSlots`, `Run.choose_slot()` | Save slot | Tre profiler med egen borg, hjältar, makron och körning. Radering kräver bekräftelse. |
 | Kallets altare | altar (`altar_screen`, `Profile.buy_perk`, `reset_perks`) | Enchanted Wardrobe | Välj kall och köp perks för silver; återställ gratis. |
 | Övningsgården | practice (`RunState.practice`) | Arena | Strid mot valfritt möte utan risk; makrologgen finns kvar efteråt. |
 | Smeden | smith (`Profile.forge`) | Blacksmith | Smida artefakt (100 silver) eller byta förmåga (40). |

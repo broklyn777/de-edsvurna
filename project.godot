@@ -8,7 +8,7 @@ config_version=5
 
 config/name="rpg007"
 config/description="Party-RPG: WoW-känsla, PoE-byggen, Dragon Age-taktik."
-run/main_scene="res://scenes/base.tscn"
+run/main_scene="res://scenes/slots.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 

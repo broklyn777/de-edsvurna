@@ -5,8 +5,9 @@ extends Node
 ## Flöde: basen → Kryptporten → strid → läger → … → basen (förlust eller sista våningen).
 ## Övningsgården: basen → övning → strid → övningen (med makrologgen kvar).
 
-const PROGRESS_PATH := "user://progress.cfg"
-const MACROS_PATH := "user://macros.json"
+## 0.23.1: sökvägarna gäller vald sparplats (SaveSlots). Platserna väljs på sparplatsskärmen.
+var PROGRESS_PATH := "user://slot1/progress.cfg"
+var MACROS_PATH := "user://slot1/macros.json"
 const BASE_SCENE := "res://scenes/base.tscn"
 const START_SCENE := "res://scenes/start.tscn"
 const PRACTICE_SCENE := "res://scenes/practice.tscn"
@@ -19,7 +20,9 @@ const MACRO_SCENE := "res://scenes/macros.tscn"
 const CAMPAIGN_SCENE := "res://scenes/campaign.tscn"
 const ROOM_MAP_SCENE := "res://scenes/room_map.tscn"
 ## Den pågående körningen sparas efter varje rum, så att den överlever att appen stängs (0.18).
-const RUN_PATH := "user://run.cfg"
+var RUN_PATH := "user://slot1/run.cfg"
+var slot := 1
+const SLOTS_SCENE := "res://scenes/slots.tscn"
 const HERO_SCENE := "res://scenes/hero.tscn"
 const INN_SCENE := "res://scenes/inn.tscn"
 
@@ -75,12 +78,43 @@ func _ready() -> void:
 	rng.randomize()
 	audio = Sfx.new()
 	add_child(audio)
+	SaveSlots.migrate()
+	_use_slot(maxi(SaveSlots.last(), 1))
 	_load()
 	_load_macros()
 	roll_rules()
 	_dev_args()
-	if OS.get_cmdline_user_args().is_empty():
-		_resume_run()
+
+
+## Byter till sparplatsen: sökvägarna pekar dit (mappen skapas vid behov).
+func _use_slot(i: int) -> void:
+	slot = i
+	PROGRESS_PATH = SaveSlots.progress_path(i)
+	RUN_PATH = SaveSlots.run_path(i)
+	MACROS_PATH = SaveSlots.macros_path(i)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SaveSlots.dir(i)))
+
+
+## Sparplatsskärmen väljer en plats: profilen, makrona och körningen laddas därifrån, och spelet fortsätter som
+## förut (en pågående körning återupptas). En tom plats börjar introt.
+func choose_slot(i: int) -> void:
+	_use_slot(i)
+	SaveSlots.set_last(i)
+	state = RunState.new()
+	macros = {}
+	assignment = {}
+	default_action = {}
+	intro_lines = {}
+	last_silver = 0
+	_load()
+	_load_macros()
+	roll_rules()
+	if SaveSlots.is_empty(i):
+		_save()
+		save_macros()
+	ui("ui_confirm", -8.0)
+	get_tree().change_scene_to_file(BASE_SCENE)
+	_resume_run()
 
 
 ## Introduktionen (0.23, Intro): en händelse som kan avsluta aktuellt uppdrag. Repliker för nästa steg visas i borgen.
