@@ -424,7 +424,7 @@ func _borrow_anims(model_name: String) -> void:
 		lib.add_animation(anim_name, anim)
 
 
-## Hänger en del från en annan figur ("sigrun/Sigrun_Cape") på samma ben i den här figuren.
+## Hänger en del från en annan figur ("sigrun_delar/Sigrun_Cape") på samma ben i den här figuren.
 ## Valfritt: offset (i benets rum), scale, rot (grader). Returnerar den nya delen.
 func _attach_part(def: Dictionary) -> Node3D:
 	var donor_name := String(def.part).get_slice("/", 0)

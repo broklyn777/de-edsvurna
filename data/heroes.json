@@ -27,16 +27,16 @@
 				"grip_l": "Shield"
 			},
 			"parts": [
-				"sigrun/Sigrun_Cape",
-				"sigrun/Sigrun_SunEmblem",
-				"sigrun/Sigrun_SunRay_0",
-				"sigrun/Sigrun_SunRay_1",
-				"sigrun/Sigrun_SunRay_2",
-				"sigrun/Sigrun_SunRay_3",
-				"sigrun/Sigrun_SunRay_4",
-				"sigrun/Sigrun_SunRay_5",
-				"sigrun/Sigrun_SunRay_6",
-				"sigrun/Sigrun_SunRay_7"
+				"sigrun_delar/Sigrun_Cape",
+				"sigrun_delar/Sigrun_SunEmblem",
+				"sigrun_delar/Sigrun_SunRay_0",
+				"sigrun_delar/Sigrun_SunRay_1",
+				"sigrun_delar/Sigrun_SunRay_2",
+				"sigrun_delar/Sigrun_SunRay_3",
+				"sigrun_delar/Sigrun_SunRay_4",
+				"sigrun_delar/Sigrun_SunRay_5",
+				"sigrun_delar/Sigrun_SunRay_6",
+				"sigrun_delar/Sigrun_SunRay_7"
 			],
 			"colors": {
 				"Torvald_Iron": "#c9ced6",
@@ -93,15 +93,15 @@
 			"model": "brokk",
 			"parts": [
 				{
-					"part": "sigrun/Sigrun_Helm",
+					"part": "sigrun_delar/Sigrun_Helm",
 					"scale": 1.15
 				},
 				{
-					"part": "sigrun/Sigrun_HelmBand",
+					"part": "sigrun_delar/Sigrun_HelmBand",
 					"scale": 1.15
 				},
 				{
-					"part": "sigrun/Sigrun_Nasal",
+					"part": "sigrun_delar/Sigrun_Nasal",
 					"scale": 1.15
 				}
 			],
@@ -154,7 +154,7 @@
 		"visual": {
 			"model": "alva",
 			"anims_from": [
-				"sigrun"
+				"sigrun_delar"
 			],
 			"hide": [
 				"Ako_Staff"
