@@ -23,6 +23,17 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   från ett annat kall, för poäng ur den egna potten.
 - **Följeslagare** (Brokk, Syster Alva, Jägaren Eira, Solveig …): namn, roll, egen egenskap och en
   signaturhandling. Börja med 5–8, inte 30.
+  **Lärjungar och Värdshuset** (0.23, Siralims rekrytering och Menagerie, `docs/plan/0.23-vardshuset.md`): en ny
+  profil börjar med Paladinen ensam; Imma (barndomsvännen, bågskytt, Fingerfärdig stjäl fiendens buff åt den
+  svagaste – vårt val, förebild Mesmerist) ansluter i introt. De andra befrias ur **fånge-rum** på rumskartan:
+  varje Realm har egna lärjungar per djup och våning (`realms.json` "disciples"; Kryptan: Brokk först, bevakad,
+  sedan Alva, Eira, Tove, Solveig, Sefir; Kapellet: Lirien, Ragnhild, Hulda, Ronja). De ansluter direkt på nivå
+  1–2 om det finns plats (Paladinen + 3), annars väntar de i **Värdshuset**, där man väljer sällskap och de som
+  stannar behåller sin nivå. `Profile.recruited`, `recruit()`, `set_party()`; `RunState.place_prisoners()`;
+  `Run.rescue_prisoner()`. Ikapphämtning (vårt val): +50 % erfarenhet per nivå under sällskapets snitt, högst ×3.
+  Fiender efter sällskapets storlek (vårt val): `CombatSim.PARTY_SCALE` (×0,56 för två, ×0,74 för tre).
+  När en ny sorts hjälte ansluter föreslår spelet en makrorad (`heroes.json` "macro_hint"). Äldre profiler
+  behåller sina fyra och får Imma i Värdshuset.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
   egenskap. Vanlig = pålitlig byggdel, elit = specialiserad, boss = ändrar en regel (med kostnad).
 - Varje hjälte får till slut 3 egenskaper: egen, trofé och artefakt.
@@ -80,9 +91,15 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`HeroStats.SOURCES`; 0.20 lägger till material och Nether Stone), vad de
   betyder i skada och helning mot en typisk fiende, egenskaper med körningens statistik, förmågor,
   artefakt och historik. Nivåuppgångar syns och hörs på segerskärmen.
-- **Basen** (0.12, Siralims slott; 0.20.1: sällskapets hjältar längst ned med nivå och mätare, ett tryck
-  öppnar hjältebladet) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),
-  Kallets altare (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
+- **Borgen** (0.12 som basen, 0.23 en borggård i 3D, `scripts/castle/castle_world.gd` + `base_screen.gd`):
+  stationerna Porten (kampanjkartan), Övningsgården, Kallets altare, Smeden, Makron, Värdshuset och Biblioteket.
+  Tryck på en station så går paladinen dit (ungefär en sekund); dubbeltryck hoppar över gången. Namnen står över
+  stationerna, och den med något nytt lyser; kortraden längst ned är genvägar. Sällskapet står vid värdshuset.
+  **Introduktionen** för en ny profil (`data/intro.json`, `src/game/intro.gd`): eden vid altaret, en övningsstrid
+  ensam, svärdet hos Smeden (bara svärdet går att välja), första makroraden, Biblioteket, Imma, Gorms ord om
+  klockorna (porten öppnas) och svärdet till nivå 3. Aktuellt uppdrag syns i hörnet; andra stationer svarar med en
+  replik. Introt går inte att hoppa över; befintliga profiler har `intro_done`. Efter introt öppnas Värdshuset när
+  man har räddat någon (vårt val). Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
@@ -171,7 +188,7 @@ uppdaterad när nya begrepp tillkommer.
   läger → rumskarta … → bas;
   bas → Övningsgården → strid → Övningsgården) och sparar makrona i `user://macros.json`
   (startmakron i `data/macros.json`).
-  Skärmar i `scripts/screens/`: `base_screen` (första skärmen), `campaign_screen` (kampanjkartan),
+  Skärmar i `scripts/screens/`: `base_screen` (borgen, första skärmen), `inn_screen` (Värdshuset), `campaign_screen` (kampanjkartan),
   `room_map_screen` (rumskartan), `parchment.gd` (pergamentets shader), `start_screen` (Förberedelser),
   `altar_screen` (Kallets altare), `practice_screen`, `smith_screen`, `library_screen`, `camp_screen`, `macro_screen`. De flesta ärver
   `tap_screen.gd` och reagerar vid släpp.
@@ -324,6 +341,13 @@ godot --path . -- --forge-demo --find-demo
 
 # Bara artefaktavsnittet i balansrapporten (artefakter på nivå 1, 5 och 10, fynd och silver per körning)
 BALANS=artefakter godot --headless --path . --script res://tests/balance_report.gd
+
+# En ny profil (sparas inte), en profil med alla lärjungar, och Värdshuset direkt
+godot --path . -- --new-profile
+godot --path . -- --all-companions --inn
+
+# Sällskapets storlek och de nya följeslagarna i balansrapporten
+BALANS=sallskap godot --headless --path . --script res://tests/balance_report.gd
 
 # Öppna makroredigeraren direkt (--edit-line öppnar radeditorn)
 godot --path . -- --macros --edit-line

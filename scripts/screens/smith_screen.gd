@@ -72,10 +72,10 @@ func _type_locked(t: String) -> bool:
 	return not run.profile.intro_done and t != "sword"
 
 
-## Förmågor som kan sättas i en artefakt: alla hjältars förmågor.
+## Förmågor som kan sättas i en artefakt: alla förmågor hos Paladinen och följeslagarna man har.
 func _abilities() -> Array:
 	var out: Array = [""]
-	for hero_id in run.data.heroes:
+	for hero_id in _heroes():  # 0.23: förmågorna hos de hjältar man har
 		for a in run.data.heroes[hero_id].get("abilities", []):
 			if not out.has(a):
 				out.append(a)

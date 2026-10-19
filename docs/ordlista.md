@@ -67,6 +67,12 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Blöder, Fördärvad, Förblindad, Förvirrad, Frusen, Förgiftad, Hånad, Sover, Snärjd, Förstenad | bleeding, blighted, blind, confused, frozen, poisoned, scorned, sleeping, snared, stone | Bleeding, Blighted, Blind, Confused, Frozen, Poisoned, Scorned, Sleeping, Snared, Stone | Debuffar (0.22). |
 | Dispel, Rening | dispel, purge | Dispel, Cleanse | Dispel tar bort alla statusar på målet; Rening bara debuffar. |
 | Överst / sist på tidslinjen | to_top, to_bottom | Top / Bottom of Timeline | Den som stod överst skickas ned; bossar flyttas ett steg. |
+| Lärjunge | disciple (`realms.json` "disciples") | Creature (rekrytering) | Följeslagare som befrias ur ett fånge-rum och ansluter på låg nivå. |
+| Fånge-rum | prisoner | – (vårt tema för rekrytering) | Rum på rumskartan med en lärjunge; den första är tidig. |
+| Värdshuset | inn (`inn_screen`) | Menagerie | Där följeslagarna bor; välj sällskap, de som stannar behåller nivån. |
+| Borgen | castle (`castle_world.gd`, `base_screen`) | Castle | Basen som en borggård att gå runt i (0.23). |
+| Introduktionen | intro (`data/intro.json`, `Intro`) | Tutorial | Småuppdrag i borgen för en ny profil. |
+| Imma, Mäster Gorm | imma, gorm | – | Paladinens barndomsvän (första följeslagaren) och borgens präst. |
 | Uträkning | `calc`, `DamageExplain` | – (vårt tillägg) | Hela vägen till en siffra: stat, variation, Defense, modifierare, krit, barriär. Tryck på en siffra i striden. |
 | Skadelogg | `DamageLog` | – (vårt tillägg) | Alla skador och helningar i striden, nyast överst; en rad öppnar uträkningen. |
 | Ge upp | forfeit (`CombatSim.forfeit()`) | Forfeit | Avslutar striden som förlust; körningen är förlorad och Realmen börjar om från våning 1. Det som redan är vunnet behålls. |

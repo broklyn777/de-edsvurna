@@ -164,6 +164,20 @@ func _dev_args() -> void:
 			dev_profile = true
 			profile = Profile.new()
 			state = RunState.new_run(profile, data)
+		elif arg == "--rescue-demo":
+			# --rescue-demo: rumskartan med befrielsedialogen för Alva och hennes makroförslag (sparas inte)
+			dev_profile = true
+			profile = Profile.new()
+			profile.recruit(data, "imma")
+			profile.set_party(["imma"])
+			state = RunState.new_run(profile, data)
+			state.start_expedition(data, 3)
+			profile.recruit(data, "alva")
+			state.party.append("alva")
+			state.add_charges_for(data, "alva")
+			last_recruit = "alva"
+			pending_rescue = "Syster Alva befrias! Präst, Klok. Följer med direkt (nivå 1)."
+			get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
 		elif arg == "--forge-demo":
 			# --forge-demo: en påhittad profil för Smeden (sparas inte): Brokks sköld på nivå 7 med material,
 			# ett förråd och några Nether Stones. Med --smith öppnas Smeden direkt.
