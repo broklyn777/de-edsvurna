@@ -19,6 +19,9 @@ var parchment: Parchment
 ## Vinjetterna (TextureRect med en kantshader) per Realm, och Väktaren bredvid kryptan.
 var _vignettes := {}
 var _warden: TextureRect
+## Häxan vid kitteln: ett hot nära kapellet i marginalen.
+var _witch: TextureRect
+
 
 const VIGNETTE_SHADER := """
 shader_type canvas_item;
@@ -60,6 +63,7 @@ func _ready() -> void:
 	for realm_id in run.data.realms:
 		_vignettes[realm_id] = _vignette_rect(run.data.realms[realm_id].map.vignette, shader)
 	_warden = _vignette_rect("vaktaren", shader)
+	_witch = _vignette_rect("haxan", shader)
 
 
 ## En vinjett bakom kartans linjer (blandas med pergamentet så att den vita kanten försvinner).
@@ -147,6 +151,10 @@ func _center(realm_id: String) -> Vector2:
 
 
 ## Väktaren (hotet bredvid kryptan) uppe till vänster i marginalen.
+func _witch_rect() -> Rect2:
+	return Rect2(Vector2(296, 176) * _scale(), Vector2(165, 110) * _scale())
+
+
 func _warden_rect() -> Rect2:
 	return Rect2(Vector2(26, 104) * _scale(), Vector2(200, 133) * _scale())
 
@@ -209,6 +217,7 @@ func _place_vignettes(zoom: float, focus: Vector2) -> void:
 	for realm_id in _vignettes:
 		_place(_vignettes[realm_id], _rect(realm_id), zoom, focus)
 	_place(_warden, _warden_rect(), zoom, focus)
+	_place(_witch, _witch_rect(), zoom, focus)
 
 
 func _place(node: TextureRect, r: Rect2, zoom: float, focus: Vector2) -> void:
@@ -216,7 +225,8 @@ func _place(node: TextureRect, r: Rect2, zoom: float, focus: Vector2) -> void:
 	node.size = r.size * zoom
 
 
-## Dekoren i marginalen: kompassros, drake i hörnet, svärd i sten, skelett vid kryptan, häxa vid kapellet.
+## Dekoren i marginalen: kompassros, drake i hörnet, svärd i sten och skelett vid kryptan (häxan vid
+## kapellet och Väktaren är vinjetter).
 func _draw_decor() -> void:
 	var ink := Color(InkArt.INK, 0.6)
 	var k := _scale()
@@ -224,7 +234,6 @@ func _draw_decor() -> void:
 	InkArt.dragon(self, Vector2(735, 640) * k, 70, ink)
 	InkArt.sword_in_stone(self, Vector2(560, 650) * k, 56, ink)
 	InkArt.skeleton(self, Vector2(80, 600) * k, 60, ink)
-	InkArt.witch(self, Vector2(430, 230) * k, 60, ink)
 
 
 ## Ett område: vinjetten (egen nod), fördärvets bläckflöde, ram, kartusch med namnet och bossens sigill.

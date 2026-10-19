@@ -121,9 +121,9 @@ func _dev_args() -> void:
 			if OS.get_cmdline_user_args().has("--all-perks"):
 				for p in data.oaths[state.oath].perks:
 					state.perks.append(p.id)
-		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar"]:
+		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep"]:
 			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE,
-					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE}[arg]
+					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE}[arg]
 			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)

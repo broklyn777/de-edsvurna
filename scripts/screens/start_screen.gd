@@ -7,6 +7,7 @@ extends Control
 const MARGIN := 28.0
 const GAP := 14.0
 const COMPANIONS := ["brokk", "alva", "eira", "solveig"]
+const PARTY_ART := preload("res://assets/illustrations/sallskapet.webp")
 
 var companions: Array[String] = ["brokk", "alva", "eira"]
 var brought := ""
@@ -141,6 +142,9 @@ func _macro_rect() -> Rect2:
 func _draw() -> void:
 	var data: Dictionary = run.data
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.04, 0.035, 0.06))
+	# Sällskapet på väg mot ruinerna (VD:ns illustration), svagt bakom valen.
+	var art_h := size.x * PARTY_ART.get_height() / PARTY_ART.get_width()
+	draw_texture_rect(PARTY_ART, Rect2(0, (size.y - art_h) / 2, size.x, art_h), false, Color(1, 1, 1, 0.14))
 	_small_button(_back_rect(), "‹ KARTAN")
 	UiStyle.text(self, Vector2(0, 46), "SILVER %d" % run.profile.silver, 22, Color("#d8dde6"),
 			HORIZONTAL_ALIGNMENT_RIGHT, size.x - MARGIN, 4)
