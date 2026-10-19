@@ -819,6 +819,21 @@ Defend) motsvarar *War Machine* och flyttas hit som perk.
 Börja med Hämndens ed: `vengeance_hand_of_light` fungerar redan, och resten kräver bara punkt 2–5.
 Gryningens och Väktarens ed kräver `scope: party` och Barrier.
 
+### 13b. Beslut om perks (Huvudtråden, 2026-10-19, byggs i 0.15)
+
+Bakgrund (Bekräftat, wikin): i Siralim har varje perk 1–50 nivåer och kostar 100 poäng fullt utbyggd.
+Paladins 15 perks kostar 1 500 poäng, vilket är exakt taket för Perk Points. Återställning är gratis.
+Anointments låter en låna perks från andra Specializations efter segrar mot False Gods.
+
+1. **Anointments: ja, först.** Varje besegrad boss (Benfursten nu, fler senare) låser upp en
+   anointment-plats. Där kan man låna **en** perk från en annan Ed. Den kostar perk-poäng som vanligt,
+   och regelbrytare får lånas.
+2. **Nivåer: ja, i liten skala.** 2–3 nivåer bara på perks som är rena siffror (Wrath, Zeal, Greater
+   Healing och liknande). Regelbrytare (Reckoning, War Machine, In Formation …) har en nivå, som i
+   Siralim.
+3. **Delad poängpott: nej, inte nu.** Egen pott per Ed, så att det lönar sig att prova de andra. Tas upp
+   igen vid fler än cirka 5 Eder.
+
 ---
 
 ## Källor

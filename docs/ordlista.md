@@ -98,7 +98,9 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Top / Bottom of Timeline | flytta i turordningen | – |
 | Calm Mode | lägre Action Limits | `TURN_LIMIT` = 5 |
 | Retribution | Paladins kärna: slå tillbaka vid skada | Hämndens ed |
-| Perk, Anointment | förmån i en Specialization; lånad perk | perk vid Edsaltaret; Anointments finns inte |
+| Perk | förmån i en Specialization | perk vid Edsaltaret |
+| Perk rank | perkens nivå (Siralim 1–50) | perk-nivå, `ranks` i oaths.json: 2–3 på rena siffror, 1 på regelbrytare; en post per nivå i listan |
+| Anointment | lånad perk från en annan Specialization efter en False God | lånad perk, `Profile.anoint()`: en plats när en boss (Benfursten) är besegrad, kostar poäng ur Edens pott |
 | Perk Points | poäng att lägga i perks, från Realm Quests | perk-poäng, `Profile.perk_points()`: 2 från start, +1 per två klarade djup, per Ed |
 | Enchanted Wardrobe | byt Specialization och perks | Edsaltaret |
 | Trait Slot, Nether Stone | Artifactens trait-plats; sena trait-platser | – |

@@ -16,7 +16,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Paladinen** står alltid med i striden och väljer en **Ed** (Siralims Specialization) – en regelbrytare
   för hela sällskapet. Finns (0.13): Hämndens ed (Paladin), Gryningens ed (Cleric), Väktarens ed
   (Siegemaster). Kärnan verkar alltid; perks kostar perk-poäng (1–3) vid Edsaltaret och återställs gratis.
-  Perk-poäng (0.14.1, Siralims Perk Points): 2 från start, +1 för varannat klarat djup, per Ed.
+  Perk-poäng (0.14.1, Siralims Perk Points): 2 från start, +1 för varannat klarat djup, egen pott per Ed.
+  Perk-nivåer (0.15): perks som är rena siffror har 2–3 nivåer som kostar poäng var; regelbrytare har en.
+  Lånad perk (0.15, Siralims Anointment): en besegrad boss låser upp en plats där Eden lånar en perk
+  från en annan Ed, för poäng ur den egna potten.
 - **Följeslagare** (Brokk, Syster Alva, Jägaren Eira, Solveig …): namn, roll, egen egenskap och en
   signaturhandling. Börja med 5–8, inte 30.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
@@ -69,7 +72,8 @@ uppdaterad när nya begrepp tillkommer.
   artefakter; `new_run()` och `new_practice()` (Övningsgården: valfritt möte, fulla Charges).
   `src/game/profile.gd` – det som varar mellan körningar: silver, samlingen, artefakter (`forge()`),
   vald Ed och köpta perks per Ed (`buy_perk()`, `reset_perks()`, `perk_points()`, `active_perks()`), senaste sällskap, övningstroféer, valt och
-  djupaste klarade djup (`choose_depth()`, `clear_depth()`). Sparas i `user://progress.cfg`.
+  djupaste klarade djup (`choose_depth()`, `clear_depth()`), perk-nivåer (`perk_rank()`) och lånade perks
+  (`bosses_defeated`, `anoint()`, `anointed`). Sparas i `user://progress.cfg`.
   `scripts/game/run.gd` är autoloaden `Run` som byter scen (bas → Kryptporten → strid → läger → … → bas;
   bas → Övningsgården → strid → Övningsgården) och sparar makrona i `user://macros.json`
   (startmakron i `data/macros.json`).
@@ -123,12 +127,14 @@ uppdaterad när nya begrepp tillkommer.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
-Balans (0.14.1, `tests/balance_report.gd`, hela kryptan): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
+Balans (0.15, `tests/balance_report.gd`, hela kryptan): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
 resten), startmakrona 42 %, TUNED 66 %, TUNED + en artefakt 93 %, TUNED + bästa perks inom 2 poäng 63–93 %,
-artefakt + perks 99 %, fyra artefakter + perks 100 %. Edernas kärnor med startmakrona 36–42 %. Djup 3 (fiender
-×1,16, 3 poäng): TUNED 0 %, artefakt + Ljusets hand 26 %, fyra artefakter + perks 80 %.
-**Känd brist:** Brokks sköld med Helande ljus (fria helningar) och Krigsmaskin väger tungt; djup 3 är något för
-svårt för ett bra bygge (mål 30–60 %). Nästa balans: Realm-traits per våning och svagare automatiska helningar.
+med lånad perk upp till 96 % (Gryningens ed + Krigsmaskin), artefakt + perks 99 %, fyra artefakter + perks
+100 %. Edernas kärnor med startmakrona 36–42 %. Djup 3 (fiender ×1,16, 3 poäng, med en artefakt): bästa
+perks 26–43 %, med lån upp till 68 %, fyra artefakter + perks 94 %.
+**Känd brist:** perk-nivåerna väljs aldrig i de bästa byggena – regelbrytarna (Krigsmaskin, Räkenskap, Ljusets
+hand) slår en extra nivå siffror. Krigsmaskin är starkast och lånas helst. Brokks sköld med Helande ljus
+(fria helningar) väger tungt. Nästa balans: billigare eller starkare nivåer, dyrare Krigsmaskin.
 Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
 
 ## Kommandon
@@ -157,6 +163,9 @@ godot --path . -- --camp
 
 # Öppna en plats i basen direkt (--gate = Kryptporten, --practice, --altar, --smith, --library)
 godot --path . -- --smith
+
+# Edsaltaret med den lånade perken upplåst (som om Benfursten var besegrad)
+godot --path . -- --anoint
 
 # Strid på ett annat djup (bara den körningen)
 godot --path . -- --floor=2 --depth=3 --demo

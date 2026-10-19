@@ -3,8 +3,10 @@ extends SceneTree
 ## Per våning: vinstandel, turer och överlevande för BASIC (bara Anfall), MACRO (startmakrona) och
 ## TUNED (de förbättrade makrona i combat_bot.gd, som svarar på fiendernas egenskaper).
 ## Hela kryptan: alla tre våningarna i följd med Charges som räcker hela vägen, med TUNED plus en
-## artefakt, varje Eds bästa perks inom perk-poängen (sökta bland alla kombinationer som får plats),
-## och allt (fyra artefakter och de bästa perkarna). Sist varje Eds kärna med startmakrona.
+## artefakt, och för varje Ed de bästa perkarna inom perk-poängen (sökta bland alla kombinationer som
+## får plats): bara nivå 1, med perk-nivåer, och med nivåer och en lånad perk (anointment). Sist allt
+## (fyra artefakter och det bästa perk-bygget) och varje Eds kärna med startmakrona. På djup 3 prövas
+## perkarna tillsammans med en artefakt, eftersom inget bygge utan artefakt vinner där.
 ##   godot --headless --path . --script res://tests/balance_report.gd
 ## Mål på djup 1: BASIC förlorar, MACRO ~40 %, TUNED ~65 %, ingenting 100 % utom kanske allt.
 ## Kärnorna inom ±10 procentenheter. Djup 3: ett bra bygge (artefakt + bästa perks) 30–60 %.
@@ -12,7 +14,10 @@ extends SceneTree
 const Bot := preload("res://tests/combat_bot.gd")
 const RUNS := 100
 ## Körningar per kombination när de bästa perkarna söks.
-const SEARCH_RUNS := 30
+const SEARCH_RUNS := 20
+
+## Sökresultat per djup och kombination (str(lista) -> vinster).
+var _search_cache := {}
 const DEPTHS := [1, 3]
 ## Ett första smide: Brokks sköld med Helande ljus (160 silver).
 const ONE_ARTIFACT := {"brokk": {"type": "shield", "ability": "healing_light"}}
@@ -48,20 +53,28 @@ func _init() -> void:
 		var profile := Profile.new()
 		profile.best_depth = depth - 1
 		var points := profile.perk_points()
+		_search_cache.clear()
 		print("Hela kryptan (Charges räcker alla tre våningarna, %d perk-poäng)" % points)
 		_line(data, "MACRO", Bot.Skill.MACRO, {}, {}, depth)
 		_line(data, "TUNED", Bot.Skill.TUNED, {}, {}, depth)
 		_line(data, "TUNED + en artefakt", Bot.Skill.TUNED, {}, ONE_ARTIFACT, depth)
+		# På djup 1 prövas perkarna för sig; på djupare med en artefakt (utan den vinner inget bygge).
+		var base_art: Dictionary = {} if depth == 1 else ONE_ARTIFACT
+		var prefix := "TUNED + " if depth == 1 else "TUNED + en artefakt + "
 		var best_rate := -1
 		var best_traits := []
 		for oath_id in data.oaths:
-			var list := _best_perks(data, oath_id, points, depth)
-			var rate := _line(data, "TUNED + " + _names(data, list), Bot.Skill.TUNED, {"paladin": list}, {}, depth)
-			if rate > best_rate:
-				best_rate = rate
-				best_traits = list
-		_line(data, "TUNED + en artefakt + " + _names(data, best_traits), Bot.Skill.TUNED,
-				{"paladin": best_traits}, ONE_ARTIFACT, depth)
+			for mode in ["flat", "ranks", "anoint"]:
+				var list := _best_perks(data, oath_id, points, depth, mode, base_art)
+				var tag: String = {"flat": "", "ranks": " [nivåer]", "anoint": " [nivåer + lån]"}[mode]
+				var rate := _line(data, "%s%s%s" % [prefix, _names(data, list), tag], Bot.Skill.TUNED,
+						{"paladin": list}, base_art, depth)
+				if rate > best_rate:
+					best_rate = rate
+					best_traits = list
+		if depth == 1:
+			_line(data, "TUNED + en artefakt + " + _names(data, best_traits), Bot.Skill.TUNED,
+					{"paladin": best_traits}, ONE_ARTIFACT, depth)
 		_line(data, "TUNED + fyra artefakter + " + _names(data, best_traits), Bot.Skill.TUNED,
 				{"paladin": best_traits}, ARTIFACTS, depth)
 	print("Edernas kärnor på djup 1 (MACRO, hela kryptan, utan artefakter och perks)")
@@ -71,24 +84,51 @@ func _init() -> void:
 
 
 ## Edens bästa perks inom poängen för TUNED (alla kombinationer som får plats, SEARCH_RUNS var).
-func _best_perks(data: Dictionary, oath_id: String, points: int, depth: int) -> Array:
-	var perks: Array = data.oaths[oath_id].perks
+## mode: "flat" bara nivå 1, "ranks" med perk-nivåer, "anoint" med nivåer och en lånad perk från en
+## annan Ed (kostar poäng ur samma pott).
+func _best_perks(data: Dictionary, oath_id: String, points: int, depth: int, mode: String,
+		artifacts: Dictionary) -> Array:
+	var combos := _combos(data.oaths[oath_id].perks, 0, points, mode != "flat")
+	if mode == "anoint":
+		# Lånet är frivilligt: de egna kombinationerna är också med.
+		var borrowed := combos.duplicate()
+		for other in data.oaths:
+			if other == oath_id:
+				continue
+			for p in data.oaths[other].perks:
+				for c in _combos(data.oaths[oath_id].perks, 0, points - int(p.cost), true):
+					borrowed.append(c + [p.id])
+		combos = borrowed
 	var best := [oath_id]
 	var best_rate := -1
-	for mask in range(1, 1 << perks.size()):
-		var list := [oath_id]
-		var cost := 0
-		for i in perks.size():
-			if mask & (1 << i):
-				list.append(perks[i].id)
-				cost += int(perks[i].cost)
-		if cost > points:
-			continue
-		var rate := _rate(data, Bot.Skill.TUNED, {"paladin": list}, {}, depth, SEARCH_RUNS)
+	for combo in combos:
+		var list: Array = [oath_id] + combo
+		var rate: int = _search_cache.get(str(list), -1)
+		if rate < 0:
+			rate = _rate(data, Bot.Skill.TUNED, {"paladin": list}, artifacts, depth, SEARCH_RUNS)
+			_search_cache[str(list)] = rate
 		if rate > best_rate:
 			best_rate = rate
 			best = list
 	return best
+
+
+## Alla kombinationer av perkarna från index i som kostar högst points (en post per nivå).
+func _combos(perks: Array, i: int, points: int, ranks: bool) -> Array:
+	if i >= perks.size() or points <= 0:
+		return [[]] if points >= 0 else []
+	var out := []
+	var cost := int(perks[i].cost)
+	var max_rank := int(perks[i].get("ranks", 1)) if ranks else 1
+	for n in range(0, max_rank + 1):
+		if n * cost > points:
+			break
+		var head := []
+		for k in n:
+			head.append(perks[i].id)
+		for rest in _combos(perks, i + 1, points - n * cost, ranks):
+			out.append(head + rest)
+	return out
 
 
 func _names(data: Dictionary, list: Array) -> String:
