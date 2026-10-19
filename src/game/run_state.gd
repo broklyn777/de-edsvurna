@@ -561,6 +561,12 @@ func save(path: String) -> Error:
 	return cfg.save(path)
 
 
+## Tar bort den sparade körningen (förlust eller ge upp): nästa körning börjar om från våning 1.
+static func delete_saved(path: String) -> void:
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
 ## Läser en sparad körning, eller null.
 static func load_from(path: String) -> RunState:
 	var cfg := ConfigFile.new()

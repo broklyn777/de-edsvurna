@@ -80,7 +80,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`HeroStats.SOURCES`; 0.20 lägger till material och Nether Stone), vad de
   betyder i skada och helning mot en typisk fiende, egenskaper med körningens statistik, förmågor,
   artefakt och historik. Nivåuppgångar syns och hörs på segerskärmen.
-- **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),
+- **Basen** (0.12, Siralims slott; 0.20.1: sällskapets hjältar längst ned med nivå och mätare, ett tryck
+  öppnar hjältebladet) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),
   Kallets altare (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
@@ -99,6 +100,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
   namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
   (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.
+- **Ge upp** (0.20.1, Siralims Forfeit): knappen GE UPP bredvid 1×/Auto, med en bekräftelse. Räknas som
+  förlust: körningen och questens belöning går förlorade och Realmen börjar om från våning 1 (`run.cfg`
+  tas bort, `RunState.delete_saved`); erfarenhet, troféer, silver och material som redan är vunna finns kvar.
+  `CombatSim.forfeit()`. `-- --ask-forfeit` visar frågan i en strid.
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens kall, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.

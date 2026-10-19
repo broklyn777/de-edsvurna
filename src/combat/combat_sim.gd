@@ -576,6 +576,19 @@ func _rule_hit(rule_id: String) -> void:
 		_emit({"type": "rule", "rule": rule_id})
 
 
+## Ge upp (0.20.1, Siralims Forfeit): striden räknas som förlorad direkt.
+var forfeited := false
+
+
+func forfeit() -> void:
+	if outcome != "":
+		return
+	forfeited = true
+	outcome = "defeat"
+	current = null
+	_emit({"type": "outcome", "result": outcome, "forfeit": true})
+
+
 func _check_outcome() -> void:
 	if outcome != "":
 		return
