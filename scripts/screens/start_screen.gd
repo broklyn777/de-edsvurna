@@ -1,6 +1,6 @@
 extends Control
 ## Förberedelser (0.18, nås från kampanjkartan): välj tre följeslagare och eventuellt en trofé från
-## samlingen att ta med. Realm, djup och instabilitet väljs på kampanjkartan; Eden vid Edsaltaret
+## samlingen att ta med. Realm, djup och instabilitet väljs på kampanjkartan; Kallet vid Kallets altare
 ## (kortet leder dit). KLAR sparar valet och går tillbaka till kampanjkartan.
 ## Knappar och kort reagerar när fingret släpps (undviker dubbeltryck mellan skärmar).
 
@@ -156,8 +156,8 @@ func _draw() -> void:
 			label += " ×%d" % n
 		if not perks.has(label):
 			perks.append(label)
-	var ed_body := "%s\nPerks: %s" % [ed.text, ", ".join(perks) if not perks.is_empty() else "inga (köp vid Edsaltaret)"]
-	UiStyle.card(self, _oath_rect(), ed.name, ed_body, true, UiStyle.GOLD, "PALADINENS ED – TRYCK FÖR EDSALTARET")
+	var ed_body := "%s\nPerks: %s" % [ed.text, ", ".join(perks) if not perks.is_empty() else "inga (köp vid Kallets altare)"]
+	UiStyle.card(self, _oath_rect(), ed.name, ed_body, true, UiStyle.GOLD, "PALADINENS KALL – TRYCK FÖR KALLETS ALTARE")
 
 	UiStyle.text(self, Vector2(0, 76), "Sällskapet och trofén du tar med. Realm, djup och instabilitet väljer du på kampanjkartan.", 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)

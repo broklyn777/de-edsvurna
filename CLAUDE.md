@@ -13,13 +13,14 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 
 ## Design
 
-- **Paladinen** står alltid med i striden och väljer en **Ed** (Siralims Specialization) – en regelbrytare
-  för hela sällskapet. Finns (0.13): Hämndens ed (Paladin), Gryningens ed (Cleric), Väktarens ed
-  (Siegemaster). Kärnan verkar alltid; perks kostar perk-poäng (1–3) vid Edsaltaret och återställs gratis.
-  Perk-poäng (0.14.1, Siralims Perk Points): 2 från start, +1 för varannat klarat djup, egen pott per Ed.
+- **Paladinen** står alltid med i striden och väljer ett **kall** (Siralims Specialization) – en regelbrytare
+  för hela sällskapet. Finns (0.13): Domens kall (Paladin), Gryningens kall (Cleric), Väktarens kall
+  (Siegemaster). Kärnan verkar alltid; perks kostar perk-poäng (1–3) vid Kallets altare och återställs gratis.
+  Perk-poäng (Siralims Perk Points): 2 från start, +1 per klarad Realm Quest på ny Realm och djup (0.18; förr
+  +1 för varannat klarat djup), egen pott per kall.
   Perk-nivåer (0.15): perks som är rena siffror har 2–3 nivåer som kostar poäng var; regelbrytare har en.
-  Lånad perk (0.15, Siralims Anointment): en besegrad boss låser upp en plats där Eden lånar en perk
-  från en annan Ed, för poäng ur den egna potten.
+  Lånad perk (0.15, Siralims Anointment): en besegrad boss låser upp en plats där Kallet lånar en perk
+  från ett annat kall, för poäng ur den egna potten.
 - **Följeslagare** (Brokk, Syster Alva, Jägaren Eira, Solveig …): namn, roll, egen egenskap och en
   signaturhandling. Börja med 5–8, inte 30.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
@@ -41,10 +42,16 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   spelar ett kort 3D-ögonblick (`RoomMoment`) i Realmens stil innan rummets ruta; stridsrum har inget. Ett
   tryck hoppar över; RUMSÖGONBLICK PÅ/AV på rumskartan (`Profile.room_moments`). Ljud: room_door,
   room_chest, room_lock.
+  **Kartornas stil** (0.18): gammal handritad karta i tusch. Rumskartan: små tuschsymboler (`InkArt`:
+  kista, lägereld, altare, korsade svärd, sköld med kranium, dödskalle, virvel), streckade stigar med
+  handdragen ojämnhet, bleka rum som inte nåtts och en paladinpjäs som glider längs stigen. Kampanjkartan:
+  Drakvalvets tuschvinjetter (`assets/illustrations/`, `docs/illustrationer.md`) med tonade kanter och
+  fördärvet som ett flytande bläck i en shader; kompassros, kartuscher, drake, svärd i sten, skelett och
+  häxa bara i marginalen. Sigillet tonas bakom basen och nattlägret bakom lägret.
   **Realm Quest** (Jakt på Nemesis, Rensa 2 elitstrider, Rening 3 helgedomar) ger silver och en perk-poäng
   per ny kombination av Realm och djup. Körningen sparas i `user://run.cfg` efter varje rum.
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),
-  Edsaltaret (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
+  Kallets altare (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
@@ -62,7 +69,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
   namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
   (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.
-- **Död:** en död figurs egenskaper slutar verka, även Paladinens Ed, och verkar igen när den väcks.
+- **Död:** en död figurs egenskaper slutar verka, även Paladinens kall, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
   Försvara: −35 % skada och +50 % Defense; Provocera: −35 % Defense. Krit och undvikande från Speed-kvoten
@@ -75,7 +82,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   standardhandling Makro/Manuell. Auto kör makrona och stannar när inget passar. Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
-- Nästa steg: artefaktnivåer och fler platser, fler Eder (Warden, Inquisitor …), perk-ranks, Realm-traits
+- Nästa steg: artefaktnivåer och fler platser, fler kall (Warden, Inquisitor …), perk-ranks, Realm-traits
   per våning, buffar som höjer stats. Idéer för basen: `docs/research/siralim.md` §10c–10d.
 - Realtidsprototypen i WoW-stil ligger kvar på grenen `wow-realtid` (tagg `v0.8.1-wow`).
 
@@ -94,10 +101,10 @@ uppdaterad när nya begrepp tillkommer.
 
 ## Struktur
 
-- `src/game/run_state.gd` – en körning: Ed och perks, sällskap, våning (`FLOORS`), troféer och vem som bär dem,
+- `src/game/run_state.gd` – en körning: kall och perks, sällskap, våning (`FLOORS`), troféer och vem som bär dem,
   artefakter; `new_run()` och `new_practice()` (Övningsgården: valfritt möte, fulla Charges).
   `src/game/profile.gd` – det som varar mellan körningar: silver, samlingen, artefakter (`forge()`),
-  vald Ed och köpta perks per Ed (`buy_perk()`, `reset_perks()`, `perk_points()`, `active_perks()`), senaste sällskap, övningstroféer, valt och
+  valt kall och köpta perks per kall (`buy_perk()`, `reset_perks()`, `perk_points()`, `active_perks()`), senaste sällskap, övningstroféer, valt och
   djupaste klarade djup (`choose_depth()`, `clear_depth()`), perk-nivåer (`perk_rank()`) och lånade perks
   (`bosses_defeated`, `anoint()`, `anointed`). Sparas i `user://progress.cfg`.
   `src/game/room_map.gd` – `RoomMap`: en våning ur ett frö (`generate()`, `choices()`, `problems()` för kraven).
@@ -109,7 +116,7 @@ uppdaterad när nya begrepp tillkommer.
   (startmakron i `data/macros.json`).
   Skärmar i `scripts/screens/`: `base_screen` (första skärmen), `campaign_screen` (kampanjkartan),
   `room_map_screen` (rumskartan), `parchment.gd` (pergamentets shader), `start_screen` (Förberedelser),
-  `altar_screen` (Edsaltaret), `practice_screen`, `smith_screen`, `library_screen`, `camp_screen`, `macro_screen`. De flesta ärver
+  `altar_screen` (Kallets altare), `practice_screen`, `smith_screen`, `library_screen`, `camp_screen`, `macro_screen`. De flesta ärver
   `tap_screen.gd` och reagerar vid släpp.
 - `src/combat/` – `CombatSim` (tidslinje, ren logik, händelselista, skadeformlerna som statiska
   funktioner: `attack_damage`, `spell_damage`, `indirect_damage`, `combine_mods`, `crit_chance_for`,
@@ -124,7 +131,7 @@ uppdaterad när nya begrepp tillkommer.
   ligger i `CombatSim` (`_rule()`, `_rule_hit()`); `RunState.roll_rules()` slumpar dem.
 - `data/realms.json` – Realms med namn, text och våningar (möten i encounters.json). `RunState.set_realm()`,
   `floor_ids`; `Profile.realm`.
-- `data/oaths.json` – Ederna: Siralims Specialization och perks med pris. Kärnan och perkarna är
+- `data/oaths.json` – Kallen: Siralims Specialization och perks med pris. Kärnan och perkarna är
   egenskaper i `traits.json` (perks har `"oath"` och `"perk": true`).
 - `data/*.json` – förmågor (`power` = modifieraren i skadeformeln, `tier` för spells, helning = Int ×
   `power`, `cooldown` i egna turer), auror (`duration` i ägarens turer, `next_attack_mult`, `taunt`,
@@ -172,15 +179,15 @@ uppdaterad när nya begrepp tillkommer.
 Balans (0.18, hela körningar på rumskartan med Siralims Charges, djup 1, 100 körningar, enkel väg):
 kryptan startmakrona 48 %, TUNED 62 %; kapellet 44 % / 68 % (snabbmätning efter sista justeringen; hela
 `tests/balance_report.gd` med artefakter, perks, djup 3 och instabilitet 2 kördes på läget innan:
-med en artefakt 78–95 %, artefakt + Gryningens ed med Krigsmaskin 100 %, djup 3 bara starka byggen 61–95 %,
+med en artefakt 78–95 %, artefakt + Gryningens kall med Krigsmaskin 100 %, djup 3 bara starka byggen 61–95 %,
 instabilitet 2 TUNED 2–15 %, artefakt + perks 55–67 %). Questen klaras i ~30 % av körningarna.
-**Edernas kärnor** (startmakrona, kryptan) 48/48/41 % i 0.18; spridningen var 29–54 % före Charges-ändringen
+**Kallens kärnor** (startmakrona, kryptan) 48/48/41 % i 0.18; spridningen var 29–54 % före Charges-ändringen
 och ska ses över efter 0.18.
 Siffrorna nedan gäller 0.17 (tre strider per körning).
 Balans (0.17, `tests/balance_report.gd`, hela kryptan, siffror från 0.16 utan elitfiender): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
 resten), startmakrona 42 %, TUNED 66 %, TUNED + en artefakt 93 %, TUNED + bästa perks inom 2 poäng 63–93 %,
-med lånad perk upp till 96 % (Gryningens ed + Krigsmaskin), artefakt + perks 99 %, fyra artefakter + perks
-100 %. Edernas kärnor med startmakrona 36–42 %. Djup 3 (fiender ×1,16, 3 poäng, med en artefakt): bästa
+med lånad perk upp till 96 % (Gryningens kall + Krigsmaskin), artefakt + perks 99 %, fyra artefakter + perks
+100 %. Kallens kärnor med startmakrona 36–42 %. Djup 3 (fiender ×1,16, 3 poäng, med en artefakt): bästa
 perks 26–43 %, med lån upp till 68 %, fyra artefakter + perks 94 %.
 Det fördärvade kapellet på djup 1: startmakrona 44 %, TUNED 59 %, med en artefakt 89 %, med artefakt + Krigsmaskin
 100 %; djup 3: artefakt + bästa perks 57 %, fyra artefakter 87 %.
@@ -204,7 +211,7 @@ godot --headless --path . --script res://tests/run_tests.gd
 # Starta spelet
 godot --path .
 
-# Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var), och per Ed
+# Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var), och per kall
 godot --headless --path . --script res://tests/balance_report.gd
 
 # Varje perk för sig (hela kryptan med startmakrona)
@@ -225,7 +232,7 @@ godot --path . -- --realm=chapel --map
 # Öppna en plats i basen direkt (--gate = kampanjkartan, --practice, --altar, --smith, --library)
 godot --path . -- --smith
 
-# Edsaltaret med den lånade perken upplåst (som om Benfursten var besegrad)
+# Kallets altare med den lånade perken upplåst (som om Benfursten var besegrad)
 godot --path . -- --anoint
 
 # Strid med instabilitet (slumpade regler) eller med bestämda regler
@@ -238,7 +245,7 @@ godot --path . -- --realm=chapel --floor=2 --demo
 # Strid på ett annat djup (bara den körningen)
 godot --path . -- --floor=2 --depth=3 --demo
 
-# Strid med en annan Ed (bara den körningen), med alla dess perks
+# Strid med ett annat kall (bara den körningen), med alla dess perks
 godot --path . -- --oath=oath_ward --all-perks --floor=1 --demo
 
 # Strid med artefakter (bara den körningen): --artifact=<hjälte>:<typ>:<förmåga>

@@ -101,7 +101,7 @@ func _draw() -> void:
 		var shown := unit.traits.filter(func(t: String) -> bool:
 			return not sim.data.traits[t].get("hidden", false) and not sim.data.traits[t].get("perk", false))
 		var names: Array = shown.map(func(t: String) -> String: return sim.data.traits[t].name)
-		# Edens perks (Edsaltaret) visas som ett antal efter Eden.
+		# Kallets perks (Kallets altare) visas som ett antal efter Kallet.
 		var perks := unit.traits.filter(func(t: String) -> bool: return sim.data.traits[t].get("perk", false)).size()
 		if perks > 0 and not names.is_empty():
 			names[0] += " +%d perks" % perks

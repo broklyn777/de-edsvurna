@@ -115,7 +115,7 @@ func _dev_args() -> void:
 		elif arg == "--macros":
 			get_tree().change_scene_to_file.call_deferred(MACRO_SCENE)
 		elif arg.begins_with("--oath="):
-			# --oath=<ed> väljer Ed för den här körningen; med --all-perks får den alla perks (bara för test)
+			# --oath=<kall> väljer kall för den här körningen; med --all-perks får den alla perks (bara för test)
 			state.oath = arg.get_slice("=", 1)
 			state.perks = []
 			if OS.get_cmdline_user_args().has("--all-perks"):
@@ -127,11 +127,11 @@ func _dev_args() -> void:
 			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)
-			last_receipt = ["Hämndens ed (Paladinen): slog till 7 gånger – 312 skada"]
+			last_receipt = ["Domens kall (Paladinen): slog till 7 gånger – 312 skada"]
 			get_tree().change_scene_to_file.call_deferred(CAMP_SCENE)
 
 
-## Eden väljs vid Edsaltaret (profile.oath), sällskapet vid Kryptporten.
+## Kallet väljs vid Kallets altare (profile.oath), sällskapet vid Kryptporten.
 ## Slumpar nya våningsregler för vald instabilitet (visas vid Kryptporten).
 func roll_rules() -> void:
 	pending_rules = RunState.roll_rules(data, profile.instability, rng)
