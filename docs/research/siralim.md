@@ -1200,6 +1200,109 @@ på dem: Lirien (Sleeping), Tove (Agile, Scorned), Hulda (Snared, Poisoned), Rag
 Protected. renew ≈ Mending (fast 45 i stället för 25 %) → behåll eller byt. inspired (nästa anfall +30 %)
 kan ligga kvar som vår egen, eller bli Berserk (+50 % i 3 turer).
 
+## 18. Spell Gems och Rhea the Enchanter (underlag, 2026-10-19)
+
+VD spelade början av originalet och såg ett uppdrag hos Enchantern bredvid Smedens. Inget är beslutat; huvudtråden
+diskuterar med VD. Grundreglerna för Charges står i avsnitt 3 och 3b. Källa: wikins sida Spell Gems (läst i dag).
+
+### 18.1 Reglerna
+
+| Regel | Säkerhet |
+|---|---|
+| En varelse kastar bara spells från Spell Gems den bär. **3 platser**, aldrig två av samma spell, bara gems av **varelsens egen klass** (Chaos, Death, Life, Nature, Sorcery). Traits, perks och gem-egenskaper kan häva gränserna. | Bekräftat |
+| Charges per gem, 1 per cast; fylls inte mellan striderna i en Realm, bara hemma (se 3b). | Bekräftat |
+| **Rhea the Enchanter** i slottet tillverkar, uppgraderar och förtrollar gems. Allt kostar **Crystal**. | Bekräftat |
+| **Inscriptions** = recept som krävs för att tillverka en gem. Förbrukas aldrig. | Bekräftat |
+| **Tier 1–15.** Till skillnad från artefakter blir spellen *inte* starkare av högre tier: vid tier 5, 10 och 15 öppnas en egenskapsplats. Egenskapernas tal växer med tier. | Bekräftat |
+| **Ethereal gems** fås i striden (t.ex. Generous): färre Charges, inga egenskaper, försvinner efteråt. Vissa spells finns bara så (Avatarernas Ultimate, Rune Knights runor). | Bekräftat |
+| *Manuell* cast = vald i menyn eller av makro. *Automatisk* = utlöst av trait, perk eller spell. Silenced stoppar båda; en Resistant-varelse kan kasta med −50 % skada. *Sealed* låser en enskild gem. | Bekräftat |
+
+### 18.2 Var recepten kommer ifrån
+
+- Vanliga spells: **skattkistor** och **inskriptionsobelisker** i Realms.
+- Vissa: köps av gudarna vid en viss nivå av Favor.
+- Booze-spells: köps av spelande dvärgar (Notoriety). Arsenal-spells: köps i Arenan (Glory).
+- Sent i spelet: från False Gods.
+
+### 18.3 Styrka (potency)
+
+Spells skalar med Intelligence om inget annat står. Orden i texten betyder fasta procent:
+
+| Typ | Small | Moderate | Large | Massive | Devastating |
+|---|---|---|---|---|---|
+| Skada, % av Int | 90 | 110 | 120 | 130 | 150 |
+| Skada, % Defense som ignoreras | 0 | 10 | 20 | 30 | 40 |
+| Helning, % av Int | 30 | 60 | 90 | 120 | – |
+| Stats, % | 20 | 40 | 60 | 80 | – |
+
+Hos oss har några förmågor redan `tier` (moderate/large/massive) men `power` sätts fritt (t.ex. Helande ljus 300 %).
+Tabellen kan bli vår skala om vi vill närma oss originalet. Det påverkar balansen och bör mätas.
+
+### 18.4 Egenskaper (enchantments), hela listan
+
+Material = ädelsten som hittas i Realms (eller köps av en gud). Alla egenskaper passar inte alla gems.
+
+| Egenskap | Vad den gör | Material |
+|---|---|---|
+| Cascading | +5 % styrka per saknad Charge | Aquamarine |
+| Casts On Extra Target | kastas även på en slumpad fiende till | Diamond |
+| Class Swap | gemets klass byts | Opal |
+| Damage Increased | mer skada | Moonstone |
+| Duration Increased | längre buffar och debuffar | Jasper |
+| Generous | övriga i laget får en ethereal kopia med 1 Charge | Jade |
+| Healing Increased | mer helning | Obsidian |
+| Magnetic | +15 % per likadan gem i laget | Beryl |
+| Singular | +30 % per tom gem-plats hos varelsen | Aventurine |
+| Stat +/- Increased | starkare stat-ändringar | Malachite |
+| Chance to Attack | chans att anfalla en slumpad fiende efter casten | Bloodstone |
+| Chance to Cast After (handling) | chans att kasta efter Anfall, Försvara, Helning av annan eller Provocera | Citrine |
+| Chance to Cast Twice | chans att kasta en gång till | Garnet |
+| Chance to Defend | chans att Försvara efter casten | Carnelian |
+| Chance to Provoke | chans att Provocera efter casten | Emerald |
+| Defense Penetration | ignorerar en del av målets Defense | Azurite |
+| More Charges | fler Charges | Agate |
+| Potency Based On Attack / Defense / Health / Speed | en del av styrkan från en annan stat än Int | Onyx / Topaz / Tourmaline / Sapphire |
+
+Flera av dem är regelbrytare av den sort ledstjärnan efterfrågar (Singular, Magnetic, Generous, Cascading,
+Potency Based On Defense för en tank som kastar).
+
+### 18.5 Jämfört med oss
+
+| Siralim | Vi i dag |
+|---|---|
+| Spells på utbytbara gems, 3 platser | 2–3 förmågor som sitter fast på hjälten (`heroes.json` → `abilities`) |
+| Bara gems av den egna klassen | Förmågorna har redan `school` (holy, fire, shadow), men det styr inget |
+| Charges per gem, påfyllning hemma | Samma (3b) |
+| Rhea: recept, tier, egenskaper | Ingen motsvarighet |
+| Ethereal gems | Ingen motsvarighet (artefaktens automatiska kast liknar) |
+| Valuta Crystal | Bara silver |
+
+Det här är den största byggdelen som saknas efter troféer, artefakter och kall.
+
+### 18.6 Frågor innan något föreslås
+
+1. **Identitet.** Om förmågor kan bytas fritt blir hjältarna mer lika. Originalets klassregel håller isär dem:
+   Alva (Life/holy) kan bara bära holy-gems. Vårt `school`-fält räcker nästan som klass. Behövs mer än så?
+2. **Signaturen.** Ska signaturhandlingen sitta fast och övriga platser vara fria? *Inte originalets regel*
+   (där är alla tre fria), alltså ett eget val (VAL) som kräver motivering.
+3. **Recept som fynd.** Skattkammare och portaler kan ge Inscriptions, som i originalet. Passar troféjakten och
+   Bestiariet.
+4. **Valuta.** Silver eller en egen kristall? Originalet har en valuta per tillverkare (Brimstone hos Smeden,
+   Crystal hos Rhea). Vi använder silver hos Smeden (anpassning). Samma anpassning här är enklast; en egen valuta
+   ger mer att jaga.
+5. **Tier.** 1–15 med platser vid 5/10/15 eller förkortat som artefakterna (1–10)? Om förkortat: platser vid
+   t.ex. 3, 6 och 10.
+6. **Intro.** Ett Rhea-uppdrag efter Smedens ("tillverka din första gem"), som originalet.
+
+### 18.7 Vad motorn behöver (om det byggs)
+
+- Förmågor som egna föremål i profilen (gem: spell, tier, egenskaper, Charges) i stället för en lista på hjälten.
+- Klasskontroll vid utrustning (`school` mot hjältens skola).
+- Egenskaperna som modifierare och triggers: de flesta finns redan som effekttyper (`cast`, `chance`,
+  `modify_damage`, `aura`, `restore_charge`). Nytt: potency från annan stat, "per saknad Charge", "per tom plats",
+  "per likadan gem", ethereal kopior.
+- Makroredigeraren behöver redan visa förmågor per hjälte; den följer med om listan kommer från gems.
+
 ---
 
 ## Källor
