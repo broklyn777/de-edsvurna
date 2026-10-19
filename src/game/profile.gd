@@ -7,17 +7,18 @@ extends RefCounted
 ## inte i Övningsgården – och behålls även om sällskapet faller, som i Siralim där man bara
 ## förlorar Fortune.
 ##
-## Balans: en artefakt höjer chansen att klara hela kryptan med startmakrona från ~60 % till 75–85 %,
-## alla fyra till ~96 %. Startsilvret räcker till en, sedan ungefär en per klarad körning (110 silver).
+## Balans (0.14): silvret ska inte räcka till allt efter några körningar. En klarad krypta på djup 1
+## ger 65 silver; en artefakt kostar 160 och en perk 80–200. Djupare ger mer (SILVER_PER_DEPTH).
 
-const START_SILVER := 100
+const START_SILVER := 60
 ## Smida en ny artefakt (eller byta typ, som smälter ned den gamla).
-const FORGE_COST := 100
+const FORGE_COST := 160
 ## Byta förmågan i en artefakt man redan har.
-const RESOCKET_COST := 40
-## Silver per vunnen strid, per våning.
-const FLOOR_REWARD := [25, 35, 50]
-## Ederna vid Edsaltaret (data/oaths.json). Äldre sparfiler kan ha en Ed som inte finns längre.
+const RESOCKET_COST := 60
+## Silver per vunnen strid, per våning (djup 1).
+const FLOOR_REWARD := [15, 20, 30]
+## Realm Depth: +25 % silver per djup över 1.
+const SILVER_PER_DEPTH := 0.25
 const OATHS := ["oath_vengeance", "oath_dawn", "oath_ward"]
 
 var silver := START_SILVER
@@ -32,17 +33,36 @@ var perks := {}
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
 ## Troféer ur samlingen som hjältarna bär i Övningsgården: hero_id -> trophy_id.
 var practice_equipped := {}
+## Realm Depth (Siralim): valt djup vid Kryptporten och det djupaste som klarats (0 = inget än).
+## Nästa djup öppnas när det föregående är klarat.
+var depth := 1
+var best_depth := 0
 
 
-static func reward(floor: int) -> int:
-	return FLOOR_REWARD[clampi(floor, 0, FLOOR_REWARD.size() - 1)]
+static func reward(floor: int, at_depth := 1) -> int:
+	var base: int = FLOOR_REWARD[clampi(floor, 0, FLOOR_REWARD.size() - 1)]
+	return roundi(base * (1.0 + SILVER_PER_DEPTH * (maxi(at_depth, 1) - 1)))
 
 
-## Ger silver för en vunnen strid på våningen. Returnerar hur mycket.
-func win_battle(floor: int) -> int:
-	var amount := reward(floor)
+## Ger silver för en vunnen strid på våningen och djupet. Returnerar hur mycket.
+func win_battle(floor: int, at_depth := 1) -> int:
+	var amount := reward(floor, at_depth)
 	silver += amount
 	return amount
+
+
+## Det djupaste man får välja: ett mer än det djupaste som klarats.
+func max_depth() -> int:
+	return best_depth + 1
+
+
+func choose_depth(d: int) -> void:
+	depth = clampi(d, 1, max_depth())
+
+
+## Hela kryptan klarad på djupet: öppnar nästa.
+func clear_depth(d: int) -> void:
+	best_depth = maxi(best_depth, d)
 
 
 func add_trophy(trophy_id: String) -> void:
@@ -130,6 +150,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "perks", perks)
 	cfg.set_value("progress", "party", party)
 	cfg.set_value("progress", "practice_equipped", practice_equipped)
+	cfg.set_value("progress", "depth", depth)
+	cfg.set_value("progress", "best_depth", best_depth)
 	return cfg.save(path)
 
 
@@ -151,4 +173,6 @@ static func load_from(path: String) -> Profile:
 	if saved.size() == p.party.size():
 		p.party.assign(saved)
 	p.practice_equipped = cfg.get_value("progress", "practice_equipped", {})
+	p.best_depth = int(cfg.get_value("progress", "best_depth", 0))
+	p.choose_depth(int(cfg.get_value("progress", "depth", 1)))
 	return p

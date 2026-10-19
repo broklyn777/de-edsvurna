@@ -55,6 +55,13 @@ const CRIT_CHANCE_PER_DOUBLING := 0.1
 const CRIT_CHANCE_MAX := 0.5
 const DODGE_PER_DOUBLING := 0.1
 const DODGE_MAX := 0.3
+## Realm Depth (Siralim): fiendernas Health, Attack, Intelligence och Defense växer med en andel per
+## djup över 1 (10 %). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
+## (våning 2 och 3 är starkare än 1, som i Siralim där fienderna skalar snabbare än laget).
+const DEPTH_STEP := 0.1
+const SCALED_STATS := ["health", "attack", "intelligence", "defense"]
+## Resistant: debuffar på figuren verkar till hälften (skadeökning, DoT, ändrad Defense).
+const RESISTANT := 0.5
 ## Säkerhetsgräns för hur djupt egenskaper kan sätta igång varandra.
 const MAX_TRAIT_CHAIN := 10
 ## Som i Siralim: per figur och pågående tur får egenskaper utlösa högst så många attacker,
@@ -82,6 +89,8 @@ var events: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
 ## När sant spelar AI:n även hjältarna.
 var auto := false
+## Realm Depth (1 och uppåt).
+var depth := 1
 
 var _by_id := {}
 var _trait_ctx := ""
@@ -99,11 +108,12 @@ var trait_stats := {}
 
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
 ## hjältens förvalda egenskaper; charges: hero_id -> {ability_id: kvar} (annars fulla);
-## artifacts: hero_id -> {type, ability}.
+## artifacts: hero_id -> {type, ability}; depth: Realm Depth som skalar fienderna.
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
-		party: Array = [], traits := {}, charges := {}, artifacts := {}) -> CombatSim:
+		party: Array = [], traits := {}, charges := {}, artifacts := {}, depth := 1) -> CombatSim:
 	var sim := CombatSim.new()
 	sim.data = game_data
+	sim.depth = maxi(depth, 1)
 	if not artifacts.is_empty():
 		# Artefakternas egenskaper skapas för den här striden, utan att röra den delade datan.
 		sim.data = game_data.duplicate()
@@ -131,6 +141,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		var e := CombatUnit.from_data("%s_%d" % [kind, counts[kind]], game_data.enemies[kind], 1)
 		e.kind = kind
 		e.position = ENEMY_SLOTS[i]
+		scale_unit(e, enemy_mult(enc, sim.depth))
 		e.traits = expand_traits(game_data, e.traits)
 		sim._add(e)
 		sim.enemies.append(e)
@@ -138,6 +149,29 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 
 
 # --- Publikt API ------------------------------------------------------------
+
+## Hur mycket fiendernas stats växer på djupet: 1 + 10 % per djup över 1.
+static func depth_mult(depth: int) -> float:
+	return 1.0 + DEPTH_STEP * (maxi(depth, 1) - 1)
+
+
+## Mötets skalning (våningen) gånger djupets.
+static func enemy_mult(enc: Dictionary, depth: int) -> float:
+	return float(enc.get("stat_mult", 1.0)) * depth_mult(depth)
+
+
+## Skalar Health, Attack, Intelligence och Defense (inte Speed). Anropas före begin().
+static func scale_unit(u: CombatUnit, mult: float) -> void:
+	if is_equal_approx(mult, 1.0):
+		return
+	u.max_hp = roundf(u.max_hp * mult)
+	u.hp = u.max_hp
+	u.attack = roundf(u.attack * mult)
+	u.intelligence = roundf(u.intelligence * mult)
+	u.defense = roundf(u.defense * mult)
+	for stat in SCALED_STATS:
+		u.base_stats[stat] = u.stat(stat) if stat != "health" else u.max_hp
+
 
 ## Lägger till dolda delar ("parts") av egenskaper, t.ex. en kronas nackdel.
 static func expand_traits(game_data: Dictionary, list: Array) -> Array:
@@ -617,8 +651,13 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			factors.append(float(m.damage_mult))
 		if m.has("damage_mult_per_aura"):
 			factors.append(1.0 + float(m.damage_mult_per_aura) * _buff_count(src))
+		if m.has("damage_mult_per_dead_ally"):
+			factors.append(1.0 + float(m.damage_mult_per_dead_ally) * _dead_allies(src))
 		if m.has("additional_from_stat"):
 			additional += src.stat(m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
+	for a in src.auras.values():
+		if a.get("damage_mult", 1.0) != 1.0:
+			factors.append(a.damage_mult)
 	for m in _modifiers(tgt, "modify_damage_taken", probe):
 		if m.has("damage_taken_mult"):
 			factors.append(float(m.damage_taken_mult))
@@ -650,6 +689,15 @@ func _buff_count(u: CombatUnit) -> int:
 	var n := 0
 	for aura_id in u.auras:
 		if data.auras[aura_id].get("buff", false):
+			n += 1
+	return n
+
+
+## Hur många i figurens lag som har fallit (och inte väckts).
+func _dead_allies(u: CombatUnit) -> int:
+	var n := 0
+	for x in units:
+		if x.team == u.team and not x.alive:
 			n += 1
 	return n
 
@@ -716,16 +764,30 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 	var duration := duration_override if duration_override > 0.0 else float(d.get("duration", -1))
 	if refreshed and tgt.auras[aura_id].remaining > duration:
 		duration = tgt.auras[aura_id].remaining
-	tgt.auras[aura_id] = {"remaining": duration, "duration": duration,
+	# DoT som en andel av källans stat (Siralims Burning: 30 % av Int, Poisoned: 30 % av Attack).
+	var dot := float(d.get("dot", 0.0))
+	if d.has("dot_stat"):
+		dot = roundf(src.stat(d.dot_stat) * float(d.get("dot_pct", 0.3)))
+	var a := {"remaining": duration, "duration": duration,
 			"haste": float(d.get("haste", 0.0)), "damage_taken_mult": float(d.get("damage_taken_mult", 1.0)),
-			"defense_mult": float(d.get("defense_mult", 1.0)),
-			"hot": float(d.get("hot", 0.0)), "dot": float(d.get("dot", 0.0)),
+			"defense_mult": float(d.get("defense_mult", 1.0)), "damage_mult": float(d.get("damage_mult", 1.0)),
+			"hot": float(d.get("hot", 0.0)), "dot": dot,
 			"school": d.get("school", "physical"), "source": src.id}
+	if tgt.resistant and d.get("debuff", false):
+		for key in ["damage_taken_mult", "defense_mult", "damage_mult"]:
+			a[key] = resisted(a[key])
+		a.dot = roundf(a.dot * RESISTANT)
+	tgt.auras[aura_id] = a
 	_emit({"type": "aura_applied", "unit": tgt.id, "aura": aura_id, "refreshed": refreshed})
 	if d.get("taunt", false):
 		for e in enemies:
 			if e.alive and not e.intent.is_empty() and ability(e.intent.ability).get("target", "") == "enemy":
 				e.intent.targets = [tgt.id]
+
+
+## Resistant: en debuffs ändring av en faktor halveras (×1,2 → ×1,1, ×0,65 → ×0,825).
+static func resisted(factor: float) -> float:
+	return 1.0 + (factor - 1.0) * RESISTANT
 
 
 func _kill(u: CombatUnit) -> void:
@@ -813,6 +875,8 @@ func _trait_ready(owner: CombatUnit, trait_id: String, t: Dictionary) -> bool:
 	var last: Dictionary = owner.trait_ready.get(trait_id, {})
 	if last.is_empty():
 		return true
+	if t.get("once_per_battle", false):
+		return false
 	var per_turn := 1 if t.get("once_per_turn", false) else int(t.get("max_per_turn", 0))
 	if per_turn > 0 and last.turn == turn_no and last.count >= per_turn:
 		return false

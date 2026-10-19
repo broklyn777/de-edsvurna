@@ -27,7 +27,8 @@
 	"burning": {
 		"name": "Brinner",
 		"duration": 2,
-		"dot": 25,
+		"dot_stat": "intelligence",
+		"dot_pct": 0.3,
 		"school": "fire",
 		"debuff": true
 	},
@@ -58,6 +59,12 @@
 	"barrier": {
 		"name": "Barriär",
 		"duration": -1,
+		"buff": true
+	},
+	"lich_wrath": {
+		"name": "Vrede",
+		"duration": -1,
+		"damage_mult": 1.5,
 		"buff": true
 	}
 }

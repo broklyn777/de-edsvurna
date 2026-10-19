@@ -25,6 +25,8 @@ var crit_chance := 0.1
 ## Barrier tar skadan före livet. Den starkaste gäller, de staplas inte (Siralim).
 var barrier := 0.0
 var damage_taken_mult := 1.0
+## Resistant (Siralims bossar): debuffar får halv effekt (se CombatSim.RESISTANT).
+var resistant := false
 var attack_ability := "attack"
 ## Hjältens förmågor (motsvarar Siralims Spell Gems) och hur många Charges som är kvar på var.
 var abilities: Array = []
@@ -77,6 +79,7 @@ static func from_data(unit_id: String, d: Dictionary, unit_team: int) -> CombatU
 	u.abilities = d.get("abilities", []).duplicate()
 	u.rules = d.get("rules", [])
 	u.traits = d.get("traits", []).duplicate()
+	u.resistant = d.get("resistant", false) or u.traits.has("resistant")
 	return u
 
 

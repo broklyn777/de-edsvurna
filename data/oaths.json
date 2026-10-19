@@ -5,27 +5,27 @@
 		"perks": [
 			{
 				"id": "vengeance_wrath",
-				"cost": 40
-			},
-			{
-				"id": "vengeance_zeal",
-				"cost": 50
-			},
-			{
-				"id": "vengeance_execution",
-				"cost": 60
-			},
-			{
-				"id": "vengeance_divine_toll",
-				"cost": 70
-			},
-			{
-				"id": "vengeance_reckoning",
 				"cost": 80
 			},
 			{
-				"id": "vengeance_hand_of_light",
+				"id": "vengeance_zeal",
 				"cost": 100
+			},
+			{
+				"id": "vengeance_execution",
+				"cost": 120
+			},
+			{
+				"id": "vengeance_divine_toll",
+				"cost": 140
+			},
+			{
+				"id": "vengeance_reckoning",
+				"cost": 160
+			},
+			{
+				"id": "vengeance_hand_of_light",
+				"cost": 200
 			}
 		]
 	},
@@ -35,23 +35,23 @@
 		"perks": [
 			{
 				"id": "dawn_anointment",
-				"cost": 60
+				"cost": 120
 			},
 			{
 				"id": "dawn_holy_might",
-				"cost": 60
+				"cost": 120
 			},
 			{
 				"id": "dawn_guiding_light",
-				"cost": 80
+				"cost": 160
 			},
 			{
 				"id": "dawn_revelation",
-				"cost": 80
+				"cost": 160
 			},
 			{
 				"id": "dawn_greater_healing",
-				"cost": 100
+				"cost": 200
 			}
 		]
 	},
@@ -61,23 +61,23 @@
 		"perks": [
 			{
 				"id": "ward_titanic_rage",
-				"cost": 50
+				"cost": 100
 			},
 			{
 				"id": "ward_in_formation",
-				"cost": 70
+				"cost": 140
 			},
 			{
 				"id": "ward_best_offense",
-				"cost": 80
+				"cost": 160
 			},
 			{
 				"id": "ward_rest_up",
-				"cost": 100
+				"cost": 200
 			},
 			{
 				"id": "ward_war_machine",
-				"cost": 100
+				"cost": 200
 			}
 		]
 	}

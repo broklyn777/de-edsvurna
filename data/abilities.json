@@ -455,5 +455,22 @@
 		"name": "Hoppa över",
 		"target": "self",
 		"effects": []
+	},
+	"lich_doom": {
+		"name": "Dödsdom",
+		"target": "enemy",
+		"pick": "lowest",
+		"school": "shadow",
+		"kind": "spell",
+		"tier": "large",
+		"travel": 0.4,
+		"cooldown": 3,
+		"sound": "volley_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 3.0
+			}
+		]
 	}
 }

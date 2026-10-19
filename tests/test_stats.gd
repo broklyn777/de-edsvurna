@@ -73,7 +73,7 @@ func test_crit_and_dodge_from_speed_ratio() -> void:
 func test_strike_uses_attack_minus_defense() -> void:
 	var sim := _sim()
 	var paladin := sim.unit("paladin")
-	var warrior := sim.unit("skeleton_warrior_1")
+	var warrior := sim.unit("skeleton_archer_1")  # utan Benrustning
 	paladin.crit_chance = -1.0
 	sim._deal_damage(paladin, warrior, 1.0, "physical", "strike", true, true, "attack", true)
 	var hit: Dictionary = _hits(sim, "paladin")[0]

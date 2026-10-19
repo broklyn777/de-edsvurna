@@ -11,6 +11,9 @@
 		},
 		"crit_chance": 0.05,
 		"attack_ability": "bone_slash",
+		"traits": [
+			"bone_armor"
+		],
 		"visual": {
 			"model": "skelett",
 			"scale": 1.05,
@@ -38,6 +41,9 @@
 		},
 		"crit_chance": 0.08,
 		"attack_ability": "bone_arrow",
+		"traits": [
+			"deadeye"
+		],
 		"visual": {
 			"model": "skelett",
 			"scale": 0.95,
@@ -94,6 +100,9 @@
 		},
 		"crit_chance": 0.05,
 		"attack_ability": "shadow_bolt",
+		"traits": [
+			"grave_pact"
+		],
 		"rules": [
 			{
 				"ability": "grave_mend",
@@ -157,6 +166,9 @@
 		},
 		"crit_chance": 0.05,
 		"attack_ability": "shield_bash",
+		"traits": [
+			"warden_thorns"
+		],
 		"trophy": "warden_helm",
 		"rules": [
 			{
@@ -228,6 +240,9 @@
 		},
 		"crit_chance": 0.08,
 		"attack_ability": "ember_bolt",
+		"traits": [
+			"ember_heat"
+		],
 		"trophy": "ember_jaw",
 		"rules": [
 			{
@@ -278,7 +293,7 @@
 		"boss": true,
 		"color": "#cbbfe6",
 		"stats": {
-			"health": 1620,
+			"health": 1800,
 			"attack": 118,
 			"intelligence": 118,
 			"defense": 20,
@@ -286,9 +301,19 @@
 		},
 		"crit_chance": 0.05,
 		"attack_ability": "lich_touch",
+		"traits": [
+			"resistant",
+			"lich_undying_wrath"
+		],
 		"trophy": "lich_crown",
-		"boss_text": "Väcker en fallen skelett var tredje tur och sveper hela sällskapet med Benstorm.",
+		"boss_text": "Resistent. Väcker en fallen skelett var tredje tur, sveper sällskapet med Benstorm och vredgas under 50 % liv.",
 		"rules": [
+			{
+				"ability": "lich_doom",
+				"if": {
+					"self_hp_below": 0.5
+				}
+			},
 			{
 				"ability": "raise_dead",
 				"if": {

@@ -412,7 +412,7 @@
 	},
 	"solveig_kindle": {
 		"name": "Glödande själ",
-		"text": "Solveigs direkta eldträffar har 50 % chans att sätta fyr på målet (25 skada per tur i 2 turer).",
+		"text": "Solveigs direkta eldträffar har 50 % chans att sätta fyr på målet (30 % av hennes Intelligence per tur i 2 turer).",
 		"trigger": "damage",
 		"chance": 0.5,
 		"when": {
@@ -570,5 +570,105 @@
 		"modify": {
 			"damage_mult": 0.8
 		}
+	},
+	"bone_armor": {
+		"name": "Benrustning",
+		"enemy": true,
+		"text": "Tar 25 % mindre skada från attacker. Besvärjelser och indirekt skada biter fullt.",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"kind": "attack"
+		},
+		"modify": {
+			"damage_taken_mult": 0.75
+		}
+	},
+	"deadeye": {
+		"name": "Jägarblick",
+		"enemy": true,
+		"text": "Gör 50 % mer skada mot mål under 50 % liv.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_hp_below": 0.5
+		},
+		"modify": {
+			"damage_mult": 1.5
+		}
+	},
+	"grave_pact": {
+		"name": "Gravpakt",
+		"enemy": true,
+		"text": "Gör 40 % mer skada för varje fallen allierad.",
+		"trigger": "modify_damage",
+		"modify": {
+			"damage_mult_per_dead_ally": 0.4
+		}
+	},
+	"warden_thorns": {
+		"name": "Taggig utmaning",
+		"enemy": true,
+		"text": "Medan Gravväktaren provocerar tar den som anfaller den 40 % av skadan tillbaka (indirekt). Besvärjelser slipper.",
+		"trigger": "damage",
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "attack",
+			"self_has_aura": "provoke"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"pct_of_event": 0.4,
+				"kind": "indirect",
+				"no_crit": true,
+				"target": "source"
+			}
+		]
+	},
+	"ember_heat": {
+		"name": "Glödhetta",
+		"enemy": true,
+		"text": "Glödskelettets direkta träffar sätter Brinner på målet (30 % av dess Intelligence per tur i 2 turer).",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "burning",
+				"target": "target"
+			}
+		]
+	},
+	"resistant": {
+		"name": "Resistent",
+		"enemy": true,
+		"text": "Debuffar har halv effekt (Märkt, Brinner …).",
+		"trigger": "passive"
+	},
+	"lich_undying_wrath": {
+		"name": "Odödlig vrede",
+		"enemy": true,
+		"text": "Första gången Benfursten faller under 50 % liv vredgas han: +50 % skada resten av striden, och han sveper sällskapet med Benstorm direkt.",
+		"trigger": "damage",
+		"once_per_battle": true,
+		"when": {
+			"target": "self",
+			"self_hp_below": 0.5
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "lich_wrath",
+				"target": "self"
+			},
+			{
+				"type": "cast",
+				"ability": "bone_storm"
+			}
+		]
 	}
 }

@@ -8,6 +8,10 @@ extends RefCounted
 const FLOORS := ["crypt_1", "crypt_2", "crypt_3"]
 const PARTY_SIZE := 4
 const OFFER_SIZE := 3
+## Troféchans (Realm Depth ger bättre byte): första trofén efter en seger är säker, varje ytterligare
+## plats i erbjudandet kommer med den här chansen, +15 procentenheter per djup över 1.
+const TROPHY_CHANCE := 0.4
+const TROPHY_CHANCE_PER_DEPTH := 0.15
 
 var oath := "oath_vengeance"
 ## Köpta perks i Eden (Edsaltaret). De bärs av Paladinen och verkar som Eden.
@@ -15,6 +19,8 @@ var perks: Array = []
 ## Paladinen först, sedan följeslagarna.
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
 var floor := 0
+## Realm Depth som fienderna skalar med (Profile.depth).
+var depth := 1
 ## Troféer som hittats under körningen.
 var trophies: Array[String] = []
 ## hero_id -> trophy_id
@@ -36,6 +42,7 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.perks = profile.owned_perks(profile.oath).duplicate()
 	s.party = profile.party.duplicate()
 	s.artifacts = profile.artifacts.duplicate(true)
+	s.depth = profile.depth
 	s.fill_charges(data)
 	return s
 
@@ -89,8 +96,14 @@ func hero_traits(data: Dictionary) -> Dictionary:
 	return out
 
 
+## Chansen för varje trofé utöver den första i erbjudandet (högst 100 %).
+static func trophy_chance(at_depth: int) -> float:
+	return minf(1.0, TROPHY_CHANCE + TROPHY_CHANCE_PER_DEPTH * (maxi(at_depth, 1) - 1))
+
+
 ## Troféerna som erbjuds efter att våningen är vunnen: först från monstren i striden, sedan
-## fylls det på med andra som inte redan är tagna.
+## fylls det på med andra som inte redan är tagna. Den första är säker, resten kommer med
+## trophy_chance(depth).
 func trophy_offer(data: Dictionary, rng: RandomNumberGenerator) -> Array[String]:
 	var offer: Array[String] = []
 	for kind in data.encounters[encounter()].enemies:
@@ -104,7 +117,12 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator) -> Array[String]
 			rest.append(t)
 	while offer.size() < OFFER_SIZE and not rest.is_empty():
 		offer.append(rest.pop_at(rng.randi() % rest.size()))
-	return offer.slice(0, OFFER_SIZE)
+	var out: Array[String] = []
+	var chance := trophy_chance(depth)
+	for t in offer.slice(0, OFFER_SIZE):
+		if out.is_empty() or rng.randf() < chance:
+			out.append(t)
+	return out
 
 
 func take_trophy(trophy_id: String) -> void:

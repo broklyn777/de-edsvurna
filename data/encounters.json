@@ -12,7 +12,8 @@
 			"skeleton_warrior",
 			"skeleton_archer",
 			"grave_priest"
-		]
+		],
+		"stat_mult": 1.0
 	},
 	"crypt_2": {
 		"name": "Glödgraven",
@@ -27,7 +28,8 @@
 			"ember_skeleton",
 			"ember_skeleton",
 			"skeleton_archer"
-		]
+		],
+		"stat_mult": 1.08
 	},
 	"crypt_3": {
 		"name": "Benfurstens sal",
@@ -40,7 +42,8 @@
 		"enemies": [
 			"bone_lich",
 			"skeleton_warrior",
-			"skeleton_warrior"
-		]
+			"grave_priest"
+		],
+		"stat_mult": 1.1
 	}
 }

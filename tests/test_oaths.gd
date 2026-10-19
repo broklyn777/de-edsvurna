@@ -44,14 +44,14 @@ func test_every_oath_has_core_and_perks_in_data() -> void:
 
 func test_altar_buys_perks_and_resets_for_free() -> void:
 	var p := Profile.new()
-	p.silver = 100
+	p.silver = 200
 	assert_true(p.buy_perk(_data, "oath_ward", "ward_rest_up"))
 	assert_true(not p.buy_perk(_data, "oath_ward", "ward_rest_up"), "en perk köps en gång")
 	assert_true(not p.buy_perk(_data, "oath_ward", "dawn_anointment"), "bara Edens egna perks")
 	assert_true(not p.buy_perk(_data, "oath_ward", "ward_titanic_rage"), "silvret räcker inte")
-	assert_eq(p.silver, 100 - Profile.perk_cost(_data, "oath_ward", "ward_rest_up"))
+	assert_eq(p.silver, 200 - Profile.perk_cost(_data, "oath_ward", "ward_rest_up"))
 	assert_eq(p.reset_perks(_data, "oath_ward"), Profile.perk_cost(_data, "oath_ward", "ward_rest_up"))
-	assert_eq(p.silver, 100, "återställningen är gratis")
+	assert_eq(p.silver, 200, "återställningen är gratis")
 	assert_eq(p.owned_perks("oath_ward"), [])
 
 
@@ -218,7 +218,7 @@ func test_ward_titanic_rage_and_best_offense() -> void:
 	var sim := _sim(["oath_ward", "ward_titanic_rage", "ward_best_offense"])
 	_no_luck(sim)
 	var brokk := sim.unit("brokk")
-	var warrior := sim.unit("skeleton_warrior_1")
+	var warrior := sim.unit("skeleton_archer_1")  # utan Benrustning
 	sim._deal_damage(brokk, warrior, 100.0, "physical", "axe_chop", true, true)
 	var plain: float = sim.drain_events().filter(func(e: Dictionary) -> bool: return e.type == "damage")[0].amount
 	assert_eq(plain, 100.0 + roundf(brokk.defense * 0.3), "Bästa försvaret: + 30 % av Defense")

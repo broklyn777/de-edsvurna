@@ -123,7 +123,7 @@ func test_bulwark_and_blessing_empower_next_attack() -> void:
 	sim._add_aura(sim.unit("brokk"), sim.unit("brokk"), "defend")
 	assert_true(paladin.auras.has("inspired"), "Stenhård ger hela sällskapet Styrka")
 	paladin.crit_chance = -1.0  # ingen krit, inte ens med fartfördel
-	sim._deal_damage(paladin, sim.unit("skeleton_warrior_1"), 100.0, "physical", "strike", true, true)
+	sim._deal_damage(paladin, sim.unit("skeleton_archer_1"), 100.0, "physical", "strike", true, true)
 	var hit: Dictionary = sim.drain_events().filter(func(e: Dictionary) -> bool:
 		return e.type == "damage" and e.source == "paladin")[0]
 	assert_near(hit.amount, 130.0)
@@ -172,6 +172,7 @@ func test_lich_crown_turns_follow_ups_into_holy_spells() -> void:
 
 func test_run_offers_trophies_from_defeated_monsters() -> void:
 	var state := RunState.new()
+	state.depth = 10  # så djupt att troféchansen är 100 %
 	var rng := RandomNumberGenerator.new()
 	var offer := state.trophy_offer(_data, rng)
 	assert_eq(offer.size(), 3)
