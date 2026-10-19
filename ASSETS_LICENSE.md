@@ -22,6 +22,13 @@ klädda och beväpnade i Blender för Drakvalvet:
 | fallen_riddare.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), torvald.glb omfärgad i Blender (svart rustning, glödande röda kanter) med horn på hjälmen | Fallen riddare i kapellet |
 | haxa.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), Drakvalvets Svala (`qt-svala.glb`) i Blender: spetsig hatt, sumpgrön kappa | Häxa i kapellet |
 | biskop.glb | Quaternius "King" (poly.pizza/m/I1gTjmuK2m), Drakvalvets Ragnvald (`qt-ragnvald.glb`) i Blender: mitra, kräkla i stället för hammare, smutsvit kåpa, grönt sken | Den fallne biskopen |
+| falkenerare.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets Gudlaug (`qt-gudlaug.glb`) i Blender: ljusblå rock, falken Stormvinge på vänster axel (byggd i Blender, utan UV) | Ronja Falkvind, falkenerare |
+| bard.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq) som alv, Drakvalvets `qt-hjalte-elf-m.glb` i Blender: plymhatt, luta på ryggen, vinröd klädsel (7 anims, utan UV) | Lirien Silversträng, bard |
+| munk.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), Drakvalvets `qt-hjalte-human-m.glb` i Blender: saffransgul klädsel, rakad, pärlband (8 anims, utan UV) | Broder Tove, munk |
+| druid.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: horn, lövkrage, mossgrön klädsel (7 anims, utan UV) | Hulda Mossrot, druid |
+| domare.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: vit och guld dräkt, silverhår, domarmössa, vit mantel (7 anims, utan UV) | Ragnhild Ljusdom, domare |
+| svardsdansare.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), Drakvalvets `qt-hjalte-human-m.glb` i Blender: sandfärgad dräkt, turban, turkost skärp (8 anims, utan UV) | Sefir av Sanden, svärdsdansare |
+| imma.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: kopparrosa hår, läderdräkt, kort lila mantel, koger (6 anims, utan UV) | Imma, Paladinens barndomsvän |
 | vapen.glb | Vapen från Drakvalvet – **källa ej bekräftad, kontrollera före release** | Vapen i händerna |
 
 Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla figurer har samma rigg
