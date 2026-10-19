@@ -77,6 +77,8 @@ func _ready() -> void:
 			warp_turns = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--seed="):
 			seed_value = int(arg.get_slice("=", 1))
+		elif arg.begins_with("--inspect="):
+			_show_inspect.call_deferred(arg.get_slice("=", 1))  # Inspect direkt (för skärmdumpar)
 	var state: RunState = run.state
 	if state.charges.is_empty():
 		state.fill_charges(data)

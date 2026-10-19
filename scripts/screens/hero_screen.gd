@@ -23,6 +23,8 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--tab="):
 			tab = int(arg.get_slice("=", 1))
+		elif arg == "--pick" and run.sheet_can_change_personality:
+			picking = true  # personlighetsväljaren direkt (för skärmdumpar)
 
 
 func _heroes() -> Array:
@@ -78,7 +80,7 @@ func _personality_rect() -> Rect2:
 
 func _pick_rect(i: int) -> Rect2:
 	var w := (size.x - MARGIN * 2 - GAP * 4) / 5.0
-	return Rect2(MARGIN + (i % 5) * (w + GAP), 150 + (i / 5) * 120, w, 108)
+	return Rect2(MARGIN + (i % 5) * (w + GAP), 196 + (i / 5) * 130, w, 122)
 
 
 # --- Ritning ----------------------------------------------------------------
@@ -105,7 +107,8 @@ func _draw() -> void:
 	UiStyle.bar(self, bar, float(prog.xp) / need, UiStyle.GOLD)
 	var bar_text := "%d / %d erfarenhet till nivå %d" % [int(prog.xp), need, level + 1]
 	UiStyle.text(self, Vector2(MARGIN, 148), bar_text, 14, Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_LEFT, 420, 2)
-	_draw_enemy_levels(data, prof, level, Vector2(480, 100))
+	if not picking:
+		_draw_enemy_levels(data, prof, level, Vector2(480, 100))
 	# Personligheten.
 	var pr := _personality_rect()
 	draw_rect(pr, Color(0, 0, 0, 0.55))
@@ -307,7 +310,7 @@ func _draw_history(data: Dictionary, prog: Dictionary) -> void:
 
 
 func _draw_picker(data: Dictionary, current: String) -> void:
-	UiStyle.text(self, Vector2(0, 140), "VÄLJ PERSONLIGHET – %d SILVER (allt räknas om bakåt)" % Profile.PERSONALITY_COST, 16,
+	UiStyle.text(self, Vector2(0, 184), "VÄLJ PERSONLIGHET – %d SILVER (allt räknas om bakåt)" % Profile.PERSONALITY_COST, 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 3)
 	var ids: Array = data.personalities.keys()
 	for i in ids.size():

@@ -248,7 +248,7 @@ godot --path . -- --camp
 
 # Hjältebladet direkt (--tab=0–2), och erfarenhet för att se nivåuppgångar på segerskärmen
 godot --path . -- --hero=brokk --tab=0
-godot --path . -- --xp-bar=25 --floor=0 --demo --turns=300
+godot --path . -- --xp-bar=85 --floor=0 --demo --turns=300
 
 # Rumskartan med en ny körning (efter --realm, --depth, --instability)
 godot --path . -- --realm=chapel --map
