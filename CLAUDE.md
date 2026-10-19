@@ -362,4 +362,6 @@ Homebrew bygger inte längre färdiga paket för macOS 13 – installera inte Ja
 - Exporten är utan Gradle (`gradle_build/use_gradle_build=false`), endast arm64-v8a. Oanvända ljud
   (röstrepliker, gamla WoW-ljud) och docs/ utesluts i `exclude_filter` i export_presets.cfg.
 
-Tester: lägg `tests/test_*.gd` som ärver `res://tests/test_case.gd`, metoder som börjar på `test_`.
+Tester: lägg `tests/test_*.gd` som ärver `res://tests/test_case.gd`, metoder som börjar på `test_`. Köraren fångar körfel (en
+Logger i `run_tests.gd`) och avslutar med felkod om något misslyckas; `tests/test_runner.gd` kör fixturerna i
+`tests/fixtures/` (som måste misslyckas) och kontrollerar det. Lägg aldrig `test_`-filer som ska lyckas i fixtures.
