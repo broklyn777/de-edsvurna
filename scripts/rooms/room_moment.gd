@@ -151,7 +151,7 @@ func _process(delta: float) -> void:
 		_door = true
 		world.open_door(0.8)
 		if sfx:
-			sfx.play("k_shield_wall", -14.0, 0.0)
+			sfx.play("room_door", -8.0, 0.0)
 	if not _walking and _t >= WALK_AT:
 		_walking = true
 		var slots := world.party_slots(models.size())
@@ -215,15 +215,17 @@ func _place_camera(t: float) -> void:
 	camera.look_at(look)
 
 
+## Ljudet när rummets händelse visar sig (rumsljuden från ljudgrenen; cast_*.wav och heal.wav
+## följer inte med i APK:n, så spell_*- och heal_light-ljuden används).
 func _reveal_sound() -> String:
 	match kind:
-		"treasure": return "renew"
-		"shrine": return "heal"
-		"prisoner": return "k_shield_slam"
-		"inscription": return "cast_holy"
-		"campfire": return "cast_fire"
-		"portal": return "cast_shadow"
-	return "renew"
+		"treasure": return "room_chest"
+		"shrine": return "heal_light"
+		"prisoner": return "room_lock"
+		"inscription": return "spell_holy"
+		"campfire": return "spell_fire"
+		"portal": return "spell_shadow"
+	return "room_chest"
 
 
 func _label(text: String, size: int) -> Label:

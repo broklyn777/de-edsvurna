@@ -20,6 +20,10 @@ var _zoom_t := 0.0
 ## Rutan ovanpå kartan: {title, text, options: [{label, shrine}]} eller tom.
 var _dialog := {}
 var _shrine_options: Array = []
+## 3D-ögonblicket som spelas när sällskapet går in i ett rum (RoomMoment), eller null.
+var _moment: RoomMoment
+## Rumstyper med ett ögonblick (stridsrum har inget, striden är själv 3D).
+const MOMENT_KINDS := ["treasure", "shrine", "campfire", "portal"]
 
 
 func _ready() -> void:
@@ -28,6 +32,14 @@ func _ready() -> void:
 	add_child(parchment)
 	if run.state.map == null:
 		run.go(run.CAMPAIGN_SCENE)
+		return
+	# Utvecklare: --enter=<typ> går in i första rummet av den typen (för att se ögonblicket).
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--enter="):
+			var want := arg.get_slice("=", 1)
+			for r in run.state.map.steps[0]:
+				r.kind = want if r.slot == 0 else r.kind
+			get_tree().create_timer(0.8).timeout.connect(_enter.bind(run.state.map.steps[0][0].id))
 
 
 func _process(delta: float) -> void:
@@ -45,6 +57,8 @@ static func _smooth(t: float) -> float:
 
 func _tap(p: Vector2) -> void:
 	var state: RunState = run.state
+	if _moment != null:
+		return  # ögonblicket tar själv emot trycket (hoppar över)
 	if not _dialog.is_empty():
 		_tap_dialog(p)
 		return
@@ -62,10 +76,24 @@ func _tap(p: Vector2) -> void:
 
 
 func _enter(id: String) -> void:
+	var kind: String = run.state.map.room(id).kind
+	if run.profile.room_moments and MOMENT_KINDS.has(kind):
+		await _play_moment(kind)
 	var r: Dictionary = run.enter_room(id)
 	if RunState.is_battle(r):
-		return  # striden tar över
+		return  # striden tar över (portalen går in i sin strid efter ögonblicket)
 	_show_room(r)
+
+
+## Spelar rummets 3D-ögonblick i Realmens stil och väntar tills det är slut eller hoppas över.
+func _play_moment(kind: String) -> void:
+	var style := "chapel" if run.state.realm == "chapel" else "crypt"
+	_moment = RoomMoment.create(kind, style, Array(run.state.party), run.data)
+	add_child(_moment)
+	await _moment.finished
+	_moment.queue_free()
+	_moment = null
+	UnitModel.free_shared()
 
 
 ## Rummets händelse som en ruta på kartan.
