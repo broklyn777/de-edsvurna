@@ -5,8 +5,7 @@ extends RefCounted
 ## Varje nivå höjer varje stat med 30 % av basvärdet (nivå 1). Personligheten låter en stat växa 40 %
 ## och en annan 20 % per nivå; den ändrar tillväxten, inte startvärdet, och ett byte räknas om bakåt.
 ## Nivåtaket är 5 × (högsta klarade djup + 1) – vårt val, så att nötning på låga djup inte ersätter
-## bättre byggen. Fienderna skalar så att en hjälte på väntad nivå för djupet möter samma motstånd som
-## i 0.18 (expected_level).
+## bättre byggen. Fiendernas nivå följer bara djup och våning (enemy_level), som i Siralim.
 
 const STATS := ["health", "attack", "intelligence", "defense", "speed"]
 const STAT_NAMES := {"health": "Health", "attack": "Attack", "intelligence": "Intelligence", "defense": "Defense",
@@ -15,10 +14,11 @@ const GROWTH := 0.3
 const GROWTH_UP := 0.4
 const GROWTH_DOWN := 0.2
 const LEVELS_PER_DEPTH := 5
-## Erfarenhet per vunnen strid: bas × rumstyp × djup. Alla i sällskapet får den, även de stupade.
-const XP_BASE := 10
+## Erfarenhet per vunnen strid: bas × rumstyp × djup² – i kvadrat som kurvan till nästa nivå, så att en
+## nivå tar ungefär lika många strider på varje djup (static var: balansrapporten prövar andra värden). Alla i sällskapet får den, även de stupade.
+static var XP_BASE := 17
 const XP_KIND := {"battle": 1.0, "elite": 1.5, "portal_battle": 1.5, "end": 2.0, "boss": 3.0}
-## Hur långt under taket den väntade nivån för ett djup ligger (fiendernas nivå).
+## Hur långt under taket den väntade nivån för ett djup ligger (för rapporten och texterna).
 const EXPECTED_BELOW_CAP := 2
 
 
@@ -76,8 +76,16 @@ static func breakdown(data: Dictionary, hero_id: String, level: int, personality
 	return out
 
 
+## Erfarenhet till nästa nivå: XP_NEED_SQ · L² + XP_NEED_LIN · L + XP_NEED_FLAT (15, 30, 55, 90 …). De låga
+## nivåerna är billiga så att en ny profil hinner växa under första körningen; nära taket är de dyra, så
+## att ett sällskap två nivåer under taket fortfarande märker skillnaden mot våning 3 och bossen.
+static var XP_NEED_SQ := 5
+static var XP_NEED_LIN := 0
+static var XP_NEED_FLAT := 10
+
+
 static func xp_to_next(level: int) -> int:
-	return 20 + 10 * level
+	return XP_NEED_SQ * level * level + XP_NEED_LIN * level + XP_NEED_FLAT
 
 
 static func level_cap(best_depth: int) -> int:
@@ -89,18 +97,17 @@ static func expected_level(depth: int) -> int:
 	return maxi(1, level_cap(maxi(depth, 1) - 1) - EXPECTED_BELOW_CAP)
 
 
-## Fiendernas nivå: den väntade nivån för djupet, dragen TRACK av vägen mot sällskapets nivå (vårt val).
-## Siralims 30 % per nivå skulle annars göra nivåerna helt avgörande i våra korta körningar; så här
-## märks varje nivå (ungefär en femtedel av tillväxten blir ett övertag) utan att nötning slår byggen.
-const TRACK := 0.95
-## Personligheternas 40 % på en nyckelstat ger hjältarna ett litet övertag; fienderna ligger så här
-## många nivåer över för att vinstandelarna på väntad nivå ska bli desamma som i 0.18.
-const ENEMY_EDGE := 0.1
+## Fiendernas nivå (som i Siralim där den följer djupet och inte ens egna varelser): bara djup och
+## våning avgör. Varje djup börjar FLOOR_START nivåer över föregående djups tak (5 × (djup − 1)) och varje
+## våning lägger på FLOOR_STEP, så att körningen stiger. En ny profil på nivå 1 klarar första våningen på
+## djup 1 och växer under körningen; vid taket är djupet lättare, och då är det dags för nästa djup.
+## Djup 1: 2,25 / 3,75 / 5,25. Värdena är våra, valda med botarna (tests/balance_report.gd).
+static var FLOOR_START := 2.25
+static var FLOOR_STEP := 1.5
 
 
-static func enemy_level(depth: int, party_avg: float) -> float:
-	var expected := float(expected_level(depth))
-	return expected + (party_avg - expected) * TRACK + ENEMY_EDGE
+static func enemy_level(depth: int, floor_index: int) -> float:
+	return LEVELS_PER_DEPTH * (maxi(depth, 1) - 1) + FLOOR_START + FLOOR_STEP * clampi(floor_index, 0, 2)
 
 
 ## Sällskapets snittnivå ur opts.levels.
@@ -120,7 +127,7 @@ static func level_mult(level: float) -> float:
 
 static func battle_xp(kind: String, depth: int, boss := false) -> int:
 	var k := "boss" if boss else kind
-	return roundi(XP_BASE * float(XP_KIND.get(k, 1.0)) * maxi(depth, 1))
+	return roundi(XP_BASE * float(XP_KIND.get(k, 1.0)) * maxi(depth, 1) * maxi(depth, 1))
 
 
 ## Ger erfarenhet och höjer nivån så långt taket tillåter. progress = {level, xp}; ändras på plats.

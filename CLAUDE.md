@@ -56,12 +56,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   egna källor i samma fil. Källbilderna (symbolark, sigillet, skelett) exporteras inte (`exclude_filter`).
   **Realm Quest** (Jakt på Nemesis, Rensa 2 elitstrider, Rening 3 helgedomar) ger silver och en perk-poäng
   per ny kombination av Realm och djup. Körningen sparas i `user://run.cfg` efter varje rum.
-- **Nivåer och personlighet** (0.19, Siralim): hjältarna får erfarenhet av vunna strider (rumstyp × djup,
+- **Nivåer och personlighet** (0.19, Siralim): hjältarna får erfarenhet av vunna strider (rumstyp × djup²,
   även stupade) och varje nivå ger +30 % av basvärdet i varje stat. Taket är 5 × (djupaste klarade + 1).
   En av 20 personligheter låter en stat växa 40 % och en annan 20 % (byts i Biblioteket, räknas om bakåt).
-  Nivåerna sparas i `Profile.heroes`. *Vårt val:* fienderna möter sällskapets nivå nästan helt
-  (`HeroStats.enemy_level`: väntad nivå + 0,95 × skillnaden + 0,1), annars blev nivåerna allt och
-  makrona inget; en nivå märks som ett par procent övertag. **Hjältebladet** (`hero_screen`, från
+  Nivåerna sparas i `Profile.heroes`. Fiendernas nivå följer bara djup och våning, som i Siralim
+  (`HeroStats.enemy_level`: 5 × (djup − 1) + 2,25 + 1,5 per våning). Erfarenhet 17 × rumstyp × djup²;
+  till nästa nivå 5 · L² + 10 (15, 30, 55, 90): låga nivåer går fort, nära taket långsamt (våra val). **Hjältebladet** (`hero_screen`, från
   lägret, Förberedelser och Biblioteket): nivå, erfarenhet, tak, personlighet, stats per källa, vad de
   betyder i skada och helning mot en typisk fiende, egenskaper med körningens statistik, förmågor,
   artefakt och historik. Nivåuppgångar syns och hörs på segerskärmen.

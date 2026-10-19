@@ -68,7 +68,7 @@ func test_cap_and_expected_level_follow_depth() -> void:
 	assert_eq(HeroStats.expected_level(3), 13)
 	assert_true(HeroStats.battle_xp("end", 1, true) > HeroStats.battle_xp("end", 1) and
 			HeroStats.battle_xp("end", 1) > HeroStats.battle_xp("battle", 1), "boss > slut > strid")
-	assert_eq(HeroStats.battle_xp("battle", 3), 3 * HeroStats.battle_xp("battle", 1), "mer på djupare")
+	assert_eq(HeroStats.battle_xp("battle", 3), 9 * HeroStats.battle_xp("battle", 1), "djup² som kurvan")
 
 
 func test_profile_keeps_levels_and_old_profiles_start_at_one() -> void:
@@ -102,16 +102,27 @@ func test_personality_change_recomputes_backwards() -> void:
 	assert_eq(b.defense, roundf(base.defense * 3.0))
 
 
-func test_enemies_meet_the_party_level_near_the_expected_level() -> void:
+func test_enemy_level_follows_depth_and_floor_not_the_party() -> void:
 	var plain := CombatSim.create(_data, "crypt_1", 1)
 	var hp: float = plain.unit("skeleton_warrior_1").max_hp
 	var levels := {"paladin": {"level": 3}, "brokk": {"level": 3}, "alva": {"level": 3}, "eira": {"level": 3}}
 	var sim := CombatSim.create(_data, "crypt_1", 1, [], {}, {}, {}, 1, {"levels": levels, "elite_chance": 0.0})
 	var w := sim.unit("skeleton_warrior_1")
-	var lv := HeroStats.enemy_level(1, 3.0)
+	var lv := HeroStats.enemy_level(1, 0)
 	assert_near(w.level, lv, 0.001)
 	assert_eq(w.max_hp, roundf(hp * HeroStats.level_mult(lv)))
 	var low := CombatSim.create(_data, "crypt_1", 1, [], {}, {}, {}, 1, {"levels": {"paladin": {"level": 1}}, "elite_chance": 0.0})
-	assert_true(low.unit("skeleton_warrior_1").level < w.level, "lägre sällskap möter något svagare fiender")
-	assert_true(low.unit("skeleton_warrior_1").level > 1.0, "men fienderna ligger kvar nära väntad nivå")
+	assert_eq(low.unit("skeleton_warrior_1").level, w.level, "sällskapets nivå spelar ingen roll")
+	var later := CombatSim.create(_data, "crypt_1", 1, [], {}, {}, {}, 1, {"levels": levels, "elite_chance": 0.0, "floor": 2})
+	assert_true(later.unit("skeleton_warrior_1").level > w.level, "senare våningar har högre nivå")
+	assert_true(HeroStats.enemy_level(2, 0) > HeroStats.enemy_level(1, 2), "nästa djup börjar över förra djupets sista våning")
 	assert_eq(plain.unit("skeleton_warrior_1").level, 1.0, "utan nivåer som förut")
+
+
+func test_battle_opts_carry_the_floor() -> void:
+	var state := RunState.new()
+	state.set_realm(_data, "crypt")
+	state.fill_charges(_data)
+	state.start_expedition(_data, 3)
+	state.floor = 1
+	assert_eq(state.battle_opts().floor, 1)

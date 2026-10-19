@@ -111,6 +111,8 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	rng.seed = seed_value * 13 + 5
 	var fights := 0
 	var rooms := 0
+	var f0_fights := 0  # strider på första våningen (för en ny profil på nivå 1)
+	var f0_won := 0
 	# Nivåer (0.19): opts.levels = startnivåer per hjälte; med opts.grow växer de av erfarenheten upp till opts.cap.
 	var levels: Dictionary = opts.get("levels", {}).duplicate(true)
 	while not state.finished and rooms < 60:
@@ -129,9 +131,13 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			var result := run_fight(data, seed_value * 31 + fights, skill, state.encounter(), state.party, traits,
 					state.charges, artifacts, depth, battle_opts)
 			fights += 1
+			if state.floor == 0:
+				f0_fights += 1
+				f0_won += 1 if result.outcome == "victory" else 0
 			if result.outcome != "victory":
 				return {"cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
-						"lost_at": "f%d_%s" % [state.floor, r.kind]}
+						"lost_at": "f%d_%s" % [state.floor, r.kind], "f0_fights": f0_fights, "f0_won": f0_won,
+						"levels": levels}
 			state.store_charges(result.sim)
 			if opts.get("grow", false):
 				var xp := HeroStats.battle_xp(r.kind, depth, r.get("boss", false))
@@ -150,7 +156,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					var gifts := state.shrine_options(data, rng)
 					state.apply_shrine(data, rng, gifts[0] if gifts[0].kind == "charge" else gifts[1])
 	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
-			"levels": levels}
+			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won}
 
 
 ## Sällskapet på en viss nivå med de förvalda personligheterna (för balansrapporten).

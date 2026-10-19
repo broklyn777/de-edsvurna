@@ -34,24 +34,56 @@ func _init() -> void:
 	quit()
 
 
-## Nivåer (0.19): hela körningar där hjältarna har nivåer och fienderna möter dem (HeroStats).
-## "från nivå 1" växer under körningen upp till taket, de andra står på en fast nivå.
+## Nivåer (0.19): hela körningar där hjältarna har nivåer och växer av erfarenheten upp till taket, och
+## fienderna har djupets och våningens nivå (HeroStats.enemy_level). "v1" = andelen vunna strider på första
+## våningen. NIVA_START, NIVA_STEG och NIVA_XP prövar andra värden; NIVA_DJUP=1 bara djup 1.
 func _levels(data: Dictionary) -> void:
-	for depth in DEPTHS:
+	if OS.get_environment("NIVA_START") != "":
+		HeroStats.FLOOR_START = float(OS.get_environment("NIVA_START"))
+	if OS.get_environment("NIVA_STEG") != "":
+		HeroStats.FLOOR_STEP = float(OS.get_environment("NIVA_STEG"))
+	if OS.get_environment("NIVA_XP") != "":
+		HeroStats.XP_BASE = int(OS.get_environment("NIVA_XP"))
+	if OS.get_environment("NIVA_KURVA") != "":
+		var k := OS.get_environment("NIVA_KURVA").split(",")
+		HeroStats.XP_NEED_SQ = int(k[0])
+		HeroStats.XP_NEED_LIN = int(k[1])
+		HeroStats.XP_NEED_FLAT = int(k[2])
+	var realms: Array = data.realms.keys()
+	if OS.get_environment("NIVA_REALM") != "":
+		realms = [OS.get_environment("NIVA_REALM")]
+	var depths: Array = DEPTHS if OS.get_environment("NIVA_DJUP") == "" else [int(OS.get_environment("NIVA_DJUP"))]
+	print("fiendernas nivå: start %.2f, steg %.2f per våning, erfarenhet ×%d, till nästa nivå %s" % [
+			HeroStats.FLOOR_START, HeroStats.FLOOR_STEP, HeroStats.XP_BASE,
+			", ".join(range(1, 6).map(func(l: int) -> String: return str(HeroStats.xp_to_next(l))))])
+	for depth in depths:
 		var expected := HeroStats.expected_level(depth)
 		var cap := HeroStats.level_cap(depth - 1)
-		print("=== Nivåer, djup %d (väntad nivå %d, tak %d) ===" % [depth, expected, cap])
-		var cases := [["väntad nivå %d" % expected, expected, false], ["taket %d" % cap, cap, false]]
-		if depth == 1:
-			cases.push_front(["från nivå 1, växer", 1, true])
-			cases.append(["nivå 1", 1, false])
-		for realm_id in data.realms:
+		print("=== Nivåer, djup %d (fiender nivå %.1f / %.1f / %.1f, tak %d) ===" % [depth,
+				HeroStats.enemy_level(depth, 0), HeroStats.enemy_level(depth, 1), HeroStats.enemy_level(depth, 2), cap])
+		var cases := [["nivå 1", 1], ["väntad %d" % expected, expected], ["taket−1 %d" % (cap - 1), cap - 1],
+				["taket %d" % cap, cap]]
+		for realm_id in realms:
 			for c in cases:
-				var opts := {"levels": Bot.party_levels(data, c[1]), "grow": c[2], "cap": cap}
-				_line(data, "%s, %s: MACRO" % [data.realms[realm_id].short, c[0]], Bot.Skill.MACRO, {}, {}, depth,
-						realm_id, opts, "simple")
-				_line(data, "%s, %s: TUNED" % [data.realms[realm_id].short, c[0]], Bot.Skill.TUNED, {}, {}, depth,
-						realm_id, opts, "simple")
+				var opts := {"levels": Bot.party_levels(data, c[1]), "grow": true, "cap": cap}
+				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+					_level_line(data, "%s, %s: %s" % [data.realms[realm_id].short, c[0],
+							"MACRO" if skill == Bot.Skill.MACRO else "TUNED"], skill, depth, realm_id, opts)
+
+
+func _level_line(data: Dictionary, label: String, skill: int, depth: int, realm_id: String, opts: Dictionary) -> void:
+	var cleared := 0
+	var f0 := 0
+	var f0_won := 0
+	var end_level := 0.0
+	for seed_value in range(1, RUNS + 1):
+		var r := Bot.run_expedition(data, seed_value, skill, {}, {}, depth, realm_id, opts.duplicate(true), "simple")
+		cleared += 1 if r.cleared else 0
+		f0 += r.f0_fights
+		f0_won += r.f0_won
+		end_level += HeroStats.party_level(r.levels)
+	print("  %-40s klarade %3d %%  v1 %3d %%  slutnivå %4.1f" % [label, roundi(100.0 * cleared / RUNS),
+			roundi(100.0 * f0_won / maxi(f0, 1)), end_level / RUNS])
 
 
 func _runs_without_levels(data: Dictionary) -> void:

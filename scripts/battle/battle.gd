@@ -81,7 +81,7 @@ func _ready() -> void:
 	if state.charges.is_empty():
 		state.fill_charges(data)
 	var opts: Dictionary = state.battle_opts() if state.map != null and not state.practice \
-			else {"rules": state.active_rules(), "instability": state.instability}
+			else {"rules": state.active_rules(), "instability": state.instability, "floor": state.floor}
 	opts.levels = run.profile.levels_for(data, state.party)  # 0.19: hjältarnas nivåer
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
 			state.artifacts, state.depth, opts)

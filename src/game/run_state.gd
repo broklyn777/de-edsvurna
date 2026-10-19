@@ -366,7 +366,8 @@ static func is_battle(r: Dictionary) -> bool:
 ## Inställningar till CombatSim för rummets strid (regler, elit, portal, helgedomens gåva).
 func battle_opts() -> Dictionary:
 	var r := current_room()
-	var opts := {"rules": active_rules() + next_rules, "instability": instability, "start_auras": next_auras.duplicate()}
+	var opts := {"rules": active_rules() + next_rules, "instability": instability, "start_auras": next_auras.duplicate(),
+			"floor": floor}
 	if r.get("kind", "") == "elite" or r.get("nemesis", false):
 		opts.force_elites = 1
 	if r.get("nemesis", false):

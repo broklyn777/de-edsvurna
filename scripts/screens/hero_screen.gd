@@ -164,7 +164,7 @@ func _draw_meaning(data: Dictionary, prof: Profile, b: Dictionary, level: int, a
 	var enc: Dictionary = data.encounters[enc_id]
 	var kind: String = enc.enemies[0]
 	var e: Dictionary = data.enemies[kind]
-	var lm := HeroStats.level_mult(HeroStats.enemy_level(prof.depth, float(level)))
+	var lm := HeroStats.level_mult(HeroStats.enemy_level(prof.depth, 0))
 	var m := CombatSim.enemy_mult(enc, prof.depth) * lm
 	var e_def := roundf(float(e.stats.defense) * m)
 	var e_hp := roundf(float(e.stats.health) * m)
@@ -192,7 +192,7 @@ func _draw_meaning(data: Dictionary, prof: Profile, b: Dictionary, level: int, a
 	lines.append("Fiendens anfall: ~%d skada mot %s (%d av %d liv)" % [taken, h.name, taken, b.health.total])
 	var faster := "snabbare" if b.speed.total > e_spd else ("lika snabb" if b.speed.total == e_spd else "långsammare")
 	lines.append("Speed %d mot %d: %s än fienden – snabbare ger fler krittar och fler undvikanden" % [b.speed.total, e_spd, faster])
-	UiStyle.text(self, at, "VAD DET BETYDER – mot %s i %s, djup %d" % [e.name, realm.short, prof.depth], 15,
+	UiStyle.text(self, at, "VAD DET BETYDER – mot %s i %s, djup %d, våning 1" % [e.name, realm.short, prof.depth], 15,
 			Color(1, 1, 1, 0.6))
 	for i in lines.size():
 		UiStyle.text(self, at + Vector2(0, 26 + i * 22), lines[i], 15, Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 2)

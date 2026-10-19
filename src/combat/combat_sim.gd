@@ -134,8 +134,8 @@ var trait_stats := {}
 ##   "force_elites": n (de n första vanliga fienderna blir elit – Elit-rum och Nemesis), "nemesis": true
 ##   (den första eliten heter Nemesis), "stat_bonus": extra skalning (Portalens strid),
 ##   "start_auras": [aura] som sällskapet börjar med (Helgedomens gåva),
-##   "levels": {hero_id: {level, personality}} (0.19) – hjältarnas nivåer; då är fienderna byggda för
-##   den väntade nivån på djupet (HeroStats.expected_level), också i Speed}.
+##   "levels": {hero_id: {level, personality}} (0.19) – hjältarnas nivåer; då har fienderna en nivå efter
+##   djupet och "floor" (0–2, HeroStats.enemy_level), också i Speed}.
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		party: Array = [], traits := {}, charges := {}, artifacts := {}, depth := 1, opts := {}) -> CombatSim:
 	var sim := CombatSim.new()
@@ -191,7 +191,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		e.position = ENEMY_SLOTS[i]
 		scale_unit(e, enemy_mult(enc, sim.depth) * float(opts.get("stat_bonus", 1.0)))
 		if opts.has("levels"):
-			e.level = HeroStats.enemy_level(sim.depth, HeroStats.party_level(opts.levels))
+			e.level = HeroStats.enemy_level(sim.depth, int(opts.get("floor", 0)))
 			var lm := HeroStats.level_mult(e.level)
 			scale_unit(e, lm)
 			e.speed = roundf(e.speed * lm)
