@@ -169,9 +169,13 @@ uppdaterad när nya begrepp tillkommer.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
-Balans (0.18, `tests/balance_report.gd`, hela körningar på rumskartan, djup 1): kryptan startmakrona
-37–45 %, TUNED 60–61 %, med en artefakt 76 %, artefakt + Gryningens ed med Krigsmaskin 100 %; kapellet
-33–58 % / 45–58 % / 80 % / 100 %. Djup 3: bara starka byggen (62–94 %). Questen klaras i 30–40 % av körningarna.
+Balans (0.18, hela körningar på rumskartan med Siralims Charges, djup 1, 100 körningar, enkel väg):
+kryptan startmakrona 48 %, TUNED 62 %; kapellet 44 % / 68 % (snabbmätning efter sista justeringen; hela
+`tests/balance_report.gd` med artefakter, perks, djup 3 och instabilitet 2 kördes på läget innan:
+med en artefakt 78–95 %, artefakt + Gryningens ed med Krigsmaskin 100 %, djup 3 bara starka byggen 61–95 %,
+instabilitet 2 TUNED 2–15 %, artefakt + perks 55–67 %). Questen klaras i ~30 % av körningarna.
+**Edernas kärnor** (startmakrona, kryptan) 48/48/41 % i 0.18; spridningen var 29–54 % före Charges-ändringen
+och ska ses över efter 0.18.
 Siffrorna nedan gäller 0.17 (tre strider per körning).
 Balans (0.17, `tests/balance_report.gd`, hela kryptan, siffror från 0.16 utan elitfiender): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
 resten), startmakrona 42 %, TUNED 66 %, TUNED + en artefakt 93 %, TUNED + bästa perks inom 2 poäng 63–93 %,
