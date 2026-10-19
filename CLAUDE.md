@@ -33,8 +33,14 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   områden; fördärvet viker för varje klarat djup. Där väljs Realm, djup och instabilitet; Förberedelser
   väljer sällskap och trofé. Kameran glider in i området till **rumskartan**: varje våning har 3–4 steg
   med 2–3 rum (Strid, Elit, Skattkammare, Helgedom, Lägereld, Portal) och sedan våningens slut/bossen.
-  Lägereld = +1 Charge per förmåga (livet fylls redan efter varje strid). Helgedom = välj en gåva eller
-  Pandemonium. Portal = svårare strid och sedan skatt. En körning blir 9–12 strider; Charges är 3× 0.17.
+  Lägereld = +3 Charges per förmåga (livet fylls redan efter varje strid). Helgedom = välj en gåva eller
+  Pandemonium. Portal = svårare strid och sedan skatt. En körning blir 8–10 strider. Charges är Siralims
+  (4–8 per förmåga, som 0.13): striderna på kartan är svagare (mötena i `realms.json` "pools" har
+  `stat_mult` ~0,65–0,72) och lägerelden före våningens slut fyller på.
+  **Rumsögonblick** (0.18, `scripts/rooms/`, `docs/rum3d.md`): skattkammare, helgedom, lägereld och portal
+  spelar ett kort 3D-ögonblick (`RoomMoment`) i Realmens stil innan rummets ruta; stridsrum har inget. Ett
+  tryck hoppar över; RUMSÖGONBLICK PÅ/AV på rumskartan (`Profile.room_moments`). Ljud: room_door,
+  room_chest, room_lock.
   **Realm Quest** (Jakt på Nemesis, Rensa 2 elitstrider, Rening 3 helgedomar) ger silver och en perk-poäng
   per ny kombination av Realm och djup. Körningen sparas i `user://run.cfg` efter varje rum.
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),

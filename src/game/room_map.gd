@@ -54,7 +54,12 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 				kind = "campfire"
 			row.append(_room("f%d_s%d_r%d" % [floor_index, s, i], kind, s, i, pool, rng))
 		if s == n_steps - 1:
-			row.shuffle()  # lägerelden ligger inte alltid först
+			# Lägerelden ligger inte alltid först (blandas med fröets slump, inte den globala).
+			for i in range(row.size() - 1, 0, -1):
+				var j := rng.randi() % (i + 1)
+				var tmp: Dictionary = row[i]
+				row[i] = row[j]
+				row[j] = tmp
 			for i in row.size():
 				row[i].slot = i
 				row[i].id = "f%d_s%d_r%d" % [floor_index, s, i]

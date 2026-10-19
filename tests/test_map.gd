@@ -176,3 +176,9 @@ func test_quest_gives_perk_point_once_per_realm_and_depth() -> void:
 	var r := p.complete_quest("crypt", 1)
 	assert_true(r.point)
 	assert_eq(p.silver, silver + Profile.QUEST_SILVER)
+
+
+func test_same_seed_gives_the_same_map() -> void:
+	var a := RoomMap.generate(42, 1, false, _data.realms.crypt.pools[1], "crypt_2")
+	var b := RoomMap.generate(42, 1, false, _data.realms.crypt.pools[1], "crypt_2")
+	assert_eq(a.to_dict(), b.to_dict(), "kartan beror bara på fröet")

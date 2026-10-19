@@ -76,7 +76,7 @@
 			"wraith",
 			"cultist"
 		],
-		"stat_mult": 1.08
+		"stat_mult": 1.04
 	},
 	"chapel_3": {
 		"name": "Biskopens altare",
@@ -92,7 +92,7 @@
 			"cultist",
 			"witch"
 		],
-		"stat_mult": 1.1
+		"stat_mult": 1.06
 	},
 	"crypt_1a": {
 		"name": "Benkryptans gång",
