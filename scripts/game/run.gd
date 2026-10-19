@@ -50,8 +50,8 @@ func _ready() -> void:
 	_dev_args()
 
 
-## Utvecklarargument (efter `--`): --floor=<n> startar striden på våning n (0–2),
-## --camp visar lägret efter första striden.
+## Utvecklarargument (efter `--`): --floor=<n> startar striden på våning n (0–2), --depth=<n> väljer
+## djup, --camp visar lägret efter första striden.
 func _dev_args() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--floor="):
@@ -62,6 +62,9 @@ func _dev_args() -> void:
 			# --artifact=<hjälte>:<typ>:<förmåga>, t.ex. brokk:shield:healing_light (bara den här körningen)
 			var parts := arg.get_slice("=", 1).split(":")
 			state.artifacts[parts[0]] = {"type": parts[1], "ability": parts[2] if parts.size() > 2 else ""}
+		elif arg.begins_with("--depth="):
+			# --depth=<n> spelar på djup n (bara den här körningen)
+			state.depth = maxi(1, int(arg.get_slice("=", 1)))
 		elif arg == "--macros":
 			get_tree().change_scene_to_file.call_deferred(MACRO_SCENE)
 		elif arg.begins_with("--oath="):
@@ -111,11 +114,13 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		get_tree().change_scene_to_file(BASE_SCENE)
 		return
 	last_receipt = receipt
-	last_silver = profile.win_battle(state.floor)
+	last_silver = profile.win_battle(state.floor, state.depth)
 	offer = state.trophy_offer(data, rng)
 	camp_chosen = ""
 	for t in offer:
 		profile.add_trophy(t)
+	if state.is_last_floor():
+		profile.clear_depth(state.depth)
 	_save()
 	if state.is_last_floor():
 		get_tree().change_scene_to_file(BASE_SCENE)

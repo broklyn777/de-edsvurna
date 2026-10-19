@@ -75,6 +75,14 @@ func _tap(p: Vector2) -> void:
 			if _wearer_rect(i).has_point(p):
 				wearer = party[i]
 				return
+	if _depth_rect(-1).has_point(p):
+		run.profile.choose_depth(run.profile.depth - 1)
+		run.save()
+		return
+	if _depth_rect(1).has_point(p):
+		run.profile.choose_depth(run.profile.depth + 1)
+		run.save()
+		return
 	if _macro_rect().has_point(p):
 		run.open_macros(run.START_SCENE)
 		return
@@ -120,6 +128,11 @@ func _button_rect() -> Rect2:
 
 func _back_rect() -> Rect2:
 	return Rect2(MARGIN, 18, 150, 44)
+
+
+## Realm Depth: −1 till vänster, +1 till höger om siffran (nere till vänster).
+func _depth_rect(dir: int) -> Rect2:
+	return Rect2(MARGIN + (0.0 if dir < 0 else 170.0), size.y - 70, 50, 50)
 
 
 func _macro_rect() -> Rect2:
@@ -169,8 +182,24 @@ func _draw() -> void:
 			UiStyle.text(self, r.position + Vector2(0, 24), data.heroes[party[i]].name, 15, Color.WHITE,
 					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
+	_draw_depth()
 	UiStyle.big_button(self, _button_rect(), "IN I KRYPTAN", _t, companions.size() == 3)
 	_small_button(_macro_rect(), "MAKRON")
+
+
+func _draw_depth() -> void:
+	var prof: Profile = run.profile
+	UiStyle.text(self, Vector2(MARGIN, size.y - 80), "DJUP (DJUPASTE KLARADE: %d)" % prof.best_depth, 14, Color(1, 1, 1, 0.6))
+	var can_down := prof.depth > 1
+	var can_up := prof.depth < prof.max_depth()
+	_small_button(_depth_rect(-1), "−" if can_down else "")
+	_small_button(_depth_rect(1), "+" if can_up else "")
+	UiStyle.text(self, Vector2(MARGIN + 50, size.y - 36), str(prof.depth), 34, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, 120, 6)
+	var lines := ["Fiender +%d %%" % roundi((CombatSim.depth_mult(prof.depth) - 1.0) * 100.0),
+			"Silver +%d %%" % roundi(Profile.SILVER_PER_DEPTH * (prof.depth - 1) * 100.0),
+			"Troféchans %d %%" % roundi(RunState.trophy_chance(prof.depth) * 100.0)]
+	for i in lines.size():
+		UiStyle.text(self, Vector2(MARGIN + 232, size.y - 56 + i * 18), lines[i], 14, Color(1, 1, 1, 0.7))
 
 
 func _small_button(r: Rect2, label: String) -> void:

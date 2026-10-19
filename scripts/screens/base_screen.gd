@@ -67,7 +67,8 @@ func _status(id: String) -> String:
 	var data: Dictionary = run.data
 	match id:
 		"gate":
-			return "%d troféer att ta med" % run.collection.size()
+			return "Djup %d · djupaste klarade %d · %d troféer" % [run.profile.depth, run.profile.best_depth,
+					run.collection.size()]
 		"altar":
 			return "%s · %d perks" % [data.traits[run.profile.oath].name,
 					run.profile.owned_perks(run.profile.oath).size()]

@@ -16,6 +16,9 @@ var _message_t := 0.0
 var _t := 0.0
 ## Extra rader under resultatet (kvittot).
 var lines: Array[String] = []
+## Inspect: en figurs namn och rader (stats och egenskaper) medan spelaren håller fingret på den.
+var inspect_title := ""
+var inspect_lines: Array[String] = []
 
 
 func _ready() -> void:
@@ -36,6 +39,16 @@ func announce(text: String) -> void:
 func message(text: String) -> void:
 	_message = text
 	_message_t = 1.4
+
+
+func show_inspect(title: String, rows: Array[String]) -> void:
+	inspect_title = title
+	inspect_lines = rows
+
+
+func hide_inspect() -> void:
+	inspect_title = ""
+	inspect_lines = []
 
 
 func set_result(result: String, sub: String, title := "") -> void:
@@ -92,6 +105,16 @@ func _draw() -> void:
 		draw_set_transform(Vector2(w / 2, 150), 0, Vector2.ONE * pop)
 		UiStyle.text(self, Vector2(-w / 2, 0), _announce, 30, Color(1, 0.55, 0.2, a), HORIZONTAL_ALIGNMENT_CENTER, w, 6)
 		draw_set_transform(Vector2.ZERO)
+	if inspect_title != "":
+		var bw := minf(w - 40.0, 760.0)
+		var r := Rect2((w - bw) / 2.0, 70, bw, 70 + inspect_lines.size() * 46)
+		draw_rect(r, Color(0.03, 0.025, 0.05, 0.94))
+		draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
+		UiStyle.text(self, r.position + Vector2(0, 38), inspect_title, 28, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, bw, 5)
+		for i in inspect_lines.size():
+			var font := UiStyle.bold()
+			var pos := r.position + Vector2(20, 76 + i * 46)
+			draw_multiline_string(font, pos, inspect_lines[i], HORIZONTAL_ALIGNMENT_LEFT, bw - 40, 17, 2, Color(1, 1, 1, 0.9))
 	if _message_t > 0.0:
 		UiStyle.text(self, Vector2(0, h - 150), _message, 20, Color(1, 0.35, 0.3, minf(1.0, _message_t * 2.0)),
 				HORIZONTAL_ALIGNMENT_CENTER, w, 5)

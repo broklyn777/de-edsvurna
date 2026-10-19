@@ -46,6 +46,12 @@ var _choosing_ability := ""
 ## Auto: hjältar med standardhandling Makro kör sitt makro varje tur.
 var _auto := false
 var _targets: Array[String] = []
+## Inspect (Siralim): tryck och håll på en figur för att se dess egenskaper. Kostar ingen tur.
+const INSPECT_HOLD_MS := 450
+var _press_pos := Vector2.ZERO
+var _press_ms := -1
+var _press_unit := ""
+var _inspecting := false
 var _default_target := ""
 var _hitstop_until := 0
 var _slowmo_until := 0
@@ -70,7 +76,7 @@ func _ready() -> void:
 	if state.charges.is_empty():
 		state.fill_charges(data)
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
-			state.artifacts)
+			state.artifacts, state.depth)
 	data = sim.data  # med artefakternas egenskaper
 	_auto = demo
 	_build_scene()
@@ -186,6 +192,9 @@ func _layout() -> void:
 
 func _process(delta: float) -> void:
 	var now_ms := Time.get_ticks_msec()
+	if _press_ms >= 0 and not _inspecting and _press_unit != "" and now_ms - _press_ms >= INSPECT_HOLD_MS:
+		_inspecting = true
+		_show_inspect(_press_unit)
 	if now_ms < _hitstop_until:
 		Engine.time_scale = 0.05 * _speed
 	elif now_ms < _slowmo_until:
@@ -252,22 +261,57 @@ func _unhandled_input(event: InputEvent) -> void:
 				_toggle_auto()
 			KEY_R:
 				_restart()
-	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	elif event is InputEventMouseMotion and _press_ms >= 0 and event.position.distance_to(_press_pos) > 30.0:
+		_press_unit = ""  # fingret flyttades: ingen Inspect
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_press_pos = event.position
+			_press_ms = Time.get_ticks_msec()
+			_press_unit = _unit_at(event.position, sim.units.filter(func(u: CombatUnit) -> bool: return u.alive)
+					.map(func(u: CombatUnit) -> String: return u.id))
+			return
+		_press_ms = -1
+		if _inspecting:
+			_inspecting = false
+			overlay.hide_inspect()
+			return
 		if _choosing == "":
 			return
-		var best := ""
-		var best_d := 80.0
-		for id in _targets:
-			var m: UnitModel = models[id]
-			# Träffytan går från fötterna till huvudet, så att hela figuren går att trycka på.
-			var feet := world.project(m.global_position)
-			var head := world.project(m.head_position())
-			var d := _dist_to_segment(event.position, feet, head)
-			if d < best_d:
-				best_d = d
-				best = id
+		var best := _unit_at(event.position, _targets)
 		if best != "":
 			_do(_choosing, best)
+
+
+## Figuren närmast punkten bland ids (inom 80 px), eller "".
+func _unit_at(pos: Vector2, ids: Array) -> String:
+	var best := ""
+	var best_d := 80.0
+	for id in ids:
+		var m: UnitModel = models[id]
+		# Träffytan går från fötterna till huvudet, så att hela figuren går att trycka på.
+		var feet := world.project(m.global_position)
+		var head := world.project(m.head_position())
+		var d := _dist_to_segment(pos, feet, head)
+		if d < best_d:
+			best_d = d
+			best = id
+	return best
+
+
+## Visar figurens stats och egenskaper (dolda delar och artefaktens egenskap räknas inte).
+func _show_inspect(unit_id: String) -> void:
+	var u := sim.unit(unit_id)
+	var lines: Array[String] = ["Liv %d/%d · Attack %d · Intelligence %d · Defense %d · Speed %d" % [
+			u.hp, u.max_hp, u.attack, u.intelligence, u.defense_now(), u.speed]]
+	for trait_id in u.traits:
+		var t: Dictionary = data.traits[trait_id]
+		if not t.get("hidden", false):
+			lines.append("%s: %s" % [t.name, t.text])
+	if lines.size() == 1:
+		lines.append("Inga egenskaper.")
+	if u.team == 1:
+		lines.append("Djup %d · stats ×%.2f" % [sim.depth, CombatSim.enemy_mult(data.encounters[run.state.encounter()], sim.depth)])
+	overlay.show_inspect(u.name, lines)
 
 
 func _on_action_chosen(action: String, ability_id: String) -> void:
