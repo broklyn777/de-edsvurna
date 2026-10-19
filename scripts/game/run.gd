@@ -83,6 +83,29 @@ func _ready() -> void:
 		_resume_run()
 
 
+## Introduktionen (0.23, Intro): en händelse som kan avsluta aktuellt uppdrag. Repliker för nästa steg visas i borgen.
+var intro_lines := {}
+const INTRO_PRACTICE := "intro_yard"
+
+
+func intro(event: String, value := 0) -> void:
+	var done := Intro.notify(data, profile, event, value)
+	if done.is_empty():
+		return
+	ui("trophy_common", -6.0)
+	var nxt := Intro.current(data, profile)
+	if nxt.is_empty():
+		intro_lines = {"speaker": "Mäster Gorm", "lines": ["Svärdet är ditt, och borgen står öppen. Resten får du upptäcka själv."]}
+	else:
+		intro_lines = {"speaker": nxt.get("speaker", ""), "lines": nxt.get("lines", [])}
+	_save()
+
+
+## Sant när introts övningsstrid gäller (ensam paladin, Övningsgårdens docka).
+func intro_practice() -> bool:
+	return Intro.current(data, profile).get("id", "") == "practice"
+
+
 ## Sant när profilen är påhittad för en skärmdump (--forge-demo): då sparas den inte.
 var dev_profile := false
 
@@ -357,6 +380,35 @@ func campfire() -> String:
 ## Befriar fången i rummet (0.23, Siralims rekrytering): lärjungen ansluter direkt på svag nivå om det finns plats,
 ## annars väntar hen i Värdshuset. Returnerar texten om vad som hände.
 var last_recruit := ""
+## En befrielse efter en strid visas som en ruta när man kommer tillbaka till rumskartan.
+var pending_rescue := ""
+
+
+## Makroförslaget för en hjälte som just anslöt (0.23): {line, text}, eller {} om raden redan finns.
+func macro_hint(hero_id: String) -> Dictionary:
+	var hint: Dictionary = data.heroes.get(hero_id, {}).get("macro_hint", {})
+	if hint.is_empty():
+		return {}
+	var m: Dictionary = macros.get(assignment.get(hero_id, hero_id), {})
+	for line in m.get("lines", []):
+		if line.get("cond", "") == hint.line.cond and line.get("action", "") == hint.line.action \
+				and line.get("ability", "") == hint.line.get("ability", ""):
+			return {}
+	return hint
+
+
+## Lägger förslagets rad först i hjältens makro.
+func add_macro_hint(hero_id: String) -> void:
+	var hint := macro_hint(hero_id)
+	if hint.is_empty():
+		return
+	var id: String = assignment.get(hero_id, hero_id)
+	if not macros.has(id):
+		macros[id] = {"name": data.heroes[hero_id].name, "lines": []}
+		assignment[hero_id] = id
+	macros[id].lines.insert(0, hint.line.duplicate(true))
+	save_macros()
+	ui("ui_confirm", -8.0)
 
 
 func rescue_prisoner() -> String:
@@ -491,6 +543,10 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 	if state.practice:
 		practice_log = log
 		last_receipt = receipt
+		if victory and state.practice_encounter == INTRO_PRACTICE:
+			intro("practice_won")
+			get_tree().change_scene_to_file(BASE_SCENE)
+			return
 		get_tree().change_scene_to_file(PRACTICE_SCENE)
 		return
 	if not victory:
@@ -510,6 +566,7 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 	room_result = ""
 	if state.current_room().get("kind", "") == "prisoner":
 		room_result = rescue_prisoner()  # 0.23: vakterna är besegrade, fången befrias
+		pending_rescue = room_result
 	_after_quest_check(state.battle_won())
 	_trophy_sound()
 	camp_chosen = ""
@@ -567,6 +624,9 @@ func save_macros() -> void:
 	var f := FileAccess.open(MACROS_PATH, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify({"macros": macros, "assignment": assignment, "default_action": default_action}, "\t"))
+	# Introt: Paladinens första makrorad.
+	if not macros.get(assignment.get("paladin", "paladin"), {}).get("lines", []).is_empty():
+		intro("macro_line")
 
 
 ## Startmakron från data/macros.json första gången; sedan spelarens egna.
@@ -582,6 +642,13 @@ func _load_macros() -> void:
 		macros = data.macros.duplicate(true)
 		for hero_id in data.macros:
 			assignment[hero_id] = hero_id
+		# 0.23: en ny profil börjar med få rader (VD:n: "inte många makron i början"). Paladinens första rad skriver
+		# man själv i introt; följeslagarna har en eller två, och spelet föreslår fler när nya sorters hjältar kommer.
+		if not profile.intro_done:
+			macros.paladin.lines = []
+			for hero_id in macros:
+				if hero_id != "paladin":
+					macros[hero_id].lines = macros[hero_id].lines.slice(0, 2)
 	# 0.23: nya följeslagare får sina startmakron även i en sparad makrofil.
 	for hero_id in data.macros:
 		if not macros.has(hero_id):

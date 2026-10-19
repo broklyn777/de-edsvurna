@@ -10,6 +10,11 @@ const RARITY := {"common": "VANLIG", "elite": "ELIT", "boss": "BOSS"}
 var selected := -1
 
 
+func _ready() -> void:
+	super()
+	run.intro("library_read")  # 0.23: introts steg om troféer och kryptan
+
+
 func _tap(p: Vector2) -> void:
 	if back_rect().has_point(p):
 		run.go(run.BASE_SCENE)

@@ -1,0 +1,61 @@
+{
+	"steps": [
+		{
+			"id": "oath", "station": "altar", "event": "oath_chosen",
+			"speaker": "Mäster Gorm",
+			"lines": ["God morgon. I dag avlägger du din ed.", "Gå till Kallets altare och välj ditt kall."],
+			"quest": "Avlägg din ed vid Kallets altare."
+		},
+		{
+			"id": "practice", "station": "practice", "event": "practice_won", "silver": 100,
+			"speaker": "Mäster Gorm",
+			"lines": ["En paladin som inte kan hålla ett svärd är ingen paladin.", "Gå till Övningsgården. Anfall – och försvara dig när det blir hett."],
+			"quest": "Vinn en övningsstrid i Övningsgården."
+		},
+		{
+			"id": "forge", "station": "smith", "event": "forged",
+			"speaker": "Smeden",
+			"lines": ["Silver från övningen? Bra. Då smider vi ditt svärd."],
+			"quest": "Smid ditt svärd hos Smeden."
+		},
+		{
+			"id": "macro", "station": "macros", "event": "macro_line",
+			"speaker": "Mäster Gorm",
+			"lines": ["En god kämpe tänker före striden.", "Skriv din första rad i Makron – till exempel: anfall den svagaste fienden."],
+			"quest": "Skriv din första makrorad."
+		},
+		{
+			"id": "library", "station": "library", "event": "library_read",
+			"speaker": "Bibliotekarien",
+			"lines": ["Troféer, säger du? Varje besegrat monster kan lämna en.", "Och kryptan under borgen … det sägs att någon sitter fången där nere."],
+			"quest": "Läs om troféer i Biblioteket."
+		},
+		{
+			"id": "imma", "station": "base", "event": "talked", "recruit": "imma",
+			"speaker": "Imma",
+			"lines": ["Där är du! Gorm vill träffa oss, nu!", "Jag följer med. Säg inte emot – jag har smitit undan läxor i den här borgen i tio år."],
+			"quest": "Prata med Imma."
+		},
+		{
+			"id": "bells", "station": "base", "event": "talked",
+			"speaker": "Mäster Gorm",
+			"lines": ["Kryptans klockor har ringt i natt. Något har vaknat där nere.", "Ta Imma med dig. Porten är öppen."],
+			"quest": "Hör vad Gorm har att säga."
+		},
+		{
+			"id": "crypt", "station": "smith", "event": "sword_level", "level": 3,
+			"speaker": "Smeden",
+			"lines": ["Ta med silver från kryptan, så gör vi ditt svärd till nivå 3.", "Då får det sina första platser för det du hittar där nere."],
+			"quest": "Gå ned i kryptan och gör svärdet till nivå 3 hos Smeden."
+		}
+	],
+	"replies": {
+		"gate": "Portvakten: Porten är stängd tills Gorm säger annat.",
+		"practice": "Vapenmästaren: Övningsgården väntar – men först det Gorm bad dig om.",
+		"altar": "Mäster Gorm: Eden är avlagd. Gå vidare.",
+		"smith": "Smeden: Kom tillbaka när du har något att smida – och silver.",
+		"macros": "Mäster Gorm: Makrona kommer när du har hållit ett svärd.",
+		"library": "Bibliotekarien: Böckerna springer ingenstans. Gör klart det du håller på med.",
+		"inn": "Värdshusvärden: Här bor bara folk du har räddat. Kom tillbaka med vänner."
+	}
+}

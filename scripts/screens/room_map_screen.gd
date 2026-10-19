@@ -37,6 +37,9 @@ func _ready() -> void:
 	if run.state.map == null:
 		run.go(run.CAMPAIGN_SCENE)
 		return
+	if run.pending_rescue != "":
+		_dialog = _rescue_dialog(run.pending_rescue)
+		run.pending_rescue = ""
 	# Utvecklare: --enter=<typ> går in i första rummet av den typen (för att se ögonblicket).
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--enter="):
@@ -121,7 +124,7 @@ func _show_room(r: Dictionary) -> void:
 			_dialog = {"title": "Skattkammare", "text": run.treasure(), "options": [{"label": "VIDARE"}]}
 		"prisoner":
 			# 0.23: en lärjunge befrias och ansluter (Siralims "enhörningsögonblick").
-			_dialog = {"title": "En fånge befrias", "text": run.rescue_prisoner(), "options": [{"label": "VÄLKOMMEN!"}]}
+			_dialog = _rescue_dialog(run.rescue_prisoner())
 		"shrine":
 			_shrine_options = run.state.shrine_options(run.data, run.rng)
 			var options := []
@@ -130,10 +133,21 @@ func _show_room(r: Dictionary) -> void:
 			_dialog = {"title": "Helgedom", "text": "Välj en gåva – eller låt Pandemonium avgöra.", "options": options}
 
 
+## Befrielsen, och ett förslag på en ny makrorad för den nya sortens hjälte (0.23).
+func _rescue_dialog(text: String) -> Dictionary:
+	var hint: Dictionary = run.macro_hint(run.last_recruit)
+	if hint.is_empty():
+		return {"title": "En fånge befrias", "text": text, "options": [{"label": "VÄLKOMMEN!"}]}
+	return {"title": "En fånge befrias", "text": text + "\nNy makrorad? " + String(hint.text),
+			"options": [{"label": "LÄGG TILL RADEN", "hint": run.last_recruit}, {"label": "INTE NU"}]}
+
+
 func _tap_dialog(p: Vector2) -> void:
 	var options: Array = _dialog.options
 	for i in options.size():
 		if _option_rect(i, options.size()).has_point(p):
+			if options[i].has("hint"):
+				run.add_macro_hint(options[i].hint)
 			if options[i].has("shrine"):
 				_dialog = {"title": "Helgedom", "text": run.shrine(options[i].shrine), "options": [{"label": "VIDARE"}]}
 			else:

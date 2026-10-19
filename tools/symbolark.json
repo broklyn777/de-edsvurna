@@ -55,6 +55,81 @@
 					20
 				]
 			]
+		},
+		"status": {
+			"path": "res://assets/illustrations/statusark.png",
+			"paper": [
+				[
+					1400,
+					900
+				],
+				[
+					1500,
+					980
+				],
+				[
+					10,
+					10
+				],
+				[
+					1525,
+					10
+				],
+				[
+					760,
+					1015
+				]
+			]
+		},
+		"status_snared": {
+			"path": "res://assets/illustrations/status_snared.png",
+			"paper": [
+				[
+					20,
+					20
+				],
+				[
+					1234,
+					20
+				],
+				[
+					20,
+					1234
+				],
+				[
+					1234,
+					1234
+				],
+				[
+					627,
+					20
+				]
+			]
+		},
+		"status_protected": {
+			"path": "res://assets/illustrations/status_protected.png",
+			"paper": [
+				[
+					20,
+					20
+				],
+				[
+					1234,
+					20
+				],
+				[
+					20,
+					1234
+				],
+				[
+					1234,
+					1234
+				],
+				[
+					627,
+					20
+				]
+			]
 		}
 	},
 	"symbols": {
@@ -139,6 +214,226 @@
 				1180
 			],
 			"height": 360
+		},
+		"status_agile": {
+			"source": "status",
+			"rect": [
+				6,
+				6,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_arcane": {
+			"source": "status",
+			"rect": [
+				262,
+				6,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_berserk": {
+			"source": "status",
+			"rect": [
+				518,
+				6,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_defensive": {
+			"source": "status",
+			"rect": [
+				774,
+				6,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_immune": {
+			"source": "status",
+			"rect": [
+				1030,
+				6,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_leeching": {
+			"source": "status",
+			"rect": [
+				1286,
+				6,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_mending": {
+			"source": "status",
+			"rect": [
+				6,
+				262,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_protected": {
+			"source": "status_protected",
+			"rect": [
+				60,
+				60,
+				1134,
+				1134
+			],
+			"height": 96
+		},
+		"status_rebirth": {
+			"source": "status",
+			"rect": [
+				518,
+				262,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_savage": {
+			"source": "status",
+			"rect": [
+				774,
+				262,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_shelled": {
+			"source": "status",
+			"rect": [
+				1030,
+				262,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_taunting": {
+			"source": "status",
+			"rect": [
+				1286,
+				262,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_bleeding": {
+			"source": "status",
+			"rect": [
+				6,
+				518,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_blighted": {
+			"source": "status",
+			"rect": [
+				262,
+				518,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_blind": {
+			"source": "status",
+			"rect": [
+				518,
+				518,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_confused": {
+			"source": "status",
+			"rect": [
+				774,
+				518,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_frozen": {
+			"source": "status",
+			"rect": [
+				1030,
+				518,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_poisoned": {
+			"source": "status",
+			"rect": [
+				1286,
+				518,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_scorned": {
+			"source": "status",
+			"rect": [
+				6,
+				774,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_sleeping": {
+			"source": "status",
+			"rect": [
+				262,
+				774,
+				244,
+				244
+			],
+			"height": 96
+		},
+		"status_snared": {
+			"source": "status_snared",
+			"rect": [
+				60,
+				60,
+				1134,
+				1134
+			],
+			"height": 96
+		},
+		"status_stone": {
+			"source": "status",
+			"rect": [
+				774,
+				774,
+				244,
+				244
+			],
+			"height": 96
 		}
 	}
 }

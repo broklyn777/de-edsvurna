@@ -44,12 +44,18 @@ var oath := "oath_vengeance"
 ## perks i den valda kallet verkar (inom perk-poängen); kärnan verkar alltid. Att återställa är gratis
 ## (poängen kommer tillbaka).
 var perks := {}
-var party: Array[String] = ["paladin", "imma"]
+var party: Array[String] = ["paladin"]
 ## 0.23: följeslagarna man har (de som inte följer med bor i Värdshuset och behåller sina nivåer). En ny profil
 ## börjar med Paladinen och Imma (VD:n: barndomsvännen från borgen); de andra befrias som lärjungar (fånge-rummet,
 ## Brokk först). Äldre profiler behåller sina fyra och får Imma i Värdshuset.
-var recruited: Array[String] = ["imma"]
+var recruited: Array[String] = []
 const STARTER := "imma"
+## Introduktionen (0.23, Intro): aktuellt steg i data/intro.json. En ny profil börjar ensam med Paladinen;
+## Imma ansluter i steg 6. Befintliga profiler hoppar över introt.
+var intro_step := 0
+var intro_done := false
+## Hur många följeslagare man hade senast man var i Värdshuset (det lyser när någon ny har kommit).
+var inn_seen := 0
 const LEGACY_COMPANIONS := ["brokk", "alva", "eira", "solveig"]
 ## Paladinen och högst så här många följeslagare i sällskapet.
 const MAX_COMPANIONS := 3
@@ -316,7 +322,7 @@ func set_party(companions: Array) -> void:
 		if recruited.has(id) and not p.has(id) and p.size() <= MAX_COMPANIONS:
 			p.append(id)
 	if p.size() == 1 and not recruited.is_empty():
-		p.append(recruited[0])
+		p.append(recruited[0])  # minst en följeslagare när man har någon (introt: Paladinen ensam tills Imma)
 	party = p
 
 
@@ -461,6 +467,9 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "perks", perks)
 	cfg.set_value("progress", "party", party)
 	cfg.set_value("progress", "recruited", recruited)
+	cfg.set_value("progress", "intro_step", intro_step)
+	cfg.set_value("progress", "intro_done", intro_done)
+	cfg.set_value("progress", "inn_seen", inn_seen)
 	cfg.set_value("progress", "practice_equipped", practice_equipped)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
@@ -501,7 +510,11 @@ static func load_from(path: String) -> Profile:
 		p.recruited.assign(cfg.get_value("progress", "recruited", [STARTER]))
 	else:
 		p.recruited.assign(LEGACY_COMPANIONS)
-	if not p.recruited.has(STARTER):
+	# Introt: profiler från före 0.23 (utan "intro_done") har redan allt och hoppar över det.
+	p.intro_done = bool(cfg.get_value("progress", "intro_done", not cfg.has_section_key("progress", "recruited")))
+	p.intro_step = int(cfg.get_value("progress", "intro_step", 0))
+	p.inn_seen = int(cfg.get_value("progress", "inn_seen", p.recruited.size()))
+	if p.intro_done and not p.recruited.has(STARTER):
 		p.recruited.append(STARTER)  # Imma bor i borgen; äldre profiler hittar henne i Värdshuset
 	var saved: Array = cfg.get_value("progress", "party", [])
 	if saved.size() >= 2 and saved[0] == "paladin":

@@ -25,13 +25,21 @@ func _process(delta: float) -> void:
 		_full_log.visible = false
 
 
+## Mötena att öva mot. I introt (0.23) bara Övningsgårdens docka, för en ensam paladin.
+func _encounters() -> Array:
+	if run.intro_practice():
+		run.practice_encounter = run.INTRO_PRACTICE
+		return [run.INTRO_PRACTICE]
+	return run.data.realms[run.profile.realm].floors
+
+
 func _tap(p: Vector2) -> void:
 	var data: Dictionary = run.data
 	var profile: Profile = run.profile
 	if back_rect().has_point(p):
 		run.go(run.BASE_SCENE)
 		return
-	var encs: Array = data.realms[profile.realm].floors
+	var encs: Array = _encounters()
 	for i in encs.size():
 		if _enc_rect(i).has_point(p):
 			run.practice_encounter = encs[i]
@@ -104,7 +112,7 @@ func _draw() -> void:
 	small_button(back_rect(), "‹ BASEN")
 
 	UiStyle.text(self, Vector2(MARGIN, 114), "FIENDER", 14, Color(1, 1, 1, 0.6))
-	var encs: Array = data.realms[profile.realm].floors
+	var encs: Array = _encounters()
 	for i in encs.size():
 		var enc: Dictionary = data.encounters[encs[i]]
 		UiStyle.card(self, _enc_rect(i), enc.name, _enemy_list(enc), run.practice_encounter == encs[i],

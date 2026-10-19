@@ -177,6 +177,15 @@
 				"run": "TwoHand_Run",
 				"walk": "TwoHand_Walk"
 			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "provoke"
+			},
+			"text": "Brokk kan skydda de andra: \"Om någon allierad har liv under 50 %: Provocera.\""
 		}
 	},
 	"alva": {
@@ -233,6 +242,17 @@
 				"run": "Run_Loop",
 				"walk": "Walk_Loop"
 			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "ability",
+				"ability": "healing_light",
+				"target": "that"
+			},
+			"text": "Alva kan hela: \"Om någon allierad har liv under 50 %: Helande ljus på den.\""
 		}
 	},
 	"eira": {
@@ -277,6 +297,17 @@
 				"run": "Run_Loop",
 				"walk": "Walk_Loop"
 			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "any_enemy",
+				"cond": "lacks_status",
+				"value": "marked",
+				"action": "ability",
+				"ability": "hunters_mark",
+				"target": "that"
+			},
+			"text": "Eira märker sitt byte: \"Om någon fiende saknar Märkt: Märk byte.\""
 		}
 	},
 	"solveig": {
@@ -328,6 +359,16 @@
 				"run": "Staff_Run",
 				"walk": "Staff_Walk"
 			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "all_enemies",
+				"cond": "is_alive",
+				"action": "ability",
+				"ability": "flame_wave",
+				"target": "that"
+			},
+			"text": "Solveig bränner grupper: \"Om alla fiender lever: Eldvåg.\""
 		}
 	},
 	"ronja": {
@@ -431,7 +472,18 @@
 				"walk": "Walk_Loop"
 			}
 		},
-		"placeholder_figure": true
+		"placeholder_figure": true,
+		"macro_hint": {
+			"line": {
+				"subject": "any_ally",
+				"cond": "lacks_status",
+				"value": "inspired",
+				"action": "ability",
+				"ability": "battle_song",
+				"target": "that"
+			},
+			"text": "Lirien sjunger: \"Om en allierad saknar Styrka: Stridssång.\""
+		}
 	},
 	"tove": {
 		"name": "Broder Tove",
@@ -537,7 +589,18 @@
 				"walk": "Staff_Walk"
 			}
 		},
-		"placeholder_figure": true
+		"placeholder_figure": true,
+		"macro_hint": {
+			"line": {
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 50,
+				"action": "ability",
+				"ability": "leaf_shield",
+				"target": "that"
+			},
+			"text": "Hulda skyddar: \"Om någon allierad har liv under 50 %: Lövskydd.\""
+		}
 	},
 	"ragnhild": {
 		"name": "Ragnhild Ljusdom",

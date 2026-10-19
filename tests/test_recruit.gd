@@ -7,8 +7,8 @@ var _data := GameData.load_all()
 
 func test_a_new_profile_starts_small() -> void:
 	var p := Profile.new()
-	assert_eq(p.party, ["paladin", "imma"])
-	assert_eq(p.recruited, ["imma"])
+	assert_eq(p.party, ["paladin"], "ensam paladin tills Imma kommer i introt")
+	assert_true(p.recruited.is_empty())
 
 
 func test_old_profiles_keep_their_heroes() -> void:
