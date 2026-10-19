@@ -1056,6 +1056,150 @@ att "åka hem utan att förlora" mitt i en Realm.
 silver och material från vunna strider behålls. Charges fylls vid nästa körning, som i dag. *Anpassning:*
 ingen.
 
+## 17. Buffar, debuffar och tidslinjen (underlag för 0.22)
+
+Källor: Codex-listorna "List: Buffs" och "List: Debuffs" (spelets egen text, 2.0.37), wikins Buffs-,
+Debuffs- och Combat-sidor, och trait-kompendiet. Allt i tabellerna är **Bekräftat (Codex)** om inget
+annat står.
+
+### 17.1 Buffar (18)
+
+| Buff | Exakt effekt | Varaktighet |
+|---|---|---|
+| Agile | Extra, oberoende chans att undvika anfall | 3 |
+| Arcane | Nästa spell kostar ingen Charge, sedan försvinner buffen | tills den används |
+| Barrier | Absorberar skada tills den är slut. Högst 200 % av högsta stat. Staplas inte, den starkaste gäller (wiki) | tills den är slut |
+| Berserk | +50 % skada | 3 |
+| Defensive | Försvarar automatiskt i slutet av sin tur | 3 |
+| Immune | Kan inte få debuffar | 1 |
+| Invisible | Kan inte väljas som mål för fiendens anfall och spells. Försvinner när figuren agerar | tills den agerar |
+| Leeching | Helas 25 % av skadan den gör | 3 |
+| Mending | Helas 25 % av sitt liv i början av sin tur | 3 |
+| Proficient | +30 % från artefaktens Stat Slots, utom Health | 3 |
+| Protected | Tar 50 % mindre skada | 3 |
+| Rebirth | Återuppstår med 50 % liv när den dör | 3 |
+| Repelling | 50 % chans att ignorera skada från spells | 3 |
+| Savage | Extra, oberoende chans till krit med anfall | 3 |
+| Shelled | Upphäver nästa anfall eller spell | tills den träffas |
+| Splashing | Gör 100 % av skadan på fiender intill målet | 3 |
+| Taunting | Provocerar automatiskt i slutet av sin tur | 3 |
+| Warded | Kan inte förlora stats | 3 |
+
+### 17.2 Debuffar (20)
+
+| Debuff | Exakt effekt | Varaktighet | Resistant (bossar) |
+|---|---|---|---|
+| Bleeding | Skada = 30 % av *nuvarande* liv i början av varje tur | 3 | 66 % mindre skada |
+| Blighted | Kan inte helas. Helning gör i stället skada = 50 % av helningen | 3 | – |
+| Blind | Kan inte välja mål för anfall och enkelmåls-spells | 3 | – |
+| Bomb | I början av sin tur: skada = 80 % av angriparens Speed, sedan bort | tills den smäller | – |
+| Burning | Skada varje tur efter angriparens Int (30 %, wiki) | 3 | – |
+| Confused | 50 % chans att anfalla eller kasta skadliga spells på sina egna | 3 | – |
+| Cursed | När den gör skada med anfall eller spell tar den skada = 100 % av målets Attack | 3 | – |
+| Disarmed | Förlorar alla fördelar från artefakten (artefaktens traits verkar ändå, wiki) | 3 | – |
+| Feared | Kan inte få stats | 3 | – |
+| Frozen | Kan inte agera. 25 % chans att tina i början av sin tur, chansen dubblas varje tur | tills den tinar | dubbel chans att tina |
+| Inverted | Anfall och spells helar fiender och skadar egna, tills tillräckligt har gjorts. Ges inte av slumpade debuffar (wiki) | tills den är förbrukad | – |
+| Mania | Skada i slutet av turen = 3 % av allt liv som alla hade helats när den lades. Ges inte av slumpade debuffar (wiki) | 3 (Codex) / 1 (wiki) | – |
+| Poisoned | Skada varje tur efter angriparens Attack (30 %, wiki) | 3 | – |
+| Scorned | Kan inte anfalla. Skriver över Silenced | 1 | kan anfalla, −50 % skada |
+| Silenced | Kan inte kasta spells. Skriver över Scorned | 1 | kan kasta, −50 % skada |
+| Sleeping | Kan inte agera förrän den tar skada eller debuffen går ut | 3 | vaknar i början av sin tur |
+| Snared | Fast längst ned på Timeline. 10 % chans att slita sig loss i början av *varje figurs* tur | 3 | tredubbel chans |
+| Stone | Kan inte undvika eller krita | 1 | 50 % lägre chans i stället |
+| Vulnerable | Tar 50 % mer skada | 3 | – |
+| Weak | Gör 50 % mindre skada | 3 | – |
+
+### 17.3 Allmänna regler
+
+| Regel | Säkerhet |
+|---|---|
+| Läggs samma buff eller debuff på igen förnyas varaktigheten. De staplas inte. | Bekräftat (wiki) |
+| Immune: kan inte få debuffar alls. | Bekräftat |
+| "Always has": tas den bort kommer den tillbaka direkt, med nollställd potency men utan att on-apply-effekter utlöses. | Bekräftat (wiki) |
+| Slumpade debuff-effekter kan lägga en debuff som målet redan har, och då förnyas varaktigheten. | Bekräftat (wiki) |
+| Varaktighet räknas i ägarens turer. | Troligt (trait-texter som *Sarea's Haste* "förlorar 2 enheter per tur"; inte uttryckligt). Vår motor gör redan så. |
+| Bara Resistant-versionerna ovan påverkas. Andra debuffar verkar fullt på bossar. | Bekräftat (Codex) |
+| Barrier och Shelled: "efter att ha anfallit"-effekter utlöses inte när träffen bara tar Barrier eller Shelled. | Bekräftat (wiki) |
+
+### 17.4 Leeching (VD:ns fråga)
+
+- **25 % av skadan den gör.** Bekräftat (Codex).
+- **Skada som Barrier tar:** Okänt. Siralims egen regel för "efter att ha anfallit" kräver skada på
+  *liv* (Bekräftat). *Förslag (vårt val):* Leeching räknar bara skada som når livet, samma regel som
+  originalet har för anfall. Det gör Barrier till ett riktigt motmedel.
+- **Överskottsskada (mer än målet har kvar):** Okänt. *Förslag (vårt val):* räknas inte. Bara faktiskt
+  förlorat liv. Annars blir ett jättekrit mot en nästan död fiende en fullhelning.
+- **Skadesorter:** Codex säger "the damage they deal", utan undantag. *Förslag:* anfall, spells och
+  traitskada som figuren gör räknas. DoT-tick (Burning, Poisoned) räknas också, eftersom de "görs" av
+  angriparen. Okänt i originalet.
+- Notera: trait-kompendiet har många Leeching-synergier (*Coming Undone*: +10 % stats efter anfall med
+  Leeching, *Blood Weapon*: alltid Mending och Leeching). Det är en riktig byggsten.
+
+### 17.5 Tidslinjen
+
+| Regel | Säkerhet |
+|---|---|
+| Den som står överst agerar och läggs sedan längst ned. Speed ger bara startplatsen. | Bekräftat (Codex) |
+| "Top of Timeline"-effekter flyttar en figur högst upp. Den som stod överst skickas då till botten. Används de på egna kan man förlora turer. | Bekräftat (wiki Combat) |
+| Flyttas en figur till toppen nollställs dess gränser per tur (Action Limits). | Bekräftat (wiki Combat) |
+| En boss som skulle tvingas till botten flyttas bara **ett** steg ned. | Bekräftat (Codex) |
+| Bottom-of-Timeline-effekter fungerar inte på fiender i bosstrider. | Bekräftat (wiki Combat) |
+| Snared: fast längst ned, 10 % chans att slita sig loss i början av varje figurs tur. | Bekräftat (Codex) |
+| Exempel på traits: *Surprise!* (börjar överst), *Contradiction* (+200 % Speed men börjar längst ned), *Break the Cycle* (provocerar → slumpad fiende till botten), *Pocket Frog* (50 % chans att en allierad skickas till toppen). | Kompendium |
+
+**Varning från originalet:** att skicka någon till toppen och nollställa gränserna ger oändliga turer
+om två effekter matar varandra. Vår `TURN_LIMIT` och `once_per_turn` måste ligga kvar, och gränsen ska
+**inte** nollställas av vårt eget "till toppen". *Vårt val, en avvikelse:* utan den regeln blir det
+kedjor som telefonen inte hinner visa.
+
+### 17.6 Ta bort buffar och debuffar
+
+- *Dispel* (Sorcery-spell, 20 Charges): "Target's buffs and debuffs are removed", alltså **båda**
+  sorterna på målet. Bekräftat (wiki).
+- Fler spells för att ta bort, som byggguiden nämner: *Mass Dispel*, *Absolute Corruption*,
+  *Reverse Polarity*. Exakt text: Okänt.
+- Wikin: "Debuffs can be cleansed", utan detaljer. Siegemaster-perken *Shrug Off*: efter Defend tas
+  debuffar bort och man får en slumpad buff per borttagen debuff. Bekräftat.
+- Det finns ingen separat "Purge" i källorna. Okänt.
+
+### 17.7 Visning
+
+- Varje buff och debuff har en egen ikon, och Resistant-versionerna har egna ikoner. Bekräftat (wiki).
+- Varaktigheter, minion-staplar och Realm Properties syns när man håller F i striden. Bekräftat (Codex).
+  Var ikonerna sitter (under livmätaren eller annat): Okänt.
+- *Förslag:* ikoner under livmätaren med en liten siffra för turer kvar, och håll inne för text. Det är
+  Inspect hos oss. Rött för debuffar, guld för buffar.
+
+### 17.8 Förslag: de ~20 som passar oss först (ljust tema)
+
+Vi har redan: Barrier, Warded, Burning, Silenced, Vulnerable, Weak, samt egna (inspired, blessing, marked,
+holy_shield, renew, salted, defend, provoke, lich_wrath).
+
+**Buffar (12):** Agile, Arcane, Berserk, Defensive, Immune, Leeching, Mending, Protected, Rebirth,
+Savage, Shelled, Taunting.
+
+**Debuffar (10):** Bleeding, Blighted, Blind, Confused, Frozen, Poisoned, Scorned, Sleeping, Snared,
+Stone.
+
+Motivering: alla har tydliga regler och är lätta att se, och flera av våra traits och följeslagare väntar
+på dem: Lirien (Sleeping), Tove (Agile, Scorned), Hulda (Snared, Poisoned), Ragnhild (Blighted), Sefir
+(Savage, Bleeding), Arcane i stället för lägereldens Charges, och Taunting.
+
+**Senare:**
+- Proficient (artefakter): lätt, men liten effekt.
+- Invisible: kräver målregler.
+- Repelling, Disarmed och Bomb.
+- Feared: vi har få stat-ökningar än.
+- Splashing: kräver "intill", som vi inte har.
+- Cursed, Inverted och Mania: komplexa. Inverted och Mania ges inte ens av slumpeffekter i originalet.
+
+**Tonen:** inga av dem är ockulta. Bleeding och Poisoned är vanliga strids-effekter. Cursed kan vänta.
+
+**Våra egna auror att mappa** (vårt val): holy_shield ≈ Protected (40 % i stället för 50 %) → byt till
+Protected. renew ≈ Mending (fast 45 i stället för 25 %) → behåll eller byt. inspired (nästa anfall +30 %)
+kan ligga kvar som vår egen, eller bli Berserk (+50 % i 3 turer).
+
 ---
 
 ## Källor
