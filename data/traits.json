@@ -574,13 +574,13 @@
 	"bone_armor": {
 		"name": "Benrustning",
 		"enemy": true,
-		"text": "Tar 25 % mindre skada från attacker. Besvärjelser och indirekt skada biter fullt.",
+		"text": "Tar 30 % mindre skada från attacker. Besvärjelser och indirekt skada biter fullt.",
 		"trigger": "modify_damage_taken",
 		"when": {
 			"kind": "attack"
 		},
 		"modify": {
-			"damage_taken_mult": 0.75
+			"damage_taken_mult": 0.7
 		}
 	},
 	"deadeye": {

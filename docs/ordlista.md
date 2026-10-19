@@ -68,7 +68,14 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | I spelet | Kod / data | Siralim Ultimate | Kommentar |
 |---|---|---|---|
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
-| Våning | floor, `FLOORS` | Realm Depth | |
+| Våning | floor, `FLOORS`, `stat_mult` i encounters.json | – (en del av en Realm) | Våning 2 och 3 har starkare fiender (×1,08, ×1,10). |
+| Djup | depth, `Profile.depth`/`best_depth`, `CombatSim.depth_mult` | Realm Depth | Väljs vid Kryptporten. Fiender +10 % stats per djup (utom Speed), silver +25 %, troféchans +15 procentenheter. Nästa djup öppnas när det föregående är klarat. |
+| Fiendens egenskap | `traits` i enemies.json (`"enemy": true` i traits.json) | creature trait | Alla fiender har minst en, som makrona måste svara på. |
+| Benrustning, Jägarblick, Gravpakt, Taggig utmaning, Glödhetta | bone_armor, deadeye, grave_pact, warden_thorns, ember_heat | – (egna) | Skelettkrigare, bågskytt, Gravpräst, Gravväktare, Glödskelett. |
+| Resistent | resistant, `CombatUnit.resistant`, `CombatSim.RESISTANT` | Resistant | Debuffar på bossen verkar till hälften. |
+| Odödlig vrede, Dödsdom | lich_undying_wrath (`once_per_battle`), lich_wrath, lich_doom | – (bossfas) | Benfursten under 50 % liv. |
+| Brinner | burning (`dot_stat`, `dot_pct`) | Burning | 30 % av källans Intelligence per tur, som i Siralim. |
+| Granska (håll fingret) | `_show_inspect` i battle.gd | Inspect | Visar stats och egenskaper, kostar ingen tur. |
 | Lägret | camp | – (stunden mellan strider i en Realm) | Trofévalet efter varje våning. |
 | Basen | base (`base_screen`) | Castle | Mellan körningarna. Förlust och klarad krypta leder hit. |
 | Kryptporten | gate (`start_screen`) | Teleportation Shrine | Välj följeslagare och trofé; starta körningen. |
@@ -90,16 +97,15 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Additional damage | går förbi Defense och minskningar | `additional_from_stat` (Bästa försvaret) |
 | Top / Bottom of Timeline | flytta i turordningen | – |
 | Calm Mode | lägre Action Limits | `TURN_LIMIT` = 5 |
-| Resistant | boss tar halv effekt av debuffar | – |
 | Retribution | Paladins kärna: slå tillbaka vid skada | Hämndens ed |
 | Perk, Anointment | förmån i en Specialization; lånad perk | perk vid Edsaltaret; Anointments finns inte |
 | Enchanted Wardrobe | byt Specialization och perks | Edsaltaret |
 | Trait Slot, Nether Stone | Artifactens trait-plats; sena trait-platser | – |
 | Master | rasmästare med unikt trait | – |
-| Realm, Realm Depth, Realm Quest, Realm Instability, Fortune | utflykter och svårighet | körning, våning |
+| Realm, Realm Quest, Realm Instability, Fortune | utflykter och svårighet | körning (Realm Depth = djup, se ovan) |
 | Nether Boss, False God | bossar med regelbrytande traits | Benfursten |
 | Minion | staplar som gör Indirect Damage | – |
-| Inspect, History | gratis titt på fienden; händelselista | – |
+| History | händelselista | – |
 | Default action, Turbo, Strategy | standardhandling, håll Q/E | Auto |
 
 Källa: `docs/research/siralim.md`.

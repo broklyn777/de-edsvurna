@@ -27,6 +27,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Automatiska kast kostar inga Charges men räknas mot gränsen per tur.
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kryptporten, Övningsgården (Arena),
   Edsaltaret (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
+- **Djup** (0.14, Siralims Realm Depth): väljs vid Kryptporten, nästa öppnas när föregående är klarat. Fiender
+  +10 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
+- **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
+  Taggig utmaning, Glödhetta). Benfursten är Resistant (halv effekt av debuffar) och vredgas under 50 % liv.
+  Tryck och håll på en figur i striden för att granska den (Inspect, kostar ingen tur).
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens Ed, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
@@ -40,8 +45,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   standardhandling Makro/Manuell. Auto kör makrona och stannar när inget passar. Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
-- Nästa steg: artefaktnivåer och fler platser, fler Eder (Warden, Inquisitor …), perk-ranks, Inspect
-  (visa stats), buffar som höjer stats. Idéer för basen: `docs/research/siralim.md` §10c–10d.
+- Nästa steg: artefaktnivåer och fler platser, fler Eder (Warden, Inquisitor …), perk-ranks, Realm-traits
+  per våning, buffar som höjer stats. Idéer för basen: `docs/research/siralim.md` §10c–10d.
 - Realtidsprototypen i WoW-stil ligger kvar på grenen `wow-realtid` (tagg `v0.8.1-wow`).
 
 ## Språk
@@ -62,7 +67,8 @@ uppdaterad när nya begrepp tillkommer.
 - `src/game/run_state.gd` – en körning: Ed och perks, sällskap, våning (`FLOORS`), troféer och vem som bär dem,
   artefakter; `new_run()` och `new_practice()` (Övningsgården: valfritt möte, fulla Charges).
   `src/game/profile.gd` – det som varar mellan körningar: silver, samlingen, artefakter (`forge()`),
-  vald Ed och köpta perks per Ed (`buy_perk()`, `reset_perks()`), senaste sällskap, övningstroféer. Sparas i `user://progress.cfg`.
+  vald Ed och köpta perks per Ed (`buy_perk()`, `reset_perks()`), senaste sällskap, övningstroféer, valt och
+  djupaste klarade djup (`choose_depth()`, `clear_depth()`). Sparas i `user://progress.cfg`.
   `scripts/game/run.gd` är autoloaden `Run` som byter scen (bas → Kryptporten → strid → läger → … → bas;
   bas → Övningsgården → strid → Övningsgården) och sparar makrona i `user://macros.json`
   (startmakron i `data/macros.json`).
@@ -73,7 +79,7 @@ uppdaterad när nya begrepp tillkommer.
   funktioner: `attack_damage`, `spell_damage`, `indirect_damage`, `combine_mods`, `crit_chance_for`,
   `crit_bonus`, `dodge_chance`), `CombatUnit` (stats, `defense_now()`, `stat()`, `barrier`), `GameData`,
   `MacroRunner` (makron: `decide()` ger handling + förklaring, `describe_line()` texten i editorn).
-  `create(…, artifacts)` ger hjältarna artefakter (`equip_artifact`): stat + en genererad egenskap
+  `create(…, artifacts, depth)` skalar fienderna (`depth_mult`, mötets `stat_mult`, `scale_unit`) och ger hjältarna artefakter (`equip_artifact`): stat + en genererad egenskap
   `artifact_<hjälte>` som lyssnar på `acted` (efter handlingen) eller `turn_start` och kör effekten
   `cast` (kastar förmågan gratis, action `"artifact"`). Datan kopieras per strid – använd `sim.data`.
   Flöde: `begin()`, sedan `act(action, target, ability)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
@@ -116,11 +122,13 @@ uppdaterad när nya begrepp tillkommer.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
-Balansmål och läge (0.13, Charges på Siralim-nivå, utan troféer): startmakrona klarar hela kryptan ~60 %,
-förbättrade makron ~93 %, med artefakter eller alla perks i en Ed 100 %. Ederna med bara kärnan 60–70 %.
-**Känd brist:** striderna var för sig är för lätta (BASIC vinner Benfursten ~90 %) – svårigheten ligger
-nästan helt i att Charges ska räcka hela körningen, och artefakter/perks mättar snabbt. Nästa balans:
-starkare boss och våning 2–3, dyrare eller färre perks, och sikta på att varje strid kräver makron.
+Balans (0.14, djup 1, `tests/balance_report.gd`): BASIC förlorar (vinner 7 % av Benkryptan, 0 % av resten), startmakrona klarar hela
+kryptan 9 %, förbättrade makron (TUNED, svarar på fiendernas egenskaper) 66 %, med en artefakt eller en Eds
+bästa perks 87–100 %, med allt 100 %. Djup 3 (fiender ×1,2): TUNED 0 %, med allt 99 %. Alla perks i en Ed (MACRO) 100 %. Svårigheten kommer från fiendernas
+egenskaper, starkare våningar (`stat_mult`), Benfurstens vredesfas och att Charges ska räcka hela körningen.
+**Känd brist:** startmakrona ligger långt under TUNED (de ignorerar Gravpakt och sparar fel Charges), en enda
+artefakt (Brokks sköld med Helande ljus) ger fria helningar och lyfter mycket, och fulla byggen når fortfarande
+100 %. Nästa balans: svagare automatiska helningar eller dyrare sköldartefakt, och Realm-traits per våning.
 Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
 
 ## Kommandon
@@ -149,6 +157,9 @@ godot --path . -- --camp
 
 # Öppna en plats i basen direkt (--gate = Kryptporten, --practice, --altar, --smith, --library)
 godot --path . -- --smith
+
+# Strid på ett annat djup (bara den körningen)
+godot --path . -- --floor=2 --depth=3 --demo
 
 # Strid med en annan Ed (bara den körningen), med alla dess perks
 godot --path . -- --oath=oath_ward --all-perks --floor=1 --demo

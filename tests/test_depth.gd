@@ -102,7 +102,7 @@ func test_bone_armor_reduces_attacks_not_spells() -> void:
 	var armored_spell := _hit(sim, paladin, w, "spell")
 	w.traits.erase("bone_armor")
 	w.hp = w.max_hp
-	assert_near(armored, roundf(_hit(sim, paladin, w) * 0.75), 1.0, "attacker −25 %")
+	assert_near(armored, roundf(_hit(sim, paladin, w) * 0.7), 1.0, "attacker −30 %")
 	assert_eq(armored_spell, _hit(sim, paladin, w, "spell"), "besvärjelser biter fullt")
 
 
