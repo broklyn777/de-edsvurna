@@ -52,3 +52,22 @@ this illustration."* (Första försöket med "bold clean outlines" gav en teckna
 14. An empty decorative cartouche (scroll banner) for a place name.
 15. A coiled dragon for a map corner.
 16. A sword thrust into a stone.
+
+## Statusikoner (0.22) – ett ark
+
+Arket med kartsymboler fungerade bra, så statusikonerna görs som ett ark med rutnät (lättare att klippa
+ut med `tools/cut_symbols.gd`). Skicka i samma chatt som det första arket:
+
+> Gör ett nytt ark i exakt samma gravyrstil: 22 små statusikoner i ett rutnät med 6 kolumner och 4 rader,
+> lika stora rutor med luft emellan, ljus pergamentbakgrund, ingen text. Varje ikon ska vara tydlig även
+> när den är liten (ca 40 pixlar). Ordning, rad för rad:
+> 1 a feathered boot (Agile), 2 an open book with a glowing rune (Arcane), 3 a roaring face with clenched
+> teeth (Berserk), 4 a raised kite shield (Defensive), 5 a radiant halo (Immune), 6 a drop of blood with a
+> leaf (Leeching),
+> 7 a sprouting green leaf (Mending), 8 a dome of light (Protected), 9 a phoenix feather (Rebirth),
+> 10 a clawed paw (Savage), 11 a turtle shell (Shelled), 12 a war horn (Taunting),
+> 13 a dripping cut (Bleeding), 14 a withered flower (Blighted), 15 a blindfolded eye (Blind),
+> 16 a spiral of question marks without letters (Confused), 17 a snowflake (Frozen), 18 a small poison
+> vial (Poisoned),
+> 19 a cracked broken heart (Scorned), 20 a crescent moon with z-shapes (Sleeping), 21 a coiled rope snare
+> (Snared), 22 a stone statue head (Stone).
