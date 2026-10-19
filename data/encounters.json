@@ -45,5 +45,53 @@
 			"grave_priest"
 		],
 		"stat_mult": 1.1
+	},
+	"chapel_1": {
+		"name": "Kapellets förgård",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"penitent",
+			"penitent",
+			"cultist",
+			"wraith"
+		],
+		"stat_mult": 1.0
+	},
+	"chapel_2": {
+		"name": "Häxornas sakristia",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"fallen_knight",
+			"witch",
+			"wraith",
+			"cultist"
+		],
+		"stat_mult": 1.08
+	},
+	"chapel_3": {
+		"name": "Biskopens altare",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"fallen_bishop",
+			"cultist",
+			"cultist",
+			"witch"
+		],
+		"stat_mult": 1.1
 	}
 }

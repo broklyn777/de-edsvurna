@@ -374,5 +374,389 @@
 				"walk": "Walk_Loop"
 			}
 		}
+	},
+	"cultist": {
+		"name": "Kultist",
+		"color": "#e07a6a",
+		"stats": {
+			"health": 420,
+			"attack": 110,
+			"intelligence": 120,
+			"defense": 10,
+			"speed": 10
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "cultist_knife",
+		"traits": [
+			"cultist_ward"
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 0.95,
+			"tint": "#e0a0a0",
+			"anims_from": [
+				"solveig"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"kapa/Kult_Robe",
+				"kapa/Kult_Pendant"
+			],
+			"colors": {
+				"Kult_Robe": "#5a1010",
+				"Kult_DarkBrown": "#8a2020",
+				"Kult_Black": "#1a0606",
+				"Kult_LightBrown": "#3a0c0c",
+				"Kult_Metal": "#6a3030"
+			},
+			"emit": {
+				"Kult_Glow": "#ff4a3a"
+			},
+			"weapons": {
+				"grip_r": "Handaxe"
+			},
+			"light": "#ff3a2a",
+			"light_energy": 0.6,
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"cast": "Staff_Cast",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "prayer_beads"
+	},
+	"wraith": {
+		"name": "Gast",
+		"color": "#9fd8ff",
+		"stats": {
+			"health": 380,
+			"attack": 150,
+			"intelligence": 100,
+			"defense": 10,
+			"speed": 16
+		},
+		"crit_chance": 0.1,
+		"attack_ability": "wraith_claw",
+		"traits": [
+			"wraith_ethereal"
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 0.9,
+			"tint": "#bfe6ff",
+			"glow": "#2a6a9a",
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"colors": {
+				"Ske_Bone": "#9fc4dd",
+				"Ske_BoneDark": "#4a6a80"
+			},
+			"emit": {
+				"Ske_Eye": "#9ff0ff",
+				"Ske_Void": "#5ad0ff",
+				"Vapen_Steel": "#9ff0ff"
+			},
+			"weapons": {
+				"grip_r": "Shortsword",
+				"grip_l": "Shortsword"
+			},
+			"light": "#6ad0ff",
+			"light_energy": 1.0,
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "wraith_veil"
+	},
+	"fallen_knight": {
+		"name": "Fallen riddare",
+		"color": "#b06a7a",
+		"stats": {
+			"health": 820,
+			"attack": 160,
+			"intelligence": 100,
+			"defense": 40,
+			"speed": 7
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "knight_cleave",
+		"traits": [
+			"knight_riposte"
+		],
+		"rules": [
+			{
+				"ability": "knight_stand"
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.15,
+			"tint": "#806070",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"rustning/Tom_Helm",
+				"rustning/Tom_Breast",
+				"rustning/Tom_Fauld",
+				"rustning/Tom_Tassets",
+				"rustning/Tom_Pauldron_L",
+				"rustning/Tom_Pauldron_R",
+				"rustning/Tom_Rerebrace_L",
+				"rustning/Tom_Rerebrace_R",
+				"rustning/Tom_Vambrace_L",
+				"rustning/Tom_Vambrace_R",
+				"rustning/Tom_Cuisse_L",
+				"rustning/Tom_Cuisse_R",
+				"rustning/Tom_Greave_L",
+				"rustning/Tom_Greave_R"
+			],
+			"colors": {
+				"Tom_Steel": "#2e2830",
+				"Tom_Edge": "#8a2a2a",
+				"Tom_Guard": "#3a1a1a",
+				"Vapen_Wood": "#2a1a1a"
+			},
+			"weapons": {
+				"grip_r": "Longsword",
+				"grip_l": "Shield"
+			},
+			"anims": {
+				"idle": "Shield_Idle",
+				"attack": [
+					"Shield_Attack",
+					"Shield_Attack_B"
+				],
+				"block": "Shield_Block",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"emit": {
+				"Ske_Eye": "#ff3a2a"
+			}
+		},
+		"trophy": "fallen_oath"
+	},
+	"witch": {
+		"name": "Häxa",
+		"color": "#9adf7a",
+		"stats": {
+			"health": 420,
+			"attack": 120,
+			"intelligence": 130,
+			"defense": 10,
+			"speed": 12
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "witch_bolt",
+		"traits": [
+			"witch_malice"
+		],
+		"rules": [
+			{
+				"ability": "witch_hex"
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 0.95,
+			"tint": "#b8e0a0",
+			"anims_from": [
+				"solveig"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"kapa/Kult_Robe",
+				"kapa/Kult_Pendant"
+			],
+			"colors": {
+				"Kult_Robe": "#16301a",
+				"Kult_DarkBrown": "#2a5a2a",
+				"Kult_Black": "#081208",
+				"Kult_LightBrown": "#1a2a14",
+				"Kult_Metal": "#3a5a2a"
+			},
+			"emit": {
+				"Kult_Glow": "#7aff5a",
+				"Ske_Eye": "#9aff6a"
+			},
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"light": "#6aff4a",
+			"light_energy": 0.8,
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"cast": "Staff_Cast",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "witch_tongue"
+	},
+	"penitent": {
+		"name": "Botgörare",
+		"color": "#c89a6a",
+		"stats": {
+			"health": 560,
+			"attack": 165,
+			"intelligence": 80,
+			"defense": 15,
+			"speed": 9
+		},
+		"crit_chance": 0.08,
+		"attack_ability": "penitent_flail",
+		"traits": [
+			"penitent_brand"
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.1,
+			"anims": {
+				"idle": "TwoHand_Idle",
+				"attack": [
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"tint": "#d0b090",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"rustning/Tom_Fauld",
+				"rustning/Tom_Tassets",
+				"rustning/Tom_Vambrace_L",
+				"rustning/Tom_Vambrace_R"
+			],
+			"colors": {
+				"Tom_Steel": "#5a4030",
+				"Tom_Edge": "#3a2a1a",
+				"Tom_Guard": "#4a3020"
+			},
+			"weapons": {
+				"grip_r": "Flail"
+			}
+		},
+		"trophy": "executioner_hood"
+	},
+	"fallen_bishop": {
+		"name": "Den fallne biskopen",
+		"color": "#f0e0b0",
+		"stats": {
+			"health": 1700,
+			"attack": 120,
+			"intelligence": 130,
+			"defense": 20,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "bishop_smite",
+		"traits": [
+			"resistant",
+			"bishop_aegis"
+		],
+		"rules": [
+			{
+				"ability": "raise_dead",
+				"if": {
+					"dead_ally": true
+				}
+			},
+			{
+				"ability": "bishop_curse"
+			},
+			{
+				"ability": "dark_sermon"
+			}
+		],
+		"boss": true,
+		"boss_text": "Resistent. Kan inte skadas så länge en Kultist lever, väcker de fallna och försvagar sällskapet.",
+		"visual": {
+			"model": "skelett",
+			"scale": 1.9,
+			"tint": "#f0e6c8",
+			"glow": "#8a6a20",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"kapa/Kult_Robe",
+				"rustning/Tom_Pauldron_L",
+				"rustning/Tom_Pauldron_R",
+				"rustning/Tom_Rerebrace_L",
+				"rustning/Tom_Rerebrace_R"
+			],
+			"crown": "#f0d070",
+			"colors": {
+				"Kult_Robe": "#e8e0d0",
+				"Kult_DarkBrown": "#a08040",
+				"Kult_Black": "#2a2418",
+				"Kult_LightBrown": "#c8b890",
+				"Kult_Metal": "#c8a040",
+				"Tom_Steel": "#c8a040",
+				"Tom_Edge": "#f0d070",
+				"Tom_Guard": "#806020"
+			},
+			"emit": {
+				"Kult_Glow": "#ffd060",
+				"Ske_Eye": "#ff4a2a"
+			},
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"light": "#ffc040",
+			"light_energy": 1.5,
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"cast": "Staff_Cast",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "bishop_mitre"
 	}
 }

@@ -1,0 +1,22 @@
+{
+	"crypt": {
+		"name": "Kryptan",
+		"text": "Benfursten och hans skelett. Tre våningar.",
+		"floors": [
+			"crypt_1",
+			"crypt_2",
+			"crypt_3"
+		],
+		"short": "Kryptan"
+	},
+	"chapel": {
+		"name": "Det fördärvade kapellet",
+		"text": "Kultister, gastar och häxor kring Den fallne biskopen. Tre våningar.",
+		"floors": [
+			"chapel_1",
+			"chapel_2",
+			"chapel_3"
+		],
+		"short": "Kapellet"
+	}
+}

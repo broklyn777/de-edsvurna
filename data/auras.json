@@ -66,5 +66,23 @@
 		"duration": -1,
 		"damage_mult": 1.5,
 		"buff": true
+	},
+	"silenced": {
+		"name": "Tystad",
+		"duration": 2,
+		"silence": true,
+		"debuff": true
+	},
+	"vulnerable": {
+		"name": "Sårbar",
+		"duration": 2,
+		"damage_taken_mult": 1.5,
+		"debuff": true
+	},
+	"weak": {
+		"name": "Försvagad",
+		"duration": 2,
+		"damage_mult": 0.5,
+		"debuff": true
 	}
 }

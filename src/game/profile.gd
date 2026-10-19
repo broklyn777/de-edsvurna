@@ -44,6 +44,8 @@ var practice_equipped := {}
 ## Nästa djup öppnas när det föregående är klarat.
 var depth := 1
 var best_depth := 0
+## Vald Realm vid Kryptporten (data/realms.json). Djupet gäller alla Realms.
+var realm := "crypt"
 ## Anointments (Siralim): varje besegrad boss (räknas en gång per bosstyp) låser upp en plats där
 ## en Ed får låna en perk från en annan Ed. Lånet kostar perk-poäng ur den lånande Edens pott.
 var bosses_defeated: Array[String] = []
@@ -240,6 +242,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "practice_equipped", practice_equipped)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
+	cfg.set_value("progress", "realm", realm)
 	cfg.set_value("progress", "bosses_defeated", bosses_defeated)
 	cfg.set_value("progress", "anointed", anointed)
 	return cfg.save(path)
@@ -264,6 +267,7 @@ static func load_from(path: String) -> Profile:
 		p.party.assign(saved)
 	p.practice_equipped = cfg.get_value("progress", "practice_equipped", {})
 	p.best_depth = int(cfg.get_value("progress", "best_depth", 0))
+	p.realm = cfg.get_value("progress", "realm", "crypt")
 	for kind in cfg.get_value("progress", "bosses_defeated", []):
 		p.bosses_defeated.append(kind)
 	p.anointed = cfg.get_value("progress", "anointed", {})

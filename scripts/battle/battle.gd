@@ -15,7 +15,7 @@ const BEAT := 0.45
 ## Extra tid mellan effekter i en kedja, så att man hinner se dem i ordning.
 const CHAIN_STEP := 0.22
 const ERROR_TEXT := {"cooldown": "Inte redo än", "dead": "Hjälten har stupat", "none": "Ingen sådan förmåga",
-		"charges": "Inga Charges kvar"}
+		"charges": "Inga Charges kvar", "silenced": "Tystad – förmågor går inte"}
 
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 var run: Node
@@ -458,6 +458,8 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e), _on_damage.bind(e))
 		"dodge":
 			_after(_effect_delay(e), _float.bind(e.target, "UNDVEK", Color("#d8e6ff"), 22, false))
+		"immune":
+			_after(_effect_delay(e), _float.bind(e.target, "IMMUN", Color("#ffe48a"), 22, false))
 		"charge_restored":
 			_after(_effect_delay(e), _float.bind(e.unit, "+%d CHARGE" % e.amount, UiStyle.GOLD, 18, false))
 		"heal":

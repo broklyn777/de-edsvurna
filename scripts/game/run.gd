@@ -66,6 +66,10 @@ func _dev_args() -> void:
 			# --anoint låser upp den lånade perken (som om Benfursten var besegrad) och visar valet
 			profile.defeat_boss("bone_lich")
 			get_tree().change_scene_to_file.call_deferred(ALTAR_SCENE)
+		elif arg.begins_with("--realm="):
+			# --realm=chapel spelar i Det fördärvade kapellet (bara den här körningen)
+			state.set_realm(data, arg.get_slice("=", 1))
+			profile.realm = state.realm
 		elif arg.begins_with("--depth="):
 			# --depth=<n> spelar på djup n (bara den här körningen)
 			state.depth = maxi(1, int(arg.get_slice("=", 1)))

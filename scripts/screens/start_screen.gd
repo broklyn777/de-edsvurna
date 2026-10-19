@@ -52,6 +52,12 @@ func _tap(p: Vector2) -> void:
 	if _oath_rect().has_point(p):
 		run.go(run.ALTAR_SCENE)
 		return
+	var realms: Array = data.realms.keys()
+	for i in realms.size():
+		if _realm_rect(i).has_point(p):
+			run.profile.realm = realms[i]
+			run.save()
+			return
 	for i in COMPANIONS.size():
 		if _companion_rect(i).has_point(p):
 			var id: String = COMPANIONS[i]
@@ -126,6 +132,11 @@ func _button_rect() -> Rect2:
 	return Rect2((size.x - 340) / 2.0, size.y - 76, 340, 60)
 
 
+## Realm-flikarna uppe till vänster (Siralims Realms).
+func _realm_rect(i: int) -> Rect2:
+	return Rect2(MARGIN + 165 + i * 150, 18, 140, 44)
+
+
 func _back_rect() -> Rect2:
 	return Rect2(MARGIN, 18, 150, 44)
 
@@ -148,8 +159,17 @@ func _draw() -> void:
 	UiStyle.text(self, Vector2(0, 46), "SILVER %d" % run.profile.silver, 22, Color("#d8dde6"),
 			HORIZONTAL_ALIGNMENT_RIGHT, size.x - MARGIN, 4)
 	UiStyle.text(self, Vector2(0, 48), "KRYPTPORTEN", 38, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
-	UiStyle.text(self, Vector2(0, 76), "Tre strider. Varje seger ger silver och en trofé från monstren du slog.", 16,
+	var realm: Dictionary = data.realms.get(run.profile.realm, data.realms.crypt)
+	UiStyle.text(self, Vector2(0, 76), "%s: %s Varje seger ger silver och troféer." % [realm.name, realm.text], 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
+	var realms: Array = data.realms.keys()
+	for i in realms.size():
+		var r := _realm_rect(i)
+		var on: bool = run.profile.realm == realms[i]
+		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.6))
+		draw_rect(r, Color(UiStyle.GOLD, 0.95) if on else Color(1, 1, 1, 0.35), false, 2.0)
+		UiStyle.text(self, r.position + Vector2(0, 29), data.realms[realms[i]].short.to_upper(), 18,
+				UiStyle.GOLD if on else Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
 	var ed: Dictionary = data.traits[run.profile.oath]
 	# Perkarna som verkar, med nivå ("Vrede ×2") och den lånade sist.
@@ -192,7 +212,7 @@ func _draw() -> void:
 					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
 	_draw_depth()
-	UiStyle.big_button(self, _button_rect(), "IN I KRYPTAN", _t, companions.size() == 3)
+	UiStyle.big_button(self, _button_rect(), "IN I " + str(realm.short).to_upper(), _t, companions.size() == 3)
 	_small_button(_macro_rect(), "MAKRON")
 
 

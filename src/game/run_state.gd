@@ -5,6 +5,7 @@ extends RefCounted
 ## Varje vunnen strid ger ett val av en trofé bland monstren man just slog. Troféer kan flyttas
 ## fritt mellan hjältarna mellan striderna (en per hjälte).
 
+## Kryptans våningar (standard). Varje Realm har sina i data/realms.json.
 const FLOORS := ["crypt_1", "crypt_2", "crypt_3"]
 const PARTY_SIZE := 4
 const OFFER_SIZE := 3
@@ -19,6 +20,9 @@ var perks: Array = []
 ## Paladinen först, sedan följeslagarna.
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
 var floor := 0
+## Realm (Siralim): "crypt" eller "chapel" (data/realms.json) och dess våningar.
+var realm := "crypt"
+var floor_ids: Array = FLOORS
 ## Realm Depth som fienderna skalar med (Profile.depth).
 var depth := 1
 ## Troféer som hittats under körningen.
@@ -43,6 +47,7 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.party = profile.party.duplicate()
 	s.artifacts = profile.artifacts.duplicate(true)
 	s.depth = profile.depth
+	s.set_realm(data, profile.realm)
 	s.fill_charges(data)
 	return s
 
@@ -76,12 +81,18 @@ func store_charges(sim: CombatSim) -> void:
 		charges[h.id] = h.charges.duplicate()
 
 
+func set_realm(data: Dictionary, realm_id: String) -> void:
+	if data.get("realms", {}).has(realm_id):
+		realm = realm_id
+		floor_ids = data.realms[realm_id].floors
+
+
 func encounter() -> String:
-	return practice_encounter if practice else FLOORS[floor]
+	return practice_encounter if practice else floor_ids[floor]
 
 
 func is_last_floor() -> bool:
-	return practice or floor >= FLOORS.size() - 1
+	return practice or floor >= floor_ids.size() - 1
 
 
 ## Egenskaper per hjälte för striden: Paladinens Ed och perks ersätter hens förvalda, och troféer
@@ -111,7 +122,12 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator) -> Array[String]
 		if t != "" and not offer.has(t) and not trophies.has(t):
 			offer.append(t)
 	var rest: Array[String] = []
+	var realm_kinds := []
+	for enc_id in floor_ids:
+		realm_kinds.append_array(data.encounters[enc_id].enemies)
 	for kind in data.enemies:
+		if not realm_kinds.has(kind):
+			continue  # påfyllnaden kommer från samma Realm
 		var t: String = data.enemies[kind].get("trophy", "")
 		if t != "" and not offer.has(t) and not trophies.has(t) and not data.enemies[kind].get("boss", false):
 			rest.append(t)

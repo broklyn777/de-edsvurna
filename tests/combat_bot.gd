@@ -65,12 +65,12 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 	return {"outcome": sim.outcome, "turns": sim.turn_no, "alive": alive, "no_match": no_match, "sim": sim}
 
 
-## Hela kryptan i följd med Charges som räcker alla våningarna. Sant om sällskapet klarar den.
+## En hel Realm (standard kryptan) i följd med Charges som räcker alla våningarna. Sant om sällskapet klarar den.
 static func run_crypt(data: Dictionary, seed_value: int, skill: Skill, traits := {}, artifacts := {},
-		depth := 1) -> bool:
+		depth := 1, floors: Array = RunState.FLOORS) -> bool:
 	var state := RunState.new()
 	state.fill_charges(data)
-	for floor in RunState.FLOORS:
+	for floor in floors:
 		var r := run_fight(data, seed_value, skill, floor, state.party, traits, state.charges, artifacts, depth)
 		if r.outcome != "victory":
 			return false

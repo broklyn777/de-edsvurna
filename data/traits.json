@@ -670,5 +670,209 @@
 				"ability": "bone_storm"
 			}
 		]
+	},
+	"cultist_ward": {
+		"name": "Skyddande bön",
+		"enemy": true,
+		"text": "I början av sin tur ger Kultisten den svagaste allierade en Barriär för 120 % av sin Intelligence.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "intelligence",
+				"pct": 1.2,
+				"target": "weakest_ally"
+			}
+		]
+	},
+	"wraith_ethereal": {
+		"name": "Eterisk",
+		"enemy": true,
+		"text": "Undviker 40 % av attacker. Besvärjelser och indirekt skada träffar alltid.",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"kind": "attack"
+		},
+		"modify": {
+			"dodge_add": 0.4
+		}
+	},
+	"knight_riposte": {
+		"name": "Motstöt",
+		"enemy": true,
+		"text": "Medan den Fallne riddaren försvarar sig slår den tillbaka mot varje attack för 60 %. Besvärjelser slipper.",
+		"trigger": "damage",
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "attack",
+			"self_has_aura": "defend"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.6,
+				"kind": "attack",
+				"target": "source"
+			}
+		]
+	},
+	"witch_malice": {
+		"name": "Häxans illvilja",
+		"enemy": true,
+		"text": "Gör 50 % mer skada mot tystade mål.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_has_aura": "silenced"
+		},
+		"modify": {
+			"damage_mult": 1.5
+		}
+	},
+	"penitent_brand": {
+		"name": "Bödelns märke",
+		"enemy": true,
+		"text": "Botgörarens direkta träffar gör målet Sårbart: +50 % skada i 2 turer.",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "vulnerable",
+				"target": "target"
+			}
+		]
+	},
+	"bishop_aegis": {
+		"name": "Kultens sköld",
+		"enemy": true,
+		"text": "Den fallne biskopen kan inte skadas så länge en Kultist lever.",
+		"trigger": "modify_damage_taken",
+		"modify": {
+			"immune_while_ally_kind": "cultist"
+		}
+	},
+	"prayer_beads": {
+		"name": "Bönepärlor",
+		"trophy": true,
+		"rarity": "common",
+		"text": "I början av bärarens tur får den svagaste i sällskapet en Barriär för 60 % av bärarens Intelligence.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "intelligence",
+				"pct": 0.6,
+				"target": "weakest_ally"
+			}
+		]
+	},
+	"wraith_veil": {
+		"name": "Gastens slöja",
+		"trophy": true,
+		"rarity": "common",
+		"text": "Bäraren undviker 20 % av attacker.",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"kind": "attack"
+		},
+		"modify": {
+			"dodge_add": 0.2
+		}
+	},
+	"fallen_oath": {
+		"name": "Den fallnes ed",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Medan bäraren försvarar sig slår hen tillbaka mot varje attack för 50 %.",
+		"trigger": "damage",
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "attack",
+			"self_has_aura": "defend"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.5,
+				"kind": "attack",
+				"target": "source"
+			}
+		]
+	},
+	"witch_tongue": {
+		"name": "Häxans tunga",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Bärarens direkta besvärjelser har 50 % chans att tysta målet i 1 tur (fiender kan då bara anfalla).",
+		"trigger": "damage",
+		"chance": 0.5,
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "spell"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "silenced",
+				"duration": 1,
+				"target": "target"
+			}
+		]
+	},
+	"executioner_hood": {
+		"name": "Bödelns huva",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Bärarens kritiska träffar gör målet Sårbart: +50 % skada i 2 turer.",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"crit": true,
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "vulnerable",
+				"target": "target"
+			}
+		]
+	},
+	"bishop_mitre": {
+		"name": "Biskopens mitra",
+		"trophy": true,
+		"rarity": "boss",
+		"text": "Bäraren kan inte skadas så länge minst två andra i sällskapet lever, men hela sällskapet gör 25 % mindre skada.",
+		"trigger": "modify_damage_taken",
+		"modify": {
+			"immune_while_allies": 2
+		},
+		"parts": [
+			"bishop_mitre_penalty"
+		]
+	},
+	"bishop_mitre_penalty": {
+		"name": "Biskopens mitra",
+		"hidden": true,
+		"text": "",
+		"trigger": "modify_damage",
+		"scope": "party",
+		"modify": {
+			"damage_mult": 0.75
+		}
 	}
 }

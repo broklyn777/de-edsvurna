@@ -472,5 +472,152 @@
 				"power": 3.0
 			}
 		]
+	},
+	"cultist_knife": {
+		"name": "Offerkniv",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"wraith_claw": {
+		"name": "Gastklo",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"school": "shadow",
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"knight_cleave": {
+		"name": "Fallet hugg",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"knight_stand": {
+		"name": "Den fallnes vakt",
+		"target": "self",
+		"cooldown": 3,
+		"sound": "k_shield_wall",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "provoke"
+			},
+			{
+				"type": "aura",
+				"aura": "defend"
+			}
+		]
+	},
+	"witch_bolt": {
+		"name": "Häxeld",
+		"target": "enemy",
+		"pick": "random",
+		"school": "shadow",
+		"travel": 0.35,
+		"sound": "volley_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"witch_hex": {
+		"name": "Tystnadens förbannelse",
+		"target": "enemy",
+		"pick": "random",
+		"kind": "spell",
+		"school": "shadow",
+		"travel": 0.35,
+		"cooldown": 3,
+		"sound": "volley_impact",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "silenced"
+			},
+			{
+				"type": "damage",
+				"power": 0.6
+			}
+		],
+		"tier": "small"
+	},
+	"penitent_flail": {
+		"name": "Gissel",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"bishop_smite": {
+		"name": "Fallen dom",
+		"target": "enemy",
+		"pick": "random",
+		"school": "shadow",
+		"travel": 0.35,
+		"sound": "volley_impact",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"bishop_curse": {
+		"name": "Förbannad predikan",
+		"target": "all_enemies",
+		"kind": "spell",
+		"school": "shadow",
+		"cooldown": 4,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "weak"
+			}
+		]
+	},
+	"dark_sermon": {
+		"name": "Mörk mässa",
+		"target": "all_enemies",
+		"kind": "spell",
+		"school": "shadow",
+		"tier": "moderate",
+		"cooldown": 3,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.5
+			}
+		]
 	}
 }

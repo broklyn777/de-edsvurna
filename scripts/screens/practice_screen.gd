@@ -31,7 +31,7 @@ func _tap(p: Vector2) -> void:
 	if back_rect().has_point(p):
 		run.go(run.BASE_SCENE)
 		return
-	var encs: Array = RunState.FLOORS
+	var encs: Array = data.realms[profile.realm].floors
 	for i in encs.size():
 		if _enc_rect(i).has_point(p):
 			run.practice_encounter = encs[i]
@@ -104,7 +104,7 @@ func _draw() -> void:
 	small_button(back_rect(), "‹ BASEN")
 
 	UiStyle.text(self, Vector2(MARGIN, 114), "FIENDER", 14, Color(1, 1, 1, 0.6))
-	var encs: Array = RunState.FLOORS
+	var encs: Array = data.realms[profile.realm].floors
 	for i in encs.size():
 		var enc: Dictionary = data.encounters[encs[i]]
 		UiStyle.card(self, _enc_rect(i), enc.name, _enemy_list(enc), run.practice_encounter == encs[i],

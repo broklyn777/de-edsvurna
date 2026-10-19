@@ -20,7 +20,7 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"not_top_of_timeline", "bottom_of_timeline", "not_bottom_of_timeline", "has_trait", "lacks_trait",
 		"deaths_at_least", "revives_at_least", "is_alive", "highest_speed", "lowest_hp", "lowest_defense",
 		"highest_defense", "highest_attack", "own_turn",
-		"has_charges", "has_artifact", "lacks_artifact"]
+		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -151,6 +151,12 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return x.charges.get(v, 0) > 0
 		"has_artifact":
 			return x.artifact.get("type", "") == v
+		"is_immune":
+			return sim.is_immune(x)
+		"not_immune":
+			return not sim.is_immune(x)
+		"is_silenced":
+			return sim.is_silenced(x)
 		"lacks_artifact":
 			return x.artifact.get("type", "") != v
 	return false
@@ -294,6 +300,12 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "bär %s" % data.get("artifacts", {}).get(value, {}).get("name", str(value)).to_lower()
 		"lacks_artifact":
 			return "bär inte %s" % data.get("artifacts", {}).get(value, {}).get("name", str(value)).to_lower()
+		"is_immune":
+			return "är immun mot skada"
+		"not_immune":
+			return "kan skadas"
+		"is_silenced":
+			return "är tystad"
 	return cond
 
 
@@ -362,4 +374,6 @@ static func _reason_text(sim: CombatSim, u: CombatUnit, action: String, ability_
 			return "%s har inte %s" % [u.name, name]
 		"dead":
 			return "%s har stupat" % u.name
+		"silenced":
+			return "%s är tystad" % u.name
 	return reason

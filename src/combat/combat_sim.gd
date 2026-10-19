@@ -16,6 +16,7 @@ extends RefCounted
 ##   damage {source, target, amount, absorbed, crit, school, kind, ability, direct} – amount är förlorat liv,
 ##          absorbed det Barrier tog. Bara skada på livet sätter igång egenskaper (Siralim).
 ##   dodge {source, target, ability} – målet undvek en attack
+##   immune {source, target, ability} – målet kan inte skadas just nu (t.ex. Kultens sköld)
 ##   heal {source, target, amount, effective, overheal, crit, ability}
 ##   revive {unit}
 ##   charge_restored {unit, ability, amount}
@@ -55,6 +56,8 @@ const CRIT_CHANCE_PER_DOUBLING := 0.1
 const CRIT_CHANCE_MAX := 0.5
 const DODGE_PER_DOUBLING := 0.1
 const DODGE_MAX := 0.3
+## Med egenskaper ("dodge_add") kan undvikandet bli högst så här stort.
+const DODGE_TRAIT_MAX := 0.75
 ## Realm Depth (Siralim): fiendernas Health, Attack, Intelligence och Defense växer med en andel per
 ## djup över 1 (8 %). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
 ## (våning 2 och 3 är starkare än 1, som i Siralim där fienderna skalar snabbare än laget).
@@ -265,7 +268,25 @@ func action_ability(u: CombatUnit, action: String, ability_id := "") -> String:
 	return "defend"
 
 
-## Tom sträng om handlingen går att göra, annars en orsak (dead, none, charges, cooldown).
+## Tystad (Siralims Silenced): figuren kan inte använda förmågor, bara Anfall, Försvara och Provocera.
+func is_silenced(u: CombatUnit) -> bool:
+	return u.auras.keys().any(func(a: String) -> bool: return data.auras[a].get("silence", false))
+
+
+## Sant om figuren inte kan skadas just nu: en egenskap med "immune_while_ally_kind" (immun så länge
+## en levande allierad av den typen finns, som Siralims Myrtle) eller "immune_while_allies" (så länge
+## minst så många andra i laget lever).
+func is_immune(u: CombatUnit) -> bool:
+	for m in _modifiers(u, "modify_damage_taken", {"target": u.id}):
+		if m.has("immune_while_ally_kind") and _allies(u).any(func(x: CombatUnit) -> bool:
+				return x != u and x.kind == m.immune_while_ally_kind):
+			return true
+		if m.has("immune_while_allies") and _allies(u).size() - 1 >= int(m.immune_while_allies):
+			return true
+	return false
+
+
+## Tom sträng om handlingen går att göra, annars en orsak (dead, none, charges, cooldown, silenced).
 func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 	if u == null or not u.alive:
 		return "dead"
@@ -276,6 +297,8 @@ func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 		return "none"
 	if u.charges.has(id) and full_charges(id) > 0 and u.charges[id] <= 0:
 		return "charges"
+	if action == "ability" and is_silenced(u):
+		return "silenced"
 	if u.cooldown_left(id) > 0.0:
 		return "cooldown"
 	return ""
@@ -430,7 +453,7 @@ func _check_outcome() -> void:
 ## Fienden bestämmer sin nästa handling i början av striden och i slutet av sin tur, så att
 ## spelaren kan se den (som Siralims bossar som låser ett mål).
 func _choose_intent(e: CombatUnit) -> void:
-	for rule in e.rules:
+	for rule in ([] if is_silenced(e) else e.rules):
 		var ability_id: String = rule.ability
 		if e.cooldown_left(ability_id) > 0.0 or not _rule_matches(e, rule):
 			continue
@@ -440,7 +463,8 @@ func _choose_intent(e: CombatUnit) -> void:
 
 
 func _enemy_choice(e: CombatUnit) -> Dictionary:
-	if e.intent.is_empty() or e.cooldown_left(e.intent.ability) > 0.0:
+	if e.intent.is_empty() or e.cooldown_left(e.intent.ability) > 0.0 \
+			or (is_silenced(e) and e.intent.ability != e.attack_ability):
 		_choose_intent(e)
 	var target := ""
 	for id in e.intent.targets:
@@ -493,7 +517,7 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 func _auto_cast(u: CombatUnit, ability_id: String, target_id := "") -> void:
 	var ab := ability(ability_id)
 	var targets := _targets_for(u, ab, target_id)
-	if targets.is_empty() or not _within_limit(u, "spell"):
+	if targets.is_empty() or is_silenced(u) or not _within_limit(u, "spell"):
 		return
 	_emit({"type": "action", "unit": u.id, "action": "artifact", "ability": ability_id, "targets": targets})
 	_apply_effects(u, ability_id, targets)
@@ -635,8 +659,11 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	school = probe.school
 	kind = probe.kind
 	var ratio := src.speed / maxf(tgt.speed, 1.0)
-	if kind == "attack" and src.team != tgt.team and rng.randf() < dodge_chance(1.0 / ratio):
+	if kind == "attack" and src.team != tgt.team and rng.randf() < _dodge_for(src, tgt, ratio, probe):
 		_emit({"type": "dodge", "source": src.id, "target": tgt.id, "ability": ability_id})
+		return
+	if is_immune(tgt):
+		_emit({"type": "immune", "source": src.id, "target": tgt.id, "ability": ability_id})
 		return
 	var factors: Array = []
 	if direct:
@@ -682,6 +709,14 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct})
 	if tgt.hp <= 0.0:
 		_kill(tgt)
+
+
+## Undvikande: från fartkvoten plus egenskaper med "dodge_add" (t.ex. Gastens Eterisk), högst 75 %.
+func _dodge_for(src: CombatUnit, tgt: CombatUnit, ratio: float, probe: Dictionary) -> float:
+	var chance := dodge_chance(1.0 / ratio)
+	for m in _modifiers(tgt, "modify_damage_taken", probe):
+		chance += float(m.get("dodge_add", 0.0))
+	return minf(chance, maxf(DODGE_TRAIT_MAX, dodge_chance(1.0 / ratio)))
 
 
 ## Buffar figuren har (auror märkta "buff", och Barrier).
@@ -979,6 +1014,8 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 		amount = float(e.get(effect.get("event_field", "amount"), 0.0)) * float(effect.pct_of_event)
 	elif effect.has("pct_max_hp"):
 		amount = tgt.max_hp * float(effect.pct_max_hp)
+	elif effect.has("stat"):
+		amount = _amount(owner, effect)  # en andel av en stat, t.ex. Barriär från Intelligence
 	elif effect.type == "damage":
 		amount = _amount(owner, effect)
 	elif effect.type == "heal":

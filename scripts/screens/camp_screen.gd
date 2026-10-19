@@ -140,7 +140,7 @@ func _draw() -> void:
 		var body := "%s\nTrofé: %s" % [data.traits[own].name, data.traits[trophy].name if trophy != "" else "–"]
 		UiStyle.card(self, _hero_rect(i), h.name, body, trophy != "", Color(h.color), h.title.to_upper())
 
-	var next_id: String = RunState.FLOORS[state.floor + 1]
+	var next_id: String = state.floor_ids[state.floor + 1]
 	var enc: Dictionary = data.encounters[next_id]
 	var names := {}
 	var boss_text := ""
