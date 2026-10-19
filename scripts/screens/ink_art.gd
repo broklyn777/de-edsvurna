@@ -5,6 +5,32 @@ extends RefCounted
 ## Allt ritas med linjer på en CanvasItem i bläckfärg, tills riktiga bilder finns.
 
 const INK := Color(0.20, 0.12, 0.06)
+## Symbolerna ur VD:ns symbolark (klipps ut med tools/cut_symbols.gd till assets/illustrations/icons/).
+const ICON_DIR := "res://assets/illustrations/icons/"
+## Rumstyp → symbol.
+const ROOM_ICONS := {"battle": "battle", "portal_battle": "battle", "elite": "elite", "treasure": "chest",
+		"shrine": "shrine", "campfire": "campfire", "portal": "portal", "end": "battle"}
+static var _icons := {}
+
+
+static func icon_texture(name: String) -> Texture2D:
+	if not _icons.has(name):
+		_icons[name] = load(ICON_DIR + name + ".png")
+	return _icons[name]
+
+
+## Ritar en symbol centrerad i c med höjden h (bredden följer bilden). alpha tonar (bleka rum).
+static func icon(ci: CanvasItem, name: String, c: Vector2, h: float, alpha := 1.0) -> Rect2:
+	var tex := icon_texture(name)
+	var w := h * tex.get_width() / tex.get_height()
+	var r := Rect2(c - Vector2(w, h) / 2, Vector2(w, h))
+	ci.draw_texture_rect(tex, r, false, Color(1, 1, 1, alpha))
+	return r
+
+
+## Rummets symbol ur arket: bossen får det behornade kraniet.
+static func room_icon(ci: CanvasItem, kind: String, c: Vector2, h: float, alpha: float, boss := false) -> void:
+	icon(ci, "boss" if kind == "end" and boss else ROOM_ICONS.get(kind, "battle"), c, h, alpha)
 
 
 ## Liten deterministisk ojämnhet (−1…1) så att linjerna ser handdragna ut men inte darrar.

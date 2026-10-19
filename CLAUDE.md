@@ -47,7 +47,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   handdragen ojämnhet, bleka rum som inte nåtts och en paladinpjäs som glider längs stigen. Kampanjkartan:
   Drakvalvets tuschvinjetter (`assets/illustrations/`, `docs/illustrationer.md`) med tonade kanter och
   fördärvet som ett flytande bläck i en shader; kompassros, kartuscher, drake, svärd i sten, skelett och
-  häxa bara i marginalen. Sigillet tonas bakom basen och nattlägret bakom lägret.
+  häxa bara i marginalen (0.18.2: häxan och Väktaren är vinjetter). Borgen (basen.webp) tonas bakom basen,
+  nattlägret bakom lägret och sällskapet (sallskapet.webp) bakom Förberedelser.
+  Rumssymbolerna, paladinpjäsen, kompassrosen, kartuschen, draken och svärdet i stenen kommer ur VD:ns
+  symbolark: `godot --headless --path . --script res://tools/cut_symbols.gd` klipper ut dem enligt rutorna i
+  `tools/symbolark.json` till `assets/illustrations/icons/` (pergamentet blir genomskinligt med en
+  luminansmask). Kör om med nya koordinater när ett nytt ark kommer.
   **Realm Quest** (Jakt på Nemesis, Rensa 2 elitstrider, Rening 3 helgedomar) ger silver och en perk-poäng
   per ny kombination av Realm och djup. Körningen sparas i `user://run.cfg` efter varje rum.
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),

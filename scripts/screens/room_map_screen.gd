@@ -195,8 +195,8 @@ func _draw() -> void:
 	_draw_paths(m, state)
 	for r in m.all_rooms():
 		_draw_room(r, state)
-	var lift := 0.0 if state.room_id == "" and _move_t < 0.0 else -ROOM_R - 20.0
-	InkArt.paladin(self, _piece_pos() + Vector2(0, lift + sin(_t * 3.0) * 2.0), 46, InkArt.INK)
+	var lift := 0.0 if state.room_id == "" and _move_t < 0.0 else -ROOM_R - 30.0
+	InkArt.icon(self, "paladin", _piece_pos() + Vector2(0, lift + sin(_t * 3.0) * 2.0), 74)
 	draw_set_transform(Vector2.ZERO)
 	if _zoom_t < 1.0:
 		# Bilden av området (samma som kampanjkartan tonade fram) tonar bort medan kameran zoomar ut.
@@ -244,13 +244,13 @@ func _piece_pos() -> Vector2:
 ## (skelett vid kryptan, häxa vid kapellet) och ett svärd i sten i nederkanten.
 func _draw_decor(state: RunState) -> void:
 	var ink := Color(InkArt.INK, 0.55)
-	InkArt.compass(self, Vector2(64, size.y - 72), 44, ink)
+	InkArt.icon(self, "compass", Vector2(68, size.y - 70), 104, 0.75)
 	var figure := Vector2(170, size.y - 70)
 	if state.realm == "chapel":
 		InkArt.witch(self, figure, 56, ink)
 	else:
 		InkArt.skeleton(self, figure, 56, ink)
-	InkArt.sword_in_stone(self, Vector2(250, size.y - 50), 50, ink)
+	InkArt.icon(self, "sword_in_stone", Vector2(262, size.y - 62), 112, 0.7)
 
 
 func _draw_paths(m: RoomMap, state: RunState) -> void:
@@ -279,12 +279,11 @@ func _draw_room(r: Dictionary, state: RunState) -> void:
 		var pulse := 0.5 + 0.5 * sin(_t * 4.0)
 		draw_circle(pos, ROOM_R + 6, Color(0.95, 0.86, 0.6, 0.55))
 		InkArt.ring(self, pos, ROOM_R + 6 + 3 * pulse, Color(UiStyle.GOLD.darkened(0.25), 0.6 + 0.4 * pulse), 3.0)
-	var size_px := ROOM_R * (1.5 if kind == "end" else 1.25)
-	InkArt.symbol(self, kind, pos, size_px, Color(InkArt.INK, alpha), boss)
+	InkArt.room_icon(self, kind, pos, 104.0 if kind == "end" else 86.0, alpha, boss)
 	var label: String = KIND_NAMES.get(kind, kind)
 	if kind == "end" and boss:
 		label = "Boss: " + run.data.encounters[r.encounter].name
-	UiStyle.text(self, pos + Vector2(-90, ROOM_R + 24), label, 14, Color(InkArt.INK, maxf(alpha, 0.5)),
+	UiStyle.text(self, pos + Vector2(-90, ROOM_R + 34), label, 14, Color(InkArt.INK, maxf(alpha, 0.5)),
 			HORIZONTAL_ALIGNMENT_CENTER, 180, 0)
 	if r.get("nemesis", false):
 		draw_circle(pos + Vector2(ROOM_R * 0.9, -ROOM_R * 0.8), 12, Color(Parchment.SEAL, maxf(alpha, 0.6)))
