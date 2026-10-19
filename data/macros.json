@@ -5,7 +5,7 @@
 			{"subject": "any_ally", "cond": "hp_below", "value": 30, "action": "ability", "ability": "holy_shield", "target": "that"},
 			{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "ability", "ability": "holy_smite", "target": "that"},
 			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "holy_smite", "target": "that"},
-			{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}
+			{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}
 		]
 	},
 	"brokk": {
@@ -33,10 +33,11 @@
 		"name": "Jägaren Eira",
 		"lines": [
 			{"subject": "enemy_3", "cond": "is_alive", "action": "ability", "ability": "arrow_rain"},
+			{"subject": "any_enemy", "cond": "has_trait", "value": "cultist_ward", "action": "attack", "target": "that"},
 			{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "attack", "target": "that"},
 			{"subject": "any_enemy", "cond": "has_status", "value": "marked", "action": "attack", "target": "that"},
 			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "hunters_mark", "target": "that"},
-			{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}
+			{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}
 		]
 	},
 	"solveig": {
@@ -44,7 +45,7 @@
 		"lines": [
 			{"subject": "enemy_3", "cond": "is_alive", "action": "ability", "ability": "flame_wave"},
 			{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "fireball", "target": "that"},
-			{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}
+			{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}
 		]
 	}
 }

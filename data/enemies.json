@@ -693,12 +693,6 @@
 		],
 		"rules": [
 			{
-				"ability": "raise_dead",
-				"if": {
-					"dead_ally": true
-				}
-			},
-			{
 				"ability": "bishop_curse"
 			},
 			{
@@ -706,7 +700,7 @@
 			}
 		],
 		"boss": true,
-		"boss_text": "Resistent. Kan inte skadas så länge en Kultist lever, väcker de fallna och försvagar sällskapet.",
+		"boss_text": "Resistent. Kan inte skadas så länge en Kultist lever. Försvagar sällskapet och håller mörk mässa.",
 		"visual": {
 			"model": "skelett",
 			"scale": 1.9,

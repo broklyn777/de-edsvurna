@@ -1,12 +1,13 @@
 extends SceneTree
-## Balansrapport (0.14.1) på djup 1 och 3 (Realm Depth).
+## Balansrapport (0.16) på djup 1 och 3 (Realm Depth).
 ## Per våning: vinstandel, turer och överlevande för BASIC (bara Anfall), MACRO (startmakrona) och
 ## TUNED (de förbättrade makrona i combat_bot.gd, som svarar på fiendernas egenskaper).
 ## Hela kryptan: alla tre våningarna i följd med Charges som räcker hela vägen, med TUNED plus en
 ## artefakt, och för varje Ed de bästa perkarna inom perk-poängen (sökta bland alla kombinationer som
 ## får plats): bara nivå 1, med perk-nivåer, och med nivåer och en lånad perk (anointment). Sist allt
 ## (fyra artefakter och det bästa perk-bygget) och varje Eds kärna med startmakrona. På djup 3 prövas
-## perkarna tillsammans med en artefakt, eftersom inget bygge utan artefakt vinner där.
+## perkarna tillsammans med en artefakt, eftersom inget bygge utan artefakt vinner där. Sist samma
+## byggen i Det fördärvade kapellet (0.16), som ska vara ungefär lika svårt som kryptan.
 ##   godot --headless --path . --script res://tests/balance_report.gd
 ## Mål på djup 1: BASIC förlorar, MACRO ~40 %, TUNED ~65 %, ingenting 100 % utom kanske allt.
 ## Kärnorna inom ±10 procentenheter. Djup 3: ett bra bygge (artefakt + bästa perks) 30–60 %.
@@ -18,6 +19,8 @@ const SEARCH_RUNS := 20
 
 ## Sökresultat per djup och kombination (str(lista) -> vinster).
 var _search_cache := {}
+## Det bästa perk-bygget i kryptan per djup (prövas också i kapellet).
+var _best_by_depth := {}
 const DEPTHS := [1, 3]
 ## Ett första smide: Brokks sköld med Helande ljus (160 silver).
 const ONE_ARTIFACT := {"brokk": {"type": "shield", "ability": "healing_light"}}
@@ -34,21 +37,8 @@ func _init() -> void:
 	var data := GameData.load_all()
 	for depth in DEPTHS:
 		print("=== Djup %d (fiender ×%.2f) ===" % [depth, CombatSim.depth_mult(depth)])
-		for floor in RunState.FLOORS:
-			var enc: Dictionary = data.encounters[floor]
-			print("%s (våning ×%.2f)" % [enc.name, float(enc.get("stat_mult", 1.0))])
-			for skill in [Bot.Skill.BASIC, Bot.Skill.MACRO, Bot.Skill.TUNED]:
-				var wins := 0
-				var turns := 0
-				var alive := 0
-				for seed_value in range(1, RUNS + 1):
-					var r := Bot.run_fight(data, seed_value, skill, floor, [], {}, {}, {}, depth)
-					turns += r.turns
-					if r.outcome == "victory":
-						wins += 1
-						alive += r.alive
-				print("  %-6s vinster %3d/%d  snitt %4.1f turer  överlevande vid seger %.1f" % [
-					Bot.Skill.keys()[skill], wins, RUNS, float(turns) / RUNS, float(alive) / maxf(wins, 1)])
+		print("--- Kryptan ---")
+		_floor_table(data, RunState.FLOORS, depth)
 		# Perk-poängen för den som spelar på djupet: djupet innan är klarat.
 		var profile := Profile.new()
 		profile.best_depth = depth - 1
@@ -77,6 +67,21 @@ func _init() -> void:
 					{"paladin": best_traits}, ONE_ARTIFACT, depth)
 		_line(data, "TUNED + fyra artefakter + " + _names(data, best_traits), Bot.Skill.TUNED,
 				{"paladin": best_traits}, ARTIFACTS, depth)
+		_best_by_depth[depth] = best_traits
+	# Det fördärvade kapellet: samma byggen (de bästa perkarna från kryptan) i den andra Realmen.
+	var chapel: Array = data.realms.chapel.floors
+	for depth in DEPTHS:
+		print("=== Det fördärvade kapellet, djup %d ===" % depth)
+		_floor_table(data, chapel, depth)
+		var best: Array = _best_by_depth[depth]
+		print("Hela kapellet")
+		_line(data, "MACRO", Bot.Skill.MACRO, {}, {}, depth, chapel)
+		_line(data, "TUNED", Bot.Skill.TUNED, {}, {}, depth, chapel)
+		_line(data, "TUNED + en artefakt", Bot.Skill.TUNED, {}, ONE_ARTIFACT, depth, chapel)
+		_line(data, "TUNED + en artefakt + " + _names(data, best), Bot.Skill.TUNED, {"paladin": best},
+				ONE_ARTIFACT, depth, chapel)
+		_line(data, "TUNED + fyra artefakter + " + _names(data, best), Bot.Skill.TUNED, {"paladin": best},
+				ARTIFACTS, depth, chapel)
 	print("Edernas kärnor på djup 1 (MACRO, hela kryptan, utan artefakter och perks)")
 	for oath_id in data.oaths:
 		print("  %-18s %3d/%d" % [data.traits[oath_id].name, _rate(data, Bot.Skill.MACRO, {"paladin": [oath_id]}, {}, 1, RUNS), RUNS])
@@ -131,21 +136,42 @@ func _combos(perks: Array, i: int, points: int, ranks: bool) -> Array:
 	return out
 
 
+## Per våning: vinstandel, turer och överlevande för BASIC, MACRO och TUNED (fulla Charges).
+func _floor_table(data: Dictionary, floors: Array, depth: int) -> void:
+	for floor in floors:
+		var enc: Dictionary = data.encounters[floor]
+		print("%s (våning ×%.2f)" % [enc.name, float(enc.get("stat_mult", 1.0))])
+		for skill in [Bot.Skill.BASIC, Bot.Skill.MACRO, Bot.Skill.TUNED]:
+			var wins := 0
+			var turns := 0
+			var alive := 0
+			for seed_value in range(1, RUNS + 1):
+				var r := Bot.run_fight(data, seed_value, skill, floor, [], {}, {}, {}, depth)
+				turns += r.turns
+				if r.outcome == "victory":
+					wins += 1
+					alive += r.alive
+			print("  %-6s vinster %3d/%d  snitt %4.1f turer  överlevande vid seger %.1f" % [
+				Bot.Skill.keys()[skill], wins, RUNS, float(turns) / RUNS, float(alive) / maxf(wins, 1)])
+
+
 func _names(data: Dictionary, list: Array) -> String:
 	return ", ".join(list.map(func(id: String) -> String: return data.traits[id].name))
 
 
-func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int) -> int:
-	var rate := _rate(data, skill, traits, artifacts, depth, RUNS)
+func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int,
+		floors: Array = RunState.FLOORS) -> int:
+	var rate := _rate(data, skill, traits, artifacts, depth, RUNS, floors)
 	print("  %-72s %3d/%d" % [label, rate, RUNS])
 	return rate
 
 
 ## Seeds efter de som söker perks, så att sökningen inte väljer på samma slump som den mäts med.
-func _rate(data: Dictionary, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int, runs: int) -> int:
+func _rate(data: Dictionary, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int, runs: int,
+		floors: Array = RunState.FLOORS) -> int:
 	var cleared := 0
 	var first := 1 if runs == RUNS else 1000
 	for seed_value in range(first, first + runs):
-		if Bot.run_crypt(data, seed_value, skill, traits, artifacts, depth):
+		if Bot.run_crypt(data, seed_value, skill, traits, artifacts, depth, floors):
 			cleared += 1
 	return cleared

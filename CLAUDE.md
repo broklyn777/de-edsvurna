@@ -36,6 +36,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
   Taggig utmaning, Glödhetta). Benfursten är Resistant (halv effekt av debuffar) och vredgas under 50 % liv.
   Tryck och håll på en figur i striden för att granska den (Inspect, kostar ingen tur).
+- **Realms** (0.16, Siralims Realms): väljs vid Kryptporten, `data/realms.json`. Kryptan (Benfursten) och Det
+  fördärvade kapellet (Kultist, Gast, Fallen riddare, Häxa, Botgörare och bossen Den fallne biskopen, som är
+  immun så länge en Kultist lever). Djup och skalning gäller alla Realms. Nya debuffar: Tystad (inga
+  förmågor; makrorader med förmågor hoppas över), Sårbar (+50 % skada) och Försvagad (−50 % skada).
+  Troféer har `rarity` (common/elite/boss); bossens trofé ändrar en regel med en kostnad.
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens Ed, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
@@ -89,6 +94,8 @@ uppdaterad när nya begrepp tillkommer.
   `cast` (kastar förmågan gratis, action `"artifact"`). Datan kopieras per strid – använd `sim.data`.
   Flöde: `begin()`, sedan `act(action, target, ability)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
 - `data/artifacts.json` – artefakttyperna (stat, utlösande handling, chans).
+- `data/realms.json` – Realms med namn, text och våningar (möten i encounters.json). `RunState.set_realm()`,
+  `floor_ids`; `Profile.realm`.
 - `data/oaths.json` – Ederna: Siralims Specialization och perks med pris. Kärnan och perkarna är
   egenskaper i `traits.json` (perks har `"oath"` och `"perk": true`).
 - `data/*.json` – förmågor (`power` = modifieraren i skadeformeln, `tier` för spells, helning = Int ×
@@ -102,6 +109,8 @@ uppdaterad när nya begrepp tillkommer.
   var och en). Effekter: damage (`power`, `pct_of_event` eller `stat` + `pct`), heal, aura, barrier,
   revive, restore_charge, cast; `actor` (event_unit/event_target/event_source) väljer vem som utför.
   Mål: self, allies, enemy, enemies, random_enemy, weakest_ally, dead_ally eller ett händelsefält.
+  `modify_damage_taken` kan ge `dodge_add` (undvikande), `immune_while_ally_kind` eller
+  `immune_while_allies` (immun, `CombatSim.is_immune`); auror kan ha `silence` (`is_silenced`).
   Triggern `battle_start` kommer före första turen. Träffar som en Barriär tar sätter inte igång något.
   Laddningar: en `charge`-effekt laddar upp, `release` förbrukar när en viss förmåga används.
   Effekter med `pct_of_event` skalar mot händelsens belopp (t.ex. följdanfall för 50 %).
@@ -127,14 +136,18 @@ uppdaterad när nya begrepp tillkommer.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
-Balans (0.15, `tests/balance_report.gd`, hela kryptan): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
+Balans (0.16, `tests/balance_report.gd`, hela kryptan): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
 resten), startmakrona 42 %, TUNED 66 %, TUNED + en artefakt 93 %, TUNED + bästa perks inom 2 poäng 63–93 %,
 med lånad perk upp till 96 % (Gryningens ed + Krigsmaskin), artefakt + perks 99 %, fyra artefakter + perks
 100 %. Edernas kärnor med startmakrona 36–42 %. Djup 3 (fiender ×1,16, 3 poäng, med en artefakt): bästa
 perks 26–43 %, med lån upp till 68 %, fyra artefakter + perks 94 %.
+Det fördärvade kapellet på djup 1: startmakrona 49 %, TUNED 65 %, med en artefakt 91 %, med artefakt + Krigsmaskin
+100 %; djup 3: artefakt + bästa perks 65 %, fyra artefakter 94 % (kryptan: 42/66/93 och 68/94).
 **Känd brist:** perk-nivåerna väljs aldrig i de bästa byggena – regelbrytarna (Krigsmaskin, Räkenskap, Ljusets
 hand) slår en extra nivå siffror. Krigsmaskin är starkast och lånas helst. Brokks sköld med Helande ljus
-(fria helningar) väger tungt. Nästa balans: billigare eller starkare nivåer, dyrare Krigsmaskin.
+(fria helningar) väger tungt. I kapellet vinner BASIC ibland mot biskopen (17 %) och första våningen (11 %):
+bossen är farlig mest för att Charges tar slut. Nästa balans: billigare eller starkare nivåer, dyrare
+Krigsmaskin, ett farligare biskopsskede.
 Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
 
 ## Kommandon
@@ -166,6 +179,9 @@ godot --path . -- --smith
 
 # Edsaltaret med den lånade perken upplåst (som om Benfursten var besegrad)
 godot --path . -- --anoint
+
+# Strid i Det fördärvade kapellet (våning 0–2)
+godot --path . -- --realm=chapel --floor=2 --demo
 
 # Strid på ett annat djup (bara den körningen)
 godot --path . -- --floor=2 --depth=3 --demo

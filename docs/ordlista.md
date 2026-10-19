@@ -69,6 +69,13 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 |---|---|---|---|
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
 | Våning | floor, `FLOORS`, `stat_mult` i encounters.json | – (en del av en Realm) | Våning 2 och 3 har starkare fiender (×1,08, ×1,10). |
+| Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs vid Kryptporten: Kryptan eller Det fördärvade kapellet. |
+| Tystad | silenced (aura med `silence`), `is_silenced`, makrovillkoret "är tystad" | Silenced | Inga förmågor; fiender bara anfaller; artefakter kastar inte. |
+| Sårbar | vulnerable | Vulnerable | +50 % skada i 2 turer. |
+| Försvagad | weak (aura `damage_mult` 0,5) | Weak | −50 % skada i 2 turer. |
+| Immun | `immune`-händelse, `is_immune`, makrovillkoren "är immun"/"kan skadas" | (Myrtle, Nether Boss) | Den fallne biskopen så länge en Kultist lever; Biskopens mitra. |
+| Kultist, Gast, Fallen riddare, Häxa, Botgörare, Den fallne biskopen | cultist, wraith, fallen_knight, witch, penitent, fallen_bishop | – (egna) | Kapellets fiender; egenskaper Skyddande bön, Eterisk, Motstöt, Häxans illvilja, Bödelns märke, Kultens sköld. |
+| Vanlig / elit / boss-trofé | `rarity`: common, elite, boss | – (Siralims vanliga/Nether/boss-traits) | Pålitlig byggdel / specialiserad / regeländring med kostnad. |
 | Djup | depth, `Profile.depth`/`best_depth`, `CombatSim.depth_mult` | Realm Depth | Väljs vid Kryptporten. Fiender +8 % stats per djup (utom Speed), silver +25 %, troféchans +15 procentenheter. Nästa djup öppnas när det föregående är klarat. |
 | Fiendens egenskap | `traits` i enemies.json (`"enemy": true` i traits.json) | creature trait | Alla fiender har minst en, som makrona måste svara på. |
 | Benrustning, Jägarblick, Gravpakt, Taggig utmaning, Glödhetta | bone_armor, deadeye, grave_pact, warden_thorns, ember_heat | – (egna) | Skelettkrigare, bågskytt, Gravpräst, Gravväktare, Glödskelett. |
@@ -105,7 +112,7 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Enchanted Wardrobe | byt Specialization och perks | Edsaltaret |
 | Trait Slot, Nether Stone | Artifactens trait-plats; sena trait-platser | – |
 | Master | rasmästare med unikt trait | – |
-| Realm, Realm Quest, Realm Instability, Fortune | utflykter och svårighet | körning (Realm Depth = djup, se ovan) |
+| Realm Quest, Realm Instability, Fortune | uppdrag och svårighet i en Realm | – (Realm och Realm Depth, se ovan) |
 | Nether Boss, False God | bossar med regelbrytande traits | Benfursten |
 | Minion | staplar som gör Indirect Damage | – |
 | History | händelselista | – |
