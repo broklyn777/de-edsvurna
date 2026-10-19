@@ -29,19 +29,27 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   stat och avgör när förmågan i den slår till av sig själv: svärd vid Anfall (25 %), stav vid Förmåga
   (25 %), sköld vid Försvara (50 %), hjälm vid Provocera (50 %), stövlar i början av turen (15 %).
   Automatiska kast kostar inga Charges men räknas mot gränsen per tur.
-- **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kryptporten, Övningsgården (Arena),
+- **Kartorna** (0.18): Kampanjkartan (ersätter Kryptporten) visar landet på pergament med Realms som
+  områden; fördärvet viker för varje klarat djup. Där väljs Realm, djup och instabilitet; Förberedelser
+  väljer sällskap och trofé. Kameran glider in i området till **rumskartan**: varje våning har 3–4 steg
+  med 2–3 rum (Strid, Elit, Skattkammare, Helgedom, Lägereld, Portal) och sedan våningens slut/bossen.
+  Lägereld = +1 Charge per förmåga (livet fylls redan efter varje strid). Helgedom = välj en gåva eller
+  Pandemonium. Portal = svårare strid och sedan skatt. En körning blir 9–12 strider; Charges är 3× 0.17.
+  **Realm Quest** (Jakt på Nemesis, Rensa 2 elitstrider, Rening 3 helgedomar) ger silver och en perk-poäng
+  per ny kombination av Realm och djup. Körningen sparas i `user://run.cfg` efter varje rum.
+- **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kampanjkartan, Övningsgården (Arena),
   Edsaltaret (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
-- **Djup** (0.14, Siralims Realm Depth): väljs vid Kryptporten, nästa öppnas när föregående är klarat. Fiender
+- **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
   Taggig utmaning, Glödhetta). Benfursten är Resistant (halv effekt av debuffar) och vredgas under 50 % liv.
   Tryck och håll på en figur i striden för att granska den (Inspect, kostar ingen tur).
-- **Realms** (0.16, Siralims Realms): väljs vid Kryptporten, `data/realms.json`. Kryptan (Benfursten) och Det
+- **Realms** (0.16, Siralims Realms): väljs på kampanjkartan, `data/realms.json`. Kryptan (Benfursten) och Det
   fördärvade kapellet (Kultist, Gast, Fallen riddare, Häxa, Botgörare och bossen Den fallne biskopen, som är
   immun så länge en Kultist lever). Djup och skalning gäller alla Realms. Nya debuffar: Tystad (inga
   förmågor; makrorader med förmågor hoppas över), Sårbar (+50 % skada) och Försvagad (−50 % skada).
   Troféer har `rarity` (common/elite/boss); bossens trofé ändrar en regel med en kostnad.
-- **Instabilitet och våningsregler** (0.17, Siralims Realm Instability och Realm Properties): vid Kryptporten
+- **Instabilitet och våningsregler** (0.17, Siralims Realm Instability och Realm Properties): på kampanjkartan
   väljs instabilitet 0–3. Nivå n ger n synliga och n dolda regler för hela körningen (`data/floor_rules.json`,
   t.ex. De döda vaknar, Förseglade ord, Vaksamma vakter, Speglande ben, Kaosvind), mer silver och bättre
   troféchans. Dolda regler avslöjas när de slår till (händelsen `rule`).
@@ -86,10 +94,15 @@ uppdaterad när nya begrepp tillkommer.
   vald Ed och köpta perks per Ed (`buy_perk()`, `reset_perks()`, `perk_points()`, `active_perks()`), senaste sällskap, övningstroféer, valt och
   djupaste klarade djup (`choose_depth()`, `clear_depth()`), perk-nivåer (`perk_rank()`) och lånade perks
   (`bosses_defeated`, `anoint()`, `anointed`). Sparas i `user://progress.cfg`.
-  `scripts/game/run.gd` är autoloaden `Run` som byter scen (bas → Kryptporten → strid → läger → … → bas;
+  `src/game/room_map.gd` – `RoomMap`: en våning ur ett frö (`generate()`, `choices()`, `problems()` för kraven).
+  RunState håller kartan: `start_expedition()`, `enter()`, `battle_opts()`, `battle_won()`, `campfire()`,
+  `treasure()`, `shrine_options()`/`apply_shrine()`, `next_floor()`, questen och `save()`/`load_from()`.
+  `scripts/game/run.gd` är autoloaden `Run` som byter scen (bas → kampanjkarta → rumskarta → rum/strid →
+  läger → rumskarta … → bas;
   bas → Övningsgården → strid → Övningsgården) och sparar makrona i `user://macros.json`
   (startmakron i `data/macros.json`).
-  Skärmar i `scripts/screens/`: `base_screen` (första skärmen), `start_screen` (Kryptporten),
+  Skärmar i `scripts/screens/`: `base_screen` (första skärmen), `campaign_screen` (kampanjkartan),
+  `room_map_screen` (rumskartan), `parchment.gd` (pergamentets shader), `start_screen` (Förberedelser),
   `altar_screen` (Edsaltaret), `practice_screen`, `smith_screen`, `library_screen`, `camp_screen`, `macro_screen`. De flesta ärver
   `tap_screen.gd` och reagerar vid släpp.
 - `src/combat/` – `CombatSim` (tidslinje, ren logik, händelselista, skadeformlerna som statiska
@@ -150,6 +163,10 @@ uppdaterad när nya begrepp tillkommer.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
+Balans (0.18, `tests/balance_report.gd`, hela körningar på rumskartan, djup 1): kryptan startmakrona
+37–45 %, TUNED 60–61 %, med en artefakt 76 %, artefakt + Gryningens ed med Krigsmaskin 100 %; kapellet
+33–58 % / 45–58 % / 80 % / 100 %. Djup 3: bara starka byggen (62–94 %). Questen klaras i 30–40 % av körningarna.
+Siffrorna nedan gäller 0.17 (tre strider per körning).
 Balans (0.17, `tests/balance_report.gd`, hela kryptan, siffror från 0.16 utan elitfiender): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
 resten), startmakrona 42 %, TUNED 66 %, TUNED + en artefakt 93 %, TUNED + bästa perks inom 2 poäng 63–93 %,
 med lånad perk upp till 96 % (Gryningens ed + Krigsmaskin), artefakt + perks 99 %, fyra artefakter + perks
@@ -192,7 +209,10 @@ godot --path . -- --floor=2 --demo --turns=10 --seed=5
 # Visa lägret mellan striderna direkt
 godot --path . -- --camp
 
-# Öppna en plats i basen direkt (--gate = Kryptporten, --practice, --altar, --smith, --library)
+# Rumskartan med en ny körning (efter --realm, --depth, --instability)
+godot --path . -- --realm=chapel --map
+
+# Öppna en plats i basen direkt (--gate = kampanjkartan, --practice, --altar, --smith, --library)
 godot --path . -- --smith
 
 # Edsaltaret med den lånade perken upplåst (som om Benfursten var besegrad)
