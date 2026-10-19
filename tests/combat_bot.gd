@@ -9,7 +9,8 @@ enum Skill { BASIC, MACRO, TUNED }
 ## Startmakrona förbättrade för att svara på fiendernas egenskaper (0.14): döda Gravprästen först
 ## (Gravpakt), besvärjelser mot Benrustning, Pilregn mot många, Krigsrop i första turen, och Brokk
 ## provocerar bara med mycket liv. I kapellet (0.16): Kultisterna först (biskopen är immun så länge de
-## lever), Ljusets dom mot Gasten som undviker attacker. Försök som sparade Charges förlorade oftare – att spendera är oftast rätt.
+## lever), Ljusets dom mot Gasten som undviker attacker. Med rumskartan (0.18) och Siralims Charges
+## helar Alva snålare (Helande ljus under 35 %, Förnyelse under 60 %) så att Charges räcker hela körningen. Försök som sparade Charges förlorade oftare – att spendera är oftast rätt.
 const TUNED_MACROS := {
 	"paladin": {"name": "Paladinen+", "lines": [
 		{"subject": "any_ally", "cond": "hp_below", "value": 35, "action": "ability", "ability": "holy_shield", "target": "that"},
@@ -27,9 +28,9 @@ const TUNED_MACROS := {
 		{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "attack", "target": "that"},
 		{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
 	"alva": {"name": "Syster Alva+", "lines": [
-		{"subject": "any_ally", "cond": "hp_below", "value": 50, "action": "ability", "ability": "healing_light", "target": "that"},
+		{"subject": "any_ally", "cond": "hp_below", "value": 35, "action": "ability", "ability": "healing_light", "target": "that"},
 		{"subject": "any_ally", "cond": "lacks_status", "value": "renew", "action": "test_next"},
-		{"subject": "any_ally", "cond": "hp_below", "value": 80, "action": "ability", "ability": "renew", "target": "that"},
+		{"subject": "any_ally", "cond": "hp_below", "value": 60, "action": "ability", "ability": "renew", "target": "that"},
 		{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "ability", "ability": "judgement", "target": "that"},
 		{"subject": "any_enemy", "cond": "has_trait", "value": "bone_armor", "action": "ability", "ability": "judgement", "target": "that"},
 		{"subject": "any_enemy", "cond": "has_trait", "value": "wraith_ethereal", "action": "ability", "ability": "judgement", "target": "that"},
