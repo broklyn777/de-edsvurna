@@ -249,7 +249,7 @@ func _draw_decor(state: RunState) -> void:
 	if state.realm == "chapel":
 		InkArt.witch(self, figure, 56, ink)
 	else:
-		InkArt.skeleton(self, figure, 56, ink)
+		InkArt.icon(self, "skeleton", figure + Vector2(0, -6), 118, 0.75)
 	InkArt.icon(self, "sword_in_stone", Vector2(262, size.y - 62), 112, 0.7)
 
 
