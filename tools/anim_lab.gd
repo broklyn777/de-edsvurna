@@ -18,6 +18,7 @@ extends Node3D
 const MODEL_PREVIEW := {
 	"biskop": {"anims": {"idle": "Sword_Idle"}},
 	"fallen_riddare": {"anims": {"idle": "Shield_Idle", "attack": ["Shield_Attack"]}},
+	"falkenerare": {"anims": {"idle": "Sword_Idle"}},
 	"bard": {"anims": {"idle": "Sword_Idle", "attack": ["Sword_Attack"]}},
 	"munk": {"anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack", "OneHand_Attack_B"]}},
 	"druid": {"weapons": {"grip_r": "Staff"}, "anims": {"idle": "Staff_Idle", "attack": ["Spell_Simple_Shoot"], "cast": "Staff_Cast"}},

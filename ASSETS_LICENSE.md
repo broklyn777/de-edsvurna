@@ -22,7 +22,8 @@ klädda och beväpnade i Blender för Drakvalvet:
 | fallen_riddare.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), torvald.glb omfärgad i Blender (svart rustning, glödande röda kanter) med horn på hjälmen | Fallen riddare i kapellet |
 | haxa.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), Drakvalvets Svala (`qt-svala.glb`) i Blender: spetsig hatt, sumpgrön kappa | Häxa i kapellet |
 | biskop.glb | Quaternius "King" (poly.pizza/m/I1gTjmuK2m), Drakvalvets Ragnvald (`qt-ragnvald.glb`) i Blender: mitra, kräkla i stället för hammare, smutsvit kåpa, grönt sken | Den fallne biskopen |
-| nekromant.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), Drakvalvets akolyt i Blender: svart kåpa, grönt lysande skärp, lie | Nekromant (Värdshuset) |
+| nekromant.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), Drakvalvets akolyt i Blender: svart kåpa, grönt lysande skärp, lie | Används inte (ersatt av falkeneraren) |
+| falkenerare.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets Gudlaug (`qt-gudlaug.glb`) i Blender: ljusblå rock, falk på vänster axel (byggd i Blender) | Falkenerare (Värdshuset) |
 | bard.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), Drakvalvets rövarhövding (`qt-rovarhovding.glb`) i Blender: plym i hatten, luta på ryggen, vinröd rock | Bard (Värdshuset) |
 | munk.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), Drakvalvets `qt-hjalte-human-m.glb` i Blender: saffransgul klädsel, rakad, pärlband, 11 anims | Munk (Värdshuset) |
 | druid.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: horn, lövkrage, mossgrön klädsel, 10 anims | Druid (Värdshuset) |
