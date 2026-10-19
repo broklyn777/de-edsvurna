@@ -22,10 +22,10 @@ func _hit(sim: CombatSim, src: CombatUnit, tgt: CombatUnit, kind := "attack") ->
 func test_depth_scales_enemy_stats_but_not_speed() -> void:
 	var d: Dictionary = _data.enemies.skeleton_warrior.stats
 	var deep := _sim("crypt_1", 3).unit("skeleton_warrior_1")
-	assert_near(CombatSim.depth_mult(3), 1.2)
-	assert_eq(deep.max_hp, roundf(d.health * 1.2), "Health")
-	assert_eq(deep.attack, roundf(d.attack * 1.2), "Attack")
-	assert_eq(deep.defense, roundf(d.defense * 1.2), "Defense")
+	assert_near(CombatSim.depth_mult(3), 1.16)
+	assert_eq(deep.max_hp, roundf(d.health * 1.16), "Health")
+	assert_eq(deep.attack, roundf(d.attack * 1.16), "Attack")
+	assert_eq(deep.defense, roundf(d.defense * 1.16), "Defense")
 	assert_eq(deep.speed, float(d.speed), "Speed skalar inte")
 	assert_eq(deep.base_stats.attack, deep.attack, "startvärdet följer med (golvet 20 %)")
 	var shallow := _sim("crypt_1", 1).unit("skeleton_warrior_1")

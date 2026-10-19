@@ -39,7 +39,7 @@ var practice_encounter := ""
 static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	var s := RunState.new()
 	s.oath = profile.oath
-	s.perks = profile.owned_perks(profile.oath).duplicate()
+	s.perks = profile.active_perks(data, profile.oath)
 	s.party = profile.party.duplicate()
 	s.artifacts = profile.artifacts.duplicate(true)
 	s.depth = profile.depth

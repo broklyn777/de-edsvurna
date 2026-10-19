@@ -42,22 +42,33 @@ func test_every_oath_has_core_and_perks_in_data() -> void:
 	assert_eq(_data.oaths.keys(), Profile.OATHS)
 
 
-func test_altar_buys_perks_and_resets_for_free() -> void:
+func test_altar_buys_perks_with_points_and_resets_for_free() -> void:
 	var p := Profile.new()
-	p.silver = 200
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START)
 	assert_true(p.buy_perk(_data, "oath_ward", "ward_rest_up"))
 	assert_true(not p.buy_perk(_data, "oath_ward", "ward_rest_up"), "en perk köps en gång")
 	assert_true(not p.buy_perk(_data, "oath_ward", "dawn_anointment"), "bara Edens egna perks")
-	assert_true(not p.buy_perk(_data, "oath_ward", "ward_titanic_rage"), "silvret räcker inte")
-	assert_eq(p.silver, 200 - Profile.perk_cost(_data, "oath_ward", "ward_rest_up"))
+	assert_true(not p.buy_perk(_data, "oath_ward", "ward_titanic_rage"), "poängen räcker inte")
+	assert_eq(p.points_used(_data, "oath_ward"), Profile.perk_cost(_data, "oath_ward", "ward_rest_up"))
+	assert_eq(p.silver, Profile.START_SILVER, "perks kostar inget silver")
 	assert_eq(p.reset_perks(_data, "oath_ward"), Profile.perk_cost(_data, "oath_ward", "ward_rest_up"))
-	assert_eq(p.silver, 200, "återställningen är gratis")
 	assert_eq(p.owned_perks("oath_ward"), [])
+	assert_true(p.buy_perk(_data, "oath_ward", "ward_titanic_rage"), "poängen kom tillbaka")
+
+
+func test_perk_points_grow_slowly_with_depth() -> void:
+	var p := Profile.new()
+	p.clear_depth(1)
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START)
+	p.clear_depth(2)
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START + 1)
+	p.perks = {"oath_dawn": ["dawn_guiding_light", "dawn_greater_healing"]}
+	p.best_depth = 0
+	assert_eq(p.active_perks(_data, "oath_dawn"), ["dawn_guiding_light"], "bara så många som poängen räcker till")
 
 
 func test_run_brings_oath_and_its_perks() -> void:
 	var p := Profile.new()
-	p.silver = 500
 	p.buy_perk(_data, "oath_dawn", "dawn_anointment")
 	p.buy_perk(_data, "oath_ward", "ward_rest_up")
 	p.choose_oath("oath_dawn")

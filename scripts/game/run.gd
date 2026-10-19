@@ -189,7 +189,7 @@ func _load() -> void:
 	profile = Profile.load_from(PROGRESS_PATH)
 	collection = profile.collection
 	state.oath = profile.oath
-	state.perks = profile.owned_perks(profile.oath).duplicate()
+	state.perks = profile.active_perks(data, profile.oath)
 	state.party = profile.party.duplicate()
 	state.artifacts = profile.artifacts.duplicate(true)
 

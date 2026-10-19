@@ -15,7 +15,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 
 - **Paladinen** står alltid med i striden och väljer en **Ed** (Siralims Specialization) – en regelbrytare
   för hela sällskapet. Finns (0.13): Hämndens ed (Paladin), Gryningens ed (Cleric), Väktarens ed
-  (Siegemaster). Kärnan verkar alltid; perks köps för silver vid Edsaltaret och återställs gratis.
+  (Siegemaster). Kärnan verkar alltid; perks kostar perk-poäng (1–3) vid Edsaltaret och återställs gratis.
+  Perk-poäng (0.14.1, Siralims Perk Points): 2 från start, +1 för varannat klarat djup, per Ed.
 - **Följeslagare** (Brokk, Syster Alva, Jägaren Eira, Solveig …): namn, roll, egen egenskap och en
   signaturhandling. Börja med 5–8, inte 30.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
@@ -28,7 +29,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Basen** (0.12, Siralims slott) ligger mellan körningarna: Kryptporten, Övningsgården (Arena),
   Edsaltaret (Enchanted Wardrobe, 0.13), Smeden, Makron och Biblioteket. Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
 - **Djup** (0.14, Siralims Realm Depth): väljs vid Kryptporten, nästa öppnas när föregående är klarat. Fiender
-  +10 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
+  +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
   Taggig utmaning, Glödhetta). Benfursten är Resistant (halv effekt av debuffar) och vredgas under 50 % liv.
   Tryck och håll på en figur i striden för att granska den (Inspect, kostar ingen tur).
@@ -67,7 +68,7 @@ uppdaterad när nya begrepp tillkommer.
 - `src/game/run_state.gd` – en körning: Ed och perks, sällskap, våning (`FLOORS`), troféer och vem som bär dem,
   artefakter; `new_run()` och `new_practice()` (Övningsgården: valfritt möte, fulla Charges).
   `src/game/profile.gd` – det som varar mellan körningar: silver, samlingen, artefakter (`forge()`),
-  vald Ed och köpta perks per Ed (`buy_perk()`, `reset_perks()`), senaste sällskap, övningstroféer, valt och
+  vald Ed och köpta perks per Ed (`buy_perk()`, `reset_perks()`, `perk_points()`, `active_perks()`), senaste sällskap, övningstroféer, valt och
   djupaste klarade djup (`choose_depth()`, `clear_depth()`). Sparas i `user://progress.cfg`.
   `scripts/game/run.gd` är autoloaden `Run` som byter scen (bas → Kryptporten → strid → läger → … → bas;
   bas → Övningsgården → strid → Övningsgården) och sparar makrona i `user://macros.json`
@@ -122,13 +123,12 @@ uppdaterad när nya begrepp tillkommer.
 - `tests/combat_bot.gd` – simulerade spelare (BASIC/MACRO/TUNED) för balanstester.
   `tests/perk_report.gd` mäter varje perk för sig.
 
-Balans (0.14, djup 1, `tests/balance_report.gd`): BASIC förlorar (vinner 7 % av Benkryptan, 0 % av resten), startmakrona klarar hela
-kryptan 9 %, förbättrade makron (TUNED, svarar på fiendernas egenskaper) 66 %, med en artefakt eller en Eds
-bästa perks 87–100 %, med allt 100 %. Djup 3 (fiender ×1,2): TUNED 0 %, med allt 99 %. Alla perks i en Ed (MACRO) 100 %. Svårigheten kommer från fiendernas
-egenskaper, starkare våningar (`stat_mult`), Benfurstens vredesfas och att Charges ska räcka hela körningen.
-**Känd brist:** startmakrona ligger långt under TUNED (de ignorerar Gravpakt och sparar fel Charges), en enda
-artefakt (Brokks sköld med Helande ljus) ger fria helningar och lyfter mycket, och fulla byggen når fortfarande
-100 %. Nästa balans: svagare automatiska helningar eller dyrare sköldartefakt, och Realm-traits per våning.
+Balans (0.14.1, `tests/balance_report.gd`, hela kryptan): djup 1 – BASIC förlorar (7 % av Benkryptan, 0 % av
+resten), startmakrona 42 %, TUNED 66 %, TUNED + en artefakt 93 %, TUNED + bästa perks inom 2 poäng 63–93 %,
+artefakt + perks 99 %, fyra artefakter + perks 100 %. Edernas kärnor med startmakrona 36–42 %. Djup 3 (fiender
+×1,16, 3 poäng): TUNED 0 %, artefakt + Ljusets hand 26 %, fyra artefakter + perks 80 %.
+**Känd brist:** Brokks sköld med Helande ljus (fria helningar) och Krigsmaskin väger tungt; djup 3 är något för
+svårt för ett bra bygge (mål 30–60 %). Nästa balans: Realm-traits per våning och svagare automatiska helningar.
 Gränser per tur som i Siralim: `TURN_LIMIT` attacker/besvärjelser/helningar.
 
 ## Kommandon

@@ -1,16 +1,18 @@
 extends SceneTree
-## Balansrapport (0.14) på djup 1 och 3 (Realm Depth).
+## Balansrapport (0.14.1) på djup 1 och 3 (Realm Depth).
 ## Per våning: vinstandel, turer och överlevande för BASIC (bara Anfall), MACRO (startmakrona) och
 ## TUNED (de förbättrade makrona i combat_bot.gd, som svarar på fiendernas egenskaper).
 ## Hela kryptan: alla tre våningarna i följd med Charges som räcker hela vägen, med TUNED plus en
-## artefakt, en Eds bästa perks, och allt (fyra artefakter och alla perks). Sist varje Ed med bara
-## kärnan och med alla perks (MACRO).
+## artefakt, varje Eds bästa perks inom perk-poängen (sökta bland alla kombinationer som får plats),
+## och allt (fyra artefakter och de bästa perkarna). Sist varje Eds kärna med startmakrona.
 ##   godot --headless --path . --script res://tests/balance_report.gd
-## Mål på djup 1: BASIC förlorar varje strid, MACRO ~40 %, TUNED ~60 %, TUNED med en artefakt eller
-## en Eds bästa perks 75–85 %, ingenting 100 %. Djup 3 märkbart svårare.
+## Mål på djup 1: BASIC förlorar, MACRO ~40 %, TUNED ~65 %, ingenting 100 % utom kanske allt.
+## Kärnorna inom ±10 procentenheter. Djup 3: ett bra bygge (artefakt + bästa perks) 30–60 %.
 
 const Bot := preload("res://tests/combat_bot.gd")
 const RUNS := 100
+## Körningar per kombination när de bästa perkarna söks.
+const SEARCH_RUNS := 30
 const DEPTHS := [1, 3]
 ## Ett första smide: Brokks sköld med Helande ljus (160 silver).
 const ONE_ARTIFACT := {"brokk": {"type": "shield", "ability": "healing_light"}}
@@ -20,12 +22,6 @@ const ARTIFACTS := {
 	"brokk": {"type": "shield", "ability": "healing_light"},
 	"alva": {"type": "staff", "ability": "judgement"},
 	"eira": {"type": "boots", "ability": "arrow_rain"},
-}
-## De två perks per Ed som hjälper mest (280–360 silver).
-const BEST_PERKS := {
-	"oath_vengeance": ["vengeance_hand_of_light", "vengeance_reckoning"],
-	"oath_dawn": ["dawn_greater_healing", "dawn_guiding_light"],
-	"oath_ward": ["ward_in_formation", "ward_war_machine"],
 }
 
 
@@ -48,32 +44,68 @@ func _init() -> void:
 						alive += r.alive
 				print("  %-6s vinster %3d/%d  snitt %4.1f turer  överlevande vid seger %.1f" % [
 					Bot.Skill.keys()[skill], wins, RUNS, float(turns) / RUNS, float(alive) / maxf(wins, 1)])
-		print("Hela kryptan (Charges räcker alla tre våningarna)")
+		# Perk-poängen för den som spelar på djupet: djupet innan är klarat.
+		var profile := Profile.new()
+		profile.best_depth = depth - 1
+		var points := profile.perk_points()
+		print("Hela kryptan (Charges räcker alla tre våningarna, %d perk-poäng)" % points)
 		_line(data, "MACRO", Bot.Skill.MACRO, {}, {}, depth)
 		_line(data, "TUNED", Bot.Skill.TUNED, {}, {}, depth)
 		_line(data, "TUNED + en artefakt", Bot.Skill.TUNED, {}, ONE_ARTIFACT, depth)
-		for oath_id in BEST_PERKS:
-			_line(data, "TUNED + %s, bästa perks" % data.traits[oath_id].name, Bot.Skill.TUNED,
-					{"paladin": [oath_id] + BEST_PERKS[oath_id]}, {}, depth)
-		var all_perks: Array = ["oath_dawn"] + data.oaths.oath_dawn.perks.map(func(p: Dictionary) -> String: return p.id)
-		_line(data, "TUNED + fyra artefakter + Gryningens alla perks", Bot.Skill.TUNED,
-				{"paladin": all_perks}, ARTIFACTS, depth)
-	print("Ederna på djup 1 (MACRO, hela kryptan, utan artefakter)")
+		var best_rate := -1
+		var best_traits := []
+		for oath_id in data.oaths:
+			var list := _best_perks(data, oath_id, points, depth)
+			var rate := _line(data, "TUNED + " + _names(data, list), Bot.Skill.TUNED, {"paladin": list}, {}, depth)
+			if rate > best_rate:
+				best_rate = rate
+				best_traits = list
+		_line(data, "TUNED + en artefakt + " + _names(data, best_traits), Bot.Skill.TUNED,
+				{"paladin": best_traits}, ONE_ARTIFACT, depth)
+		_line(data, "TUNED + fyra artefakter + " + _names(data, best_traits), Bot.Skill.TUNED,
+				{"paladin": best_traits}, ARTIFACTS, depth)
+	print("Edernas kärnor på djup 1 (MACRO, hela kryptan, utan artefakter och perks)")
 	for oath_id in data.oaths:
-		var perks: Array = data.oaths[oath_id].perks.map(func(p: Dictionary) -> String: return p.id)
-		var core := _rate(data, Bot.Skill.MACRO, {"paladin": [oath_id]}, {}, 1)
-		var full := _rate(data, Bot.Skill.MACRO, {"paladin": [oath_id] + perks}, {}, 1)
-		print("  %-18s bara kärnan %3d/%d  alla perks %3d/%d" % [data.traits[oath_id].name, core, RUNS, full, RUNS])
+		print("  %-18s %3d/%d" % [data.traits[oath_id].name, _rate(data, Bot.Skill.MACRO, {"paladin": [oath_id]}, {}, 1, RUNS), RUNS])
 	quit()
 
 
-func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int) -> void:
-	print("  %-48s klarade kryptan %3d/%d" % [label, _rate(data, skill, traits, artifacts, depth), RUNS])
+## Edens bästa perks inom poängen för TUNED (alla kombinationer som får plats, SEARCH_RUNS var).
+func _best_perks(data: Dictionary, oath_id: String, points: int, depth: int) -> Array:
+	var perks: Array = data.oaths[oath_id].perks
+	var best := [oath_id]
+	var best_rate := -1
+	for mask in range(1, 1 << perks.size()):
+		var list := [oath_id]
+		var cost := 0
+		for i in perks.size():
+			if mask & (1 << i):
+				list.append(perks[i].id)
+				cost += int(perks[i].cost)
+		if cost > points:
+			continue
+		var rate := _rate(data, Bot.Skill.TUNED, {"paladin": list}, {}, depth, SEARCH_RUNS)
+		if rate > best_rate:
+			best_rate = rate
+			best = list
+	return best
 
 
-func _rate(data: Dictionary, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int) -> int:
+func _names(data: Dictionary, list: Array) -> String:
+	return ", ".join(list.map(func(id: String) -> String: return data.traits[id].name))
+
+
+func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int) -> int:
+	var rate := _rate(data, skill, traits, artifacts, depth, RUNS)
+	print("  %-72s %3d/%d" % [label, rate, RUNS])
+	return rate
+
+
+## Seeds efter de som söker perks, så att sökningen inte väljer på samma slump som den mäts med.
+func _rate(data: Dictionary, skill: int, traits: Dictionary, artifacts: Dictionary, depth: int, runs: int) -> int:
 	var cleared := 0
-	for seed_value in range(1, RUNS + 1):
+	var first := 1 if runs == RUNS else 1000
+	for seed_value in range(first, first + runs):
 		if Bot.run_crypt(data, seed_value, skill, traits, artifacts, depth):
 			cleared += 1
 	return cleared

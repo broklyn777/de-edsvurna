@@ -247,7 +247,7 @@
 	"oath_ward": {
 		"name": "Väktarens ed",
 		"original": "Siegemaster: Thorns",
-		"text": "När någon i sällskapet träffas av en attack eller spell slår hen tillbaka för 70 % av sin Defense (indirekt skada).",
+		"text": "När någon i sällskapet träffas av en attack eller spell slår hen tillbaka för 35 % av sin Defense (indirekt skada).",
 		"trigger": "damage",
 		"scope": "party",
 		"when": {
@@ -259,7 +259,7 @@
 			{
 				"type": "damage",
 				"stat": "defense",
-				"pct": 0.7,
+				"pct": 0.35,
 				"kind": "indirect",
 				"target": "source"
 			}

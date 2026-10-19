@@ -69,7 +69,7 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 |---|---|---|---|
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
 | Våning | floor, `FLOORS`, `stat_mult` i encounters.json | – (en del av en Realm) | Våning 2 och 3 har starkare fiender (×1,08, ×1,10). |
-| Djup | depth, `Profile.depth`/`best_depth`, `CombatSim.depth_mult` | Realm Depth | Väljs vid Kryptporten. Fiender +10 % stats per djup (utom Speed), silver +25 %, troféchans +15 procentenheter. Nästa djup öppnas när det föregående är klarat. |
+| Djup | depth, `Profile.depth`/`best_depth`, `CombatSim.depth_mult` | Realm Depth | Väljs vid Kryptporten. Fiender +8 % stats per djup (utom Speed), silver +25 %, troféchans +15 procentenheter. Nästa djup öppnas när det föregående är klarat. |
 | Fiendens egenskap | `traits` i enemies.json (`"enemy": true` i traits.json) | creature trait | Alla fiender har minst en, som makrona måste svara på. |
 | Benrustning, Jägarblick, Gravpakt, Taggig utmaning, Glödhetta | bone_armor, deadeye, grave_pact, warden_thorns, ember_heat | – (egna) | Skelettkrigare, bågskytt, Gravpräst, Gravväktare, Glödskelett. |
 | Resistent | resistant, `CombatUnit.resistant`, `CombatSim.RESISTANT` | Resistant | Debuffar på bossen verkar till hälften. |
@@ -99,6 +99,7 @@ Våra egna namn (Hämndens ed, Benfursten, Brokk …) är svenska överallt.
 | Calm Mode | lägre Action Limits | `TURN_LIMIT` = 5 |
 | Retribution | Paladins kärna: slå tillbaka vid skada | Hämndens ed |
 | Perk, Anointment | förmån i en Specialization; lånad perk | perk vid Edsaltaret; Anointments finns inte |
+| Perk Points | poäng att lägga i perks, från Realm Quests | perk-poäng, `Profile.perk_points()`: 2 från start, +1 per två klarade djup, per Ed |
 | Enchanted Wardrobe | byt Specialization och perks | Edsaltaret |
 | Trait Slot, Nether Stone | Artifactens trait-plats; sena trait-platser | – |
 | Master | rasmästare med unikt trait | – |

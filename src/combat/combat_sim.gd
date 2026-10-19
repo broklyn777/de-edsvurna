@@ -56,9 +56,9 @@ const CRIT_CHANCE_MAX := 0.5
 const DODGE_PER_DOUBLING := 0.1
 const DODGE_MAX := 0.3
 ## Realm Depth (Siralim): fiendernas Health, Attack, Intelligence och Defense växer med en andel per
-## djup över 1 (10 %). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
+## djup över 1 (8 %). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
 ## (våning 2 och 3 är starkare än 1, som i Siralim där fienderna skalar snabbare än laget).
-const DEPTH_STEP := 0.1
+const DEPTH_STEP := 0.08
 const SCALED_STATS := ["health", "attack", "intelligence", "defense"]
 ## Resistant: debuffar på figuren verkar till hälften (skadeökning, DoT, ändrad Defense).
 const RESISTANT := 0.5
@@ -150,7 +150,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 
 # --- Publikt API ------------------------------------------------------------
 
-## Hur mycket fiendernas stats växer på djupet: 1 + 10 % per djup över 1.
+## Hur mycket fiendernas stats växer på djupet: 1 + 8 % per djup över 1.
 static func depth_mult(depth: int) -> float:
 	return 1.0 + DEPTH_STEP * (maxi(depth, 1) - 1)
 

@@ -8,7 +8,9 @@ extends RefCounted
 ## förlorar Fortune.
 ##
 ## Balans (0.14): silvret ska inte räcka till allt efter några körningar. En klarad krypta på djup 1
-## ger 65 silver; en artefakt kostar 160 och en perk 80–200. Djupare ger mer (SILVER_PER_DEPTH).
+## ger 65 silver och en artefakt kostar 160. Djupare ger mer (SILVER_PER_DEPTH). Perks kostar inte silver
+## utan perk-poäng (0.14.1, Siralims Perk Points): man börjar med PERK_POINTS_START och får en till för
+## varannat klarat djup (Siralim ger Perk Points från Realm Quests).
 
 const START_SILVER := 60
 ## Smida en ny artefakt (eller byta typ, som smälter ned den gamla).
@@ -17,6 +19,10 @@ const FORGE_COST := 160
 const RESOCKET_COST := 60
 ## Silver per vunnen strid, per våning (djup 1).
 const FLOOR_REWARD := [15, 20, 30]
+## Perk-poäng per Ed: startvärdet räcker till en eller två perks (perks kostar 1–2 poäng).
+const PERK_POINTS_START := 2
+## Klarade djup per extra perk-poäng.
+const DEPTHS_PER_PERK_POINT := 2
 ## Realm Depth: +25 % silver per djup över 1.
 const SILVER_PER_DEPTH := 0.25
 const OATHS := ["oath_vengeance", "oath_dawn", "oath_ward"]
@@ -28,7 +34,8 @@ var artifacts := {}
 ## Senaste uppställningen från Kryptporten (används också i Övningsgården).
 var oath := "oath_vengeance"
 ## Edsaltaret (Siralims Enchanted Wardrobe): köpta perks per Ed, oath_id -> [perk_id]. Alla köpta
-## perks i den valda Eden verkar; kärnan verkar alltid. Att återställa är gratis (silvret kommer tillbaka).
+## perks i den valda Eden verkar (inom perk-poängen); kärnan verkar alltid. Att återställa är gratis
+## (poängen kommer tillbaka).
 var perks := {}
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
 ## Troféer ur samlingen som hjältarna bär i Övningsgården: hero_id -> trophy_id.
@@ -100,7 +107,32 @@ func owned_perks(oath_id: String) -> Array:
 	return perks.get(oath_id, [])
 
 
-## Vad perken kostar (−1 om den inte hör till Eden).
+## Perk-poäng att lägga i varje Ed: PERK_POINTS_START och en till för varannat klarat djup.
+func perk_points() -> int:
+	return PERK_POINTS_START + best_depth / DEPTHS_PER_PERK_POINT
+
+
+## Hur många perk-poäng Edens köpta perks använder.
+func points_used(data: Dictionary, oath_id: String) -> int:
+	var used := 0
+	for perk_id in owned_perks(oath_id):
+		used += maxi(perk_cost(data, oath_id, perk_id), 0)
+	return used
+
+
+## Perkarna som verkar: de köpta i köpordning så långt poängen räcker (äldre sparfiler kan ha fler).
+func active_perks(data: Dictionary, oath_id: String) -> Array:
+	var out := []
+	var left := perk_points()
+	for perk_id in owned_perks(oath_id):
+		var cost := perk_cost(data, oath_id, perk_id)
+		if cost >= 0 and cost <= left:
+			out.append(perk_id)
+			left -= cost
+	return out
+
+
+## Vad perken kostar i perk-poäng (−1 om den inte hör till Eden).
 static func perk_cost(data: Dictionary, oath_id: String, perk_id: String) -> int:
 	for p in data.oaths.get(oath_id, {}).get("perks", []):
 		if p.id == perk_id:
@@ -108,24 +140,20 @@ static func perk_cost(data: Dictionary, oath_id: String, perk_id: String) -> int
 	return -1
 
 
-## Köper perken. Falskt om den redan är köpt, inte hör till Eden eller silvret inte räcker.
+## Köper perken för perk-poäng. Falskt om den redan är köpt, inte hör till Eden eller poängen inte räcker.
 func buy_perk(data: Dictionary, oath_id: String, perk_id: String) -> bool:
 	var cost := perk_cost(data, oath_id, perk_id)
-	if cost < 0 or owned_perks(oath_id).has(perk_id) or silver < cost:
+	if cost < 0 or owned_perks(oath_id).has(perk_id) or points_used(data, oath_id) + cost > perk_points():
 		return false
-	silver -= cost
 	var list: Array = owned_perks(oath_id).duplicate()
 	list.append(perk_id)
 	perks[oath_id] = list
 	return true
 
 
-## Återställer Edens perks gratis, som i Siralim: allt silver kommer tillbaka. Returnerar beloppet.
+## Återställer Edens perks gratis, som i Siralim: poängen kommer tillbaka. Returnerar antalet poäng.
 func reset_perks(data: Dictionary, oath_id: String) -> int:
-	var refund := 0
-	for perk_id in owned_perks(oath_id):
-		refund += maxi(perk_cost(data, oath_id, perk_id), 0)
-	silver += refund
+	var refund := points_used(data, oath_id)
 	perks.erase(oath_id)
 	return refund
 
