@@ -133,6 +133,8 @@ uppdaterad när nya begrepp tillkommer.
 - Stridslogiken i `src/combat/` ska vara ren logik utan noder, så den kan testas och simuleras headless.
 - Data (hjältar, fiender, förmågor, egenskaper) i `data/`.
 - Allt UI ska fungera med touch; musklick emuleras som touch.
+- Text (0.20.3): minst 15 px (`UiStyle.MIN_SIZE`, golv i `UiStyle.text`), brödtext ~17–19 px (`UiStyle.BODY_SIZE`,
+  `UiStyle.para()` bryter rader). Kontrollera skärmar i 1280×720 och telefonens bredd: `godot --path . --resolution 1560x720`.
 
 ## Struktur
 

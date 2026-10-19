@@ -156,7 +156,8 @@ func _draw() -> void:
 		var own: String = state.oath if hero_id == "paladin" else h.traits[0]
 		var body := "%s\nTrofé: %s" % [data.traits[own].name, data.traits[trophy].name if trophy != "" else "–"]
 		var lv := int(run.profile.hero(data, hero_id).level)
-		UiStyle.card(self, _hero_rect(i), "%s · nivå %d" % [h.name, lv], body, trophy != "", Color(h.color), h.title.to_upper())
+		UiStyle.card(self, _hero_rect(i), "%s · nivå %d" % [h.name, lv], body, trophy != "", Color(h.color), h.title.to_upper(),
+				0.0, 30.0)
 		var sr := _sheet_rect(i)
 		draw_rect(sr, Color(0, 0, 0, 0.7))
 		draw_rect(sr, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)

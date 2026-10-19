@@ -305,7 +305,7 @@ func _draw_charges(data: Dictionary, state: RunState) -> void:
 			full += int(data.abilities[ability_id].get("charges", 0))
 		if full > 0:
 			parts.append("%s %d/%d" % [data.heroes[hero_id].name, left, full])
-	UiStyle.text(self, Vector2(MARGIN, 132), "CHARGES: " + " · ".join(parts), 15, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT,
+	UiStyle.text(self, Vector2(MARGIN, 134), "CHARGES: " + " · ".join(parts), 18, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT,
 			size.x - 60, 0)
 
 
@@ -317,7 +317,7 @@ func _draw_dialog() -> void:
 	UiStyle.text(self, d.position + Vector2(0, 44), String(_dialog.title).to_upper(), 28, Parchment.INK,
 			HORIZONTAL_ALIGNMENT_CENTER, d.size.x, 0)
 	draw_multiline_string(UiStyle.bold(), d.position + Vector2(30, 84), _dialog.text, HORIZONTAL_ALIGNMENT_CENTER,
-			d.size.x - 60, 18, 3, Parchment.INK)
+			d.size.x - 60, 20, 3, Parchment.INK)
 	var options: Array = _dialog.options
 	for i in options.size():
 		var r := _option_rect(i, options.size())

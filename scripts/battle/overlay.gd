@@ -79,7 +79,7 @@ func _draw_level_ups(w: float, h: float, a: float) -> void:
 		UiStyle.text(self, Vector2(-w / 2, 0), "%s nådde nivå %d!" % [u.name, u.level], 20, Color(UiStyle.GOLD, a * minf(1.0, t * 3.0)),
 				HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 		draw_set_transform(Vector2.ZERO)
-		UiStyle.text(self, Vector2(0, y + i * 40 + 18), "  ".join(parts), 14, Color(1, 1, 1, 0.85 * a * t),
+		UiStyle.text(self, Vector2(0, y + i * 40 + 18), "  ".join(parts), 16, Color(1, 1, 1, 0.85 * a * t),
 				HORIZONTAL_ALIGNMENT_CENTER, w, 4)
 
 
@@ -213,7 +213,7 @@ func _draw() -> void:
 		UiStyle.text(self, Vector2(-w / 2, 0), _announce, 30, Color(1, 0.55, 0.2, a), HORIZONTAL_ALIGNMENT_CENTER, w, 6)
 		draw_set_transform(Vector2.ZERO)
 	if rules_text != "":
-		UiStyle.text(self, Vector2(0, 92), rules_text, 15, Color(UiStyle.TRAIT_GOLD, 0.9), HORIZONTAL_ALIGNMENT_RIGHT,
+		UiStyle.text(self, Vector2(0, 92), rules_text, 16, Color(UiStyle.TRAIT_GOLD, 0.9), HORIZONTAL_ALIGNMENT_RIGHT,
 				w - 20, 4)
 	if inspect_title != "":
 		var bw := minf(w - 40.0, 760.0)

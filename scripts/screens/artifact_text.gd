@@ -34,10 +34,12 @@ static func chance_text(data: Dictionary, art: Dictionary) -> String:
 static func amber_text(data: Dictionary, amber_id: String, level: int) -> String:
 	var a: Dictionary = data.materials.amber.get(amber_id, {})
 	var parts: Array[String] = []
+	var pct := ""
 	for s in a.get("stats", {}):
-		parts.append("+%s %% %s" % [_num(Forge.AMBER_PCT * float(a.stats[s]) * Forge.level_mult(level) * 100.0),
-				HeroStats.STAT_NAMES[s]])
-	return ", ".join(parts)
+		pct = _num(Forge.AMBER_PCT * float(a.stats[s]) * Forge.level_mult(level) * 100.0)
+		parts.append(HeroStats.STAT_NAMES[s])
+	# Tvåfärgad bärnsten ger lika mycket till båda: "+5,8 % Attack och Health".
+	return "+%s %% %s" % [pct, " och ".join(parts)]
 
 
 ## Vad ett material i en plats ger på nivån (bärnsten eller trick).
