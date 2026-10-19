@@ -30,6 +30,18 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   stat och avgör när förmågan i den slår till av sig själv: svärd vid Anfall (25 %), stav vid Förmåga
   (25 %), sköld vid Försvara (50 %), hjälm vid Provocera (50 %), stövlar i början av turen (15 %).
   Automatiska kast kostar inga Charges men räknas mot gränsen per tur.
+  **Nivåer och material** (0.20, Siralims Artifacts, `src/game/forge.gd`, `data/materials.json`): nivå 1–10
+  hos Smeden för silver (`Forge.LEVEL_COST`, *anpassning*: Siralim har 50 nivåer och Brimstone); varje nivå
+  stärker typens stat, chansen, materialen och tricken med 10 %. Platserna öppnas i originalets ordning:
+  Stat 2, Trick 3, Stat 5, Trick 7, Stat 9, Nether 10 (ingen Trait-plats, trofén är den). **Bärnsten** (Amber,
+  tio färger, en eller två stats, 5 per plats) och **trick** (Brynsten, Taggsten, Rustningsskrot, Hal sten,
+  Arkant sigill, Styrkans skiffer, Sårbarhetens kuriosa) förstörs när de tas ut; en **Nether Stone**
+  (slumpad, 1–4 egenskaper efter sällsynthet: stat, trick eller en troféegenskap, sällsynthetstal) går
+  tillbaka till förrådet. Fynd i rummen (`Forge.FINDS`, `Run.roll_finds`): bärnsten överallt, trick och
+  Nether Stones bara på det djupaste djupet man nått (originalets bonus), mer med instabilitet. Typen kan
+  bytas utan att nivån och materialen går förlorade (vårt val). Fynden syns på segerskärmen, i
+  skattkammaren och på rumskartan; sällsynta stenar får en egen scen (`find_reveal.gd`). Ljud:
+  `tools/gen_forge_sfx.py` (find_*, forge_level, slot_open, socket).
 - **Kartorna** (0.18): Kampanjkartan (ersätter Kryptporten) visar landet på pergament med Realms som
   områden; fördärvet viker för varje klarat djup. Där väljs Realm, djup och instabilitet; Förberedelser
   väljer sällskap och trofé. Kameran glider in i området till **rumskartan**: varje våning har 3–4 steg
@@ -146,7 +158,11 @@ uppdaterad när nya begrepp tillkommer.
   `artifact_<hjälte>` som lyssnar på `acted` (efter handlingen) eller `turn_start` och kör effekten
   `cast` (kastar förmågan gratis, action `"artifact"`). Datan kopieras per strid – använd `sim.data`.
   Flöde: `begin()`, sedan `act(action, target, ability)` när `needs_input()` annars `ai_act()`; töm `drain_events()`.
-- `data/artifacts.json` – artefakttyperna (stat, utlösande handling, chans).
+- `data/artifacts.json` – artefakttyperna (stat, utlösande handling, chans). `data/materials.json` – bärnsten,
+  trick och Nether Stones sällsynthet (0.20). `src/game/forge.gd` – `Forge`: nivåer, platser, `stat_parts()`
+  (artefakt, material, Nether Stone per stat, samma i striden och i hjältebladet), `effect_traits()`,
+  `roll_finds()`, `roll_stone()`. `Profile`: `artifact()`, `level_artifact()`, `socket()`, `socket_stone()`,
+  `materials`, `stones`. Ritas av `scripts/screens/gem_art.gd`.
 - `data/floor_rules.json` – våningsreglerna (namn, text, silver, `min_instability`, `hidden_only`). Effekterna
   ligger i `CombatSim` (`_rule()`, `_rule_hit()`); `RunState.roll_rules()` slumpar dem.
 - `data/realms.json` – Realms med namn, text och våningar (möten i encounters.json). `RunState.set_realm()`,
@@ -274,6 +290,15 @@ godot --path . -- --oath=oath_ward --all-perks --floor=1 --demo
 
 # Strid med artefakter (bara den körningen): --artifact=<hjälte>:<typ>:<förmåga>
 godot --path . -- --floor=0 --demo --artifact=brokk:shield:healing_light
+
+# Smeden med en påhittad profil som inte sparas (--smith-hero, --smith-slot=stat:1, --smith-pick=amber_green),
+# segerskärmen med fynd som efter en boss, och scenen för ett legendariskt fynd
+godot --path . -- --forge-demo --smith --smith-hero=brokk --smith-slot=stat:1 --smith-pick=amber_green
+godot --path . -- --forge-demo --find-luck --floor=0 --demo --turns=300 --seed=3
+godot --path . -- --forge-demo --find-demo
+
+# Bara artefaktavsnittet i balansrapporten (artefakter på nivå 1, 5 och 10, fynd och silver per körning)
+BALANS=artefakter godot --headless --path . --script res://tests/balance_report.gd
 
 # Öppna makroredigeraren direkt (--edit-line öppnar radeditorn)
 godot --path . -- --macros --edit-line

@@ -1,0 +1,40 @@
+{
+	"amber": {
+		"amber_red": {"name": "Röd bärnsten", "original": "Amber (Attack)", "stats": {"attack": 1.0}, "color": "#e0573f"},
+		"amber_blue": {"name": "Blå bärnsten", "original": "Amber (Intelligence)", "stats": {"intelligence": 1.0}, "color": "#4f86e0"},
+		"amber_green": {"name": "Grön bärnsten", "original": "Amber (Health)", "stats": {"health": 1.0}, "color": "#59b85c"},
+		"amber_grey": {"name": "Järngrå bärnsten", "original": "Amber (Defense)", "stats": {"defense": 1.0}, "color": "#9aa4b2"},
+		"amber_yellow": {"name": "Gul bärnsten", "original": "Amber (Speed)", "stats": {"speed": 1.0}, "color": "#e8c547"},
+		"amber_orange": {"name": "Orange bärnsten", "original": "Amber (Attack/Health)", "stats": {"attack": 0.6, "health": 0.6}, "color": "#e8913a"},
+		"amber_violet": {"name": "Violett bärnsten", "original": "Amber (Intelligence/Speed)", "stats": {"intelligence": 0.6, "speed": 0.6}, "color": "#9a64d8"},
+		"amber_teal": {"name": "Turkos bärnsten", "original": "Amber (Health/Defense)", "stats": {"health": 0.6, "defense": 0.6}, "color": "#3fb8b0"},
+		"amber_rose": {"name": "Rosa bärnsten", "original": "Amber (Intelligence/Health)", "stats": {"intelligence": 0.6, "health": 0.6}, "color": "#e07aa8"},
+		"amber_bronze": {"name": "Bronsbärnsten", "original": "Amber (Attack/Defense)", "stats": {"attack": 0.6, "defense": 0.6}, "color": "#b8864f"}
+	},
+	"tricks": {
+		"whetstone": {"name": "Brynsten", "original": "Whetstone", "kind": "attack_damage", "value": 0.12,
+			"text": "Anfall gör %s mer skada.", "color": "#d8d0c0"},
+		"jagged_rock": {"name": "Taggsten", "original": "Jagged Rock", "kind": "crit", "value": 0.08,
+			"text": "%s högre chans till kritiska anfall.", "color": "#c86a4a"},
+		"armor_scrap": {"name": "Rustningsskrot", "original": "Armor Scrap", "kind": "damage_taken", "value": 0.08,
+			"text": "Bäraren tar %s mindre skada.", "color": "#8c96a6"},
+		"slippery_stone": {"name": "Hal sten", "original": "Slippery Stone", "kind": "dodge", "value": 0.07,
+			"text": "%s högre chans att undvika anfall.", "color": "#7ac8d8"},
+		"arcane_sigil": {"name": "Arkant sigill", "original": "Arcane Sigil", "kind": "spell_damage", "value": 0.12,
+			"text": "Besvärjelser gör %s mer skada.", "color": "#a88ae8"},
+		"slate_inspired": {"name": "Styrkans skiffer", "original": "Slate of (Buff)", "kind": "buff_on_hit", "value": 0.15,
+			"aura": "inspired", "text": "%s chans att få Styrka vid en direkt träff.", "color": "#e8b84a"},
+		"curio_vulnerable": {"name": "Sårbarhetens kuriosa", "original": "Curio of (Debuff)", "kind": "debuff_on_hit",
+			"value": 0.12, "aura": "vulnerable", "text": "%s chans att göra målet Sårbart vid en direkt träff.",
+			"color": "#c84a6a"}
+	},
+	"nether": {
+		"rarities": [
+			{"id": "common", "name": "Vanlig", "affixes": 1, "color": "#c8c8c8"},
+			{"id": "magic", "name": "Magisk", "affixes": 2, "color": "#5a9cff"},
+			{"id": "rare", "name": "Sällsynt", "affixes": 3, "color": "#f2d04a"},
+			{"id": "legendary", "name": "Legendarisk", "affixes": 4, "color": "#ff8a2a"}
+		],
+		"stat_pct": 0.08
+	}
+}

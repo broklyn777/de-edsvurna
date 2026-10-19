@@ -28,9 +28,14 @@ const BEST_PERKS := {1: ["oath_dawn", "ward_war_machine"], 3: ["oath_dawn", "daw
 func _init() -> void:
 	var data := GameData.load_all()
 	# BALANS=nivaer kör bara nivåavsnittet (0.19), som går snabbare och värmer mindre.
+	if OS.get_environment("BALANS") == "artefakter":
+		_artifacts(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") != "nivaer":
 		_runs_without_levels(data)
 	_levels(data)
+	_artifacts(data)
 	quit()
 
 
@@ -78,6 +83,79 @@ func _levels(data: Dictionary) -> void:
 			for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
 				_training_line(data, "%s, %d strider på djup 1: %s" % [data.realms[realm_id].short, wins, _skill_name(skill)],
 						skill, realm_id, wins)
+
+
+## Artefaktnivåer (0.20): en artefakt (Brokks sköld) och en per hjälte på nivå 1, 5 och 10 med material som
+## passar rollen, på väntad nivå (som växer). Sist fynd och silver per körning på och under det djupaste djupet.
+const ROLE_AMBER := {"paladin": ["amber_red", "amber_orange", "amber_green"], "brokk": ["amber_grey", "amber_teal", "amber_green"],
+		"alva": ["amber_blue", "amber_rose", "amber_violet"], "eira": ["amber_red", "amber_yellow", "amber_bronze"]}
+const ROLE_TRICKS := {"paladin": ["whetstone", "jagged_rock"], "brokk": ["armor_scrap", "slippery_stone"],
+		"alva": ["arcane_sigil", "slate_inspired"], "eira": ["jagged_rock", "curio_vulnerable"]}
+## En typisk Magisk sten (två egenskaper, medelkvalitet) per roll.
+const ROLE_STONE := {"paladin": [["stat", "attack"], ["trick", "whetstone"]], "brokk": [["stat", "defense"], ["trick", "armor_scrap"]],
+		"alva": [["stat", "intelligence"], ["trick", "arcane_sigil"]], "eira": [["stat", "speed"], ["trick", "jagged_rock"]]}
+
+
+static func built_artifact(base: Dictionary, hero_id: String, level: int) -> Dictionary:
+	var a := Forge.normalize(base)
+	a.level = level
+	for i in Forge.STAT_SLOT_LEVELS.size():
+		a.stat_slots[i] = ROLE_AMBER[hero_id][i] if Forge.stat_slot_open(level, i) else ""
+	for i in Forge.TRICK_SLOT_LEVELS.size():
+		a.trick_slots[i] = ROLE_TRICKS[hero_id][i] if Forge.trick_slot_open(level, i) else ""
+	if Forge.nether_open(level):
+		var affixes := []
+		for x in ROLE_STONE[hero_id]:
+			affixes.append({"kind": "stat", "stat": x[1], "pct": 0.08, "q": 1.0} if x[0] == "stat"
+					else {"kind": "trick", "trick": x[1], "q": 1.0})
+		a.nether = {"id": "bot", "rarity": "magic", "number": 200, "affixes": affixes}
+	return a
+
+
+func _artifacts(data: Dictionary) -> void:
+	var realms: Array = data.realms.keys()
+	if OS.get_environment("NIVA_REALM") != "":
+		realms = [OS.get_environment("NIVA_REALM")]
+	var depths: Array = DEPTHS if OS.get_environment("NIVA_DJUP") == "" else [int(OS.get_environment("NIVA_DJUP"))]
+	for depth in depths:
+		var lv := HeroStats.expected_level(depth)
+		print("=== Artefakter, djup %d, väntad nivå %d (växer) ===" % [depth, lv])
+		for realm_id in realms:
+			for level in [0, 1, 5, 10]:
+				for all in ([false] if level == 0 else [false, true]):
+					var arts := {}
+					if level > 0:
+						for hero_id in (ARTIFACTS if all else ONE_ARTIFACT):
+							arts[hero_id] = built_artifact(ARTIFACTS[hero_id], hero_id, level)
+					var label := "ingen artefakt" if level == 0 else ("%s nivå %d" % ["fyra artefakter" if all else "Brokks sköld", level])
+					for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+						var cleared := 0
+						for seed_value in range(1, RUNS + 1):
+							var r := Bot.run_expedition(data, seed_value, skill, {}, arts, depth, realm_id,
+									{"levels": Bot.party_levels(data, lv), "grow": true}, "simple")
+							cleared += 1 if r.cleared else 0
+						print("  %-50s klarade %3d %%" % ["%s, %s: %s" % [data.realms[realm_id].short, label, _skill_name(skill)],
+								roundi(100.0 * cleared / RUNS)])
+	print("=== Fynd och silver per körning (Kryptan, TUNED, väntad nivå) ===")
+	for depth in depths:
+		for frontier in [true, false]:
+			var sum := {"amber": 0, "trick": 0, "nether": 0, "rare": 0}
+			var silver := 0
+			for seed_value in range(1, RUNS + 1):
+				var r := Bot.run_expedition(data, seed_value, Bot.Skill.TUNED, {}, {}, depth, "crypt",
+						{"levels": Bot.party_levels(data, HeroStats.expected_level(depth)), "grow": true, "finds": frontier}, "simple")
+				for k in sum:
+					sum[k] += r.finds[k]
+				silver += r.silver
+			print("  djup %d, %-22s bärnsten %4.1f  trick %4.2f  Nether Stones %4.2f (sällsynta %4.2f)  silver %4d" % [depth,
+					"djupaste djupet" if frontier else "under det djupaste", float(sum.amber) / RUNS,
+					float(sum.trick) / RUNS, float(sum.nether) / RUNS, float(sum.rare) / RUNS, silver / RUNS])
+	var total := 0
+	var line := "  silver till nivå:"
+	for l in range(2, Forge.LEVEL_MAX + 1):
+		total += Forge.LEVEL_COST[l - 1]
+		line += " %d=%d" % [l, total]
+	print(line)
 
 
 func _skill_name(skill: int) -> String:

@@ -13,7 +13,7 @@ const PLACES := [
 	{"id": "altar", "name": "Kallets altare", "tag": "ENCHANTED WARDROBE",
 		"text": "Välj Paladinens kall – det gäller hela sällskapet – och köp perks för perk-poäng. Återställ gratis."},
 	{"id": "smith", "name": "Smeden", "tag": "BLACKSMITH",
-		"text": "Smid en artefakt per hjälte: svärd, stav, sköld, hjälm eller stövlar, med en förmåga som slår till av sig själv."},
+		"text": "Smid en artefakt per hjälte och höj den: nivåerna öppnar platser för bärnsten, trick och Nether Stones."},
 	{"id": "macros", "name": "Makron", "tag": "MACROS",
 		"text": "Skriv om hjältarnas makron: villkor uppifrån och ned, första raden som passar vinner."},
 	{"id": "library", "name": "Biblioteket", "tag": "CODEX",
@@ -76,7 +76,9 @@ func _status(id: String) -> String:
 			return "%s · %d perks" % [data.traits[run.profile.oath].name,
 					run.profile.owned_perks(run.profile.oath).size()]
 		"smith":
-			return "%d artefakter smidda · %d silver" % [run.profile.artifacts.size(), run.profile.silver]
+			var stones: int = run.profile.stones.size()
+			return "%d artefakter smidda · %d silver%s" % [run.profile.artifacts.size(), run.profile.silver,
+					"" if stones == 0 else " · %d Nether Stones" % stones]
 		"library":
 			return "%d troféer i samlingen" % run.collection.size()
 		"practice":

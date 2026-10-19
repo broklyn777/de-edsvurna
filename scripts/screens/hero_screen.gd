@@ -153,8 +153,8 @@ func _draw_stats(data: Dictionary, prof: Profile, prog: Dictionary) -> void:
 				text += " %d %s" % [v, HeroStats.SOURCE_NAMES[source]]
 			elif v != 0.0:
 				text += (" + %d %s" if v > 0.0 else " − %d %s") % [absf(v), HeroStats.SOURCE_NAMES[source]]
-		UiStyle.text(self, Vector2(MARGIN + 260, y), text, 15, Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_LEFT, 420, 2)
-		UiStyle.text(self, Vector2(MARGIN + 690, y), "nästa nivå +%d" % nxt[stat], 14, Color(UiStyle.TRAIT_GOLD, 0.8),
+		UiStyle.text(self, Vector2(MARGIN + 260, y), text, 15, Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_LEFT, 680, 2)
+		UiStyle.text(self, Vector2(MARGIN + 960, y), "nästa nivå +%d" % nxt[stat], 14, Color(UiStyle.TRAIT_GOLD, 0.8),
 				HORIZONTAL_ALIGNMENT_LEFT, 160, 2)
 		y += 34
 	_draw_meaning(data, prof, b, level, Vector2(MARGIN, y + 20))
@@ -277,16 +277,48 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 		draw_multiline_string(UiStyle.bold(), Vector2(x, yy + 20), ab.get("text", ""), HORIZONTAL_ALIGNMENT_LEFT,
 				size.x - x - MARGIN, 13, 2, Color(1, 1, 1, 0.7))
 		yy += 64
-	var art: Dictionary = prof.artifacts.get(hero_id, {})
+	var art: Dictionary = prof.artifact(hero_id)
 	UiStyle.text(self, Vector2(x, yy + 10), "ARTEFAKT", 14, Color(1, 1, 1, 0.6))
 	if art.is_empty():
 		UiStyle.text(self, Vector2(x, yy + 34), "Ingen – smid en hos Smeden.", 15, Color(1, 1, 1, 0.75))
+		return
+	var wmax := size.x - x - MARGIN
+	var level := int(art.level)
+	UiStyle.text(self, Vector2(x, yy + 34), "%s · nivå %d av %d" % [ArtifactText.name_of(data, art).get_slice(" · ", 0), level,
+			Forge.LEVEL_MAX], 16, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT, wmax, 2)
+	UiStyle.text(self, Vector2(x, yy + 54), "%s · %s" % [ArtifactText.stat_text(data, art), ArtifactText.chance_text(data, art)],
+			13, Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_LEFT, wmax, 2)
+	# Platserna: vad varje material ger på artefaktens nivå, eller när platsen öppnas.
+	var rows: Array = []
+	for i in Forge.STAT_SLOT_LEVELS.size():
+		rows.append(["amber", art.stat_slots[i], Forge.stat_slot_open(level, i), Forge.STAT_SLOT_LEVELS[i], "Stat"])
+	for i in Forge.TRICK_SLOT_LEVELS.size():
+		rows.append(["trick", art.trick_slots[i], Forge.trick_slot_open(level, i), Forge.TRICK_SLOT_LEVELS[i], "Trick"])
+	var yr := yy + 70
+	for row in rows:
+		yr += 20
+		if not row[2]:
+			UiStyle.text(self, Vector2(x + 20, yr), "%s-plats: öppnas på nivå %d" % [row[4], row[3]], 12, Color(1, 1, 1, 0.35),
+					HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
+			continue
+		if row[1] == "":
+			UiStyle.text(self, Vector2(x + 20, yr), "%s-plats: tom" % row[4], 12, Color(1, 1, 1, 0.55),
+					HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
+			continue
+		GemArt.draw_find(self, data, {"kind": row[0], "id": row[1], "count": 1}, Vector2(x + 8, yr - 4), 6.0, _t)
+		UiStyle.text(self, Vector2(x + 20, yr), "%s: %s" % [ArtifactText.material_name(data, row[1]),
+				ArtifactText.material_text(data, row[1], level)], 12, Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
+	yr += 20
+	if not Forge.nether_open(level):
+		UiStyle.text(self, Vector2(x + 20, yr), "Nether-plats: öppnas på nivå %d" % Forge.NETHER_LEVEL, 12, Color(1, 1, 1, 0.35),
+				HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
+	elif art.nether.is_empty():
+		UiStyle.text(self, Vector2(x + 20, yr), "Nether-plats: tom", 12, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
 	else:
-		var k: Dictionary = data.artifacts[art.type]
-		UiStyle.text(self, Vector2(x, yy + 34), ArtifactText.name_of(data, art), 16, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT,
-				size.x - x - MARGIN, 2)
-		UiStyle.text(self, Vector2(x, yy + 56), "%s · %s" % [k.stat_text, k.trigger_text], 14, Color(1, 1, 1, 0.75),
-				HORIZONTAL_ALIGNMENT_LEFT, size.x - x - MARGIN, 2)
+		var st: Dictionary = art.nether
+		GemArt.draw_find(self, data, {"kind": "nether", "stone": st}, Vector2(x + 8, yr - 4), 6.0, _t)
+		UiStyle.text(self, Vector2(x + 20, yr), "%s Nether Stone (%d): %s" % [Forge.rarity_of(data, st).name, st.number,
+				", ".join(Forge.stone_lines(data, st))], 12, Color(Forge.rarity_of(data, st).color), HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
 
 
 func _draw_history(data: Dictionary, prog: Dictionary) -> void:

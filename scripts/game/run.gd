@@ -59,6 +59,8 @@ var pending_trophy := {}
 ## Questens belöning om den blev klar i senaste rummet: {silver, point} (visas i lägret).
 var quest_reward := {}
 ## Erfarenhet från senaste vunna striden (visas i lägret).
+## Fynden från senaste striden (0.20).
+var last_finds: Array = []
 var last_xp := 0
 ## Text om vad som hände i senaste rummet utanför striderna (visas på rumskartan).
 var room_result := ""
@@ -80,6 +82,41 @@ func _ready() -> void:
 		_resume_run()
 
 
+## Sant när profilen är påhittad för en skärmdump (--forge-demo): då sparas den inte.
+var dev_profile := false
+
+
+func _forge_demo() -> void:
+	dev_profile = true
+	profile.silver = 640
+	profile.forge("paladin", "sword", "holy_smite")
+	profile.forge("brokk", "shield", "healing_light")
+	profile.artifacts.brokk = Forge.normalize({"type": "shield", "ability": "healing_light", "level": 7,
+			"stat_slots": ["amber_grey", "amber_teal", ""], "trick_slots": ["armor_scrap", ""]})
+	profile.artifacts.paladin.level = 3
+	profile.silver = 640
+	profile.materials = {"amber_red": 6, "amber_grey": 3, "amber_green": 8, "amber_yellow": 5, "amber_teal": 2,
+			"amber_orange": 5, "whetstone": 1, "slippery_stone": 2, "curio_vulnerable": 1}
+	var r := RandomNumberGenerator.new()
+	r.seed = 12
+	for d in [1, 2, 3, 4, 2]:
+		profile.stones.append(Forge.roll_stone(data, d, 1, r, profile.next_stone_id))
+		profile.next_stone_id += 1
+
+
+func _find_demo() -> void:
+	await get_tree().create_timer(0.3).timeout
+	var r := RandomNumberGenerator.new()
+	r.seed = 5
+	var stone := {}
+	for i in 200:
+		stone = Forge.roll_stone(data, 3, 2, r, 99)
+		if stone.rarity == "legendary":
+			break
+	ui("find_rare", -2.0)
+	show_rare_finds([{"kind": "nether", "stone": stone}])
+
+
 ## Utvecklarargument (efter `--`): --floor=<n> startar striden på våning n (0–2), --depth=<n> väljer
 ## djup, --camp visar lägret efter första striden.
 func _dev_args() -> void:
@@ -92,6 +129,13 @@ func _dev_args() -> void:
 			# --artifact=<hjälte>:<typ>:<förmåga>, t.ex. brokk:shield:healing_light (bara den här körningen)
 			var parts := arg.get_slice("=", 1).split(":")
 			state.artifacts[parts[0]] = {"type": parts[1], "ability": parts[2] if parts.size() > 2 else ""}
+		elif arg == "--forge-demo":
+			# --forge-demo: en påhittad profil för Smeden (sparas inte): Brokks sköld på nivå 7 med material,
+			# ett förråd och några Nether Stones. Med --smith öppnas Smeden direkt.
+			_forge_demo()
+		elif arg == "--find-demo":
+			# --find-demo visar scenen för ett legendariskt fynd
+			_find_demo.call_deferred()
 		elif arg == "--anoint":
 			# --anoint låser upp den lånade perken (som om Benfursten var besegrad) och visar valet
 			profile.defeat_boss("bone_lich")
@@ -233,6 +277,58 @@ func enter_room(room_id: String) -> Dictionary:
 	return r
 
 
+## Fynd (0.20, Forge): slår fram rummets fynd och lägger dem i förrådet. Bara det djupaste djupet man nått
+## ger trick och Nether Stones (originalets bonus). Returnerar fynden.
+func roll_finds(kind: String) -> Array:
+	if kind == "portal_treasure":
+		kind = "portal_battle"
+	if "--find-luck" in OS.get_cmdline_user_args():
+		kind = "boss"  # för skärmdumpar: fynden som efter en boss
+	var frontier := state.depth > profile.best_depth
+	var finds := Forge.roll_finds(data, kind, state.depth, frontier, state.instability, rng, profile.next_stone_id)
+	for f in finds:
+		if f.kind == "nether":
+			profile.next_stone_id += 1
+		state.found[f.kind] = int(state.found.get(f.kind, 0)) + int(f.get("count", 1))
+	profile.add_finds(finds)
+	return finds
+
+
+## Ljudet för det finaste fyndet, efter delay sekunder.
+func play_find_sound(finds: Array, delay := 0.0) -> void:
+	var best := ""
+	for f in finds:
+		if Forge.is_rare_find(f):
+			best = "find_rare"
+		elif f.kind == "nether" and best != "find_rare":
+			best = "find_nether"
+		elif f.kind == "trick" and best in ["", "find_amber"]:
+			best = "find_trick"
+		elif best == "":
+			best = "find_amber"
+	if best == "":
+		return
+	if delay > 0.0:
+		await get_tree().create_timer(delay).timeout
+	ui(best, -2.0)
+
+
+## Ett sällsynt fynd får en egen liten scen (FindReveal) ovanpå skärmen.
+func show_rare_finds(finds: Array, delay := 0.0) -> void:
+	var rare := finds.filter(func(f: Dictionary) -> bool: return Forge.is_rare_find(f))
+	if rare.is_empty():
+		return
+	if delay > 0.0:
+		await get_tree().create_timer(delay).timeout
+	for f in rare:
+		var layer := CanvasLayer.new()
+		layer.layer = 60
+		var reveal: Control = load("res://scripts/screens/find_reveal.gd").new()
+		reveal.find = f
+		layer.add_child(reveal)
+		get_tree().current_scene.add_child(layer)
+
+
 ## Lägereld, skattkammare och helgedom (anropas av rumskartan). Returnerar texten om vad som hände.
 func campfire() -> String:
 	var gained := state.campfire(data)
@@ -251,6 +347,11 @@ func treasure() -> String:
 		state.take_trophy(t.trophy)
 		room_result += " och trofén %s!" % data.traits[t.trophy].name
 		_trophy_sound_for([t.trophy])
+	var finds := roll_finds("treasure" if state.side_index < 0 else "portal_treasure")
+	if not finds.is_empty():
+		room_result += "\nFynd: " + ", ".join(finds.map(func(f: Dictionary) -> String: return Forge.find_text(data, f)))
+		play_find_sound(finds, 0.4)
+		show_rare_finds(finds, 0.9)
 	_save()
 	save_run()
 	return room_result
@@ -281,8 +382,10 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 		tot.heal = float(tot.heal) + float(st.heal)
 		state.trait_totals[trait_id] = tot
 	var out := []
+	last_finds = []
 	if victory and not state.practice:
 		var r := state.current_room()
+		last_finds = roll_finds("boss" if r.get("boss", false) else String(r.get("kind", "end")))
 		var xp := HeroStats.battle_xp(r.get("kind", "end"), state.depth, r.get("boss", false))
 		last_xp = xp
 		var ups := profile.grant_xp(data, state.party, xp)
@@ -449,4 +552,6 @@ func save(sound := "ui_toggle") -> void:
 
 
 func _save() -> void:
+	if dev_profile:
+		return
 	profile.save(PROGRESS_PATH)

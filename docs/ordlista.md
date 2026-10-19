@@ -57,7 +57,12 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Får tillbaka en Charge | effekten `restore_charge`, händelsen `charge_restored` | restore Charges | |
 | Följeslagare | hero / companion | Creature | Namngivna personer, inte varelser man samlar. |
 | Trofé | trophy | Trait Material (Masters) | Ger ett trait från ett besegrat monster; fyller den plats som Fusion har i Siralim. |
-| Artefakt | artifact (`data/artifacts.json`, `equip_artifact`) | Artifact | En per hjälte, smids hos Smeden. Typen höjer en stat och avgör när förmågan i den slår till: svärd vid Anfall 25 %, stav vid Förmåga 25 %, sköld vid Försvara 50 %, hjälm vid Provocera 50 %, stövlar i början av turen 15 %. Automatiskt kast kostar inga Charges. |
+| Artefakt | artifact (`data/artifacts.json`, `equip_artifact`) | Artifact | En per hjälte, smids hos Smeden. Typen höjer en stat och avgör när förmågan i den slår till: svärd vid Anfall 25 %, stav vid Förmåga 25 %, sköld vid Försvara 50 %, hjälm vid Provocera 50 %, stövlar i början av turen 15 %. Automatiskt kast kostar inga Charges. Nivå 1–10 hos Smeden (0.20); nivåerna öppnar platser. |
+| Artefaktnivå | `level`, `Forge.LEVEL_COST`, `Profile.level_artifact()` | Artifact Level | 1–10 för silver; +10 % på allt i artefakten per nivå. Platser: Stat 2, 5, 9, Trick 3, 7, Nether 10. |
+| Bärnsten | amber (`data/materials.json`) | Amber (Stat Material) | Tio färger, en eller två stats. 5 per Stat-plats. Förstörs när den tas ut. |
+| Trick | trick (`materials.json` "tricks") | Trick Material | Brynsten (Whetstone), Taggsten (Jagged Rock), Rustningsskrot (Armor Scrap), Hal sten (Slippery Stone), Arkant sigill (Arcane Sigil), Styrkans skiffer (Slate of …), Sårbarhetens kuriosa (Curio of …). |
+| Nether Stone | stone (`Forge.roll_stone`) | Nether Stone | Slumpad sten med 1–4 egenskaper (Vanlig, Magisk, Sällsynt, Legendarisk) och ett sällsynthetstal. Överlever när den tas ut. |
+| Fynd | finds (`Forge.roll_finds`) | Loot | Material och stenar från rummen; trick och stenar bara på det djupaste djupet man nått. |
 | Svärd / Stav / Sköld / Hjälm / Stövlar | sword / staff / shield / helm / boots | Sword / Staff / Shield / Helmet / Boots | Stat: +5 % Attack / +5 % Intelligence / +10 Defense / +5 % Health / +1 Speed (som Siralim). |
 | Automatiskt kast | `cast`-effekt, action `artifact`, händelsen `acted` | automatic cast | |
 | Samling | collection | Codex / Bestiary | Troféer man någonsin hittat. |

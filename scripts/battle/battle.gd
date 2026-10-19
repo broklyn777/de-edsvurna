@@ -746,6 +746,11 @@ func _on_outcome(result: String) -> void:
 		overlay.level_ups = run.award_battle(sim, true)
 		if not overlay.level_ups.is_empty():
 			get_tree().create_timer(1.3).timeout.connect(sfx.play.bind("trophy_elite", -3.0, 0.0))
+		# 0.20: fynden syns till höger med eget ljud; ett sällsynt fynd får en egen liten scen.
+		overlay.data = data
+		overlay.finds = run.last_finds
+		run.play_find_sound(run.last_finds, 1.7)
+		run.show_rare_finds(run.last_finds, 2.6)
 	else:
 		run.award_battle(sim, false)
 		run.audio.stop_music(1.5)

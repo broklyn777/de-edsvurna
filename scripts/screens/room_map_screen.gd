@@ -221,6 +221,7 @@ func _draw() -> void:
 		UiStyle.text(self, Vector2(MARGIN, 110), "REGLER: %s%s" % [", ".join(known), "" if hidden == 0 else " · %d dolda" % hidden],
 				15, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
 	_draw_charges(data, state)
+	_draw_found(data, state)
 	if state.side_index >= 0:
 		UiStyle.text(self, Vector2(0, 160), "I PORTALEN – en svårare strid, sedan skatten", 18, Color("#6a3a9a"),
 				HORIZONTAL_ALIGNMENT_CENTER, size.x, 0)
@@ -324,3 +325,20 @@ func _draw_dialog() -> void:
 		draw_rect(r, UiStyle.GOLD, false, 2.0)
 		UiStyle.text(self, r.position + Vector2(0, r.size.y / 2 + 7), options[i].label, 17, UiStyle.GOLD,
 				HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 2)
+
+
+## Fynden i körningen (0.20) uppe till höger, och om det här djupet ger trick och Nether Stones.
+func _draw_found(data: Dictionary, state: RunState) -> void:
+	var x := size.x - MARGIN - 330
+	var y := 92.0
+	UiStyle.text(self, Vector2(x, y), "FYND", 14, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT, 60, 0)
+	var items := [["amber", "amber_red", Color("#c8862a")], ["trick", "whetstone", Color("#8a8070")],
+			["nether", "", Color("#ff8a2a")]]
+	for i in items.size():
+		var c := Vector2(x + 70 + i * 86, y - 6)
+		GemArt.draw(self, items[i][0], c, 9.0, items[i][2], 0.4 if items[i][0] == "nether" else 0.0, _t)
+		UiStyle.text(self, c + Vector2(16, 6), str(int(state.found.get(items[i][0], 0))), 16, Parchment.INK,
+				HORIZONTAL_ALIGNMENT_LEFT, 60, 0)
+	if state.depth <= run.profile.best_depth:
+		UiStyle.text(self, Vector2(x - 120, y + 22), "Inte ditt djupaste djup – här finns bara bärnsten", 13,
+				Parchment.SEAL, HORIZONTAL_ALIGNMENT_RIGHT, 450, 0)

@@ -32,8 +32,12 @@ const OATHS := ["oath_vengeance", "oath_dawn", "oath_ward"]
 
 var silver := START_SILVER
 var collection: Array[String] = []
-## hero_id -> {type, ability}
+## hero_id -> {type, ability, level, stat_slots, trick_slots, nether} (Forge.normalize)
 var artifacts := {}
+## Material (0.20): material_id -> antal (bärnsten och trick). Nether Stones i en egen lista.
+var materials := {}
+var stones: Array = []
+var next_stone_id := 1
 ## Senaste uppställningen från Kryptporten (används också i Övningsgården).
 var oath := "oath_vengeance"
 ## Kallets altare (Siralims Enchanted Wardrobe): köpta perks per kall, oath_id -> [perk_id]. Alla köpta
@@ -122,8 +126,91 @@ func forge(hero_id: String, type: String, ability_id: String) -> bool:
 	if cost == 0 or silver < cost:
 		return false
 	silver -= cost
-	artifacts[hero_id] = {"type": type, "ability": ability_id}
+	# Nivån och materialen följer med när typen byts (vårt val: det är samma artefakt, omsmidd).
+	var art := artifact(hero_id)
+	if art.is_empty():
+		art = Forge.normalize({"type": type, "ability": ability_id})
+	art.type = type
+	art.ability = ability_id
+	artifacts[hero_id] = art
 	return true
+
+
+## Hjältens artefakt med alla fält ifyllda ({} om ingen är smidd).
+func artifact(hero_id: String) -> Dictionary:
+	var art := Forge.normalize(artifacts.get(hero_id, {}))
+	if not art.is_empty():
+		artifacts[hero_id] = art
+	return art
+
+
+## Silver till nästa artefaktnivå (0 = högsta nivån eller ingen artefakt).
+func artifact_level_cost(hero_id: String) -> int:
+	var art := artifact(hero_id)
+	return 0 if art.is_empty() else Forge.level_cost(int(art.level))
+
+
+## Höjer artefaktens nivå. Returnerar vad nivån öppnade ("" om den bara stärker), eller null om det inte gick.
+func level_artifact(hero_id: String) -> Variant:
+	var cost := artifact_level_cost(hero_id)
+	if cost == 0 or silver < cost:
+		return null
+	silver -= cost
+	var art := artifact(hero_id)
+	art.level = int(art.level) + 1
+	return Forge.unlock_text(int(art.level))
+
+
+## Sätter bärnsten i en Stat-plats (kostar Forge.AMBER_PER_SLOT) eller ett trick i en Trick-plats (kostar 1).
+## Det som satt där förstörs (originalet). Tom material_id tömmer platsen. Falskt om det inte går.
+func socket(hero_id: String, slot_kind: String, index: int, material_id: String) -> bool:
+	var art := artifact(hero_id)
+	if art.is_empty():
+		return false
+	var key := "stat_slots" if slot_kind == "stat" else "trick_slots"
+	var open := Forge.stat_slot_open(int(art.level), index) if slot_kind == "stat" \
+			else Forge.trick_slot_open(int(art.level), index)
+	if not open or art[key][index] == material_id:
+		return false
+	var need := Forge.AMBER_PER_SLOT if slot_kind == "stat" else 1
+	if material_id != "":
+		if int(materials.get(material_id, 0)) < need:
+			return false
+		materials[material_id] = int(materials[material_id]) - need
+		if materials[material_id] <= 0:
+			materials.erase(material_id)
+	art[key][index] = material_id
+	return true
+
+
+## Sätter en Nether Stone ur förrådet i Nether-platsen; den som satt där går tillbaka till förrådet.
+## Tomt stone_id tar ut stenen. Falskt om det inte går.
+func socket_stone(hero_id: String, stone_id: String) -> bool:
+	var art := artifact(hero_id)
+	if art.is_empty() or not Forge.nether_open(int(art.level)):
+		return false
+	var stone := {}
+	if stone_id != "":
+		for s in stones:
+			if s.id == stone_id:
+				stone = s
+		if stone.is_empty():
+			return false
+		stones.erase(stone)
+	if not art.nether.is_empty():
+		stones.append(art.nether)
+	art.nether = stone
+	return true
+
+
+## Lägger fynd i förrådet (Forge.roll_finds). Stenarna får sina id här.
+func add_finds(finds: Array) -> void:
+	for f in finds:
+		match f.kind:
+			"amber", "trick":
+				materials[f.id] = int(materials.get(f.id, 0)) + int(f.count)
+			"nether":
+				stones.append(f.stone)
 
 
 ## Väljer kall vid Kallets altare.
@@ -318,6 +405,9 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "collection", collection)
 	cfg.set_value("progress", "silver", silver)
 	cfg.set_value("progress", "artifacts", artifacts)
+	cfg.set_value("progress", "materials", materials)
+	cfg.set_value("progress", "stones", stones)
+	cfg.set_value("progress", "next_stone_id", next_stone_id)
 	cfg.set_value("progress", "oath", oath)
 	cfg.set_value("progress", "perks", perks)
 	cfg.set_value("progress", "party", party)
@@ -347,6 +437,11 @@ static func load_from(path: String) -> Profile:
 		p.collection.append(t)
 	p.silver = int(cfg.get_value("progress", "silver", START_SILVER))
 	p.artifacts = cfg.get_value("progress", "artifacts", {})
+	for hero_id in p.artifacts:
+		p.artifacts[hero_id] = Forge.normalize(p.artifacts[hero_id])
+	p.materials = cfg.get_value("progress", "materials", {})
+	p.stones = cfg.get_value("progress", "stones", [])
+	p.next_stone_id = int(cfg.get_value("progress", "next_stone_id", 1))
 	var saved_oath: String = cfg.get_value("progress", "oath", p.oath)
 	if OATHS.has(saved_oath):
 		p.oath = saved_oath

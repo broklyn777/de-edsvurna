@@ -113,6 +113,11 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	var rooms := 0
 	var f0_fights := 0  # strider på första våningen (för en ny profil på nivå 1)
 	var f0_won := 0
+	# Fynd och silver (0.20): opts.finds = true/false (djupaste djupet eller inte) slår fram fynden som i spelet.
+	var finds := {"amber": 0, "trick": 0, "nether": 0, "rare": 0}
+	var silver := 0
+	var loot_rng := RandomNumberGenerator.new()
+	loot_rng.seed = seed_value * 7 + 3
 	# Nivåer (0.19): opts.levels = startnivåer per hjälte; med opts.grow växer de av erfarenheten.
 	var levels: Dictionary = opts.get("levels", {}).duplicate(true)
 	while not state.finished and rooms < 60:
@@ -137,7 +142,11 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			if result.outcome != "victory":
 				return {"cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 						"lost_at": "f%d_%s" % [state.floor, r.kind], "f0_fights": f0_fights, "f0_won": f0_won,
-						"levels": levels}
+						"levels": levels, "finds": finds, "silver": silver}
+			silver += state.battle_silver(depth)
+			if opts.has("finds"):
+				_count_finds(finds, Forge.roll_finds(data, "boss" if r.get("boss", false) else String(r.kind), depth,
+						opts.finds, state.instability, loot_rng))
 			state.store_charges(result.sim)
 			if opts.get("grow", false):
 				var xp := HeroStats.battle_xp(r.kind, depth, r.get("boss", false))
@@ -151,12 +160,20 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				"campfire":
 					state.campfire(data)
 				"treasure":
-					state.treasure(data, rng)
+					silver += int(state.treasure(data, rng).silver)
+					if opts.has("finds"):
+						_count_finds(finds, Forge.roll_finds(data, "treasure", depth, opts.finds, state.instability, loot_rng))
 				"shrine":
 					var gifts := state.shrine_options(data, rng)
 					state.apply_shrine(data, rng, gifts[0] if gifts[0].kind == "charge" else gifts[1])
 	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
-			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won}
+			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won, "finds": finds, "silver": silver}
+
+
+static func _count_finds(counts: Dictionary, finds: Array) -> void:
+	for f in finds:
+		counts[f.kind] += int(f.get("count", 1))
+		counts.rare += 1 if Forge.is_rare_find(f) else 0
 
 
 ## Sällskapet på en viss nivå med de förvalda personligheterna (för balansrapporten).

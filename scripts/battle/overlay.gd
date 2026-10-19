@@ -19,6 +19,9 @@ var lines: Array[String] = []
 ## Inspect: en figurs namn och rader (stats och egenskaper) medan spelaren håller fingret på den.
 ## Nivåuppgångar efter segern (0.19): [{name, level, gains: {stat: ökning}, xp}]. Siffrorna räknas upp.
 var level_ups: Array = []
+## Fynden efter segern (0.20): material och Nether Stones, till höger, ett i taget med glöd.
+var finds: Array = []
+var data: Dictionary = {}
 ## Våningsreglerna som gäller (visas uppe till höger under knapparna).
 var rules_text := ""
 var inspect_title := ""
@@ -78,6 +81,26 @@ func _draw_level_ups(w: float, h: float, a: float) -> void:
 				HORIZONTAL_ALIGNMENT_CENTER, w, 4)
 
 
+## Fynden till höger om resultatet: en ädelsten i fyndets färg och namnet, ett i taget.
+func _draw_finds(w: float, h: float, a: float) -> void:
+	if finds.is_empty():
+		return
+	var x := w - 330.0
+	var y := h * 0.45 - 40.0
+	UiStyle.text(self, Vector2(x, y), "FYND", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, 300, 4)
+	for i in finds.size():
+		var f: Dictionary = finds[i]
+		var t := clampf((_big_t - 1.6 - i * 0.3) / 0.4, 0.0, 1.0)
+		if t <= 0.0:
+			continue
+		var c := Vector2(x + 16, y + 34 + i * 38)
+		var pop := 1.0 + 0.5 * maxf(0.0, 1.0 - t * 3.0)
+		GemArt.draw_find(self, data, f, c, 12.0 * pop, _t)
+		var col := Forge.find_color(data, f)
+		UiStyle.text(self, c + Vector2(24, 6), Forge.find_text(data, f), 17, Color(col.lightened(0.2), a * t),
+				HORIZONTAL_ALIGNMENT_LEFT, 290, 4)
+
+
 func set_result(result: String, sub: String, title := "") -> void:
 	mode = result
 	show_big(title if title != "" else ("SEGER!" if result == "victory" else "SÄLLSKAPET HAR STUPAT"), sub)
@@ -123,6 +146,7 @@ func _draw() -> void:
 			UiStyle.text(self, Vector2(0, h * 0.45 + 90 + i * 26), lines[i], 18, Color(UiStyle.TRAIT_GOLD, a),
 					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 		_draw_level_ups(w, h, a)
+		_draw_finds(w, h, a)
 		if mode in ["victory", "defeat"] and _big_t > 1.0:
 			var blink := 0.6 + 0.4 * sin(_t * 4.0)
 			UiStyle.text(self, Vector2(0, h - 16), "Tryck för att fortsätta", 20, Color(1, 1, 1, blink),

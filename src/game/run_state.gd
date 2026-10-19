@@ -70,6 +70,8 @@ var next_rules: Array = []
 var finished := false
 ## Egenskapernas statistik för hela körningen: trait_id -> {procs, damage, heal, unit} (hjältebladet).
 var trait_totals := {}
+## Fynden i körningen (0.20), visas på rumskartan: bärnsten, trick och Nether Stones.
+var found := {"amber": 0, "trick": 0, "nether": 0}
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -528,7 +530,7 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "room_id", "visited",
-		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals"]
+		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found"]
 
 
 func to_dict() -> Dictionary:

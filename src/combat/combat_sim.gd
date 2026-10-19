@@ -275,17 +275,30 @@ func equip_artifact(hero: CombatUnit, art: Dictionary) -> void:
 	var kind: Dictionary = data.artifacts.get(art.get("type", ""), {})
 	if kind.is_empty():
 		return
-	hero.artifact = {"type": art.type, "ability": art.get("ability", "")}
-	# Siralims artefakter höjer en stat; vi höjer med en andel ("stat_mult") eller ett tal ("stat_add").
-	var stat: String = kind.stat
-	var value := hero.max_hp if stat == "health" else float(hero.get(stat))
-	value = value * float(kind.get("stat_mult", 1.0)) + float(kind.get("stat_add", 0.0))
-	if stat == "health":
-		hero.max_hp = roundf(value)
-		hero.hp = hero.max_hp
-	else:
-		hero.set(stat, value)
-	hero.base_stats[stat] = value
+	hero.artifact = Forge.normalize(art)
+	# Siralims artefakter höjer en stat (typen), och bärnstenen och Nether Stone fler (0.20, Forge).
+	var values := {}
+	for stat in HeroStats.STATS:
+		values[stat] = hero.max_hp if stat == "health" else float(hero.get(stat))
+	var parts := Forge.stat_parts(data, hero.artifact, values)
+	for stat in HeroStats.STATS:
+		var value: float = values[stat]
+		for part in parts:
+			value += float(parts[part].get(stat, 0.0))
+		if stat == "health":
+			hero.max_hp = roundf(value)
+			hero.hp = hero.max_hp
+		else:
+			hero.set(stat, value)
+		hero.base_stats[stat] = value
+	# Trick och Nether Stone ger egna (dolda) egenskaper; en sten kan också ge en troféegenskap.
+	var effects := Forge.effect_traits(data, hero.artifact, hero.id)
+	for trait_id in effects.traits:
+		data.traits[trait_id] = effects.traits[trait_id]
+		hero.traits.append(trait_id)
+	for trait_id in effects.trait_ids:
+		if not hero.traits.has(trait_id):
+			hero.traits.append(trait_id)
 	var ability_id: String = hero.artifact.ability
 	if ability_id == "" or not data.abilities.has(ability_id):
 		return
@@ -296,7 +309,8 @@ func equip_artifact(hero: CombatUnit, art: Dictionary) -> void:
 		trigger = "acted"
 		when.action = kind.trigger
 	data.traits[trait_id] = {"name": "%s: %s" % [kind.name, data.abilities[ability_id].name], "hidden": true,
-			"artifact": true, "trigger": trigger, "chance": kind.chance, "when": when,
+			"artifact": true, "trigger": trigger, "when": when,
+			"chance": minf(Forge.CHANCE_MAX, float(kind.chance) * Forge.level_mult(hero.artifact.level)),
 			"effects": [{"type": "cast", "ability": ability_id}]}
 	hero.traits.append(trait_id)
 
@@ -807,7 +821,11 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	if direct:
 		factors.append(_consume_empower(src, probe))
 	# VAL (Troligt i Siralim): bara attacker kan bli kritiska.
-	var crit: bool = kind == "attack" and can_crit and (rng.randf() < crit_chance_for(src.crit_chance, ratio)
+	var crit_add := 0.0  # Taggsten (0.20)
+	if kind == "attack" and can_crit:
+		for m in _modifiers(src, "modify_damage", probe):
+			crit_add += float(m.get("crit_add", 0.0))
+	var crit: bool = kind == "attack" and can_crit and (rng.randf() < crit_chance_for(src.crit_chance, ratio) + crit_add
 			or _modify(src, "modify_damage", probe, "force_crit", false))
 	var raw := _formula(src, tgt, kind, amount, ability_id) if scaled else amount
 	var additional := 0.0
