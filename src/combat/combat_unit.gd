@@ -54,6 +54,8 @@ var times_hit := 0
 var sealed := {}
 ## Elitvariant (0.17): starkare, eget namn, egen trofé och egen egenskap.
 var elite := false
+## Questens Nemesis (Realm Quest "Jakt"): en namngiven elit.
+var nemesis := false
 var alive := true
 ## ability_id -> egna turer kvar.
 var cooldowns := {}

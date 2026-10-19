@@ -56,15 +56,31 @@ func test_altar_buys_perks_with_points_and_resets_for_free() -> void:
 	assert_true(p.buy_perk(_data, "oath_ward", "ward_titanic_rage"), "poängen kom tillbaka")
 
 
-func test_perk_points_grow_slowly_with_depth() -> void:
+func test_perk_points_come_from_realm_quests() -> void:
 	var p := Profile.new()
-	p.clear_depth(1)
-	assert_eq(p.perk_points(), Profile.PERK_POINTS_START)
 	p.clear_depth(2)
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START, "djupet ger inga poäng längre")
+	var r := p.complete_quest("crypt", 1)
+	assert_true(r.point)
 	assert_eq(p.perk_points(), Profile.PERK_POINTS_START + 1)
+	assert_true(not p.complete_quest("crypt", 1).point, "samma Realm och djup ger ingen ny poäng")
+	assert_true(p.complete_quest("chapel", 1).point)
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START + 2)
 	p.perks = {"oath_dawn": ["dawn_guiding_light", "dawn_greater_healing"]}
-	p.best_depth = 0
+	p.quests_done = []
 	assert_eq(p.active_perks(_data, "oath_dawn"), ["dawn_guiding_light"], "bara så många som poängen räcker till")
+
+
+func test_old_profiles_keep_their_perk_points() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("progress", "best_depth", 4)
+	var path := "user://test_progress_legacy.cfg"
+	cfg.save(path)
+	var p := Profile.load_from(path)
+	assert_eq(p.perk_points(), Profile.PERK_POINTS_START + 2, "4 klarade djup gav 2 poäng före 0.18")
+	p.save(path)
+	assert_eq(Profile.load_from(path).perk_points(), Profile.PERK_POINTS_START + 2, "och behåller dem efter sparning")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func test_run_brings_oath_and_its_perks() -> void:
@@ -254,7 +270,7 @@ func test_only_numeric_perks_have_ranks() -> void:
 
 func test_ranks_are_bought_one_at_a_time() -> void:
 	var p := Profile.new()
-	p.best_depth = 2  # 3 poäng
+	p.bonus_points = 1  # 3 poäng
 	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"))
 	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"), "nivå 2")
 	assert_true(p.buy_perk(_data, "oath_vengeance", "vengeance_wrath"), "nivå 3")

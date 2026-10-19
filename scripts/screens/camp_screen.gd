@@ -74,7 +74,7 @@ func _tap(p: Vector2) -> void:
 	if _button_rect().has_point(p):
 		if chosen != "":
 			state.take_trophy(chosen)
-		run.next_floor()
+		run.after_camp()
 
 
 ## Troféer att fördela: de hittade plus den nyss valda.
@@ -142,26 +142,22 @@ func _draw() -> void:
 		var body := "%s\nTrofé: %s" % [data.traits[own].name, data.traits[trophy].name if trophy != "" else "–"]
 		UiStyle.card(self, _hero_rect(i), h.name, body, trophy != "", Color(h.color), h.title.to_upper())
 
-	var next_id: String = state.floor_ids[state.floor + 1]
-	var enc: Dictionary = data.encounters[next_id]
-	var names := {}
-	var boss_text := ""
-	for kind in enc.enemies:
-		names[data.enemies[kind].name] = names.get(data.enemies[kind].name, 0) + 1
-		boss_text = data.enemies[kind].get("boss_text", boss_text)
-	var parts: Array[String] = []
-	for n in names:
-		parts.append(n if names[n] == 1 else "%s ×%d" % [n, names[n]])
-	UiStyle.text(self, Vector2(MARGIN, size.y - 112), "NÄSTA: " + enc.name.to_upper(), 18, Color("#ff8a6a"))
+	# Vad som väntar: rumskartan med questen och reglerna (0.18).
+	var next := "TILLBAKA TILL RUMSKARTAN – VÅNING %d" % (state.floor + 1)
+	if state.floor_cleared():
+		next = "KÖRNINGEN ÄR KLAR!" if state.is_last_floor() else "VÅNINGEN ÄR KLAR – VIDARE TILL VÅNING %d" % (state.floor + 2)
+	UiStyle.text(self, Vector2(MARGIN, size.y - 112), next, 18, Color("#ff8a6a"))
 	var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
 	var unknown := state.active_rules().size() - known.size()
 	if not state.active_rules().is_empty():
 		var rule_line := "REGLER: " + ", ".join(known) + ("" if unknown == 0 else "%s%d dolda" % [", " if not known.is_empty() else "", unknown])
 		UiStyle.text(self, Vector2(MARGIN, size.y - 136), rule_line, 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT,
 				size.x - 420)
-	UiStyle.text(self, Vector2(MARGIN, size.y - 88), ", ".join(parts), 15, Color(1, 1, 1, 0.8))
-	if boss_text != "":
-		UiStyle.text(self, Vector2(MARGIN, size.y - 64), boss_text, 15, Color("#ffb347"), HORIZONTAL_ALIGNMENT_LEFT, size.x - 420)
+	UiStyle.text(self, Vector2(MARGIN, size.y - 88), RunState.quest_text(state.quest) + (" – KLAR!" if state.quest.get("done", false) else ""),
+			15, Color(1, 1, 1, 0.8), HORIZONTAL_ALIGNMENT_LEFT, size.x - 420)
+	if not run.quest_reward.is_empty():
+		UiStyle.text(self, Vector2(MARGIN, size.y - 64), "Questen klar: +%d silver%s" % [run.quest_reward.silver,
+				" och en perk-poäng!" if run.quest_reward.point else ""], 15, Color("#ffb347"), HORIZONTAL_ALIGNMENT_LEFT, size.x - 420)
 	UiStyle.big_button(self, _button_rect(), "VIDARE", _t)
 	var m := _macro_rect()
 	draw_rect(m, Color(0, 0, 0, 0.6))

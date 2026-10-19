@@ -15,7 +15,7 @@ finaste trofén i erbjudandet. Natur-ljuden finns men exporteras inte förrän n
 
 ## Musik (`assets/audio/music/`)
 
-Mono 22 kHz (stämningarna 16 kHz), låg bitrate, 27–34 s långa loopar. Efterklangen är vikt tillbaka till början, så de loopar
+Mono 22 kHz (stämningarna 16 kHz och 16 s långa), låg bitrate, 27–34 s långa loopar. Efterklangen är vikt tillbaka till början, så de loopar
 sömlöst om man sätter `loop = true` på `AudioStreamOggVorbis` (i koden eller i importinställningen).
 
 | Fil | Karaktär | Var |
@@ -77,6 +77,14 @@ inte), bara träffljudet. Hjälpregel: **kastljudet** spelas när figuren svinga
 | `macro_nomatch` | Auto stannar för att ingen makrorad passar (i dag `k_error`, som är för skarpt) |
 | `jingle_victory` | Seger. Ersätter `victory.wav` |
 | `jingle_defeat` | Förlust. Ersätter `defeat.wav` |
+
+## Rumsögonblick (0.18, inte inkopplade än)
+
+| Ljud | Var |
+|---|---|
+| `room_door` | En dörr öppnas till nästa rum (knarr, drag, duns mot väggen; 1,9 s) |
+| `room_chest` | En kista öppnas (spänne, lock, mynt och ett litet skimmer; 2,2 s) |
+| `room_lock` | Ett hänglås låses upp (två nyckelklick och bygeln som släpper; 1,0 s) |
 
 ## Menyer och basen
 
