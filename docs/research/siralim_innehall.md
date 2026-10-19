@@ -253,9 +253,9 @@ och för att man vet att fler kommer på djupare nivåer.
 
 **Tonregel (VD:n, 2026-10-19), gäller alla framtida följeslagare:** inget riktigt ockult: inga
 warlocks, dödsbesvärjare, demonpakter eller mörka kulter bland följeslagarna. Mörkret och ondskan är
-fienden. I övrigt är allt tillåtet, och följeslagarna ska **inte** vara helgon. De är människor (och
-alver, dvärgar …) med fel och brister, som i verkliga livet: girighet, högmod, feghet, ett hett humör, ett
-förflutet de skäms över. Siralims mekanik får gärna lånas, men temat behöver inte följa originalet.
+fienden. I övrigt är allt tillåtet. Alla behöver inte vara perfekta helgon: någon får gärna vara lite
+trasslig (ett förflutet, ett hett humör, en svaghet), men alla behöver inte ha ett problem. Det är en
+blandning, som i verkliga livet. Siralims mekanik får gärna lånas, men temat behöver inte följa originalet.
 
 **1. Ronja Falkvind.** Människa, falkenerare från fjällen. Glad och rak, men tjuvjagade på kungens
 mark och har svårt att lyda order. Falken Stormvinge följer henne överallt.
