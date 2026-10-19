@@ -55,6 +55,10 @@ var instability := 0
 var boss_wins := {}
 ## Klarade Realm Quests, en per kombination av Realm och djup ("crypt:1").
 var quests_done: Array = []
+## Djupaste klarade djup per Realm (kampanjkartans front, 0.18).
+var realm_depth := {}
+## Inställning: 3D-ögonblicken när sällskapet går in i ett rum på rumskartan.
+var room_moments := true
 ## Perk-poäng från tiden före Realm Quests (0.14.1–0.17), så att äldre profiler behåller sina.
 var bonus_points := 0
 ## Anointments (Siralim): varje besegrad boss (räknas en gång per bosstyp) låser upp en plats där
@@ -86,8 +90,10 @@ func choose_depth(d: int) -> void:
 
 
 ## Hela kryptan klarad på djupet: öppnar nästa.
-func clear_depth(d: int) -> void:
+func clear_depth(d: int, realm_id := "") -> void:
 	best_depth = maxi(best_depth, d)
+	if realm_id != "":
+		realm_depth[realm_id] = maxi(int(realm_depth.get(realm_id, 0)), d)
 
 
 func add_trophy(trophy_id: String) -> void:
@@ -277,6 +283,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "instability", instability)
 	cfg.set_value("progress", "boss_wins", boss_wins)
 	cfg.set_value("progress", "quests_done", quests_done)
+	cfg.set_value("progress", "realm_depth", realm_depth)
+	cfg.set_value("progress", "room_moments", room_moments)
 	cfg.set_value("progress", "bonus_points", bonus_points)
 	cfg.set_value("progress", "bosses_defeated", bosses_defeated)
 	cfg.set_value("progress", "anointed", anointed)
@@ -305,6 +313,8 @@ static func load_from(path: String) -> Profile:
 	p.realm = cfg.get_value("progress", "realm", "crypt")
 	p.instability = clampi(int(cfg.get_value("progress", "instability", 0)), 0, RunState.MAX_INSTABILITY)
 	p.boss_wins = cfg.get_value("progress", "boss_wins", {})
+	p.realm_depth = cfg.get_value("progress", "realm_depth", {})
+	p.room_moments = cfg.get_value("progress", "room_moments", true)
 	if cfg.has_section_key("progress", "quests_done"):
 		p.quests_done = cfg.get_value("progress", "quests_done", [])
 		p.bonus_points = int(cfg.get_value("progress", "bonus_points", 0))

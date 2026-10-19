@@ -1,6 +1,7 @@
 extends Control
-## Kryptporten (Siralims Teleportation Shrine), nås från basen: välj tre följeslagare och eventuellt
-## en trofé från samlingen, och gå ned i kryptan. Eden väljs vid Edsaltaret (kortet leder dit).
+## Förberedelser (0.18, nås från kampanjkartan): välj tre följeslagare och eventuellt en trofé från
+## samlingen att ta med. Realm, djup och instabilitet väljs på kampanjkartan; Eden vid Edsaltaret
+## (kortet leder dit). KLAR sparar valet och går tillbaka till kampanjkartan.
 ## Knappar och kort reagerar när fingret släpps (undviker dubbeltryck mellan skärmar).
 
 const MARGIN := 28.0
@@ -20,6 +21,8 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	run.base_music()
+	brought = run.pending_trophy.get("trophy", "")
+	wearer = run.pending_trophy.get("wearer", "paladin")
 	var previous: Array[String] = []
 	for id in run.profile.party:
 		if id != "paladin":
@@ -49,17 +52,11 @@ func _gui_input(event: InputEvent) -> void:
 func _tap(p: Vector2) -> void:
 	var data: Dictionary = run.data
 	if _back_rect().has_point(p):
-		run.go(run.BASE_SCENE)
+		_done()
 		return
 	if _oath_rect().has_point(p):
 		run.go(run.ALTAR_SCENE)
 		return
-	var realms: Array = data.realms.keys()
-	for i in realms.size():
-		if _realm_rect(i).has_point(p):
-			run.profile.realm = realms[i]
-			run.save()
-			return
 	for i in COMPANIONS.size():
 		if _companion_rect(i).has_point(p):
 			var id: String = COMPANIONS[i]
@@ -83,31 +80,20 @@ func _tap(p: Vector2) -> void:
 			if _wearer_rect(i).has_point(p):
 				wearer = party[i]
 				return
-	if _depth_rect(-1).has_point(p):
-		run.profile.choose_depth(run.profile.depth - 1)
-		run.save()
-		return
-	if _depth_rect(1).has_point(p):
-		run.profile.choose_depth(run.profile.depth + 1)
-		run.save()
-		return
-	for dir in [-1, 1]:
-		if _instability_rect(dir).has_point(p):
-			var level: int = clampi(run.profile.instability + dir, 0, RunState.MAX_INSTABILITY)
-			if level != run.profile.instability:
-				run.profile.instability = level
-				run.roll_rules()
-				run.save()
-			return
 	if _macro_rect().has_point(p):
 		run.open_macros(run.START_SCENE)
 		return
 	if _button_rect().has_point(p) and companions.size() == 3:
-		var party := _party()
-		run.start_run(party)
-		if brought != "":
-			run.state.take_trophy(brought)
-			run.state.equip(wearer, brought)
+		_done()
+
+
+## Sparar sällskapet och trofén att ta med och går tillbaka till kampanjkartan.
+func _done() -> void:
+	if companions.size() == 3:
+		run.profile.party = _party()
+	run.pending_trophy = {} if brought == "" else {"trophy": brought, "wearer": wearer}
+	run.save()
+	run.go(run.CAMPAIGN_SCENE)
 
 
 func _party() -> Array[String]:
@@ -142,23 +128,8 @@ func _button_rect() -> Rect2:
 	return Rect2((size.x - 340) / 2.0, size.y - 76, 340, 60)
 
 
-## Realm-flikarna uppe till vänster (Siralims Realms).
-func _realm_rect(i: int) -> Rect2:
-	return Rect2(MARGIN + 165 + i * 150, 18, 140, 44)
-
-
 func _back_rect() -> Rect2:
 	return Rect2(MARGIN, 18, 150, 44)
-
-
-## Realm Depth: −1 till vänster, +1 till höger om siffran (nere till vänster).
-func _depth_rect(dir: int) -> Rect2:
-	return Rect2(MARGIN + (0.0 if dir < 0 else 170.0), size.y - 70, 50, 50)
-
-
-## Instabilitet (Siralims Realm Instability): −/+ mellan stora knappen och Makron.
-func _instability_rect(dir: int) -> Rect2:
-	return Rect2(size.x - MARGIN - 200 - 236 + (0.0 if dir < 0 else 140.0), size.y - 70, 46, 50)
 
 
 func _macro_rect() -> Rect2:
@@ -170,22 +141,10 @@ func _macro_rect() -> Rect2:
 func _draw() -> void:
 	var data: Dictionary = run.data
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.04, 0.035, 0.06))
-	_small_button(_back_rect(), "‹ BASEN")
+	_small_button(_back_rect(), "‹ KARTAN")
 	UiStyle.text(self, Vector2(0, 46), "SILVER %d" % run.profile.silver, 22, Color("#d8dde6"),
 			HORIZONTAL_ALIGNMENT_RIGHT, size.x - MARGIN, 4)
-	UiStyle.text(self, Vector2(0, 48), "KRYPTPORTEN", 38, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
-	var realm: Dictionary = data.realms.get(run.profile.realm, data.realms.crypt)
-	UiStyle.text(self, Vector2(0, 76), "%s: %s Varje seger ger silver och troféer." % [realm.name, realm.text], 16,
-			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
-	var realms: Array = data.realms.keys()
-	for i in realms.size():
-		var r := _realm_rect(i)
-		var on: bool = run.profile.realm == realms[i]
-		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.6))
-		draw_rect(r, Color(UiStyle.GOLD, 0.95) if on else Color(1, 1, 1, 0.35), false, 2.0)
-		UiStyle.text(self, r.position + Vector2(0, 29), data.realms[realms[i]].short.to_upper(), 18,
-				UiStyle.GOLD if on else Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
-
+	UiStyle.text(self, Vector2(0, 48), "FÖRBEREDELSER", 38, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
 	var ed: Dictionary = data.traits[run.profile.oath]
 	# Perkarna som verkar, med nivå ("Vrede ×2") och den lånade sist.
 	var active: Array = run.profile.active_perks(data, run.profile.oath)
@@ -200,6 +159,8 @@ func _draw() -> void:
 	var ed_body := "%s\nPerks: %s" % [ed.text, ", ".join(perks) if not perks.is_empty() else "inga (köp vid Edsaltaret)"]
 	UiStyle.card(self, _oath_rect(), ed.name, ed_body, true, UiStyle.GOLD, "PALADINENS ED – TRYCK FÖR EDSALTARET")
 
+	UiStyle.text(self, Vector2(0, 76), "Sällskapet och trofén du tar med. Realm, djup och instabilitet väljer du på kampanjkartan.", 16,
+			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 	UiStyle.text(self, Vector2(MARGIN, 230), "FÖLJESLAGARE – VÄLJ TRE", 14, Color(1, 1, 1, 0.6))
 	for i in COMPANIONS.size():
 		var id: String = COMPANIONS[i]
@@ -226,49 +187,8 @@ func _draw() -> void:
 			UiStyle.text(self, r.position + Vector2(0, 24), data.heroes[party[i]].name, 15, Color.WHITE,
 					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
-	_draw_depth()
-	_draw_instability(data)
-	UiStyle.big_button(self, _button_rect(), "IN I " + str(realm.short).to_upper(), _t, companions.size() == 3)
+	UiStyle.big_button(self, _button_rect(), "KLAR", _t, companions.size() == 3)
 	_small_button(_macro_rect(), "MAKRON")
-
-
-func _draw_depth() -> void:
-	var prof: Profile = run.profile
-	UiStyle.text(self, Vector2(MARGIN, size.y - 80), "DJUP (DJUPASTE KLARADE: %d)" % prof.best_depth, 14, Color(1, 1, 1, 0.6))
-	var can_down := prof.depth > 1
-	var can_up := prof.depth < prof.max_depth()
-	_small_button(_depth_rect(-1), "−" if can_down else "")
-	_small_button(_depth_rect(1), "+" if can_up else "")
-	UiStyle.text(self, Vector2(MARGIN + 50, size.y - 36), str(prof.depth), 34, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, 120, 6)
-	var lines := ["Fiender +%d %%" % roundi((CombatSim.depth_mult(prof.depth) - 1.0) * 100.0),
-			"Silver +%d %%" % roundi(Profile.SILVER_PER_DEPTH * (prof.depth - 1) * 100.0),
-			"Troféchans %d %%" % roundi(RunState.trophy_chance(prof.depth) * 100.0)]
-	for i in lines.size():
-		UiStyle.text(self, Vector2(MARGIN + 232, size.y - 56 + i * 18), lines[i], 14, Color(1, 1, 1, 0.7))
-
-
-func _draw_instability(data: Dictionary) -> void:
-	var level: int = run.profile.instability
-	var x := _instability_rect(-1).position.x
-	UiStyle.text(self, Vector2(x, size.y - 80), "INSTABILITET", 14, Color(1, 1, 1, 0.6))
-	_small_button(_instability_rect(-1), "−" if level > 0 else "")
-	_small_button(_instability_rect(1), "+" if level < RunState.MAX_INSTABILITY else "")
-	UiStyle.text(self, Vector2(x + 46, size.y - 36), str(level), 34, Color("#ff8a6a") if level > 0 else UiStyle.GOLD,
-			HORIZONTAL_ALIGNMENT_CENTER, 94, 6)
-	# Reglerna för nästa körning: de synliga med namn och silver, de dolda som frågetecken.
-	var rules: Dictionary = run.pending_rules
-	if level == 0:
-		UiStyle.text(self, Vector2(MARGIN, size.y - 104), "INGA VÅNINGSREGLER (INSTABILITET 0)", 14, Color(1, 1, 1, 0.45))
-		return
-	var parts: Array = rules.visible.map(func(id: String) -> String:
-		return "%s (%s)" % [data.floor_rules[id].name, data.floor_rules[id].text])
-	var silver := 0.0
-	for id in rules.visible + rules.hidden:
-		silver += float(data.floor_rules[id].get("silver", 0.0))
-	var line := "REGLER: %s · %d dolda · silver +%d %% · troféchans +%d" % [" · ".join(parts), rules.hidden.size(),
-			roundi(silver * 100.0), roundi(RunState.TROPHY_CHANCE_PER_INSTABILITY * level * 100.0)]
-	UiStyle.text(self, Vector2(MARGIN, size.y - 104), line, 14, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT,
-			size.x - MARGIN * 2, 3)
 
 
 func _small_button(r: Rect2, label: String) -> void:

@@ -1,10 +1,10 @@
 extends TapScreen
-## Basen mellan körningarna (Siralims slott, förenklat). Härifrån går man till Kryptporten,
+## Basen mellan körningarna (Siralims slott, förenklat). Härifrån går man till Kampanjkartan,
 ## Övningsgården, Edsaltaret, Smeden, Makron och Biblioteket. Förlust och seger på sista våningen leder hit.
 
 const PLACES := [
-	{"id": "gate", "name": "Kryptporten", "tag": "TELEPORTATION SHRINE",
-		"text": "Välj följeslagare, ta med en trofé och gå ned i kryptan. Varje vunnen strid ger silver."},
+	{"id": "gate", "name": "Kampanjkartan", "tag": "TELEPORTATION SHRINE",
+		"text": "Landet och dess Realms. Välj Realm, djup och instabilitet, förbered sällskapet och gå in."},
 	{"id": "practice", "name": "Övningsgården", "tag": "ARENA",
 		"text": "Prova sällskapet, makrona och troféerna mot valfria fiender. Inget förloras, Charges är fulla."},
 	{"id": "altar", "name": "Edsaltaret", "tag": "ENCHANTED WARDROBE",
@@ -24,7 +24,7 @@ func _tap(p: Vector2) -> void:
 			continue
 		match PLACES[i].id:
 			"gate":
-				run.go(run.START_SCENE)
+				run.go(run.CAMPAIGN_SCENE)
 			"practice":
 				run.go(run.PRACTICE_SCENE)
 			"altar":
@@ -67,8 +67,8 @@ func _status(id: String) -> String:
 	var data: Dictionary = run.data
 	match id:
 		"gate":
-			return "Djup %d · djupaste klarade %d · %d troféer" % [run.profile.depth, run.profile.best_depth,
-					run.collection.size()]
+			return "Djup %d · djupaste klarade %d · %d quests klarade" % [run.profile.depth, run.profile.best_depth,
+					run.profile.quests_done.size()]
 		"altar":
 			return "%s · %d perks" % [data.traits[run.profile.oath].name,
 					run.profile.owned_perks(run.profile.oath).size()]

@@ -81,7 +81,8 @@ func _ready() -> void:
 	if state.charges.is_empty():
 		state.fill_charges(data)
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
-			state.artifacts, state.depth, {"rules": state.active_rules(), "instability": state.instability})
+			state.artifacts, state.depth, state.battle_opts() if state.map != null and not state.practice
+			else {"rules": state.active_rules(), "instability": state.instability})
 	data = sim.data  # med artefakternas egenskaper
 	_auto = demo
 	_build_scene()
