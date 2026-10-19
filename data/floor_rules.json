@@ -1,8 +1,8 @@
 {
 	"risen_dead": {
 		"name": "De döda vaknar",
-		"text": "Varje fiende återuppstår en gång med 25 % liv.",
-		"silver": 0.3,
+		"text": "Varje fiende återuppstår en gång med 10 % liv.",
+		"silver": 0.6,
 		"original": "Resurrect on Death"
 	},
 	"sealed_words": {
@@ -14,43 +14,43 @@
 	"heavy_air": {
 		"name": "Tung luft",
 		"text": "Ingen kan undvika attacker.",
-		"silver": 0.1,
+		"silver": 0.05,
 		"original": "Can't Dodge"
 	},
 	"withered_grace": {
 		"name": "Vissnad nåd",
 		"text": "All helning är 40 % svagare.",
-		"silver": 0.2,
+		"silver": 0.05,
 		"original": "Less Healing"
 	},
 	"vigilant_guards": {
 		"name": "Vaksamma vakter",
-		"text": "Fiender försvarar sig i slutet av sin tur.",
-		"silver": 0.2,
+		"text": "Fiender har 30 % chans att försvara sig i slutet av sin tur.",
+		"silver": 0.4,
 		"original": "End of Turn: Defend"
 	},
 	"cursed_ground": {
 		"name": "Förbannad mark",
-		"text": "Hjältarna tar 5 % av sitt max liv i början av sin tur.",
-		"silver": 0.2,
+		"text": "Hjältarna tar 2 % av sitt max liv i början av sin tur.",
+		"silver": 0.25,
 		"original": "Damage Every Turn"
 	},
 	"mirror_bones": {
 		"name": "Speglande ben",
 		"text": "20 % av skadan som hjältarnas attacker och besvärjelser gör studsar tillbaka.",
-		"silver": 0.25,
+		"silver": 0.3,
 		"original": "Reflect Damage Taken"
 	},
 	"fog_weakness": {
 		"name": "Svaghetens dimma",
 		"text": "Sällskapet börjar striden Försvagat (−50 % skada i 2 turer).",
-		"silver": 0.15,
+		"silver": 0.2,
 		"original": "Debuff: Weak"
 	},
 	"no_guard": {
 		"name": "Inga bönder",
 		"text": "Ingen kan Försvara eller Provocera.",
-		"silver": 0.4,
+		"silver": 0.15,
 		"original": "Can't Defend/Provoke",
 		"hidden_only": true,
 		"min_instability": 2
@@ -58,7 +58,7 @@
 	"chaos_wind": {
 		"name": "Kaosvind",
 		"text": "Hjältarnas Attack och Defense byter plats när striden börjar.",
-		"silver": 0.4,
+		"silver": 0.6,
 		"original": "Stats are Swapped",
 		"min_instability": 3
 	}
