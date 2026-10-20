@@ -1303,6 +1303,107 @@ Det här är den största byggdelen som saknas efter troféer, artefakter och ka
   "per likadan gem", ethereal kopior.
 - Makroredigeraren behöver redan visa förmågor per hjälte; den följer med om listan kommer från gems.
 
+## 19. Vad man hittar i en Realm (underlag, 2026-10-20)
+
+Fråga från huvudtråden: VD vill ha "mer spel" på rumskartan. Inget är beslutat. Källor: wikins sidor Realms,
+Blessings, Gods, Nemesis, Nether Realm och Blood Grove (läst i dag), Codex. Säkerhet anges per rad.
+
+### 19.1 Föremål och platser i en Realm
+
+En Realm är en slumpad karta som man går fritt i. Bortom en viss synvidd är den mörk: gudarnas välsignelser
+ger "Increased View Distance". Det mesta nedan ligger utspritt och måste letas upp.
+
+| Sak | Vad den gör och ger | Hur vanlig | Tvingar utforskning? | Säkerhet |
+|---|---|---|---|---|
+| **Teleportation Shrine** | Vägen hem eller vidare. Används bara när Realm Questen är klar. | 1 per Realm | **Ja**: den är dold tills man hittar den. Välsignelse 9 avslöjar den från start, så normalt är den dold. | Bekräftat (Realms, Blessings) |
+| **Gudens altare** | Realmens gud: ge resurser för Favor, köp i gudens butik för Emblems. | 1 per Realm | Ja, dold tills man hittar det. Välsignelse 16 avslöjar det. | Bekräftat (Gods, Blessings) |
+| **Skattkistor** | Treasure: resurser, föremål, ibland Inscriptions och tillbehör. Det finns vanliga kistor, "Large Treasure Chests" och en egen kista per Realm. | Några per Realm; välsignelser ger +1 (tre gånger) | Ja | Bekräftat (Blessings, Blood Grove, Codex) |
+| **Material-kistor** (tre färger) | Vanlig = 1 Amber; sällsynt = trick-material; legendarisk = trait-material | Utspridda | Ja | Bekräftat (Realms) |
+| **Inscriptions** | Recept till Spell Gems (§18). När alla grundspells är hittade ger de Knowledge i stället. | Utspridda | Ja | Bekräftat (Realms) |
+| **Emblems** | Gudens valuta, bara i gudens egen Realm | Några; välsignelser ger +1 | Ja | Bekräftat |
+| **Resource Nodes** | Resurser (Blood Grove: Crystal). Ibland även ädelmetall eller kol. | Några; välsignelser ger +1 | Ja | Bekräftat (Blood Grove, Blessings) |
+| **Breakables** | Krossbara föremål med smått byte | Många; välsignelser ger +1 | Valfritt | Bekräftat (Blessings) |
+| **Ljus** (Candle) | Sällsynt. Tänds för +200 Favor hos Realmens gud. | Sällsynt | Valfritt | Bekräftat (Realms) |
+| **Skattkarta** | Ritar ett rött X på kartan; man gräver upp skatten där | Ibland | **Ja**: skickar en till en viss punkt | Bekräftat (Realms) |
+| **Treasure Golem** | Fiende som **flyr**. Ger mycket skatt om man hinner fånga den. | Slumpad | Ja, man jagar den | Bekräftat (Blessings: "Never Flee", "Spawn Chance") |
+| **Dumpling** | Som golemen men ger mycket erfarenhet. Flyr. | Slumpad | Ja | Bekräftat (Blessings, Nether Realm) |
+| **Mimic** | Ser ut som en kista men startar en strid | Slumpad | Fälla | Bekräftat |
+| **Pandemonium Shrine** | Slumpad effekt: skatt, en Dumpling, strid mot Pandemonium King & Queen, ingenting, eller Favor hos alla gudar | Ibland | Valfritt | Bekräftat (Realms) |
+| **Nether Realm-dörr** (från djup 21) | En liten egen bana. Exempel: taverna, korridor med skräp och en gycklare bakom, tre kistor (en med skatt, en med något dåligt, en tom; mimics), en kista med fyra kranar där kranarnas läge avgör innehållet, många kistor, 5 golems, en mini-boss som tappar sitt trait-material, en hantverkare som gör ett projekt gratis | Ibland | Valfritt; en överraskning bakom dörren | Bekräftat (Nether Realm, ofullständig lista) |
+| **Otherworld Portal** (från djup 30) | Bossrum med en Exotic-varelse | Sällsynt | Valfritt | Bekräftat (Realms) |
+| **Nether Boss-portal** (efter storyn) | Var 5:e djup | – | – | Bekräftat |
+| **Divination Candle** (efter ett Project) | Välj en varelse och betala Power för att kalla fram 5 grupper av den | – | – | Bekräftat |
+| **Realmens egna föremål** | Varje Realm har sina egna. Blood Grove: svampar (buff i resten av våningens strider), nomader (byter ved mot skatt), flöjter (kallar på satyrer; strid och Favor), fällor (Favor), grottor (mini-boss med svamp före och efter), squash (tre i kombination ger resurser eller en debuff på fienderna). Andra Realms: kemibord, frukt, tarotkort, musikkristaller med kombinationer. | Flera per Realm | Ja: de är Realmens personlighet | Bekräftat (Blood Grove, Steam-trådar) |
+| **Mini-boss-rum** | Grottor eller rum med en starkare strid. Ger Favor och bättre byte. | Några per Realm | Valfritt | Bekräftat (Gods, Blood Grove) |
+| **NPC:er med önskemål** | T.ex. Blood Groves nomader och "imp disputes". Gudens sida nämner "resolving imp disputes" som en källa till Favor. | Realm-bundet | Delvis | Bekräftat i exemplen; ingen samlad lista |
+| **Projekt-föremål** | Föremål till slottets Projects: från fiender, Realm Quests eller "på marken" | Utspridda | Ja, när man jagar ett projekt | Bekräftat (Codex) |
+
+**Lost Souls, nycklar och lönnrum:** jag hittade inget om dem i Ultimate. Nycklarna som finns är Gate of the
+Gods-nycklar, och de kommer från Nether Bosses och Keyforge-uppdrag, inte från låsta dörrar i en Realm. "Lönnrum"
+motsvaras närmast av Nether Realm-dörrarna. *Ej belagt: kan finnas i spelet utan att stå på wikin.*
+
+**Gudarnas Favor** fås av: gåvor vid altaret, Realmens föremål (+25), föremål som startar strider (+50),
+mini-boss-rum, Realm Quest (+200) och särskilda NPC-händelser. Favor-ranker ger välsignelser i just den
+Realmen: fler kistor, noder och Emblems, längre synvidd, ett avslöjat altare eller en avslöjad Shrine. Det är
+originalets drivkraft för att gå tillbaka till samma Realm. (Bekräftat, Gods och Blessings)
+
+### 19.2 Hur striderna börjar
+
+- **Synliga fiendegrupper som vandrar omkring** ("wandering groups") på kartan. Man går in i en grupp för att
+  starta en strid. Nemesis-varelser "vandrar som andra grupper" men har en varningstext över sig (t.ex. Hearty,
+  Thorns, Greedy: dubbelt liv, reflekterad skada, extra byte). (Bekräftat, Nemesis)
+- Dessutom startar föremål strider: flöjter, mimics, benhögar och Pandemonium.
+- Slumpmöten per steg har jag inte sett belagda i Ultimate (Siralim 3 hade dem). *Troligt: inga slumpmöten.*
+- **"Enemies: 2" på minikartan:** antagligen antalet vandrande grupper som är kvar. *Ej belagt.* För False God-
+  uppdragen ska man "besegra alla fiender i Realmen" (5 grupper med runor), så gruppernas antal är räknebart och
+  ändligt. (Bekräftat, Codex/Guilds)
+
+### 19.3 Realm Quests
+
+- En slumpad quest per Realm. Den måste klaras innan Teleportation Shrine låter en åka hem eller vidare. Faller
+  laget, eller sparar man och laddar om, får man en ny quest nästa gång. (Bekräftat)
+- Belöning: skatt, Perk Points (10 på det djupaste djupet), +200 Favor, ett Emblem på det djupaste djupet och
+  +20 % Fortune. (Bekräftat)
+- **Typerna:** ingen källa listar dem; wikin saknar en sida om dem. Från spelet och Siralim 3 är jag ganska säker
+  på att det finns quests av typen *besegra ett antal av en viss varelse* (jaga den sorten på kartan) och *samla
+  ett antal föremål* som ligger utspridda eller tappas av fiender. Båda skickar spelaren runt hela kartan.
+  *Osäkert, inte belagt: andra typer.* VD kan läsa questens text i spelet; det är snabbaste vägen till en lista.
+
+### 19.4 Storlek och tid
+
+Ingen källa anger kartans storlek eller tid per Realm. *Osäkert (spelarvana):* en Realm tar ungefär 5–15
+minuter; den som ska klara questen, hitta Shrinen och plocka kistorna går över större delen av kartan, med
+kanske 5–10 strider. Kontrollera gärna mot VD:ns eget spelande.
+
+### 19.5 Bedömning: vad som passar en nodkarta på telefon
+
+**Passar bra** (fungerar som rum eller noder utan fri gång):
+- **Dold utgång och dimma:** utgången (Shrine) och altaret är dolda tills man hittat dem. Det är originalets
+  starkaste skäl att utforska och går direkt att göra med "rum som inte syns förrän man står bredvid".
+- **Synliga fiendegrupper med varning:** fiender som står i rum och syns innan man går in (Nemesis med text).
+  Matchar redan vår Elit och avsikter.
+- **Kistor, materialkistor och skattkarta:** skattkartan pekar ut ett rum med X. Bra skäl att gå omvägar.
+- **Nether-dörrar som "?"-rum:** en egen liten händelse bakom dörren (tre kistor, kranarna, taverna). Svarar på
+  VD:ns önskan om överraskning.
+- **Realmens egna föremål:** svampar (buff för våningen), fällor, en NPC som vill ha något. Ger Realmen
+  personlighet; några per Realm räcker.
+- **Treasure Golem som flyr:** fungerar som ett rum som försvinner om man inte går dit inom N steg.
+- **Quest-typer som skickar runt:** "besegra 3 av X" och "samla 3 föremål" kräver ett nät, inte en enkelriktad
+  väg.
+- **Favor per Realm:** belönar att gå tillbaka till samma Realm (synvidd, fler kistor), som VD vill.
+
+**Kräver fri gång och passar sämre:**
+- Breakables och resursnoder i stora mängder: på en nodkarta blir det bara "tryck för silver". Slå ihop dem till
+  kistans byte.
+- Vandrande grupper som rör sig och jagar: rörelse i realtid passar inte en turfri karta. *Kompromiss:* grupper
+  som flyttar ett rum när spelaren rör sig, men det är vårt eget val.
+- Synvidd i rutor och att leta i hörn.
+- Projekt-föremål "på marken": vi har inga Projects.
+
+**Skepsis:** att gå tillbaka i ett rumsnät är originalets känsla, men varje steg tillbaka på en telefon är ett
+tryck utan innehåll. Originalet löser det med att kartan är full av saker. Ett nät på 10–15 rum fungerar bara om
+nästan varje rum har något, och om utgången är dold så att man har ett skäl att leta.
+
 ---
 
 ## Källor
@@ -1334,6 +1435,7 @@ Det här är den största byggdelen som saknas efter troféer, artefakter och ka
 - Slott och Projects: [Projects (wiki)](https://siralimultimate.wiki.gg/wiki/Projects), Codex-avsnitten Castle och Realms
 - [Cleric](https://siralimultimate.wiki.gg/wiki/Cleric), [Siegemaster](https://siralimultimate.wiki.gg/wiki/Siegemaster), [Steam: Speed stat](https://steamcommunity.com/app/1289810/discussions/0/3096760955426011883/), [Steam: new player question (krit)](https://steamcommunity.com/app/1289810/discussions/0/3467226415503450035/), [S3: speed → crit/dodge](https://steamcommunity.com/app/841770/discussions/0/1642042464747022009/)
 - Charges: [Spell Gems](https://siralimultimate.wiki.gg/wiki/Spell_Gems), [Benediction](https://siralimultimate.wiki.gg/wiki/Benediction), [Breath of Life](https://siralimultimate.wiki.gg/wiki/Breath_of_Life), [Holy Armor](https://siralimultimate.wiki.gg/wiki/Holy_Armor), [Fireball](https://siralimultimate.wiki.gg/wiki/Fireball)
+- Realm-innehåll (§19): [Blessings](https://siralimultimate.wiki.gg/wiki/Blessings), [Gods](https://siralimultimate.wiki.gg/wiki/Gods), [Nemesis](https://siralimultimate.wiki.gg/wiki/Nemesis), [Nether Realm](https://siralimultimate.wiki.gg/wiki/Nether_Realm), [Blood Grove](https://siralimultimate.wiki.gg/wiki/Blood_Grove), [Steam: kombinationer i Realms](https://steamcommunity.com/app/1289810/discussions/0/3189112650406353420)
 - [Steam-diskussion om fusion](https://steamcommunity.com/app/1289810/discussions/0/5767400709485797483),
   [Steam-diskussion om instability](https://steamcommunity.com/app/1289810/discussions/0/5710018482973776302)
 - Mobilbetyg och styrning: [worldsapps](https://worldsapps.com/reviews-siralim-ultimate), [grand-screen](https://grand-screen.com/games/siralim-ultimate/reviews/)
