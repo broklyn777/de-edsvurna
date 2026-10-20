@@ -165,12 +165,25 @@ func _show_room(r: Dictionary) -> void:
 
 
 ## Befrielsen, och ett förslag på en ny makrorad för den nya sortens hjälte (0.23).
+## Rutan visar porträttet och vem hen är (egen egenskap), och förslaget under (0.26.1).
 func _rescue_dialog(text: String) -> Dictionary:
-	var hint: Dictionary = run.macro_hint(run.last_recruit)
-	if hint.is_empty():
-		return {"title": "En fånge befrias", "text": text, "options": [{"label": "VÄLKOMMEN!"}]}
-	return {"title": "En fånge befrias", "text": text + "\nNy makrorad? " + String(hint.text),
-			"options": [{"label": "LÄGG TILL RADEN", "hint": run.last_recruit}, {"label": "INTE NU"}]}
+	var id: String = run.last_recruit
+	var out := {"title": "En fånge befrias", "text": text, "hero": id, "about": rescue_about(run.data, id),
+			"options": [{"label": "VÄLKOMMEN!"}]}
+	var hint: Dictionary = run.macro_hint(id)
+	if not hint.is_empty():
+		out.hint = "Ny makrorad? " + String(hint.text)
+		out.options = [{"label": "LÄGG TILL RADEN", "hint": id}, {"label": "INTE NU"}]
+	return out
+
+
+## En rad om den befriade: hens egen egenskap och vad den gör.
+static func rescue_about(data: Dictionary, hero_id: String) -> String:
+	var traits: Array = data.heroes.get(hero_id, {}).get("traits", [])
+	if traits.is_empty() or not data.traits.has(traits[0]):
+		return ""
+	var t: Dictionary = data.traits[traits[0]]
+	return "%s: %s" % [t.get("name", traits[0]), t.get("text", "")]
 
 
 func _tap_dialog(p: Vector2) -> void:
@@ -224,6 +237,8 @@ func _moments_rect() -> Rect2:
 
 
 func _dialog_rect() -> Rect2:
+	if _dialog.has("hero"):
+		return Rect2(size.x / 2 - 380, size.y / 2 - 210, 760, 420)  # befrielsen: porträtt, egenskap och makroförslag
 	return Rect2(size.x / 2 - 330, size.y / 2 - 150, 660, 300)
 
 
@@ -373,8 +388,20 @@ func _draw_dialog() -> void:
 	draw_rect(d, Parchment.INK, false, 3.0)
 	UiStyle.text(self, d.position + Vector2(0, 44), String(_dialog.title).to_upper(), 28, Parchment.INK,
 			HORIZONTAL_ALIGNMENT_CENTER, d.size.x, 0)
-	draw_multiline_string(UiStyle.bold(), d.position + Vector2(30, 84), _dialog.text, HORIZONTAL_ALIGNMENT_CENTER,
-			d.size.x - 60, 20, 3, Parchment.INK)
+	if _dialog.has("hero"):
+		var pr := Rect2(d.position + Vector2(30, 70), Vector2(120, 140))
+		DialogBox.portrait(self, run.data, String(_dialog.hero), pr)
+		var x := pr.end.x + 24
+		var w := d.end.x - 30 - x
+		var y := d.position.y + 88
+		y += UiStyle.para(self, Vector2(x, y), _dialog.text, 18, Parchment.INK, w, 3) + 8
+		if String(_dialog.about) != "":
+			y += UiStyle.para(self, Vector2(x, y), _dialog.about, 16, Color(Parchment.INK, 0.8), w, 4) + 8
+		if _dialog.has("hint"):
+			UiStyle.para(self, Vector2(x, y), _dialog.hint, 16, Parchment.INK, w, 5)
+	else:
+		draw_multiline_string(UiStyle.bold(), d.position + Vector2(30, 84), _dialog.text, HORIZONTAL_ALIGNMENT_CENTER,
+				d.size.x - 60, 20, 3, Parchment.INK)
 	var options: Array = _dialog.options
 	for i in options.size():
 		var r := _option_rect(i, options.size())

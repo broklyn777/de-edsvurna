@@ -4,7 +4,7 @@
 			"name": "Mäster Gorm",
 			"title": "Paladinernas mästare",
 			"station": "macros",
-			"where": "i sin kammare",
+			"where": "i hans kammare",
 			"color": "#8a7a5a",
 			"greet": [
 				"Där är du, {namn}. Kom in.",

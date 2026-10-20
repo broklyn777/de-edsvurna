@@ -163,10 +163,11 @@ func _spoken() -> Array:
 		for l in Intro.lines(step):
 			if l.who != StoryBox.NARRATOR:
 				out.append([l.who, l.text])
-		for who in step.get("at", {}):
-			var at: Variant = step.at[who]
-			for l in (at if at is Array else [at]):
-				out.append([who, l])
+		for key in ["at", "at_short"]:
+			for who in step.get(key, {}):
+				var at: Variant = step[key][who]
+				for l in Intro.speech(at if at is Array else [at], who):
+					out.append([l.who, l.text])
 	for st in _data.intro.replies:
 		var who := Dialog.station_person(_data, st)
 		if who != "":
@@ -226,11 +227,12 @@ func test_the_sword_quest_shows_its_progress() -> void:
 	Intro.talked(_data, p)
 	p.silver = 160
 	p.forge("paladin", "sword", "")
-	assert_true(Intro.quest_text(_data, p).ends_with("Nu nivå 1 av 3 – nästa nivå 60 silver."), Intro.quest_text(_data, p))
+	assert_true(Intro.quest_text(_data, p).ends_with("Nivå 1 av 3 – det fattas 60 silver."),
+			Intro.quest_text(_data, p))
 	p.silver = 77
 	assert_true(p.level_artifact("paladin") != null, "77 silver räcker till nivå 2")
 	assert_eq(p.silver, 17)
-	assert_true(Intro.quest_text(_data, p).ends_with("nivå 2 av 3 – nästa nivå 80 silver."))
+	assert_true(Intro.quest_text(_data, p).ends_with("Nivå 2 av 3 – det fattas 63 silver."))
 	assert_true(p.level_artifact("paladin") == null, "men inte till nivå 3")
 	var hedda: String = Intro.current(_data, p).at.hedda[0]
 	assert_eq(Dialog.fill_for(hedda, p).substr(0, 48), "Svärdet är på nivå 2 av 3. Nästa nivå kostar 80 ")

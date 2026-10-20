@@ -225,7 +225,8 @@ func _refresh_macros() -> void:
 	for c in _macro_box.get_children():
 		c.queue_free()
 	for id in _macro_ids():
-		var b := _button("%s  (%d rader)" % [run.macros[id].name, run.macros[id].lines.size()], _select.bind(id))
+		var n: int = run.macros[id].lines.size()
+		var b := _button("%s  (%d %s)" % [run.macros[id].name, n, "rad" if n == 1 else "rader"], _select.bind(id))
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if id == current:
