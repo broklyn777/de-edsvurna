@@ -13,7 +13,7 @@ klädda och beväpnade i Blender för Drakvalvet:
 | solveig.glb | Quaternius "Animated Woman" (poly.pizza/m/qJ2gsTUBHL) | Solveig |
 | liria.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R) | Jägaren Eira (och koger åt skelettbågskytten) |
 | skelett.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq) utan kropp; benen är stela delar byggda i Blender (Drakvalvet `Monster/skelett.py`) | Alla skelettfiender och Benfursten |
-| brokk.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), omformad till dvärg med skägg i Blender (Drakvalvet `qt-hjalte-dwarf-m.glb`) | Brokk |
+| brokk.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), omformad till dvärg med skägg i Blender (Drakvalvet `qt-hjalte-dwarf-m.glb`), med tung rustning (axelskydd, bröstplåt, bälte) byggd i Blender | Brokk |
 | alva.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R) med kåpa och huva (Drakvalvet `qt-akolyt.glb`) | Syster Alva |
 | kapa.glb | Quaternius "Hooded Adventurer" (poly.pizza/m/y9KWOVG21R), bara kåpan och hänget kvar (Drakvalvet `qt-kultist.glb`, kropp och animationer bortskurna med gltf-transform) | Kåpa åt gravprästen och Benfursten |
 | rustning.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq) utan kropp, med plåtrustning (Drakvalvet `qt-tom_rustning.glb`) | Rustning åt gravväktaren och axelskydd åt Benfursten |
