@@ -31,7 +31,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   1–2 om det finns plats (Paladinen + 3), annars väntar de i **Värdshuset**, där man väljer sällskap och de som
   stannar behåller sin nivå. `Profile.recruited`, `recruit()`, `set_party()`; `RunState.place_prisoners()`;
   `Run.rescue_prisoner()`. Ikapphämtning (vårt val): +50 % erfarenhet per nivå under sällskapets snitt, högst ×3.
-  Fiender efter sällskapets storlek (vårt val): `CombatSim.PARTY_SCALE` (×0,56 för två, ×0,74 för tre).
+  Fiender efter sällskapets storlek (vårt val): högst sällskapet + 1 fiender (0.23.3, `CombatSim.enemy_lineup`,
+  `EXTRA_ENEMIES`: dubbletter går först, aldrig ledaren, bossen eller den som gör en annan immun) och
+  `CombatSim.PARTY_SCALE` (×0,54 för två, ×0,64 för tre). `BALANS=forsta` mäter första nedstigningen med en ny profils makron.
   När en ny sorts hjälte ansluter föreslår spelet en makrorad (`heroes.json` "macro_hint"). Äldre profiler
   behåller sina fyra och får Imma i Värdshuset.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets

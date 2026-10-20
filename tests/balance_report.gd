@@ -32,6 +32,10 @@ func _init() -> void:
 		_party_sizes(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "forsta":
+		_first_descent(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "artefakter":
 		_artifacts(data)
 		quit()
@@ -186,6 +190,48 @@ func _party_sizes(data: Dictionary) -> void:
 	print("=== De nya följeslagarna i stället för Eira (Kryptan, väntad nivå) ===")
 	for id in ["imma", "ronja", "lirien", "tove", "hulda", "ragnhild", "sefir"]:
 		_party_line(data, "crypt", ["paladin", "brokk", "alva", id], lv, data.heroes[id].short)
+
+
+## Första nedstigningen (0.23.3): små sällskap med en ny profils makron (MACRO) mot fyra hjältar med startmakrona,
+## på väntad nivå och för en ny profil på nivå 1 (med och utan befriade fångar). BALANS=forsta.
+func _first_descent(data: Dictionary) -> void:
+	var lv := HeroStats.expected_level(1)
+	var fresh := Bot.new_profile_macros(data)
+	print("=== Första nedstigningen, djup 1 (fienderna ×%s, högst sällskapet + %d) ===" % [str(CombatSim.PARTY_SCALE),
+			CombatSim.EXTRA_ENEMIES])
+	for realm_id in ["crypt", "chapel"]:
+		_first_line(data, realm_id, "4 hjältar, startmakron, nivå %d" % lv, ["paladin", "brokk", "alva", "eira"], lv, {})
+		_first_line(data, realm_id, "Paladinen + Imma, nivå %d" % lv, ["paladin", "imma"], lv, {"bot_macros": fresh})
+		_first_line(data, realm_id, "+ Imma + Brokk, nivå %d" % lv, ["paladin", "imma", "brokk"], lv, {"bot_macros": fresh})
+		_first_line(data, realm_id, "ny profil nivå 1, befriar fångar", ["paladin", "imma"], 1,
+				{"bot_macros": fresh, "recruited": ["imma"]})
+		_first_line(data, realm_id, "ny profil nivå 1, ingen befrias", ["paladin", "imma"], 1,
+				{"bot_macros": fresh, "recruited": data.heroes.keys()})
+
+
+func _first_line(data: Dictionary, realm_id: String, label: String, party: Array, lv: int, extra: Dictionary) -> void:
+	var line := "  %-8s %-34s" % [data.realms[realm_id].short, label]
+	for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+		var cleared := 0
+		var f0 := 0
+		var f0_won := 0
+		var end0 := 0
+		var end0_won := 0
+		for seed_value in range(1, RUNS + 1):
+			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
+			opts.merge(extra.duplicate(true))
+			var r := Bot.run_expedition(data, seed_value, skill, {}, {}, 1, realm_id, opts, "simple")
+			cleared += 1 if r.cleared else 0
+			f0 += r.f0_fights
+			f0_won += r.f0_won
+			# Våning 1:s slutstrid: nådd om körningen klarades, föll senare eller föll just där.
+			var lost: String = r.get("lost_at", "")
+			if r.cleared or lost == "f0_end" or (lost != "" and not lost.begins_with("f0_")):
+				end0 += 1
+				end0_won += 0 if lost == "f0_end" else 1
+		line += "  %s %3d %% (v1 %3d %%, v1-slut %3d %%)" % [_skill_name(skill), roundi(100.0 * cleared / RUNS),
+				roundi(100.0 * f0_won / maxi(f0, 1)), roundi(100.0 * end0_won / maxi(end0, 1))]
+	print(line)
 
 
 func _party_line(data: Dictionary, realm_id: String, party: Array, lv: int, label: String, recruited := []) -> void:

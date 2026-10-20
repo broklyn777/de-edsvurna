@@ -191,3 +191,15 @@ func test_imma_is_the_fastest_and_her_macro_starts_simple() -> void:
 		if id != "imma":
 			assert_true(_data.heroes.imma.stats.speed >= _data.heroes[id].stats.speed, id)
 	assert_eq(_data.macros.imma.lines[0].cond, "has_buff")
+
+
+func test_a_small_party_meets_fewer_enemies() -> void:
+	var two := CombatSim.create(_data, "crypt_1", 1, ["paladin", "imma"], {}, {}, {}, 1, {"elite_chance": 0.0})
+	assert_eq(two.enemies.map(func(e: CombatUnit) -> String: return e.kind), ["skeleton_warrior", "skeleton_archer", "grave_priest"],
+			"högst sällskapet + 1, dubbletten går först")
+	var four := CombatSim.create(_data, "crypt_1", 1, ["paladin", "brokk", "alva", "eira"], {}, {}, {}, 1, {"elite_chance": 0.0})
+	assert_eq(four.enemies.size(), 4, "fyra hjältar möter alla")
+	var bishop := CombatSim.enemy_lineup(_data, ["fallen_bishop", "witch", "wraith", "cultist"], 2)
+	assert_eq(bishop, ["fallen_bishop", "witch", "cultist"], "bossen och Kultisten som gör honom immun blir kvar")
+	assert_eq(CombatSim.enemy_lineup(_data, ["bone_lich", "skeleton_warrior", "grave_priest"], 1), ["bone_lich", "skeleton_warrior"])
+
