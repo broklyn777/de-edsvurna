@@ -1,0 +1,36 @@
+# Senare – saker vi har bestämt eller vill komma ihåg
+
+Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom varje del.
+
+## Bestämt av VD, inte byggt
+
+- **Granska syns (ⓘ)** (2026-10-20): ett litet ⓘ på fiendernas livmätare. Ett tryck på hela figuren ska också öppna
+  granskningen (tryck och håll finns kvar). Lägg till fiendens nivå och förmågor i rutan.
+
+## Förslag VD vill ha kvar (bygg när det passar)
+
+- **Skadeloggen lär ut skydd** (2026-10-20). VD visste inte att raderna går att trycka på; uträkningen räckte långt.
+  1. En skyddsrad i uträkningen: "Utan skydd: 23. Defense tog 9 (39 %). Försvara tog 35 % av resten. Kvar: 9."
+  2. En kort markering i listan: "Gravväktare → Imma: 10 (Defense −6)".
+  3. Resistant: loggen säger "Resistant: halv verkan" när en debuff träffar någon som är Resistant (det minskar
+     inte skada, ett lätt missförstånd).
+  4. Visa tydligare att raderna går att trycka på (VD hittade det inte).
+
+## Putsa
+
+- Lägret säger "SEGER! VÄLJ EN TROFÉ" fast alla erbjudna troféer redan hamnar i samlingen (0.26.3).
+- Samma trick får sitta på båda trickplatserna i en artefakt; originalet förbjuder det (`Profile.socket()`).
+- Förberedelser blir trång med många lärjungar och troféer; behöver rullning när samlingen växer.
+- Mät balansen med troféer som följer med (0.26.3) på senare nedstigningar.
+
+## Idéer att diskutera (inte bestämt)
+
+- Kort sammanfattning efter striden: största skadekällan, den avgörande egenskapen, fiendens farligaste effekt
+  (research §8b; siffrorna finns i statistiken per egenskap).
+- Introt bygger en liten fungerande kombination i stället för att bara visa systemen (research §8b).
+- Rumskartan som en grotta av rum (§19), Spell Gems och Rhea (§18.9).
+
+## Väntar på annat
+
+- Tors porträtt (prompt i `docs/illustrationer.md`, B1).
+- Skärmgranskningen i ChatGPT när filerna går att öppna (`~/Downloads/rpg007-till-chat/PROMPTER.md`).
