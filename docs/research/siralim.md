@@ -321,6 +321,48 @@ delmål och omväxlande utforskning.
 - **Utforskningen** (6): samma fråga som §19.
 - **Sökning** (1) blir viktig först när samlingen är stor; bra att bygga in när Bestiariet kommer.
 
+### 8c. När blir Siralim svårt? (VD:ns källa, 2026-10-20)
+
+Märkning från källan: SÄKERT = uttryckligen belagt; TROLIGT = tolkning av återkommande uppgifter; GISSNING = vår slutsats.
+
+**Kurvan:** ojämn. Långa sträckor med lätta segrar, sedan stoppar en boss eller en fiendekombination plötsligt allt. Laget
+och inställningarna betyder mer än något bestämt djup. Mönstret återkommer också i diskussioner 2026. (TROLIGT)
+
+**Försiktigt spann** för de första stora proven av ett lagbygge: djup 30–60. Tolkning, inte mätning; vissa fastnar mycket
+tidigare, andra aldrig. (GISSNING)
+
+**Begrepp som blandas ihop** (SÄKERT): Realm Depth, varelsernas nivå, Game Difficulty (fiendernas nivåskalning) och Realm
+Instability. Att fastna på djup 68 med RI5 är inte detsamma som på RI0.
+
+**Rapporter** (SÄKERT att de rapporteras, inte att de gäller alla):
+
+| Djup | Upplevelse | År |
+|---|---|---|
+| 6 | En Necromancer kämpar innan kärnmekaniken kommer igång | 2026 |
+| ~30 | Striderna nästan automatiska efter perks och fusion, ingen utmaning | 2026 |
+| 37–39 (Eternity's End) | En Hell Knight som dödade allt med krit utplånas innan den hinner agera | juli 2026 |
+| 45–48 | En plötslig bossmur | 2021 (gammalt) |
+| 53 till kampanjens slut | Lätt, även slutbossen, för en förstagångsspelare med Hell Knight | mars 2026 |
+| Caliban (kampanjens slut) | En Defiler-spelare fastnar helt | 2026 |
+| 68, RI5 | Ett Pyromancer-lag förlorar ibland utan att få en tur; stabilt efter sänkning till RI3 | 2024 |
+| 150–173 | En fastnar på en Nether Boss; en annan klarar sig med sitt etablerade lag men misslyckas med nya | 2026 |
+
+**Vad som gör det svårt:**
+- Att få kombinationen att fungera. (TROLIGT)
+- Att överleva tills man får agera; mer anfall löser det inte. (SÄKERT)
+- Fiender som motverkar lagets strategi, t.ex. begränsar upprepade anfall eller casts; då behövs ett annat sätt att vinna. (SÄKERT)
+- Att förstå varför man förlorar: spelaren på djup 68 frågade hur man ser vilka delar som bidrar och vad man ska byta mot försvar. (SÄKERT)
+
+**Senare:** ingen belagd allmän mur vid djup 100. På djup 700 med RI5 utplånas halvfärdiga lag, medan bra lag gör vanliga
+strider lätta igen. (SÄKERT att båda upplevelserna finns.) Kurvan är återkommande murar och ombyggen. (TROLIGT)
+
+**Versioner:** 2.0 lade till Relaxed/Ruthless, Calm Mode och fler start-specializations, så exakta jämförelser är osäkra.
+Rapporter från 2026 väger tyngre än 2021; det finns ingen median för den första svåra bossen. (SÄKERT)
+
+**Lärdom för oss** (GISSNING): låt de första stora svårighetsstegen pröva *en* begriplig svaghet i taget (överlevnad,
+turordning, en annan skadekälla). Ge efter en förlust tillräckligt med information för att ändra laget och försöka igen
+(kopplar till skadeloggen, kvittot och §8b punkt 7). Kopiera inte djupsiffrorna; mät våra egna spelare.
+
 ## 9. Macros (makron): nya fynd
 
 Komplement till `docs/ideer/siralim_makron.md`. Fynden kommer från Siralim 3-forum och gäller kanske
@@ -1589,6 +1631,8 @@ körning. VD:s regel: "vi tar det som funkar bäst från Siralim." Inget är bes
    kräver utforskning?
 2. **Bara den egna rutan syns.** Originalet har en synvidd runt spelaren. *Förslag:* grannrutorna syns som typ (en symbol: strid,
    skatt, okänt), inte med innehåll. Då kan man välja väg, som i originalet.
+   **Beslut (VD, 2026-10-20):** bara rutan man står på och rutor man har besökt syns. Grannrutorna visar ingenting. Strängare än
+   originalets synvidd; vårt val (VAL).
 3. **Ett tryck per ruta.** 8×8 = 64 rutor; med en väg tillbaka blir det många tryck utan innehåll (VD:s egen farhåga i §19.5).
    *Förslag:* tryck på en redan besökt ruta så går man dit automatiskt (som Pixel Dungeon). Bara nya rutor kostar ett tryck var.
 4. **1–2 stora våningar i stället för 3 små.** Originalets Realm är *en* stor karta med en quest, så det stämmer. Men Charges
