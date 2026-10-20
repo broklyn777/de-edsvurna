@@ -11,6 +11,12 @@ static func fill(text: String, hero_name: String) -> String:
 	return text.replace("{namn}", hero_name)
 
 
+## 0.24.3: {namn}, {svärdsnivå} och {nästa_nivå} (svärdets nästa nivå i silver) ur profilen.
+static func fill_for(text: String, profile: Profile) -> String:
+	var lv := int(profile.artifact("paladin").get("level", 0))
+	return fill(text, profile.hero_name).replace("{svärdsnivå}", str(lv)).replace("{nästa_nivå}", str(Forge.level_cost(lv)))
+
+
 static func person(data: Dictionary, id: String) -> Dictionary:
 	return data.get("dialog", {}).get("people", {}).get(id, {})
 

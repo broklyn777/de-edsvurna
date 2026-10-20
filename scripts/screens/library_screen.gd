@@ -1,6 +1,6 @@
 extends TapScreen
 ## Biblioteket (Siralims Codex): samlingen av troféer man någonsin hittat, vilket monster de kom
-## från och vad de gör, samt sällskapets artefakter.
+## från och vad de gör, samt sällskapets artefakter. Kryptans troféer syns som rykten innan man har dem (0.24.3).
 
 const PER_ROW := 5
 const RARITY := {"common": "VANLIG", "elite": "ELIT", "boss": "BOSS"}
@@ -19,7 +19,7 @@ func _tap(p: Vector2) -> void:
 	if back_rect().has_point(p):
 		run.go(run.BASE_SCENE)
 		return
-	var heroes: Array = run.data.heroes.keys()
+	var heroes: Array = _heroes()
 	for i in heroes.size():
 		if _hero_rect(i).has_point(p):
 			run.open_sheet(heroes[i], heroes, run.LIBRARY_SCENE, true)
@@ -54,6 +54,11 @@ func _all_trophies() -> Array:
 	return out
 
 
+## Rykten (0.24.3): kryptans vanliga troféer och bossens. Elitvarianternas troféer förblir okända tills man hittar dem.
+func _rumoured(entry: Dictionary) -> bool:
+	return entry.realm == "crypt" and not entry.elite
+
+
 func _draw() -> void:
 	var data: Dictionary = run.data
 	header("BIBLIOTEKET", "Alla troféer. Elitfiender är sällsynta (fler på djupare och instabilare våningar); bossens trofé kräver tre segrar.")
@@ -63,7 +68,7 @@ func _draw() -> void:
 			Color(1, 1, 1, 0.6))
 	if selected < 0:
 		for i in all.size():
-			if run.collection.has(all[i].trophy):
+			if run.collection.has(all[i].trophy) or _rumoured(all[i]):
 				selected = i
 				break
 	var detail_title := ""
@@ -84,6 +89,16 @@ func _draw() -> void:
 			if selected == i:
 				detail_title = "%s – %s" % [t.name, tag]
 				detail_text = "%s (Från %s.)" % [t.text, source]
+		elif _rumoured(entry):
+			# 0.24.3: kryptans troféer är kända som rykten (som Siralims Bestiary), men inte ens egna.
+			var source: String = d.name
+			UiStyle.card(self, _trophy_rect(i), t.name, "rykte" if not boss else "rykte · %d/%d segrar" % [
+					mini(int(run.profile.boss_wins.get(entry.kind, 0)), RunState.BOSS_WINS_FOR_TROPHY), RunState.BOSS_WINS_FOR_TROPHY],
+					selected == i, Color("#b8a27a"), "")
+			if selected == i:
+				detail_title = "%s – %s, rykte, inte din än" % [t.name, tag.to_lower()]
+				detail_text = "Sägs ge: %s (Från %s i %s%s.)" % [t.text, source, realm_name,
+						", efter %d segrar" % RunState.BOSS_WINS_FOR_TROPHY if boss else ""]
 		else:
 			var hint := "Från ett monster i %s." % realm_name
 			if entry.elite:
@@ -107,11 +122,16 @@ func _draw() -> void:
 	# Hjältarna (0.19): tryck för hjältebladet; här kan personligheten bytas mot silver.
 	var y := size.y - 120.0
 	UiStyle.text(self, Vector2(MARGIN, y), "HJÄLTARNA – TRYCK FÖR HJÄLTEBLADET (HÄR BYTS PERSONLIGHET)", 16, Color(1, 1, 1, 0.6))
-	var heroes: Array = data.heroes.keys()
+	var heroes: Array = _heroes()
 	for i in heroes.size():
 		var h: Dictionary = run.profile.hero(data, heroes[i])
 		var p: Dictionary = data.personalities.get(h.personality, {})
 		chip(_hero_rect(i), "%s · nivå %d · %s" % [data.heroes[heroes[i]].name, int(h.level), p.get("name", "")], false, 15)
+
+
+## 0.24.3: bara Paladinen och de som har anslutit.
+func _heroes() -> Array:
+	return ["paladin"] + Array(run.profile.recruited)
 
 
 func _hero_rect(i: int) -> Rect2:

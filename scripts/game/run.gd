@@ -291,6 +291,8 @@ func _dev_args() -> void:
 			get_tree().change_scene_to_file.call_deferred(HERO_SCENE)
 		elif arg.begins_with("--name="):
 			profile.set_hero_name(arg.get_slice("=", 1))  # paladinens namn (0.24.2), sparas inte av sig självt
+		elif arg.begins_with("--silver="):
+			profile.silver = int(arg.get_slice("=", 1))  # för skärmdumpar (sparas inte om profilen är påhittad)
 		elif arg == "--keep":
 			get_tree().change_scene_to_file.call_deferred(BASE_SCENE)  # borgen direkt (0.24)
 		elif arg.begins_with("--intro-step="):
@@ -301,6 +303,11 @@ func _dev_args() -> void:
 				Intro.talked(data, profile)
 				Intro.notify(data, profile, Intro.current(data, profile).get("event", ""), 3)
 			profile.intro_talked = "--talked" in OS.get_cmdline_user_args()
+			if profile.intro_step > 2 and profile.artifact("paladin").is_empty():
+				var keep_silver := profile.silver
+				profile.silver = Profile.FORGE_COST
+				profile.forge("paladin", "sword", "")  # svärdet som smiddes i introt
+				profile.silver = keep_silver - Profile.FORGE_COST + 77 if profile.intro_step >= 7 else 0
 		elif arg.begins_with("--bark="):
 			pending_bark = Dialog.bark(data, arg.get_slice("=", 1), state.party, state.barks_used, rng)  # replik på rumskartan
 		elif arg == "--descents":

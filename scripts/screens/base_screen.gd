@@ -98,6 +98,9 @@ var _last_tap_station := ""
 ## Samtalet: {who, lines, i, station, menu (visa valen på sista raden), after (Callable)}.
 var _conv := {}
 var _option_rects: Array[Rect2] = []
+## En kort text mitt på skärmen (en plats utan person som är stängd), och hur länge den syns.
+var _toast_text := ""
+var _toast_t := 0.0
 
 
 func _ready() -> void:
@@ -197,6 +200,7 @@ func _process(delta: float) -> void:
 	super(delta)
 	_layout()
 	_walk(delta)
+	_toast_t = maxf(0.0, _toast_t - delta)
 	_plan_layer.queue_redraw()
 	_ui_layer.queue_redraw()
 
@@ -298,8 +302,13 @@ func _start_dialog() -> void:
 		run.intro_lines = {}
 
 
+func _toast(text: String) -> void:
+	_toast_text = text
+	_toast_t = 3.0
+
+
 func _talk(who: String, lines: Array, station: String, menu: bool, after := Callable()) -> void:
-	var named := lines.map(func(l: String) -> String: return Dialog.fill(l, run.profile.hero_name))
+	var named := lines.map(func(l: String) -> String: return Dialog.fill_for(l, run.profile))
 	_conv = {"who": who, "lines": named.filter(func(l: String) -> bool: return l != ""), "i": 0, "station": station,
 			"menu": menu, "after": after}
 	if _conv.lines.is_empty():
@@ -309,26 +318,45 @@ func _talk(who: String, lines: Array, station: String, menu: bool, after := Call
 func _arrive(station: String) -> void:
 	_walking_to = ""
 	var data: Dictionary = run.data
-	var who := Dialog.station_person(data, station)
+	var who := Intro.who_at(data, run.profile, station)
 	var state := Intro.station_state(data, run.profile, station)
 	if not run.profile.intro_done and Intro.needs_talk(data, run.profile) and Intro.giver_station(data, run.profile) == station:
 		var step := Intro.current(data, run.profile)
+		_met(step.giver)
 		_talk(step.giver, step.get("talk", []), station, false, _after_intro_talk.bind(station))
+		return
+	# 0.24.3: en plats utan person (altaret i kapellet) öppnas direkt, eller säger kort varför den är stängd.
+	if who == "":
+		if state == "locked":
+			_toast(Dialog.reply(data, station))
+			run.ui("ui_error", -14.0)
+		else:
+			_open(String(Dialog.options(data, station)[0].open))
 		return
 	if state == "locked":
 		_talk(who, [Dialog.reply(data, station)], station, false)
 		run.ui("ui_error", -14.0)
 		return
+	var turn := _met(who)
+	var greeting := Dialog.greeting(data, who, turn)
+	# Under introt säger personen sin egen replik för steget (uppdraget står bara överst, aldrig i någons mun);
+	# annars hälsningen och en vardagsreplik (ibland bara hälsningen).
+	var at: Variant = Intro.current(data, run.profile).get("at", {}).get(who, null) if not run.profile.intro_done else null
+	if state == "current" and at != null:
+		var lines: Array = (at as Array).duplicate() if at is Array else [String(at)]
+		if turn == 0:
+			lines.push_front(greeting)
+		_talk(who, lines, station, true)
+		return
+	var extra := Dialog.idle_line(data, run.profile, who, turn) if turn % 3 != 2 else ""
+	_talk(who, [(greeting + " " + extra).strip_edges()], station, true)
+
+
+## Räknar ett möte med personen; returnerar hur många gånger man har pratat förut (0 = första mötet).
+func _met(who: String) -> int:
 	var turn := int(run.profile.talks.get(who, 0))
 	run.profile.talks[who] = turn + 1
-	var line := Dialog.greeting(data, who, turn)
-	# Under introt säger personen vad som gäller; annars en vardagsreplik (ibland bara hälsningen).
-	var extra := ""
-	if not run.profile.intro_done and state == "current":
-		extra = Intro.current(data, run.profile).get("quest", "")
-	elif turn % 3 != 2:
-		extra = Dialog.idle_line(data, run.profile, who, turn)
-	_talk(who, [(line + " " + extra).strip_edges()], station, true)
+	return turn
 
 
 func _after_intro_talk(station: String) -> void:
@@ -384,6 +412,8 @@ func _open(station: String) -> void:
 			run.go(run.INN_SCENE)
 		"rename":
 			_rename()
+		"talk_trophies":
+			_talk("alrik", Dialog.person(run.data, "alrik").get("trophies", []), "library", true)
 
 
 ## 0.24.2: namnet skrivs om i krönikan hos Broder Alrik.
@@ -522,7 +552,7 @@ func _paint_plan(ci: CanvasItem) -> void:
 	# Människorna vid sina platser (porträtt i en liten ram).
 	for id in keep.rooms:
 		var room: Dictionary = keep.rooms[id]
-		var who := Dialog.station_person(data, id)
+		var who := Intro.who_at(data, run.profile, id)
 		if who == "" or not room.has("person"):
 			continue
 		DialogBox.portrait(ci, data, who, Rect2(_v(room.person) - Vector2(36, 36), Vector2(72, 72)))
@@ -533,11 +563,11 @@ func _paint_plan(ci: CanvasItem) -> void:
 	# De som bor i värdshuset.
 	var lodgers := _lodgers()
 	for i in mini(lodgers.size(), keep.inn_seats.size()):
-		KeepArt.pawn(ci, _v(keep.inn_seats[i]), 64.0, Color(data.heroes[lodgers[i]].color))
+		_token(ci, lodgers[i], _v(keep.inn_seats[i]), 64.0)
 	# Sällskapet i en rad bakom paladinen, sist paladinen själv.
 	var party: Array = _followers()
 	for i in range(party.size() - 1, -1, -1):
-		KeepArt.pawn(ci, _follower_pos(i), 70.0, Color(data.heroes[party[i]].color))
+		_token(ci, party[i], _follower_pos(i), 70.0)
 	# Ett ljust sken under pjäsen, så att den syns mot en detaljerad bild.
 	for j in 3:
 		ci.draw_circle(pal + Vector2(0, -PIECE_H * 0.2), PIECE_H * (0.62 - j * 0.14), Color(1.0, 0.93, 0.74, 0.18 + j * 0.12))
@@ -561,6 +591,16 @@ func _paint_debug(ci: CanvasItem) -> void:
 		ci.draw_arc(Vector2(l[0], l[1]), l[2], 0, TAU, 32, Color(1, 1, 0.5, 0.8), 2.0)
 	for p in keep.inn_seats:
 		ci.draw_circle(_v(p), 8, Color.BLUE)
+
+
+## En följeslagares pjäs (0.24.3): porträttet i en liten ram om det finns, som borgens folk, annars en tuschbonde.
+func _token(ci: CanvasItem, id: String, c: Vector2, s: float) -> void:
+	if DialogBox.portrait_texture(id) != null:
+		var r := Rect2(c - Vector2(s * 0.42, s * 0.62), Vector2(s * 0.84, s * 0.84))
+		ci.draw_rect(r.grow(4), Color(run.data.heroes[id].color))
+		DialogBox.portrait(ci, run.data, id, r)
+	else:
+		KeepArt.pawn(ci, c, s, Color(run.data.heroes[id].color))
 
 
 func _chip_rect(i: int) -> Rect2:
@@ -588,7 +628,7 @@ func _paint_ui(ci: CanvasItem) -> void:
 		var lp := to_screen(r.position) + Vector2((r.size.x * scale_k - lw) / 2.0, 6)
 		ci.draw_rect(Rect2(lp, Vector2(lw, 22)), Color(0.93, 0.85, 0.66, 0.92))
 		UiStyle.text(ci, lp + Vector2(0, 17), label, 16, col, HORIZONTAL_ALIGNMENT_CENTER, lw)
-		var who := Dialog.station_person(data, id)
+		var who := Intro.who_at(data, run.profile, id)
 		if who != "" and keep.rooms[id].has("person"):
 			UiStyle.text(ci, to_screen(_v(keep.rooms[id].person) + Vector2(-90, 0)) + Vector2(0, 40 * scale_k + 16),
 					Dialog.display_name(data, who), 15, Color(1, 0.95, 0.85), HORIZONTAL_ALIGNMENT_CENTER, 180 * scale_k, 4)
@@ -609,6 +649,13 @@ func _paint_ui(ci: CanvasItem) -> void:
 	if run.last_silver > 0 and _conv.is_empty():
 		UiStyle.text(ci, Vector2(0, size.y - 70), "+%d silver från senaste striden" % run.last_silver, 16,
 				Color("#d8dde6"), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
+	if _toast_t > 0.0:
+		var a := minf(1.0, _toast_t)
+		var w := minf(size.x - 80, 760.0)
+		var tr := Rect2((size.x - w) / 2.0, 90, w, 56)
+		ci.draw_rect(tr, Color(0.05, 0.04, 0.07, 0.92 * a))
+		ci.draw_rect(tr, Color(UiStyle.GOLD, 0.6 * a), false, 1.5)
+		UiStyle.text(ci, tr.position + Vector2(0, 35), _toast_text, 18, Color(1, 1, 1, a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
 	_option_rects = []
 	if not _conv.is_empty():
 		var last: bool = _conv.i == _conv.lines.size() - 1

@@ -30,7 +30,25 @@ static func giver_station(data: Dictionary, profile: Profile) -> String:
 	var giver: String = step.get("giver", "")
 	if giver == "":
 		return ""
-	return Dialog.person(data, giver).get("station", step.get("station", "yard"))
+	return person_station(data, profile, giver, step.get("station", "yard"))
+
+
+## 0.24.3: var en person står just nu. Ett introsteg kan flytta någon ("where", t.ex. Gorm vid altaret under eden);
+## annars står personen på sin vanliga plats (Gorm i sin kammare).
+static func person_station(data: Dictionary, profile: Profile, who: String, fallback := "") -> String:
+	if not profile.intro_done:
+		var where: Dictionary = current(data, profile).get("where", {})
+		if where.has(who):
+			return where[who]
+	return Dialog.person(data, who).get("station", fallback)
+
+
+## Vem som står vid stationen just nu ("" om ingen).
+static func who_at(data: Dictionary, profile: Profile, station: String) -> String:
+	for who in data.get("dialog", {}).get("people", {}):
+		if person_station(data, profile, who) == station:
+			return who
+	return ""
 
 
 ## Personen har pratat klart. Ett samtalssteg ("talked") avslutas av händelsen (Run.intro); annars får man uppdraget.
@@ -47,8 +65,21 @@ static func quest_text(data: Dictionary, profile: Profile) -> String:
 		return ""
 	if needs_talk(data, profile) and step.get("event", "") != "talked":
 		var giver: String = step.giver
-		return "Prata med %s %s." % [Dialog.display_name(data, giver), Dialog.person(data, giver).get("where", "")]
-	return step.get("quest", "")
+		return "Prata med %s %s." % [Dialog.display_name(data, giver), _where(data, profile, giver)]
+	var q: String = step.get("quest", "")
+	if step.get("event", "") == "sword_level":
+		# 0.24.3: hur långt svärdet har kommit, och vad nästa nivå kostar.
+		var lv := int(profile.artifact("paladin").get("level", 0))
+		q += " Nu nivå %d av %d – nästa nivå %d silver." % [lv, int(step.get("level", 3)), Forge.level_cost(lv)]
+	return q
+
+
+## Var personen står, i ord ("i sin kammare", "vid altaret").
+static func _where(data: Dictionary, profile: Profile, who: String) -> String:
+	var at := person_station(data, profile, who)
+	if at != Dialog.person(data, who).get("station", at):
+		return {"altar": "vid altaret i kapellet"}.get(at, "i " + String(Dialog.station(data, at).get("name", at)).to_lower())
+	return Dialog.person(data, who).get("where", "")
 
 
 ## En station är "current" (uppdraget gäller den), "open" eller låst (en replik i stället). Under introt är bara den
