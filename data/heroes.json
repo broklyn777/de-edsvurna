@@ -159,20 +159,22 @@
 				"Paladin_Gold": "#b07a30"
 			},
 			"weapons": {
-				"grip_r": "Greataxe"
+				"grip_r": "Handaxe",
+				"grip_l": "Shield"
 			},
 			"anims": {
-				"idle": "TwoHand_Idle",
+				"idle": "Shield_Idle",
 				"attack": [
-					"TwoHand_Attack",
-					"TwoHand_Attack_B"
+					"Shield_Attack",
+					"Shield_Attack_B"
 				],
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"block": "Shield_Block",
-				"run": "TwoHand_Run",
-				"walk": "TwoHand_Walk"
-			}
+				"run": "Run",
+				"walk": "Walk"
+			},
+			"scale": 1.1
 		},
 		"macro_hint": {
 			"line": {

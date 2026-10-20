@@ -23,6 +23,7 @@ const MODEL_PREVIEW := {
 	"munk": {"anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack", "OneHand_Attack_B"], "run": "Run"}},
 	"druid": {"weapons": {"grip_r": "Staff"}, "anims": {"idle": "Staff_Idle", "attack": ["Spell_Simple_Shoot"],
 			"cast": "Staff_Cast", "walk": "Staff_Walk", "run": "Staff_Run"}},
+	"brokk": {"anims": {"idle": "Shield_Idle", "attack": ["Shield_Attack"], "run": "Run"}},
 	"imma": {"weapons": {"grip_l": "Shortbow"}, "anims": {"idle": "Bow_Idle", "attack": ["Bow_Shoot"], "run": "Run"}},
 	"domare": {"weapons": {"grip_r": "Mace"}, "anims": {"idle": "OneHand_Idle", "attack": ["OneHand_Attack"], "run": "Run"}},
 	"svardsdansare": {"weapons": {"grip_r": "Shortsword", "grip_l_hand": "Shortsword"},
