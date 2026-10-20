@@ -115,3 +115,14 @@ Skicka bilderna till Huvudtråden.
   (gorm, hedda, alrik, imma, stig, elin), och kör `godot --headless --path . --script res://tools/cut_symbols.gd`.
   Sven och följeslagarna utom Imma har inget porträtt än och ritas som en tuschbyst.
 
+
+## Berättelsen (0.25)
+
+Klistra in **stilblocket** först, gärna i samma chatt som porträttarket så att stilen blir lika.
+
+**B1. Tor, gravgrävaren** (kvadrat, ett huvud-och-axlar-porträtt som de andra):
+
+> A single head-and-shoulders character portrait in the same engraving style as the portrait sheet, light
+> parchment background, no text: Tor, an elderly gravedigger, weathered and tired face, grey stubble, a
+> bloodied bandage around his head, a worn work cap in his hand, dirt on his clothes, eyes wide with
+> remembered fear but determined.
