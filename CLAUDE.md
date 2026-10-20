@@ -127,7 +127,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   bårar, Mor Elin och Broder Alrik hos dem, `keep.json` "scene"). Gravgrävaren Tor berättar, Gorm skickar paladinen
   ned ensam och Imma får stanna (stegen `workers` och `descent`; steg med `"auto"` spelar samtalet direkt i borgen,
   rader är text eller `[talare, text]`, `Intro.lines`). Den första striden gör paladinen ensam (fienderna ×0,80 till,
-  `RunState.FIRST_FIGHT_ALONE`, ~99 % vinst); direkt efter den smiter Imma efter (`Run.imma_sneaks`, hennes porträtt
+  `RunState.FIRST_FIGHT_ALONE`, ~99 % vinst); direkt efter den smiter Imma efter (0.25.1: striden märker `RunState.joins_next`, hon ansluter först på rumskartan efter segerskärmen, `Run.imma_sneaks`; hennes porträtt
   på rumskartan, `intro.json` "imma_joins") och följer med resten av vägen. Hemma igen (`came_home`) skäller Gorm lite
   på henne, och sedan svärdet till nivå 3. Varje steg börjar med ett samtal på 2–5 repliker hos den som
   ger uppdraget (`giver`, `talk`, `Profile.intro_talked`, `Intro.needs_talk()`); nästa uppdrag kommer först efter

@@ -46,6 +46,7 @@ func _ready() -> void:
 	if run.pending_rescue != "":
 		_dialog = _rescue_dialog(run.pending_rescue)
 		run.pending_rescue = ""
+	run.imma_sneaks()  # 0.25.1: Imma ansluter här, efter segerskärmen
 	# 0.25: berättelsen först (den första porten, Imma som smiter efter), sedan hjälprutorna för kartan.
 	_story = StoryBox.play(self, run.pending_story)
 	run.pending_story = []
