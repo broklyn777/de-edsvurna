@@ -125,6 +125,15 @@ func start_ambience(sound: String, volume_db := -10.0) -> void:
 	create_tween().tween_property(_ambience, "volume_db", volume_db, 2.0)
 
 
+## Tonar ut bakgrundsstämningen (0.24: borgens härd när man lämnar borgen).
+func stop_ambience(fade := 0.8) -> void:
+	if not _ambience.playing:
+		return
+	var tw := create_tween()
+	tw.tween_property(_ambience, "volume_db", -40.0, fade)
+	tw.tween_callback(_ambience.stop)
+
+
 ## Byter musik med en korstoning; samma låt startas inte om. Tomt namn tonar ut.
 func play_music(name: String, volume_db := -16.0, fade := 1.5) -> void:
 	if name == _music_name and _music[0].playing:

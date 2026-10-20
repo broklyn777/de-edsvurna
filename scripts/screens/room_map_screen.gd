@@ -274,7 +274,7 @@ func _draw() -> void:
 		_draw_dialog()
 	if not _bark.is_empty():
 		var l: Dictionary = _bark[0]
-		DialogBox.box(self, run.data, size, l.who, l.text, _t)
+		DialogBox.box(self, run.data, size, l.who, l.text, _t, true, 124.0)
 
 
 ## Var pjäsen står: vid våningens början, i rummet, eller på väg längs stigen.

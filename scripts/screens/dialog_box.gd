@@ -62,9 +62,10 @@ static func portrait(ci: CanvasItem, data: Dictionary, id: String, r: Rect2) -> 
 
 
 ## Rutan längst ned: porträtt, namn (och titel) och texten. t = tid för den blinkande "Tryck"-raden.
-static func box(ci: CanvasItem, data: Dictionary, area: Vector2, who: String, text: String, t: float, hint := true) -> Rect2:
+## h: rutans höjd (replikerna under nedstigningen är en rad och får en lägre ruta).
+static func box(ci: CanvasItem, data: Dictionary, area: Vector2, who: String, text: String, t: float, hint := true,
+		h := 176.0) -> Rect2:
 	var w := minf(area.x - 60, 980.0)
-	var h := 176.0
 	var r := Rect2((area.x - w) / 2.0, area.y - h - 18, w, h)
 	ci.draw_rect(r, Color(0.05, 0.04, 0.07, 0.95))
 	ci.draw_rect(r, Color(UiStyle.GOLD, 0.85), false, 2.0)
@@ -72,12 +73,12 @@ static func box(ci: CanvasItem, data: Dictionary, area: Vector2, who: String, te
 	portrait(ci, data, who, pr)
 	var x := pr.end.x + 22
 	var name := Dialog.display_name(data, who)
-	UiStyle.text(ci, Vector2(x, r.position.y + 38), name, 22, UiStyle.GOLD)
+	UiStyle.text(ci, Vector2(x, r.position.y + 36), name, 22, UiStyle.GOLD)
 	var title: String = Dialog.person(data, who).get("title", data.get("heroes", {}).get(who, {}).get("title", ""))
 	if title != "":
 		var nw := UiStyle.bold().get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
-		UiStyle.text(ci, Vector2(x + nw + 14, r.position.y + 38), title, 16, Color(1, 1, 1, 0.55))
-	UiStyle.para(ci, Vector2(x, r.position.y + 72), text, 20, Color.WHITE, r.end.x - x - 22, 3)
+		UiStyle.text(ci, Vector2(x + nw + 14, r.position.y + 36), title, 16, Color(1, 1, 1, 0.55))
+	UiStyle.para(ci, Vector2(x, r.position.y + 68), text, 20, Color.WHITE, r.end.x - x - 22, 3 if h > 140 else 2)
 	if hint:
 		UiStyle.text(ci, Vector2(r.position.x, r.end.y - 12), "Tryck för att fortsätta", 15,
 				Color(1, 1, 1, 0.45 + 0.25 * sin(t * 4.0)), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 18)

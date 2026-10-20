@@ -99,3 +99,16 @@ Klistra in **stilblocket** först, sedan motivet. Gör båda i samma chatt så a
 > 6 Mother Elin the innkeeper, a warm round-faced older woman with a kerchief and a ladle.
 
 Skicka bilderna till Huvudtråden.
+
+**När bilderna kommer (0.24 är byggt för att de ska bytas in):**
+
+- **H1** sparas som `assets/illustrations/borgen.webp` (1536×1024). Borgen ritar den i stället för tuschritningen
+  (`KeepArt`). Flytta sedan rummen i `data/keep.json` så att de stämmer med bilden: `rect`, `door`, `yard`, `stand`,
+  `person`, `lights`, `chimney`, `forge` och `hearth`, i bildens pixlar. Kontrollera med
+  `godot --path . -- --keep --screenshot=/tmp/borgen.png --frames=40`.
+- **H2** sparas som `assets/illustrations/portrattark.webp` (läggs i `exclude_filter`). Lägg till källan och sex
+  rutor i `tools/symbolark.json` med `"opaque": true` och `"out": "res://assets/illustrations/portraits/"`, t.ex.
+  `"gorm": {"source": "portratt", "rect": [x, y, b, h], "opaque": true, "out": "res://assets/illustrations/portraits/", "height": 256}`
+  (gorm, hedda, alrik, imma, stig, elin), och kör `godot --headless --path . --script res://tools/cut_symbols.gd`.
+  Sven och följeslagarna utom Imma har inget porträtt än och ritas som en tuschbyst.
+

@@ -1,0 +1,95 @@
+extends "res://tests/test_case.gd"
+## 0.24 Hemmet: samtalen i borgen (data/dialog.json, Dialog), borgens planritning (data/keep.json), replikerna under
+## nedstigningen och den första nedstigningen med Paladinen och Imma.
+
+var _data := GameData.load_all()
+const WHEN_KEYS := ["recruited", "not_recruited", "min_recruited", "min_descents", "min_best_depth", "boss", "intro_done"]
+
+
+func test_every_station_has_a_person_and_a_conversation() -> void:
+	for id in _data.keep.rooms:
+		var st := Dialog.station(_data, id)
+		assert_true(not st.is_empty(), "%s har ett samtal" % id)
+		var who := Dialog.station_person(_data, id)
+		var p := Dialog.person(_data, who)
+		assert_true(p.get("name", "") != "", "%s: %s har ett namn" % [id, who])
+		assert_true(p.get("greet", []).size() >= 1 and p.get("idle", []).size() >= 3, "%s hälsar och har vardagsrepliker" % who)
+		var opts := Dialog.options(_data, id)
+		assert_true(opts.size() >= 2, id)
+		assert_eq(opts.back().label, "Ingenting just nu", "sist kommer Ingenting just nu")
+		assert_eq(opts.back().open, "")
+		for o in opts.slice(0, opts.size() - 1):
+			assert_true(_data.keep.rooms.has(o.open), "%s öppnar en station som finns" % o.label)
+		assert_true(Dialog.reply(_data, id) != "", "%s har ett svar när den är stängd" % id)
+
+
+func test_every_line_has_a_known_speaker_and_condition() -> void:
+	for who in _data.dialog.people:
+		for l in Dialog.person(_data, who).get("idle", []):
+			assert_true(l.get("text", "") != "", who)
+			for key in l.get("when", {}):
+				assert_true(WHEN_KEYS.has(key), "%s: okänt villkor %s" % [who, key])
+	for who in _data.dialog.barks:
+		assert_true(_data.heroes.has(who), "%s är en hjälte" % who)
+		for kind in _data.dialog.barks[who]:
+			assert_true(Dialog.BARK_KINDS.has(kind), "%s: okänt läge %s" % [who, kind])
+	for pair in _data.dialog.pairs:
+		for l in pair.lines:
+			assert_true(pair.heroes.has(l[0]) and l[1] != "", "varje rad i ett samtal har en talare ur paret")
+
+
+func test_news_comes_first_in_the_idle_lines() -> void:
+	var p := Profile.new()
+	p.intro_done = true
+	p.descents = {"crypt": 1}
+	assert_true(Dialog.idle_line(_data, p, "gorm", 0).contains("Alva"), "Gorm nämner ryktet om Alva efter första nedstigningen")
+	p.recruit(_data, "alva")
+	assert_true(Dialog.idle_line(_data, p, "gorm", 0).contains("förband"), "och något annat när hon har kommit")
+
+
+func test_barks_never_repeat_in_a_run() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3
+	var used: Array = []
+	var seen: Array = []
+	for i in 40:
+		var b := Dialog.bark(_data, "campfire", ["paladin", "imma", "alva"], used, rng)
+		if b.is_empty():
+			break
+		var text: String = b.lines[0].text
+		assert_true(not seen.has(text), "upprepas inte: " + text)
+		seen.append(text)
+	assert_true(seen.size() >= 4, "Imma, Alva och deras samtal")
+	assert_true(Dialog.bark(_data, "campfire", ["paladin"], [], rng).is_empty(), "Paladinen ensam säger inget")
+
+
+func test_the_keep_layout_fits_together() -> void:
+	var yard := _rect(_data.keep.yard.rect)
+	for id in _data.keep.rooms:
+		var room: Dictionary = _data.keep.rooms[id]
+		var r := _rect(room.rect)
+		assert_true(r.grow(1).has_point(_v(room.stand)), "%s: paladinen står i rummet" % id)
+		assert_true(r.grow(2).has_point(_v(room.door)) and not r.grow(-2).has_point(_v(room.door)), "%s: dörren sitter i väggen" % id)
+		assert_true(yard.grow(6).has_point(_v(room.yard)), "%s: gången når gården" % id)
+		if room.has("person"):
+			assert_true(r.has_point(_v(room.person)), "%s: personen står i rummet" % id)
+
+
+func test_the_first_descent_has_weaker_enemies_and_no_prisoner() -> void:
+	var p := Profile.new()
+	p.recruit(_data, "imma")
+	var s := RunState.new_run(p, _data)
+	assert_true(s.prisoners.is_empty(), "ingen fånge första gången")
+	s.first_descent = true
+	s.start_expedition(_data, 4)
+	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), RunState.FIRST_DESCENT_STATS, 1e-6)
+	var saved := RunState.from_dict(s.to_dict())
+	assert_true(saved.first_descent, "sparas med körningen")
+
+
+static func _rect(a: Array) -> Rect2:
+	return Rect2(a[0], a[1], a[2], a[3])
+
+
+static func _v(a: Array) -> Vector2:
+	return Vector2(a[0], a[1])

@@ -330,6 +330,7 @@ func start_run(party: Array[String]) -> void:
 	roll_rules()  # nästa körning får nya regler
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
 	# 0.24: nedstigningarna räknas per Realm; första gången i en Realm säger någon något om den.
+	state.first_descent = profile.total_descents() == 0
 	var seen := int(profile.descents.get(state.realm, 0))
 	profile.descents[state.realm] = seen + 1
 	pending_bark = {}

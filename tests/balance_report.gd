@@ -207,6 +207,11 @@ func _first_descent(data: Dictionary) -> void:
 				{"bot_macros": fresh, "recruited": ["imma"]})
 		_first_line(data, realm_id, "ny profil nivå 1, ingen befrias", ["paladin", "imma"], 1,
 				{"bot_macros": fresh, "recruited": data.heroes.keys()})
+		# 0.24: profilens första nedstigning (svagare fiender, ingen fånge) och den andra (Alva i ett fånge-rum).
+		_first_line(data, realm_id, "första nedstigningen (×%.2f)" % RunState.FIRST_DESCENT_STATS, ["paladin", "imma"], 1,
+				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true})
+		_first_line(data, realm_id, "andra, nivå 3, en fånge", ["paladin", "imma"], 3,
+				{"bot_macros": fresh, "recruited": ["imma"]})
 
 
 func _first_line(data: Dictionary, realm_id: String, label: String, party: Array, lv: int, extra: Dictionary) -> void:

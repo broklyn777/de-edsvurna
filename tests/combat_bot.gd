@@ -136,6 +136,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	state.set_realm(data, realm)
 	state.depth = depth
 	state.instability = int(opts.get("instability", 0))
+	state.first_descent = opts.get("first_descent", false)  # 0.24: profilens första nedstigning
 	state.rules_visible = opts.get("rules", []).duplicate()
 	if opts.has("party"):
 		state.party.assign(opts.party)  # 0.23: sällskap med 2–4 hjältar
@@ -165,7 +166,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		if RunState.is_battle(r):
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels

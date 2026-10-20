@@ -35,6 +35,7 @@ börja kring −14 dB och stämningen kring −12 dB. Sänk musiken (−6 dB, 0,
 |---|---|
 | `ambience_crypt.wav` (finns) | Benkryptan, som nu |
 | `ambience_chapel/` (24 s loop) | Det fördärvade kapellet: avlägsen orgelton, viskningar, knarr och droppar |
+| `ambience_home.wav` (22 s loop, 0.24) | Borgen: härden som sprakar, brus i skorstenen och smedens städ långt bort (`tools/gen_home_ambience.py`). Tonas ut när man lämnar borgen (`Sfx.stop_ambience`). |
 
 `start_ambience()` sätter bara loop på WAV. För ogg: `if s is AudioStreamOggVorbis: s = s.duplicate(); s.loop = true`.
 

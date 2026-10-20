@@ -131,6 +131,10 @@ func _ready() -> void:
 				_arrive(st)
 
 
+func _exit_tree() -> void:
+	run.audio.stop_ambience()
+
+
 func _shader_rect(code: String, behind: bool) -> ColorRect:
 	var r := ColorRect.new()
 	r.set_anchors_preset(Control.PRESET_FULL_RECT)
