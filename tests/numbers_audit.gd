@@ -46,8 +46,10 @@ func _fail(key: String, text: String) -> void:
 
 ## En strid: realm (crypt/chapel), våning (0–2), djup, sällskap, artefakter, statusar och regler.
 func run_battle(encounter: String, floor_i: int, depth: int, seed_value: int, party: Array, artifacts := {},
-		statuses := false, rules: Array = [], level := 0, traits := {}) -> void:
+		statuses := false, rules: Array = [], level := 0, traits := {}, bonus := 1.0) -> void:
 	var opts := {"rules": rules, "floor": floor_i}
+	if bonus != 1.0:
+		opts.stat_bonus = bonus
 	if level > 0:
 		opts.levels = Bot.party_levels(data, level, party)
 		# Personligheter: varannan hjälte får en, så att tillväxten 40/20 % prövas.
@@ -88,7 +90,9 @@ func run_battle(encounter: String, floor_i: int, depth: int, seed_value: int, pa
 ## olika sällskap (2–4 hjältar, alla följeslagare), med och utan nivåer, artefakter, statusar och regler.
 static func setups(data: Dictionary) -> Array:
 	var parties := [["paladin", "brokk", "alva", "eira"], ["paladin", "imma", "solveig", "hulda"],
-			["paladin", "ronja", "lirien", "ragnhild"], ["paladin", "tove", "sefir"], ["paladin", "alva"]]
+			["paladin", "ronja", "lirien", "ragnhild"], ["paladin", "tove", "sefir"], ["paladin", "imma"], ["paladin"]]
+	# Portalen, första nedstigningen (Paladinen och Imma, 0.24) och båda.
+	var bonuses := [1.0, 1.0, Ref.battle_bonus(false, true), Ref.battle_bonus(true, false), Ref.battle_bonus(true, true)]
 	var rule_sets := [[], ["mirror_bones", "cursed_ground"], ["withered_grace", "heavy_air"], ["risen_dead"]]
 	var out := []
 	var i := 0
@@ -104,7 +108,7 @@ static func setups(data: Dictionary) -> Array:
 							"artifacts": audit_artifacts(party, i) if variant >= 2 else {},
 							"statuses": variant % 2 == 1 or variant == 2, "rules": rule_sets[i % rule_sets.size()],
 							"level": 0 if variant == 0 else 5 * (depth - 1) + 2 + floor_i,
-							"traits": audit_traits(data, party, i)})
+							"traits": audit_traits(data, party, i), "bonus": bonuses[i % bonuses.size()]})
 					i += 1
 	return out
 
@@ -155,9 +159,14 @@ static func audit_artifacts(party: Array, i: int) -> Dictionary:
 func check_units(sim: CombatSim, encounter: String, depth: int, floor_i: int, party: Array, artifacts: Dictionary,
 		opts: Dictionary) -> void:
 	var enc: Dictionary = data.encounters[encounter]
+	var kinds: Array = sim.enemies.map(func(x: CombatUnit) -> String: return x.kind)
+	var want_kinds := Ref.lineup(data.enemies, data.traits, enc.enemies, party.size())
+	if kinds != want_kinds:
+		_fail("lineup", "%s med %d hjältar: fiender %s, väntat %s (mötet %s)" % [encounter, party.size(), str(kinds),
+				str(want_kinds), str(enc.enemies)])
 	for e in sim.enemies:
 		var want := Ref.enemy_stats(data.enemies[e.kind].stats, float(enc.get("stat_mult", 1.0)), depth, party.size(),
-				Ref.enemy_level(depth, floor_i), e.elite, opts.has("levels"))
+				Ref.enemy_level(depth, floor_i), e.elite, opts.has("levels"), float(opts.get("stat_bonus", 1.0)))
 		var got := {"health": e.max_hp, "attack": e.attack, "intelligence": e.intelligence, "defense": e.defense,
 				"speed": e.speed}
 		for s in want:

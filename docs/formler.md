@@ -188,10 +188,17 @@ precis som om hjälten hade använt förmågan själv.
 
 ## 9. Fiender
 
+**Hur många** (0.23.3, *vårt val*): ett sällskap möter högst en fiende mer än det har hjältar. Är mötet större
+försvinner först dubbletter, sedan andra fiender, alltid bakifrån. Kvar blir alltid den första (våningens ledare),
+bossar och en fiende som en annan behöver (Kultisten som gör biskopen immun). Troféerbjudandet och Övningsgårdens
+lista visar samma fiender som striden (`CombatSim.enemy_lineup`).
+
 Fiendernas stats räknas i den här ordningen, och avrundas efter varje steg:
 
-1. bas × mötets skalning × djupet (+8 % per djup, inte Speed) × Portalens extra skalning;
-2. × sällskapets storlek (0.23, *vårt val*): ×0,45 för en hjälte, ×0,56 för två, ×0,74 för tre, ×1 för fyra (Health,
+1. bas × mötets skalning × djupet (+8 % per djup, inte Speed) × Portalens strid (×1,15) × profilens första
+   nedstigning (×0,85, 0.24, *vårt val*: den allra första körningen, när Paladinen och Imma är ensamma). Båda kan
+   gälla samtidigt (×0,9775). Health, Attack, Intelligence och Defense, inte Speed;
+2. × sällskapets storlek (0.23.3, *vårt val*): ×0,45 för en hjälte, ×0,54 för två, ×0,64 för tre, ×1 för fyra (Health,
    Attack och Intelligence, inte Defense och Speed);
 3. × nivån: +30 % per nivå (nivån = 5 × (djup − 1) + 2,25 + 1,5 per våning), även Speed;
 4. elitvarianter: +25 % Health och +10 % Attack och Intelligence.
@@ -236,7 +243,9 @@ Testet `tests/test_numbers_audit.gd` kör ett urval (72 strider) varje gång tes
 | Barriärens tak | 200 % av högsta stat | max liv | – | vårt val, nu dokumenterat |
 | Blöder hos resistenta | 66 % mindre (≈ 10,2 %) | 10 % | 10 % | vårt val (avrundat) |
 | Blöder och Fördärvad | – | ingen Defense, men källans och målets modifierare | ja | vårt val |
-| Sällskapets storlek | finns inte | ×0,45–1,0 | saknades i §9 | vårt val, nu dokumenterat |
+| Sällskapets storlek | finns inte | ×0,45 / 0,54 / 0,64 / 1,0 för 1–4 hjältar (0.23.3) | saknades i §9 | vårt val, nu dokumenterat |
+| Antalet fiender | mötet är detsamma | högst en fler än hjältarna (0.23.3) | – | vårt val, dokumenterat i §9. Övningsgårdens lista visade hela mötet: **rättat** (0.24) |
+| Första nedstigningen | finns inte | fienderna ×0,85 (Health, Attack, Int, Defense) hela den första körningen (0.24) | – | vårt val, dokumenterat i §9 |
 | Brinner och Förgiftad | 30 % av Int / Attack | räknas när statusen läggs | – | vårt val, nu dokumenterat |
 | Helig kraft (+15 % per buff) | – | räknar inte Styrka/Välsignelse som förbrukas i samma träff | – | vårt val (ordningen i koden) |
 | Klass stark/svag ×2/×½ | finns | finns inte | – | vårt val (inga klasser) |

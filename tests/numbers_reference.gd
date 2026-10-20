@@ -120,19 +120,57 @@ static func enemy_level(depth: int, floor_i: int) -> float:
 	return 5.0 * (maxi(depth, 1) - 1) + 2.25 + 1.5 * clampi(floor_i, 0, 2)
 
 
-## Sällskapets storlek (0.23, vårt val): 1–4 hjältar.
+## Sällskapets storlek (0.23.3, vårt val): 1–4 hjältar.
 static func party_scale(n: int) -> float:
-	return [0.45, 0.45, 0.56, 0.74, 1.0][clampi(n, 1, 4)]
+	return [0.45, 0.45, 0.54, 0.64, 1.0][clampi(n, 1, 4)]
 
 
-## En fiendes stats steg för steg, i samma ordning som dokumentet: bas × möte × djup (avrundat), × sällskapets
+## Portalens strid (×1,15) och profilens första nedstigning (×0,85, 0.24, vårt val); båda kan gälla.
+static func battle_bonus(portal: bool, first_descent: bool) -> float:
+	return (1.15 if portal else 1.0) * (0.85 if first_descent else 1.0)
+
+
+## Fienderna som möter ett sällskap (0.23.3, vårt val): högst en fler än hjältarna. Först försvinner dubbletter, sedan
+## andra, alltid den sista som får försvinna. Kvar blir alltid den första (våningens ledare), bossar och en fiende som
+## en annan i mötet behöver för att vara immun.
+static func lineup(enemies: Dictionary, traits: Dictionary, kinds: Array, party: int) -> Array:
+	var out := kinds.duplicate()
+	var cap := maxi(party, 1) + 1
+	for dupes_only in [true, false]:
+		while out.size() > cap:
+			var gone := -1
+			for i in range(out.size() - 1, 0, -1):
+				var k: String = out[i]
+				if enemies[k].get("boss", false):
+					continue
+				if out.count(k) > 1:
+					gone = i
+					break
+				if dupes_only:
+					continue
+				var needed := false
+				for j in out.size():
+					for t in enemies[out[j]].get("traits", []):
+						if j != i and traits.get(t, {}).get("modify", {}).get("immune_while_ally_kind", "") == k:
+							needed = true
+				if not needed:
+					gone = i
+					break
+			if gone < 0:
+				break
+			out.remove_at(gone)
+	return out
+
+
+## En fiendes stats steg för steg, i samma ordning som dokumentet: bas × möte × djup × Portal/första nedstigningen
+## (avrundat), × sällskapets
 ## storlek (avrundat, inte Defense), × nivå (avrundat, även Speed), elit +25 % Health och +10 % Attack och Int.
 static func enemy_stats(base: Dictionary, stat_mult: float, depth: int, party: int, level: float, elite: bool,
-		with_level: bool) -> Dictionary:
+		with_level: bool, bonus := 1.0) -> Dictionary:
 	var s := {"health": float(base.health), "attack": float(base.attack),
 			"intelligence": float(base.get("intelligence", base.attack)), "defense": float(base.get("defense", 0.0)),
 			"speed": float(base.get("speed", 10.0))}
-	var m := stat_mult * depth_mult(depth)
+	var m := stat_mult * depth_mult(depth) * bonus
 	if absf(m - 1.0) > 1e-9:
 		for k in ["health", "attack", "intelligence", "defense"]:
 			s[k] = roundf(s[k] * m)
