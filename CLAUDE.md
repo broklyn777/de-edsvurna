@@ -49,6 +49,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   behåller sina fyra och får Imma i Värdshuset.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
   egenskap. Vanlig = pålitlig byggdel, elit = specialiserad, boss = ändrar en regel (med kostnad).
+  Hjältarna behåller sina troféer (0.26.3, som i Siralim, `Profile.worn`, `wear()`, `keep_worn()`): de följer med i varje
+  körning och i Övningsgården tills man byter i lägret eller i Förberedelser; allt som hittas hamnar i samlingen.
+  En andel av en träff (`pct_of_event`, t.ex. följdanfall) blir aldrig kritisk igen.
 - Varje hjälte får till slut 3 egenskaper: egen, trofé och artefakt.
 - **Artefakter** (0.12, Siralims Artifacts): en per hjälte, smids hos Smeden för silver. Typen höjer en
   stat och avgör när förmågan i den slår till av sig själv: svärd vid Anfall (25 %), stav vid Förmåga

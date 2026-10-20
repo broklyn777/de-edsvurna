@@ -75,8 +75,9 @@ const MAX_COMPANIONS := 3
 ## Ikapphämtning (vårt val): en hjälte under sällskapets snitt får mer erfarenhet, +50 % per nivå under, högst ×3.
 const CATCH_UP_PER_LEVEL := 0.5
 const CATCH_UP_MAX := 3.0
-## Troféer ur samlingen som hjältarna bär i Övningsgården: hero_id -> trophy_id.
-var practice_equipped := {}
+## Troféerna hjältarna bär (0.26.3, som i Siralim): hero_id -> trophy_id. De följer med i varje körning och i
+## Övningsgården tills man byter; hittade troféer hamnar i samlingen. Hette practice_equipped före 0.26.3.
+var worn := {}
 ## Realm Depth (Siralim): valt djup vid Kryptporten och det djupaste som klarats (0 = inget än).
 ## Nästa djup öppnas när det föregående är klarat.
 var depth := 1
@@ -470,15 +471,24 @@ func reset_perks(data: Dictionary, oath_id: String) -> int:
 	return refund
 
 
-## Sätter en trofé på hjälten i Övningsgården (tar bort den från den som bar den). Tom sträng tar av.
-func equip_practice(hero_id: String, trophy_id: String) -> void:
-	for other in practice_equipped.keys():
-		if practice_equipped[other] == trophy_id:
-			practice_equipped.erase(other)
+## Sätter en trofé på hjälten (tar bort den från den som bar den). Tom sträng tar av.
+func wear(hero_id: String, trophy_id: String) -> void:
+	for other in worn.keys():
+		if worn[other] == trophy_id:
+			worn.erase(other)
 	if trophy_id == "":
-		practice_equipped.erase(hero_id)
+		worn.erase(hero_id)
 	else:
-		practice_equipped[hero_id] = trophy_id
+		worn[hero_id] = trophy_id
+
+
+## Det sällskapet bar när körningen slutade eller lägret stängdes sparas (byten i lägret varar).
+func keep_worn(equipped: Dictionary, party: Array) -> void:
+	for hero_id in party:
+		wear(hero_id, "")
+	for hero_id in equipped:
+		if party.has(hero_id) and collection.has(equipped[hero_id]):
+			wear(hero_id, equipped[hero_id])
 
 
 func save(path: String) -> Error:
@@ -502,7 +512,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "talks", talks)
 	cfg.set_value("progress", "help_seen", help_seen)
 	cfg.set_value("progress", "narrated", narrated)
-	cfg.set_value("progress", "practice_equipped", practice_equipped)
+	cfg.set_value("progress", "worn", worn)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
 	cfg.set_value("progress", "realm", realm)
@@ -558,7 +568,7 @@ static func load_from(path: String) -> Profile:
 		p.party.assign(saved.filter(func(id: String) -> bool: return id == "paladin" or p.recruited.has(id)))
 	elif not cfg.has_section_key("progress", "recruited"):
 		p.party.assign(["paladin", "brokk", "alva", "eira"])
-	p.practice_equipped = cfg.get_value("progress", "practice_equipped", {})
+	p.worn = cfg.get_value("progress", "worn", cfg.get_value("progress", "practice_equipped", {}))
 	p.best_depth = int(cfg.get_value("progress", "best_depth", 0))
 	# Profiler från före 0.24 har gått ned minst en gång om de har klarat ett djup eller räddat någon.
 	p.descents = cfg.get_value("progress", "descents", {"crypt": 1} if p.best_depth > 0 or p.recruited.size() > 1 else {})

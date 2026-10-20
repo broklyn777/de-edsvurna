@@ -1,6 +1,6 @@
 extends Control
-## Förberedelser (0.18, nås från kampanjkartan): välj en till tre följeslagare bland dem man har (0.23) och eventuellt en trofé från
-## samlingen att ta med. Realm, djup och instabilitet väljs på kampanjkartan; Kallet vid Kallets altare
+## Förberedelser (0.18, nås från kampanjkartan): välj en till tre följeslagare bland dem man har (0.23) och vilka troféer
+## ur samlingen de bär (0.26.3, som i Siralim: troféerna följer med tills man byter). Realm, djup och instabilitet väljs på kampanjkartan; Kallet vid Kallets altare
 ## (kortet leder dit). KLAR sparar valet och går tillbaka till kampanjkartan.
 ## Knappar och kort reagerar när fingret släpps (undviker dubbeltryck mellan skärmar).
 
@@ -9,8 +9,8 @@ const GAP := 14.0
 const PARTY_ART := preload("res://assets/illustrations/sallskapet.webp")
 
 var companions: Array[String] = []
-var brought := ""
-var wearer := "paladin"
+## Trofén man har tryckt på och ska sätta på en hjälte.
+var selected := ""
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 @onready var run: Node = get_node("/root/Run")
 var _t := 0.0
@@ -21,8 +21,6 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	run.base_music()
-	brought = run.pending_trophy.get("trophy", "")
-	wearer = run.pending_trophy.get("wearer", "paladin")
 	var previous: Array[String] = []
 	for id in run.profile.party:
 		if id != "paladin":
@@ -81,19 +79,18 @@ func _tap(p: Vector2) -> void:
 			else:
 				companions.pop_front()
 				companions.append(id)
-			if not _party().has(wearer):
-				wearer = "paladin"
 			return
 	for i in run.collection.size():
 		if _trophy_rect(i).has_point(p):
-			brought = "" if brought == run.collection[i] else run.collection[i]
+			selected = "" if selected == run.collection[i] else run.collection[i]
 			return
-	if brought != "":
-		var party := _party()
-		for i in party.size():
-			if _wearer_rect(i).has_point(p):
-				wearer = party[i]
-				return
+	var party := _party()
+	for i in party.size():
+		if _wearer_rect(i).has_point(p):
+			run.profile.wear(party[i], selected)  # utan vald trofé tar man av den hjälten bär
+			selected = ""
+			run.save()
+			return
 	if _macro_rect().has_point(p):
 		run.open_macros(run.START_SCENE)
 		return
@@ -106,11 +103,10 @@ func _can_go() -> bool:
 	return not companions.is_empty() or run.profile.recruited.is_empty()
 
 
-## Sparar sällskapet och trofén att ta med och går tillbaka till kampanjkartan.
+## Sparar sällskapet och går tillbaka till kampanjkartan.
 func _done() -> void:
 	if not companions.is_empty():
 		run.profile.set_party(companions)
-	run.pending_trophy = {} if brought == "" else {"trophy": brought, "wearer": wearer}
 	run.save()
 	run.go(run.CAMPAIGN_SCENE)
 
@@ -132,6 +128,8 @@ func _oath_rect() -> Rect2:
 ## Knappen till hjältebladet: −1 = Paladinen (i kallets kort), annars följeslagarens kort.
 func _sheet_rect(i: int) -> Rect2:
 	var r := _oath_rect() if i < 0 else _companion_rect(i)
+	if r.size.y < 80:
+		return Rect2(r.end.x - 78, r.end.y - 30, 70, 26)  # låga kort: under namnet
 	return Rect2(r.end.x - 78, r.end.y - 36, 70, 30)
 
 
@@ -141,16 +139,26 @@ func _companion_rect(i: int) -> Rect2:
 		var w := (size.x - MARGIN * 2 - GAP * 3) / 4.0
 		return Rect2(MARGIN + i * (w + GAP), 240, w, 176)
 	var w5 := (size.x - MARGIN * 2 - GAP * 4) / 5.0
-	return Rect2(MARGIN + (i % 5) * (w5 + GAP), 240 + (i / 5) * 92, w5, 84)
+	# 0.26.3: tre rader (11+ lärjungar) blir lägre så att troféerna får plats under.
+	var h := 84.0 if _roster().size() <= 10 else 58.0
+	return Rect2(MARGIN + (i % 5) * (w5 + GAP), 240 + (i / 5) * (h + 8), w5, h)
 
 
+## Trofédelens överkant: under följeslagarna.
+func _trophy_top() -> float:
+	return maxf(442.0, _companion_rect(_roster().size() - 1).end.y + 14) if not _roster().is_empty() else 442.0
+
+
+## Samlingen som knappar, sju per rad.
 func _trophy_rect(i: int) -> Rect2:
-	var w := (size.x - MARGIN * 2 - GAP * 5) / 6.0
-	return Rect2(MARGIN + i * (w + GAP), 452, w, 112)
+	var w := (size.x - MARGIN * 2 - GAP * 6) / 7.0
+	return Rect2(MARGIN + (i % 7) * (w + GAP), _trophy_top() + 76 + (i / 7) * 42, w, 36)
 
 
+## Sällskapet med det var och en bär.
 func _wearer_rect(i: int) -> Rect2:
-	return Rect2(MARGIN + 110 + i * 150, 576, 140, 40)
+	var w := (size.x - MARGIN * 2 - GAP * 3) / 4.0
+	return Rect2(MARGIN + i * (w + GAP), _trophy_top() + 14, w, 48)
 
 
 func _button_rect() -> Rect2:
@@ -192,7 +200,7 @@ func _draw() -> void:
 	UiStyle.card(self, _oath_rect(), ed.name, ed_body, true, UiStyle.GOLD, "PALADINENS KALL – TRYCK FÖR KALLETS ALTARE", 0.0, 10.0)
 	_sheet_button(_sheet_rect(-1))
 
-	UiStyle.text(self, Vector2(0, 76), "Sällskapet och trofén du tar med. Realm, djup och instabilitet väljer du på kampanjkartan.", 16,
+	UiStyle.text(self, Vector2(0, 76), "Sällskapet och troféerna de bär. Realm, djup och instabilitet väljer du på kampanjkartan.", 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 	var roster := _roster()
 	var head := "FÖLJESLAGARE – VÄLJ EN TILL TRE (%d/3)" % companions.size() if not run.profile.recruited.is_empty() \
@@ -208,25 +216,37 @@ func _draw() -> void:
 			body = t.name
 		var lv := int(run.profile.hero(data, id).level)
 		UiStyle.card(self, _companion_rect(i), "%s · nivå %d" % [h.name, lv], body, companions.has(id), Color(h.color),
-				h.title.to_upper(), 0.0, 30.0)
+				h.title.to_upper() if roster.size() <= 10 else "", 0.0, 30.0)  # tre rader: BLAD tar rollens plats
 		_sheet_button(_sheet_rect(i))
 
-	UiStyle.text(self, Vector2(MARGIN, 442), "TA MED EN TROFÉ FRÅN SAMLINGEN (VALFRITT)", 16, Color(1, 1, 1, 0.6))
+	var worn: Dictionary = run.profile.worn
+	# Med en vald trofé står dess text i rubrikens ställe.
+	var head_t := "TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE. DE BÄR DEM TILLS DU BYTER." if selected == "" \
+			else "%s: %s" % [data.traits[selected].name, data.traits[selected].text]
+	UiStyle.text(self, Vector2(MARGIN, _trophy_top() + 4), head_t, 16, Color(1, 1, 1, 0.6) if selected == "" else UiStyle.TRAIT_GOLD,
+			HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN * 2, 3)
+	var party := _party()
+	for i in party.size():
+		var r := _wearer_rect(i)
+		var t: String = worn.get(party[i], "")
+		var hot := selected != ""
+		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if t != "" else Color(0, 0, 0, 0.6))
+		draw_rect(r, Color(UiStyle.GOLD, 0.95) if hot or t != "" else Color(1, 1, 1, 0.35), false, 2.0)
+		UiStyle.text(self, r.position + Vector2(10, 20), data.heroes[party[i]].name, 15, Color(1, 1, 1, 0.7),
+				HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 20, 3)
+		UiStyle.text(self, r.position + Vector2(10, 40), data.traits[t].name if t != "" else "Ingen trofé", 16,
+				UiStyle.TRAIT_GOLD if t != "" else Color(1, 1, 1, 0.45), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 20, 3)
 	if run.collection.is_empty():
-		UiStyle.text(self, Vector2(MARGIN, 486), "Samlingen är tom. Besegra monster för att hitta troféer.", 18, Color(1, 1, 1, 0.45))
+		UiStyle.text(self, Vector2(MARGIN, _trophy_top() + 102), "Samlingen är tom. Besegra monster för att hitta troféer.", 18, Color(1, 1, 1, 0.45))
 	for i in run.collection.size():
-		var t: Dictionary = data.traits[run.collection[i]]
-		UiStyle.card(self, _trophy_rect(i), t.name, t.text, brought == run.collection[i], UiStyle.TRAIT_GOLD)
-	if brought != "":
-		UiStyle.text(self, Vector2(MARGIN, 602), "BÄRS AV", 16, Color(1, 1, 1, 0.6))
-		var party := _party()
-		for i in party.size():
-			var r := _wearer_rect(i)
-			var on := wearer == party[i]
-			draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.6))
-			draw_rect(r, Color(UiStyle.GOLD, 0.95) if on else Color(1, 1, 1, 0.35), false, 2.0)
-			UiStyle.text(self, r.position + Vector2(0, 27), data.heroes[party[i]].name, 16, Color.WHITE,
-					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
+		var id: String = run.collection[i]
+		var r := _trophy_rect(i)
+		var on := selected == id
+		var taken := worn.values().has(id)
+		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.6))
+		draw_rect(r, Color(UiStyle.GOLD, 0.95) if on else Color(UiStyle.TRAIT_GOLD, 0.6 if taken else 0.3), false, 2.0)
+		UiStyle.text(self, r.position + Vector2(0, 24), data.traits[id].name, 15,
+				Color.WHITE if on or not taken else Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
 	UiStyle.big_button(self, _button_rect(), "KLAR", _t, _can_go())
 	_small_button(_macro_rect(), "MAKRON")

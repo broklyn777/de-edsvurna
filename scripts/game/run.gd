@@ -59,8 +59,6 @@ var sheet_hero := "paladin"
 var sheet_heroes: Array = []
 var sheet_return := BASE_SCENE
 var sheet_can_change_personality := false
-## Trofén som tas med från samlingen in i nästa körning (Förberedelser): {trophy, wearer}.
-var pending_trophy := {}
 ## Questens belöning om den blev klar i senaste rummet: {silver, point} (visas i lägret).
 var quest_reward := {}
 ## Erfarenhet från senaste vunna striden (visas i lägret).
@@ -216,6 +214,12 @@ func _dev_args() -> void:
 					profile.recruit(data, id, 3.0)
 			profile.intro_done = true
 			profile.set_party(["imma", "alva", "brokk"])
+			# och några troféer, en av dem på Imma (0.26.3, för skärmdumpar av Förberedelser)
+			for kind in ["skeleton_warrior", "skeleton_archer", "ember_skeleton", "grave_guard"]:
+				if data.enemies.has(kind) and data.enemies[kind].has("trophy"):
+					profile.add_trophy(data.enemies[kind].trophy)
+			if not profile.collection.is_empty():
+				profile.wear("imma", profile.collection[0])
 		elif arg == "--new-profile":
 			# --new-profile: börja som en ny spelare (sparas inte): Paladinen och Brokk
 			dev_profile = true
@@ -382,9 +386,6 @@ func start_run(party: Array[String]) -> void:
 	if seen == 0:
 		bark("new_realm")
 	_save()
-	if not pending_trophy.is_empty() and profile.collection.has(pending_trophy.trophy):
-		state.take_trophy(pending_trophy.trophy)
-		state.equip(pending_trophy.wearer, pending_trophy.trophy)
 	quest_reward = {}
 	room_result = ""
 	save_run()
@@ -667,6 +668,8 @@ func bark(kind: String) -> void:
 ## Efter lägret: tillbaka till rumskartan, nästa våning, eller hem när körningen är klar.
 func after_camp() -> void:
 	ui("ui_confirm", -8.0)
+	profile.keep_worn(state.equipped, state.party)  # 0.26.3: bytena i lägret varar
+	_save()
 	if state.floor_cleared():
 		if state.is_last_floor():
 			profile.clear_depth(state.depth, state.realm)
