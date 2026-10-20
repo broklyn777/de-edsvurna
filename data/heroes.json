@@ -248,7 +248,7 @@
 				"ability": "healing_light",
 				"target": "that"
 			},
-			"text": "Alva kan hela: \"Om någon allierad har liv under 50 %: Helande ljus på den.\""
+			"text": "Alva lär dig ett villkor – hela den som har lågt liv: \"Om någon allierad har liv under 50 %: Helande ljus på den.\" Raden används bara när villkoret stämmer."
 		}
 	},
 	"eira": {

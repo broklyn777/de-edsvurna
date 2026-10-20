@@ -155,15 +155,18 @@ func test_hero_sheet_faces_the_enemy_of_the_party() -> void:
 	assert_eq(screen.sheet_traits(_data, prof).paladin[0], prof.oath, "kallet")
 
 
-## Profilens första nedstigning (0.24, vårt val): RunState ger striden ×0,85, som docs/formler.md §9 säger.
+## Profilens första nedstigning (0.24.1, vårt val): RunState ger striden trappan per våning, som docs/formler.md §9 säger.
 func test_first_descent_scales_the_enemies_like_the_docs() -> void:
 	var state := RunState.new()
 	state.first_descent = true
-	assert_near(float(state.battle_opts().get("stat_bonus", 1.0)), Ref.battle_bonus(false, true), 1e-9, "första")
+	for f in 3:
+		state.floor = f
+		assert_near(float(state.battle_opts().get("stat_bonus", 1.0)), Ref.battle_bonus(false, true, f), 1e-9, "våning %d" % (f + 1))
+	state.floor = 0
 	state.first_descent = false
 	assert_near(float(state.battle_opts().get("stat_bonus", 1.0)), 1.0, 1e-9, "senare")
 	assert_near(RunState.PORTAL_STATS, Ref.battle_bonus(true, false), 1e-9, "Portalen")
-	# Fienderna i striden: bas × 0,85 före sällskapets storlek, avrundat som referensen.
+	# Fienderna i striden: bas × trappan (våning 1) före sällskapets storlek, avrundat som referensen.
 	var sim := CombatSim.create(_data, "crypt_1", 2, ["paladin", "imma"], {}, {}, {}, 1,
 			{"stat_bonus": Ref.battle_bonus(false, true), "elite_chance": 0.0})
 	var enc: Dictionary = _data.encounters.crypt_1
@@ -171,6 +174,6 @@ func test_first_descent_scales_the_enemies_like_the_docs() -> void:
 			Ref.lineup(_data.enemies, _data.traits, enc.enemies, 2), "fienderna mot två hjältar")
 	for e in sim.enemies:
 		var want := Ref.enemy_stats(_data.enemies[e.kind].stats, float(enc.get("stat_mult", 1.0)), 1, 2, 1.0, false, false,
-				0.85)
+				Ref.battle_bonus(false, true))
 		assert_eq(e.max_hp, want.health, e.kind)
 		assert_eq(e.attack, want.attack, e.kind)

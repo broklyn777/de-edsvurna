@@ -82,7 +82,9 @@ func test_the_first_descent_has_weaker_enemies_and_no_prisoner() -> void:
 	assert_true(s.prisoners.is_empty(), "ingen fånge första gången")
 	s.first_descent = true
 	s.start_expedition(_data, 4)
-	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), RunState.FIRST_DESCENT_STATS, 1e-6)
+	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), RunState.first_descent_mult(0), 1e-6)
+	assert_true(RunState.first_descent_mult(0) < RunState.first_descent_mult(1), "våning 2 är svårare än våning 1")
+	assert_true(RunState.first_descent_mult(2) < 1.0, "Benfursten är också lite svagare första gången")
 	var saved := RunState.from_dict(s.to_dict())
 	assert_true(saved.first_descent, "sparas med körningen")
 

@@ -37,3 +37,12 @@ func test_the_suggested_line_attacks_the_weakest_enemy_and_ends_the_intro_step()
 		p.intro_step += 1
 	p.intro_talked = true  # 0.24: Hedda har gett uppdraget
 	assert_true(not Intro.notify(_data, p, "macro_line").is_empty(), "raden klarar steget")
+
+
+func test_alva_teaches_a_condition_when_she_joins() -> void:
+	var r := _run(Profile.new())
+	var hint: Dictionary = r.macro_hint("alva")
+	assert_true(not hint.is_empty(), "förslaget visas i en ny profil: hennes startrader saknar helningen")
+	assert_eq(hint.line.cond, "hp_below", "ett villkor: lågt liv")
+	assert_true(r.macros.alva.lines.size() >= 1, "hon har ändå något att göra")
+	r.free()

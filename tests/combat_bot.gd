@@ -225,7 +225,7 @@ static func new_profile_macros(data: Dictionary) -> Dictionary:
 			"target": "that"}]
 	for id in out:
 		if id != "paladin":
-			out[id].lines = out[id].lines.slice(0, 2)
+			out[id].lines = load("res://scripts/game/run.gd").starter_lines(data, id, out[id].lines)
 	return out
 
 
