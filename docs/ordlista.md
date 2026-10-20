@@ -107,7 +107,7 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Djup | depth, `Profile.depth`/`best_depth`, `CombatSim.depth_mult` | Realm Depth | Väljs på kampanjkartan. Fiender +8 % stats per djup (utom Speed), silver +25 %, troféchans +15 procentenheter. Nästa djup öppnas när det föregående är klarat. |
 | Fiendens egenskap | `traits` i enemies.json (`"enemy": true` i traits.json) | creature trait | Alla fiender har minst en, som makrona måste svara på. |
 | Benrustning, Jägarblick, Gravpakt, Taggig utmaning, Glödhetta | bone_armor, deadeye, grave_pact, warden_thorns, ember_heat | – (egna) | Skelettkrigare, bågskytt, Gravpräst, Gravväktare, Glödskelett. |
-| Resistent | resistant, `CombatUnit.resistant`, `CombatSim.RESISTANT` | Resistant | Debuffar på bossen verkar till hälften. |
+| Resistent | resistant, `CombatUnit.resistant` | Resistant | Bara statusarna med en Resistant-version verkar svagare på bossen (Blöder, Frusen, Tystad, Hånad, Sover, Snärjd, Förstenad); andra debuffar verkar fullt. |
 | Odödlig vrede, Dödsdom | lich_undying_wrath (`once_per_battle`), lich_wrath, lich_doom | – (bossfas) | Benfursten under 50 % liv. |
 | Brinner | burning (`dot_stat`, `dot_pct`) | Burning | 30 % av källans Intelligence per tur, som i Siralim. |
 | Granska (håll fingret) | `_show_inspect` i battle.gd | Inspect | Visar stats och egenskaper, kostar ingen tur. |

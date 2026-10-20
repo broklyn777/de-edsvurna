@@ -76,8 +76,6 @@ const ELITE_POWER := 1.1
 const RISEN_DEAD_HP := 0.1
 const VIGILANT_CHANCE := 0.3
 const CURSED_GROUND := 0.02
-## Resistant: debuffar på figuren verkar till hälften (skadeökning, DoT, ändrad Defense).
-const RESISTANT := 0.5
 ## Säkerhetsgräns för hur djupt egenskaper kan sätta igång varandra.
 const MAX_TRAIT_CHAIN := 10
 ## Som i Siralim: per figur och pågående tur får egenskaper utlösa högst så många attacker,
@@ -1046,6 +1044,23 @@ func expected_damage(src: CombatUnit, tgt: CombatUnit, ability_id: String) -> fl
 	return dmg
 
 
+## Medelhelningen för en förmåga (hjältebladet, 0.23.3): Int × styrka med samma modifierare som _heal (t.ex.
+## Gryningens Större helning), variationen 1,0. Rör ingenting.
+func expected_heal(src: CombatUnit, tgt: CombatUnit, ability_id: String) -> float:
+	var power := 0.0
+	for eff in ability(ability_id).get("effects", []):
+		if eff.type == "heal" and eff.has("power"):
+			power = float(eff.power)
+			break
+	var factors: Array = []
+	for m in _modifiers(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}):
+		if m.has("heal_mult"):
+			factors.append(float(m.heal_mult))
+	if _rule("withered_grace"):
+		factors.append(0.6)
+	return roundf(src.stat("intelligence") * power * combine_mods(factors))
+
+
 ## scaled: amount är en modifierare som räknas genom formeln; annars ett fast belopp (följdanfall för
 ## en andel av en träff, DoT, en andel av en stat) som bara Indirect-regeln drar Defense från.
 func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: String,
@@ -1318,7 +1333,7 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 ##   "stacking": "refresh" (standard: varaktigheten fylls på) eller "stack" (upp till "max_stacks"; varje stapel
 ##   ger hela effekten en gång till), "removes": [statusar som den tar bort], "cannot_dispel", "snare" (kan inte
 ##   flyttas på tidslinjen), "leech" (andel av skadan som helar bäraren), "stun" (förlorar turen) m.fl.
-## Resistant (bossar): en debuffs effekt halveras.
+## Resistant (bossar, 0.22 som originalet): bara statusarna med en Resistant-version ändras (se _add_aura).
 const FACTOR_KEYS := ["damage_taken_mult", "defense_mult", "damage_mult"]
 
 
@@ -1521,11 +1536,6 @@ func _send_down(x: CombatUnit) -> void:
 	var boss: bool = x.team == 1 and data.enemies.get(x.kind, {}).get("boss", false)
 	order.insert(mini(i + 1, order.size()) if boss else order.size(), x.id)
 	_emit({"type": "timeline_move", "unit": x.id, "dir": "bottom", "steps": 0, "pushed": true})
-
-
-## Resistant: en debuffs ändring av en faktor halveras (×1,2 → ×1,1, ×0,65 → ×0,825).
-static func resisted(factor: float) -> float:
-	return 1.0 + (factor - 1.0) * RESISTANT
 
 
 func _kill(u: CombatUnit) -> void:
@@ -1749,12 +1759,12 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 		amount = float(e.get(effect.get("event_field", "amount"), 0.0)) * float(effect.pct_of_event)
 	elif effect.has("pct_max_hp"):
 		amount = tgt.max_hp * float(effect.pct_max_hp)
+	elif effect.type == "heal":
+		amount = _heal_amount(owner, effect)  # 0.23.3: även en andel av en stat, så att uträkningen visar den
 	elif effect.has("stat"):
 		amount = _amount(owner, effect)  # en andel av en stat, t.ex. Barriär från Intelligence
 	elif effect.type == "damage":
 		amount = _amount(owner, effect)
-	elif effect.type == "heal":
-		amount = _heal_amount(owner, effect)
 	match effect.type:
 		"damage":
 			var kind: String = effect.get("kind", "attack")

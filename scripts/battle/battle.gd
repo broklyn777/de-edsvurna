@@ -489,8 +489,9 @@ func _trophy_line(u: CombatUnit) -> String:
 ## Visar figurens stats och egenskaper (dolda delar och artefaktens egenskap räknas inte).
 func _show_inspect(unit_id: String) -> void:
 	var u := sim.unit(unit_id)
-	var lines: Array[String] = ["Liv %d/%d · Attack %d · Intelligence %d · Defense %d · Speed %d" % [
-			u.hp, u.max_hp, u.attack, u.intelligence, u.defense_now(), u.speed]]
+	var lines: Array[String] = ["Liv %d/%d · Attack %s · Intelligence %s · Defense %s · Speed %s" % [
+			u.hp, u.max_hp, HeroStats.shown(u.attack), HeroStats.shown(u.intelligence), HeroStats.shown(u.defense_now()),
+			HeroStats.shown(u.speed)]]
 	if u.team == 0 and u.personality != "":
 		var p: Dictionary = data.personalities[u.personality]
 		lines.append("Nivå %d · %s (%s 40 %%, %s 20 %%)" % [int(u.level), p.name, HeroStats.STAT_NAMES[p.up],

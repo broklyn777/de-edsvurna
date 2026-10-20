@@ -25,7 +25,7 @@ var crit_chance := 0.1
 ## Barrier tar skadan före livet. Den starkaste gäller, de staplas inte (Siralim).
 var barrier := 0.0
 var damage_taken_mult := 1.0
-## Resistant (Siralims bossar): debuffar får halv effekt (se CombatSim.RESISTANT).
+## Resistant (Siralims bossar): statusarna med en Resistant-version verkar svagare (docs/formler.md §5).
 var resistant := false
 var attack_ability := "attack"
 ## Hjältens förmågor (motsvarar Siralims Spell Gems) och hur många Charges som är kvar på var.

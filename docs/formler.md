@@ -20,8 +20,11 @@ Statsen kommer från flera källor, som alla når striden och syns i hjälteblad
 
 - Nivå: varje nivå ger +30 % av basvärdet (personligheten ger en stat 40 % och en annan 20 %).
 - Artefakt: typens stat, t.ex. svärd +5 % Attack. Varje artefaktnivå gör det 10 % starkare.
-- Bärnsten: +6 % av statsen före artefakten per sten (tvåfärgad 3,6 % på var), gånger artefaktnivåns styrka.
-- Nether Stone: sin egen procent.
+- Bärnsten: +6 % av statsen före artefakten per Stat-plats (en plats tar 5 bärnsten; tvåfärgad 3,6 % på var), gånger
+  artefaktnivåns styrka.
+- Nether Stone: sin egen procent av statsen före artefakten (inte gånger artefaktnivån).
+- Health avrundas per källa. De andra statsen behåller decimalerna och striden räknar med dem; de visas med en
+  decimal när de inte är heltal (0.23.3, `HeroStats.shown`), och hjältebladets delar blir alltid den visade summan.
 
 **Defense just nu** (`defense_now()`): Defense gånger auror. Försvara ×1,5 (+50 %), Provocera ×0,65 (−35 %),
 Saltad jord ×0,8. Aldrig under 20 % av startvärdet (originalet).
@@ -45,17 +48,26 @@ Den sista procenten gör att även en hjälte med lägre Attack än målets Defe
     skada   = max(potency − Defense × (1 − nivåns genomslag), 0) × förmågans styrka
 
 Starkare nivåer bortser från en del av Defense (Måttlig 10 %, Stor 20 %, Massiv 30 %, Förödande 40 %).
-*Vårt val:* besvärjelser mot hela fiendelaget har redan en lägre styrka i datan (0,5–0,6) i stället för
-originalets ×0,25 efter Defense.
+*Vårt val:* besvärjelser mot hela fiendelaget har redan en lägre styrka i datan (0,5–0,7) i stället för
+originalets ×0,25 efter Defense. *Vårt val:* en besvärjelse utan nivå (t.ex. fiendernas Glödskur och Benstorm) räknar
+med 100 % av Intelligence och bortser inte från någon Defense.
 
-**Indirekt skada** (följdanfall, Brinner, våningsregler; originalet):
+**Indirekt skada** (Brinner, Förgiftad, Väktarens kall, Rotskott, våningsregler; originalet):
 
     skada = belopp × modifierare − 20 % av Defense
 
 Defense dras alltså av *sist* och bara till en femtedel. Indirekt skada kan inte undvikas och blir aldrig krit.
 
 **Fasta belopp** (t.ex. ett följdanfall för 50 % av träffen, eller Brinner = 30 % av kastarens Intelligence
-per tur) räknas inte om mot Defense igen, men får modifierarna.
+per tur) räknas inte om mot Defense igen, men får modifierarna. Brinner och Förgiftad räknas ut när statusen läggs
+och är sedan samma varje tur. *Vårt val:* ett följdanfall från en egenskap (Jägarinstinkt, Skelettets fingerled) är
+ett **anfall** om datan inte säger "indirect": det kan undvikas och bli krit, men drar ingen Defense.
+
+**Tillägg** (originalets "additional damage", t.ex. Bästa försvaret: +30 % av Defense) läggs på sist. Det går förbi
+Defense och alla minskningar (originalet); hos oss går det också förbi ökningarna och kritten (*vårt val*).
+
+**Avrundning** (*vårt val*): skadan avrundas till ett heltal efter modifierarna, kritten och Defense, och blir minst 1.
+Barriären tar sedan sin del, och resten dras från livet.
 
 ## 3. Modifierarna
 
@@ -69,7 +81,8 @@ laddningar. Originalets regel:
 
 Sedan gäller: `skada × (1 + ökningar) × minskningarna`.
 
-Resistent (bossar): en debuff får halv effekt (Sårbar +25 % i stället för +50 %).
+Resistent (bossar) ändrar inga modifierare: Sårbar ger +50 % även på en boss (originalet, se §5). *Före 0.23.3
+stod här att debuffar fick halv effekt; det gällde före 0.22.*
 
 ## 4. Krit och undvikande (vårt val – originalets formel är inte publicerad)
 
@@ -80,6 +93,8 @@ Fartkvoten = egen Speed / målets Speed.
 - **Krit-skada** = +75 % + 125 % · log₃(kvot), minst +50 %. Det ger +75 % vid lika fart, +154 % vid dubbla
   farten och +200 % vid tredubbla (stämmer med originalets datapunkter).
 - Bara anfall kan bli krit, aldrig besvärjelser, indirekt skada eller helningar.
+- Kritten multiplicerar efter modifierarna: `grundskada × modifierare × (1 + krit-skada)` (*vårt val*; originalet
+  säger bara att krit-bonusar adderas med varandra). Vildsint och Taggsten lägger till chans, aldrig skada.
 - **Undvikande:** bara ett snabbare mål: 10 % per fördubbling av målets fart mot anfallarens, högst 30 %.
   Egenskaper (Hal sten, Gastens Eterisk) adderas, högst 75 %. Bara anfall kan undvikas.
 
@@ -151,7 +166,8 @@ besvärjelser och helningar) nollställs också varje gång figuren får turen.
 ## 6. Barriär
 
 En Barriär tar skadan före livet. Den starkaste gäller, de staplas inte (originalet). Träffar som Barriären tar
-helt sätter inte igång egenskaper.
+helt sätter inte igång egenskaper. *Vårt val:* en Barriär är högst figurens max liv (originalet: 200 % av den högsta
+staten).
 
 ## 7. Helning
 
@@ -172,11 +188,62 @@ precis som om hjälten hade använt förmågan själv.
 
 ## 9. Fiender
 
-Fiendernas stats = bas × mötets skalning × djupet (+8 % per djup, inte Speed) × nivån (+30 % per nivå från
-djupets och våningens nivå, även Speed). Elitvarianter har +25 % Health och +10 % Attack och Intelligence.
+Fiendernas stats räknas i den här ordningen, och avrundas efter varje steg:
+
+1. bas × mötets skalning × djupet (+8 % per djup, inte Speed) × Portalens extra skalning;
+2. × sällskapets storlek (0.23, *vårt val*): ×0,45 för en hjälte, ×0,56 för två, ×0,74 för tre, ×1 för fyra (Health,
+   Attack och Intelligence, inte Defense och Speed);
+3. × nivån: +30 % per nivå (nivån = 5 × (djup − 1) + 2,25 + 1,5 per våning), även Speed;
+4. elitvarianter: +25 % Health och +10 % Attack och Intelligence.
 
 ## 10. Hjältebladets "Vad det betyder"
 
-Bladet räknar med simulatorns egen funktion (`CombatSim.expected_damage`) på riktiga figurer mot den första
-fienden på valt djup: samma formler och samma egenskaper som i striden, med variationen 1,0 och utan krit. Ett
-test (`tests/test_numbers.gd`) kontrollerar att bladet och simulatorns medelvärde stämmer.
+Bladet räknar med simulatorns egen funktion (`CombatSim.expected_damage`, och `expected_heal` för helningar) på
+riktiga figurer mot den första fienden på valt djup: samma formler och samma egenskaper som i striden, med variationen
+1,0 och utan krit. Sedan 0.23.3 räknar bladet med det valda sällskapet (fienden skalas efter dess storlek, §9) och med
+Paladinens kall och perks. Ett test (`tests/test_numbers.gd`) kontrollerar att bladet och simulatorns medelvärde
+stämmer.
+
+## 11. Granskningen (0.23.3)
+
+Formlerna ovan finns skrivna en gång till, oberoende av spelets kod, i `tests/numbers_reference.gd`. Granskningen
+(`tests/numbers_audit.gd`) spelar seedade strider i kryptan och kapellet, djup 1–3, alla våningar, med 2–4 hjältar,
+nivåer och personligheter, artefakter med bärnsten, trick och Nether Stones, slumpade statusar och våningsregler. För
+varje skada, helning och undvikande räknas siffran om ur figurernas stats och statusar precis före träffen och jämförs
+med siffran spelet visade och med texten i skadeloggen. Fiendernas och hjältarnas stats räknas om på samma sätt.
+
+    godot --headless --path . --script res://tests/numbers_audit_report.gd
+
+Testet `tests/test_numbers_audit.gd` kör ett urval (72 strider) varje gång testerna körs.
+
+## 12. Där koden, dokumentet och originalet skiljer sig (granskningen 0.23.3)
+
+| Vad | Originalet | Koden | Före 0.23.3 i dokumentet | Bedömning |
+|---|---|---|---|---|
+| Resistent och Sårbar | bara Resistant-versionerna | som originalet | §3: "halv effekt, Sårbar +25 %" | fel i dokumentet, rättat |
+| Hjältebladets fiende | – | räknade mot en fiende skalad för en ensam hjälte (×0,45) | "samma som i striden" | **bugg, rättad**: bladet visade t.ex. 76 skada tagen mot Skelettkrigaren i stället för 209 |
+| Hjältebladet och kallet | – | utan Paladinens kall och perks; helningen utan modifierare | "samma egenskaper" | **bugg, rättad** |
+| Stats med decimaler | heltal | striden räknar med decimaler, bladet och Inspect visade dem avkortade (`%d`) | – | **bugg i visningen, rättad**: delarna blev inte summan, och en liten bärnsten syntes inte hos Smeden |
+| Skadeloggen när Defense > Attack | – | visade "(125 − 139) × 0,55 = 0" | – | **bugg i texten, rättad**: nu "(125 − 139 → 0)" |
+| Egenskapers helning av en stat | – | uträkningen visade bara "Grundbelopp" | – | rättat: visar "8 % av 900 Health" |
+| Följdanfall | indirekt skada från egenskaper | anfall (krit, undvikande, ingen Defense) | listade som indirekt | vårt val, dokumentet rättat. *Fråga till VD:* ett följdanfall på en krit kan krita igen |
+| Besvärjelser på alla fiender | ×0,25 efter Defense | lägre styrka i datan (0,5–0,7) | "0,5–0,6" | vårt val, siffran rättad |
+| Besvärjelse utan nivå | – (alla har nivå) | 100 % av Int, inget genomslag | – | vårt val, nu dokumenterat |
+| Variation ±10 % | ingen publicerad | ±10 % | ja | vårt val |
+| Krit-chans och undvikande | formeln okänd | fartkvoten | ja | vårt val |
+| Krit och modifierarna | krit-bonusar adderas | krit multiplicerar efter modifierarna | – | vårt val, nu dokumenterat |
+| Minsta skada och avrundning | – | heltal, minst 1 | – | vårt val, nu dokumenterat |
+| Barriärens tak | 200 % av högsta stat | max liv | – | vårt val, nu dokumenterat |
+| Blöder hos resistenta | 66 % mindre (≈ 10,2 %) | 10 % | 10 % | vårt val (avrundat) |
+| Blöder och Fördärvad | – | ingen Defense, men källans och målets modifierare | ja | vårt val |
+| Sällskapets storlek | finns inte | ×0,45–1,0 | saknades i §9 | vårt val, nu dokumenterat |
+| Brinner och Förgiftad | 30 % av Int / Attack | räknas när statusen läggs | – | vårt val, nu dokumenterat |
+| Helig kraft (+15 % per buff) | – | räknar inte Styrka/Välsignelse som förbrukas i samma träff | – | vårt val (ordningen i koden) |
+| Klass stark/svag ×2/×½ | finns | finns inte | – | vårt val (inga klasser) |
+| Gräns per tur | 15 (Calm Mode 5) | 5 | – | vårt val |
+
+Allt annat som granskningen räknade om stämde: Anfall, besvärjelser med nivå och genomslag, indirekt skada,
+modifierarna (ökningar adderas, minskningar multipliceras, golvet −80 %), krit-chans och krit-skada, undvikande med
+egenskaper, Smidig, Vildsint, Förstenad, Barriär, Skyddsskal, Immun-egenskaperna, Defense med golvet 20 %, helningar,
+Läkning, Förnyelse, Livstörst, Fördärvad, Blöder, Brinner, Förgiftad, Rotskott, våningsreglerna, artefaktens kast,
+alla stat-källor och fiendernas skalning.

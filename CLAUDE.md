@@ -143,7 +143,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   undvikande bär sin uträkning (`calc` i händelsen); `DamageExplain` (`src/combat/damage_explain.gd`) skriver den
   i klartext. I striden: tryck på en siffra, eller SKADELOGG. Hjältebladet räknar med `CombatSim.expected_damage()`
   (samma formler och modifierare som striden). `tests/test_numbers.gd` prövar formlernas egenskaper.
-  `-- --show-calc` och `-- --damage-log` visar dem direkt i en strid.
+  `-- --show-calc` och `-- --damage-log` visar dem direkt i en strid. **Granskningen** (0.23.3, `docs/formler.md` §11–12):
+  `tests/numbers_reference.gd` är formlerna skrivna en gång till utan spelets kod; `tests/audit_sim.gd` + `numbers_audit.gd`
+  räknar om varje händelse i seedade strider (`tests/test_numbers_audit.gd` kör 72 strider i testerna). Stats som inte
+  är heltal visas med en decimal (`HeroStats.shown`, `shown_parts`).
 - **Strid:** Siralims tidslinje – snabbheten avgör startplatsen, den som agerat läggs längst ned, inga
   rundor. Hjältar väljer Anfall, Förmåga (2–3 per hjälte, med Charges som räcker hela körningen),
   Försvara, Provocera eller Makro. Fiender visar sin avsikt och väljer nästa i slutet av sin tur.
@@ -297,6 +300,10 @@ godot --path .
 
 # Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var), och per kall
 godot --headless --path . --script res://tests/balance_report.gd
+
+# Granskningen av siffrorna (0.23.3): räknar om varje skada, helning och undvikande i 432 seedade strider med en
+# oberoende formelmodul (tests/numbers_reference.gd) och listar avvikelser. AUDIT_SEEDS=n ändrar antalet frön.
+godot --headless --path . --script res://tests/numbers_audit_report.gd
 
 # Varje perk för sig (hela kryptan med startmakrona)
 godot --headless --path . --script res://tests/perk_report.gd
