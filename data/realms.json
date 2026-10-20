@@ -35,38 +35,12 @@
 			"zoom_image": "under-tornet"
 		},
 		"disciples": [
-			{
-				"hero": "brokk",
-				"depth": 1,
-				"floor": 0,
-				"first": true,
-				"guarded": true
-			},
-			{
-				"hero": "alva",
-				"depth": 1,
-				"floor": 1
-			},
-			{
-				"hero": "eira",
-				"depth": 1,
-				"floor": 2
-			},
-			{
-				"hero": "tove",
-				"depth": 2,
-				"floor": 0
-			},
-			{
-				"hero": "solveig",
-				"depth": 2,
-				"floor": 1
-			},
-			{
-				"hero": "sefir",
-				"depth": 3,
-				"floor": 1
-			}
+			{"hero": "alva", "depth": 1, "floor": 0, "after_descents": 1, "first": true},
+			{"hero": "brokk", "depth": 1, "floor": 0, "after_descents": 1, "guarded": true},
+			{"hero": "eira", "depth": 1, "floor": 1, "after_descents": 1},
+			{"hero": "tove", "depth": 2, "floor": 0},
+			{"hero": "solveig", "depth": 2, "floor": 1},
+			{"hero": "sefir", "depth": 3, "floor": 1}
 		]
 	},
 	"chapel": {

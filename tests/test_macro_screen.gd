@@ -35,4 +35,5 @@ func test_the_suggested_line_attacks_the_weakest_enemy_and_ends_the_intro_step()
 	var p := Profile.new()
 	while Intro.current(_data, p).get("id", "") != "macro":
 		p.intro_step += 1
+	p.intro_talked = true  # 0.24: Hedda har gett uppdraget
 	assert_true(not Intro.notify(_data, p, "macro_line").is_empty(), "raden klarar steget")

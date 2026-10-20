@@ -1,61 +1,87 @@
 {
 	"steps": [
 		{
-			"id": "oath", "station": "altar", "event": "oath_chosen",
-			"speaker": "Mäster Gorm",
-			"lines": ["God morgon. I dag avlägger du din ed.", "Gå till Kallets altare och välj ditt kall."],
+			"id": "oath", "giver": "gorm", "station": "altar", "event": "oath_chosen",
+			"talk": [
+				"Där är du. God morgon, paladin.",
+				"I dag avlägger du din ed. Inte för min skull – för deras skull som inte kan försvara sig själva.",
+				"Välj ditt kall här vid altaret. Ta den tid du behöver. Men inte hela dagen."
+			],
 			"quest": "Avlägg din ed vid Kallets altare."
 		},
 		{
-			"id": "practice", "station": "practice", "event": "practice_won", "silver": 100,
-			"speaker": "Mäster Gorm",
-			"lines": ["En paladin som inte kan hålla ett svärd är ingen paladin.", "Gå till Övningsgården. Anfall – och försvara dig när det blir hett."],
-			"quest": "Vinn en övningsstrid i Övningsgården."
+			"id": "practice", "giver": "gorm", "station": "practice", "event": "practice_won", "silver": 100,
+			"talk": [
+				"Eden är svuren. Bra.",
+				"Men en paladin som inte kan hålla ett svärd är ingen paladin, hur vacker eden än är.",
+				"Gå till Stig i övningsgården, i västra längan. Anfall – och försvara dig när det blir hett."
+			],
+			"quest": "Vinn en övningsstrid hos Stig i övningsgården."
 		},
 		{
-			"id": "forge", "station": "smith", "event": "forged",
-			"speaker": "Smeden",
-			"lines": ["Silver från övningen? Bra. Då smider vi ditt svärd."],
-			"quest": "Smid ditt svärd hos Smeden."
+			"id": "forge", "giver": "stig", "station": "smith", "event": "forged",
+			"talk": [
+				"Inte illa. Dockan reser sig inte igen, i alla fall.",
+				"Här är hundra silver för besväret. Säg inte till Gorm att jag var generös, han tror att jag är snål.",
+				"Gå till Hedda i smedjan, i östra längan. Ett riktigt svärd gör underverk. Ett träsvärd gör mest splitter."
+			],
+			"quest": "Smid ditt svärd hos Hedda i smedjan."
 		},
 		{
-			"id": "macro", "station": "macros", "event": "macro_line",
-			"speaker": "Mäster Gorm",
-			"lines": ["En god kämpe tänker före striden.", "Skriv din första rad i Makron – till exempel: anfall den svagaste fienden."],
-			"quest": "Skriv din första makrorad."
+			"id": "macro", "giver": "hedda", "station": "macros", "event": "macro_line",
+			"talk": [
+				"Så. Ett svärd. Mitt bästa i år, och det är oktober.",
+				"Gorm vill att du tänker innan du slår. Hans skrivbord står i kammaren bredvid kapellet.",
+				"Skriv din första rad där. Till exempel: anfall den svagaste fienden. Och svinga inte svärdet inomhus."
+			],
+			"quest": "Skriv din första makrorad i Gorms kammare."
 		},
 		{
-			"id": "library", "station": "library", "event": "library_read",
-			"speaker": "Bibliotekarien",
-			"lines": ["Troféer, säger du? Varje besegrat monster kan lämna en.", "Och kryptan under borgen … det sägs att någon sitter fången där nere."],
-			"quest": "Läs om troféer i Biblioteket."
+			"id": "library", "giver": "gorm", "station": "library", "event": "library_read",
+			"talk": [
+				"En rad i taget. Så tänker en kämpe som vill bli gammal.",
+				"Broder Alrik i biblioteket vet allt om monstren där nere. Nästan allt. Han glömmer var han lägger saker.",
+				"Fråga honom om troféerna. Och om han letar efter glasögonen: de sitter på näsan."
+			],
+			"quest": "Läs om troféer hos Broder Alrik i biblioteket."
 		},
 		{
-			"id": "imma", "station": "base", "event": "talked", "recruit": "imma",
-			"speaker": "Imma",
-			"lines": ["Där är du! Gorm vill träffa oss, nu!", "Jag följer med. Säg inte emot – jag har smitit undan läxor i den här borgen i tio år."],
-			"quest": "Prata med Imma."
+			"id": "imma", "giver": "imma", "station": "yard", "event": "talked", "recruit": "imma",
+			"talk": [
+				"Där är du! Jag har letat i hela borgen. Två gånger.",
+				"Gorm vill träffa oss. Nu. Han hade sin allvarliga röst, den med rynkan.",
+				"Och jag följer med ned i kryptan – säg inte emot. Jag har smitit undan läxor i den här borgen i tio år. Jag hittar överallt."
+			],
+			"quest": "Prata med Imma på gården."
 		},
 		{
-			"id": "bells", "station": "base", "event": "talked",
-			"speaker": "Mäster Gorm",
-			"lines": ["Kryptans klockor har ringt i natt. Något har vaknat där nere.", "Ta Imma med dig. Porten är öppen."],
-			"quest": "Hör vad Gorm har att säga."
+			"id": "bells", "giver": "gorm", "station": "altar", "event": "talked",
+			"talk": [
+				"Kryptans klockor ringde i natt. Ingen har dragit i dem på hundra år.",
+				"Något har vaknat där nere. Skelett, troligen. De är sällan på gott humör.",
+				"Ta Imma med dig. Sven öppnar porten för er.",
+				"Och kom tillbaka. Det är det viktigaste."
+			],
+			"quest": "Hör vad Gorm har att säga i kapellet."
 		},
 		{
-			"id": "crypt", "station": "smith", "event": "sword_level", "level": 3,
-			"speaker": "Smeden",
-			"lines": ["Ta med silver från kryptan, så gör vi ditt svärd till nivå 3.", "Då får det sina första platser för det du hittar där nere."],
-			"quest": "Gå ned i kryptan och gör svärdet till nivå 3 hos Smeden."
+			"id": "crypt", "giver": "sven", "station": "smith", "event": "sword_level", "level": 3,
+			"talk": [
+				"Mm? Åh, paladinen. Och Imma. Jag sov inte, jag vilade ögonen. Mot porten.",
+				"Hedda bad mig hälsa: ta med silver hem från kryptan, så gör hon ditt svärd till nivå 3.",
+				"Porten är öppen. Gå försiktigt där nere, och stäng efter er. Det drar."
+			],
+			"quest": "Gå ned i kryptan och gör svärdet till nivå 3 hos Hedda."
 		}
 	],
+	"done": "Svärdet är ditt, och borgen står öppen. Resten får du upptäcka själv.",
 	"replies": {
-		"gate": "Portvakten: Porten är stängd tills Gorm säger annat.",
-		"practice": "Vapenmästaren: Övningsgården väntar – men först det Gorm bad dig om.",
-		"altar": "Mäster Gorm: Eden är avlagd. Gå vidare.",
-		"smith": "Smeden: Kom tillbaka när du har något att smida – och silver.",
-		"macros": "Mäster Gorm: Makrona kommer när du har hållit ett svärd.",
-		"library": "Bibliotekarien: Böckerna springer ingenstans. Gör klart det du håller på med.",
-		"inn": "Värdshusvärden: Här bor bara folk du har räddat. Kom tillbaka med vänner."
+		"gate": "Porten är stängd tills Gorm säger annat. Inte för att jag är sömnig.",
+		"practice": "Övningsgården väntar. Men först det Gorm bad dig om – han har bättre minne än han låter.",
+		"altar": "Eden är avlagd. Gå vidare, paladin.",
+		"smith": "Kom tillbaka när du har något att smida. Och silver. Mest silver.",
+		"macros": "Makrona kommer när du har hållit ett riktigt svärd.",
+		"library": "Böckerna springer ingenstans. De har inga ben. Gör klart det du håller på med.",
+		"inn": "Här bor bara folk du har räddat. Kom tillbaka med vänner, så dukar jag fram."
 	}
 }

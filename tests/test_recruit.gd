@@ -27,34 +27,37 @@ func test_old_profiles_keep_their_heroes() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
-func test_prisoners_wait_on_their_floors() -> void:
+func test_alva_waits_for_the_second_descent_then_brokk() -> void:
 	var p := Profile.new()
+	assert_true(RunState.new_run(p, _data).prisoners.is_empty(), "första nedstigningen gör Paladinen och Imma ensamma")
+	p.descents = {"crypt": 1}
 	var s := RunState.new_run(p, _data)
-	assert_eq(s.prisoners["0"].hero, "brokk", "Brokk sitter fången hos skeletten på första våningen")
-	assert_eq(s.prisoners["1"].hero, "alva")
+	assert_eq(s.prisoners.size(), 1, "en i taget")
+	assert_eq(s.prisoners["0"].hero, "alva", "Syster Alva på den andra nedstigningen")
+	assert_true(not s.prisoners["0"].guarded, "tidigt och säkert")
+	p.recruited.append("alva")
+	s = RunState.new_run(p, _data)
+	assert_eq(s.prisoners["0"].hero, "brokk", "sedan Brokk")
 	s.start_expedition(_data, 5)
-	var first: Array = s.map.steps[0].filter(func(r: Dictionary) -> bool: return r.kind == "prisoner")
-	assert_eq(first.size(), 1, "den första fången finns i första steget")
+	var first: Array = s.map.all_rooms().filter(func(r: Dictionary) -> bool: return r.kind == "prisoner")
+	assert_eq(first.size(), 1, "fången finns på första våningen")
 	assert_true(first[0].guarded and RunState.is_battle(first[0]), "Brokk är bevakad av skelett")
-	s.next_floor(_data)
-	var later: Array = s.map.all_rooms().filter(func(r: Dictionary) -> bool: return r.kind == "prisoner")
-	assert_eq(later.size(), 1)
-	assert_true(later[0].guarded and RunState.is_battle(later[0]), "de andra är bevakade")
 	p.recruited.append("brokk")
-	assert_true(not RunState.new_run(p, _data).prisoners.has("0") or RunState.new_run(p, _data).prisoners["0"].hero != "brokk",
-			"den man redan har sitter inte fången")
+	assert_eq(RunState.new_run(p, _data).prisoners.values()[0].hero, "eira")
 
 
 func test_deeper_disciples_need_their_depth() -> void:
 	var p := Profile.new()
 	p.realm = "chapel"
+	p.recruited.assign(["lirien", "ragnhild"])
+	assert_true(RunState.new_run(p, _data).prisoners.is_empty(), "Hulda och Ronja kräver djup 2")
+	p.recruited.assign([])
 	var s := RunState.new_run(p, _data)
-	var heroes: Array = s.prisoners.values().map(func(x: Dictionary) -> String: return x.hero)
-	assert_true(heroes.has("lirien") and not heroes.has("ronja"), "Ronja kräver djup 2")
+	assert_eq(s.prisoners.values()[0].hero, "lirien")
 	assert_true(not s.prisoners["0"].get("guarded", true), "Lirien är obevakad")
+	p.recruited.assign(["lirien", "ragnhild"])
 	p.depth = 2
-	heroes = RunState.new_run(p, _data).prisoners.values().map(func(x: Dictionary) -> String: return x.hero)
-	assert_true(heroes.has("hulda") or heroes.has("ronja"))
+	assert_eq(RunState.new_run(p, _data).prisoners.values()[0].hero, "hulda")
 
 
 func test_recruits_join_weak_and_the_party_has_room_for_three() -> void:
