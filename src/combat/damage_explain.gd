@@ -28,7 +28,7 @@ static func lines(data: Dictionary, e: Dictionary) -> Array[String]:
 			return _heal_lines(data, c)
 		"dodge":
 			out.append("Chans att undvika: %s (fart %s mot %s; snabbare mål undviker oftare, egenskaper adderas)" % [
-					pct(c.get("dodge_chance", 0.0)), num(c.target_speed), num(c.source_speed)])
+					pct(c.get("dodge_chance", 0.0)), HeroStats.shown(c.target_speed), HeroStats.shown(c.source_speed)])
 			return out
 	var kind: String = c.get("kind", "attack")
 	if c.get("scaled", false):
@@ -42,7 +42,7 @@ static func lines(data: Dictionary, e: Dictionary) -> Array[String]:
 				out.append("Potency: %s %s × nivå %s × variation %s = %s" % [num(sv), stat_name, pct(tier_mult), dec(roll), num(potency)])
 				out.append(_defense_line(c, float(c.get("ignore", 0.0))))
 				var d := float(c.defense) * (1.0 - float(c.get("ignore", 0.0)))
-				out.append("(%s − %s) × förmågans styrka %s = %s" % [num(potency), num(d), dec(c.power), num(c.raw)])
+				out.append("%s × förmågans styrka %s = %s" % [_minus(potency, d), dec(c.power), num(c.raw)])
 			"indirect":
 				out.append("%s %s × variation %s × förmågans styrka %s = %s (indirekt: Defense dras av sist)" % [num(sv), stat_name,
 						dec(roll), dec(c.power), num(c.raw)])
@@ -50,7 +50,7 @@ static func lines(data: Dictionary, e: Dictionary) -> Array[String]:
 				var atk := sv * roll
 				out.append("%s %s × variation %s = %s" % [num(sv), stat_name, dec(roll), num(atk)])
 				out.append(_defense_line(c, 0.0))
-				out.append("(%s − %s) + 1 %% av %s (%s) = %s × förmågans styrka %s = %s" % [num(atk), num(c.defense), num(atk),
+				out.append("%s + 1 %% av %s (%s) = %s × förmågans styrka %s = %s" % [_minus(atk, float(c.defense)), num(atk),
 						num(CombatSim.ATTACK_FLOOR * atk), num(maxf(atk - float(c.defense), 0.0) + CombatSim.ATTACK_FLOOR * atk),
 						dec(c.power), num(c.raw)])
 	else:
@@ -63,10 +63,10 @@ static func lines(data: Dictionary, e: Dictionary) -> Array[String]:
 		out.append("Modifierare: %s → ×%s (ökningar adderas, minskningar multipliceras)" % [", ".join(parts), dec(c.mod_total)])
 	if kind == "attack" and c.has("crit_chance"):
 		if c.get("crit", false):
-			out.append("Krit! +%s (fart %s mot %s; chansen var %s)" % [pct(c.crit_bonus), num(c.source_speed), num(c.target_speed),
+			out.append("Krit! +%s (fart %s mot %s; chansen var %s)" % [pct(c.crit_bonus), HeroStats.shown(c.source_speed), HeroStats.shown(c.target_speed),
 					pct(c.crit_chance)])
 		else:
-			out.append("Ingen krit (chans %s vid fart %s mot %s)" % [pct(c.crit_chance), num(c.source_speed), num(c.target_speed)])
+			out.append("Ingen krit (chans %s vid fart %s mot %s)" % [pct(c.crit_chance), HeroStats.shown(c.source_speed), HeroStats.shown(c.target_speed)])
 	if c.has("dodge_chance") and float(c.dodge_chance) > 0.0:
 		out.append("Träffade trots %s chans att undvika" % pct(c.dodge_chance))
 	if kind == "indirect":
@@ -102,6 +102,13 @@ static func _heal_lines(data: Dictionary, c: Dictionary) -> Array[String]:
 	var over := float(c.amount) - float(c.effective)
 	out.append("= %s helat%s" % [num(c.effective), "" if over < 1.0 else " (%s över fullt liv)" % num(over)])
 	return out
+
+
+## "(a − b)", eller "(a − b → 0)" när Defense är större: skillnaden blir aldrig negativ (0.23.3).
+static func _minus(a: float, b: float) -> String:
+	if roundi(a) < roundi(b) or a < b:
+		return "(%s − %s → 0)" % [num(a), num(b)]
+	return "(%s − %s)" % [num(a), num(b)]
 
 
 static func _defense_line(c: Dictionary, ignore: float) -> String:

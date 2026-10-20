@@ -151,20 +151,20 @@ func _draw_stats(data: Dictionary, prof: Profile, prog: Dictionary) -> void:
 	var lw := _left_w()
 	var y := 266.0
 	for stat in HeroStats.STATS:
-		var s: Dictionary = b[stat]
+		var s := HeroStats.shown_parts(b[stat])
 		var arrow := " ↑" if pers.get("up", "") == stat else (" ↓" if pers.get("down", "") == stat else "")
 		UiStyle.text(self, Vector2(MARGIN, y), HeroStats.STAT_NAMES[stat] + arrow, 22,
 				UiStyle.GOLD if arrow == " ↑" else (Color("#ff9a7a") if arrow != "" else Color.WHITE), HORIZONTAL_ALIGNMENT_LEFT, 190, 3)
-		UiStyle.text(self, Vector2(MARGIN + 180, y), "%d" % s.total, 26, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT, 90, 3)
+		UiStyle.text(self, Vector2(MARGIN + 180, y), HeroStats.shown(s.total), 26, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT, 90, 3)
 		UiStyle.text(self, Vector2(MARGIN, y), "nästa nivå +%d" % nxt[stat], 18, Color(UiStyle.TRAIT_GOLD, 0.9),
 				HORIZONTAL_ALIGNMENT_RIGHT, lw, 2)
 		var text := "="
 		for source in HeroStats.SOURCES:
 			var v: float = s.get(source, 0.0)
 			if source == "base":
-				text += " %d %s" % [v, HeroStats.SOURCE_NAMES[source]]
+				text += " %s %s" % [HeroStats.shown(v), HeroStats.SOURCE_NAMES[source]]
 			elif v != 0.0:
-				text += (" + %d %s" if v > 0.0 else " − %d %s") % [absf(v), HeroStats.SOURCE_NAMES[source]]
+				text += (" + %s %s" if v > 0.0 else " − %s %s") % [HeroStats.shown(absf(v)), HeroStats.SOURCE_NAMES[source]]
 		UiStyle.text(self, Vector2(MARGIN + 18, y + 25), text, 18, Color(1, 1, 1, 0.72), HORIZONTAL_ALIGNMENT_LEFT, lw - 18, 2)
 		y += 62
 	_draw_meaning(data, prof, b, level, Vector2(_right_x(), 266))
@@ -219,12 +219,29 @@ func _draw_meaning(data: Dictionary, prof: Profile, _b: Dictionary, level: int, 
 		y += 6 + UiStyle.para(self, Vector2(at.x, y), line, 19, Color.WHITE, w, 2)
 
 
+## 0.23.3: bladet räknar mot sällskapet man har valt (med hjälten i), inte mot hjälten ensam. Ensam skalades
+## fienden efter ett sällskap på en (CombatSim.PARTY_SCALE, ×0,45) och bladet visade för lite skada tagen och för
+## få träffar för att fälla den.
+static func sheet_party(prof: Profile, id: String) -> Array:
+	var party: Array = prof.party.duplicate()
+	if not party.has(id):
+		if party.size() >= 4:
+			party.pop_back()
+		party.append(id)
+	return party
+
+
+## Paladinens kall och perks, som i striden (RunState.hero_traits); de andra har sina egna egenskaper.
+static func sheet_traits(data: Dictionary, prof: Profile) -> Dictionary:
+	return {"paladin": [prof.oath] + prof.active_perks(data, prof.oath)}
+
+
 func _build_meaning(data: Dictionary, prof: Profile, level: int, personality: String, art: Dictionary) -> void:
 	var realm: Dictionary = data.realms[prof.realm]
 	var enc_id: String = realm.floors[0]
 	var arts := {} if art.is_empty() else {hero_id: art}
-	var sim := CombatSim.create(data, enc_id, 1, [hero_id], {}, {}, arts, prof.depth,
-			{"levels": {hero_id: {"level": level, "personality": personality}}, "elite_chance": 0.0, "floor": 0})
+	var sim := CombatSim.create(data, enc_id, 1, sheet_party(prof, hero_id), sheet_traits(data, prof), {}, arts,
+			prof.depth, {"levels": {hero_id: {"level": level, "personality": personality}}, "elite_chance": 0.0, "floor": 0})
 	var hero := sim.unit(hero_id)
 	var foe: CombatUnit = sim.enemies[0]
 	_meaning_sub = "mot %s (nivå %d) i %s, djup %d, våning 1" % [foe.name, roundi(foe.level), realm.short, prof.depth]
@@ -237,15 +254,15 @@ func _build_meaning(data: Dictionary, prof: Profile, level: int, personality: St
 			if eff.type == "damage" and eff.has("power"):
 				_meaning_lines.append("%s: ~%d skada" % [ab.name, sim.expected_damage(hero, foe, ability_id)])
 			elif eff.type == "heal" and eff.has("power"):
-				_meaning_lines.append("%s: helar ~%d" % [ab.name, hero.stat("intelligence") * float(eff.power)])
+				_meaning_lines.append("%s: helar ~%d" % [ab.name, sim.expected_heal(hero, hero, ability_id)])
 	var taken := sim.expected_damage(foe, hero, foe.attack_ability)
 	sim._add_aura(hero, hero, "defend")
 	var defended := sim.expected_damage(foe, hero, foe.attack_ability)
 	_meaning_lines.append("Fiendens anfall: ~%d skada mot %s (%d om %s försvarar sig) av %d liv" % [taken, hero.name,
 			defended, hero.name, hero.max_hp])
 	var faster := "snabbare" if hero.speed > foe.speed else ("lika snabb" if hero.speed == foe.speed else "långsammare")
-	_meaning_lines.append("Speed %d mot %d: %s än fienden – snabbare ger fler krittar och fler undvikanden" % [
-			hero.speed, foe.speed, faster])
+	_meaning_lines.append("Speed %s mot %s: %s än fienden – snabbare ger fler krittar och fler undvikanden" % [
+			HeroStats.shown(hero.speed), HeroStats.shown(foe.speed), faster])
 
 
 func _power(data: Dictionary, ability_id: String) -> float:

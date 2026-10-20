@@ -569,8 +569,8 @@ func _draw_compare(data: Dictionary, art: Dictionary, level: int, cur: String) -
 	var changes: Array[String] = []
 	for s in HeroStats.STATS:
 		var d: float = after_t[s] - before_t[s]
-		if absf(d) >= 0.5:
-			changes.append("%s %d → %d" % [HeroStats.STAT_NAMES[s], roundi(before_t[s]), roundi(after_t[s])])
+		if absf(d) >= 0.05:
+			changes.append("%s %s → %s" % [HeroStats.STAT_NAMES[s], HeroStats.shown(before_t[s]), HeroStats.shown(after_t[s])])
 	if not changes.is_empty():
 		y += 4 + UiStyle.para(self, Vector2(x, y + 4), ", ".join(changes), 16, Color("#8fd18f"), w, 2)
 	var warn := "Tryck igen för att sätta i"

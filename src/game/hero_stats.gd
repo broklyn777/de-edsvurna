@@ -84,6 +84,41 @@ static func breakdown(data: Dictionary, hero_id: String, level: int, personality
 	return out
 
 
+## Ett stat-värde som det visas (0.23.3): heltal när det är ett heltal, annars en decimal ("7,5"). Artefaktens stat,
+## bärnstenen och Nether Stone ger inte alltid heltal, och striden räknar med det exakta värdet. Förut visades talet
+## avkortat ("%d"), så att bladets delar inte blev summan och en liten bärnsten på Speed syntes som ingenting.
+static func shown(v: float) -> String:
+	var t := roundi(v * 10.0)
+	if t % 10 == 0:
+		return "%d" % (t / 10)
+	return ("%.1f" % (t / 10.0)).replace(".", ",")
+
+
+## Källorna i en breakdown()-rad som de visas: på en decimal, så att de visade delarna blir exakt den visade
+## summan (största resten får tiondelarna som blir över). {<SOURCES>…, total}.
+static func shown_parts(s: Dictionary) -> Dictionary:
+	var total := roundi(float(s.total) * 10.0)
+	var tenths := {}
+	var rest := []
+	var sum := 0
+	for source in SOURCES:
+		var x := float(s.get(source, 0.0)) * 10.0
+		var f := floori(x + 1e-6)
+		tenths[source] = f
+		sum += f
+		rest.append([x - f, source])
+	rest.sort_custom(func(a: Array, b: Array) -> bool: return a[0] > b[0])
+	var i := 0
+	while sum < total and i < rest.size():
+		tenths[rest[i][1]] += 1
+		sum += 1
+		i += 1
+	var out := {"total": total / 10.0}
+	for source in SOURCES:
+		out[source] = tenths[source] / 10.0
+	return out
+
+
 ## Erfarenhet till nästa nivå: XP_NEED_SQ · L² + XP_NEED_LIN · L + XP_NEED_FLAT (15, 30, 55, 90 …). De låga
 ## nivåerna är billiga så att en ny profil hinner växa under första körningen; högre upp tar varje nivå fler
 ## strider, så att träning på ett lägre djup lönar sig men går långsammare än att klara nästa (vårt val).
