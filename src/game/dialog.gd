@@ -94,9 +94,15 @@ static func idle_line(data: Dictionary, profile: Profile, id: String, turn: int)
 	return all[posmod(turn, all.size())]
 
 
+## Den första hälsningen ("Så du är den nya", "Du måste vara {namn}") gäller bara första mötet (turn 0); sedan
+## turas de andra om (0.26.2).
 static func greeting(data: Dictionary, id: String, turn: int) -> String:
 	var g: Array = person(data, id).get("greet", [])
-	return "" if g.is_empty() else String(g[posmod(turn, g.size())])
+	if g.is_empty():
+		return ""
+	if turn <= 0 or g.size() == 1:
+		return String(g[0])
+	return String(g[1 + posmod(turn - 1, g.size() - 1)])
 
 
 ## Svaret från en stängd station under introt (personen vid stationen säger det).

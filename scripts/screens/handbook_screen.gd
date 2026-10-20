@@ -10,6 +10,9 @@ func _ready() -> void:
 	super()
 	var order := Help.order(run.data)
 	selected = order[0] if not order.is_empty() else ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--help-entry="):
+			selected = arg.get_slice("=", 1)  # utvecklarflagga för skärmdumpar: --handbook --help-entry=charges
 
 
 func _row_rect(i: int) -> Rect2:

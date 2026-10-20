@@ -1,6 +1,6 @@
 {
 	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
-	"order": ["timeline", "room_map", "realm_quest", "trophies", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "forfeit"],
+	"order": ["timeline", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "forfeit"],
 	"entries": {
 		"timeline": {
 			"title": "Tidslinjen",
@@ -38,8 +38,8 @@
 			"title": "Makron",
 			"text": [
 				"Ett makro är en lista med rader: vem, när och vad. Raderna prövas uppifrån och ned, och den första som passar vinner.",
-				"Till exempel: anfall fienden med lägst liv. Eller: hela den allierade som har mindre än hälften kvar.",
-				"Tryck på Auto i striden så spelar makrona åt dig. Loggen visar vilken rad som matchade och varför."
+				"Till exempel: anfall fienden med lägst liv. Eller: hela en allierad som har mindre än hälften av sitt liv kvar.",
+				"Tryck på Auto i striden så spelar makrona åt dig. Loggen visar vilken rad som matchade och varför. Passar ingen rad stannar Auto och väntar på dig."
 			]
 		},
 		"artifacts": {
@@ -95,7 +95,7 @@
 			"text": [
 				"Instabilitet ger varje nedstigning extra regler: en del syns, en del avslöjas först när de slår till.",
 				"Ju högre instabilitet, desto svårare, men silvret och troféerna blir bättre.",
-				"Noll är alltid tryggt. Höj när sällskapet tål det."
+				"Noll ger inga extra regler. Höj när sällskapet tål det."
 			]
 		},
 		"forfeit": {
@@ -104,6 +104,14 @@
 				"Går en strid inte att vinna kan du trycka GE UPP. Det räknas som en förlust.",
 				"Nedstigningen och uppdragets belöning går förlorade, och du börjar om från våning 1.",
 				"Erfarenhet, troféer, silver och material som du redan har vunnit behåller du."
+			]
+		},
+		"charges": {
+			"title": "Charges",
+			"text": [
+				"Varje förmåga har ett antal användningar, Charges. De räcker hela nedstigningen och fylls inte på mellan striderna.",
+				"Hur många som är kvar står på förmågans knapp i striden och överst på rumskartan.",
+				"Lägerelden fyller på tre per förmåga. När du kommer hem till borgen är alla fulla igen."
 			]
 		}
 	}

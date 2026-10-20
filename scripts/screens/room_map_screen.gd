@@ -151,6 +151,7 @@ func _show_room(r: Dictionary) -> void:
 	match r.kind:
 		"campfire":
 			_dialog = {"title": "Lägereld", "text": run.campfire(), "options": [{"label": "VIDARE"}]}
+			HelpBox.offer(self, ["charges"])  # 0.26.2: om den inte redan visats i en strid
 		"treasure":
 			_dialog = {"title": "Skattkammare", "text": run.treasure(), "options": [{"label": "VIDARE"}]}
 		"prisoner":

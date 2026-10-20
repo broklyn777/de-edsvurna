@@ -77,7 +77,7 @@
 			"event": "macro_line",
 			"talk": [
 				"Så. Ett svärd. Mitt bästa i år, och det är oktober.",
-				"Gorm vill att du tänker innan du slår. Hans skrivbord står i kammaren bredvid kapellet.",
+				"Gorm vill att du tänker innan du slår. Hans kartbord står i kammaren bredvid kapellet.",
 				"Skriv din första rad där. Till exempel: anfall den svagaste fienden. Och svinga inte svärdet inomhus."
 			],
 			"quest": "Skriv din första makrorad i Gorms kammare.",
@@ -155,11 +155,19 @@
 				],
 				[
 					"tor",
-					"Vi sprang. Det är ingen skam att springa när benen jagar en. Skammen är att inte springa fort nog."
+					"Arvid och de andra fick det värst. Se till dem först – jag klarar mig."
+				],
+				[
+					"narrator",
+					"(Tor lutar sig mot muren och håller om sitt knä.)"
 				],
 				[
 					"gorm",
 					"Något har vaknat där nere. Gå ned och se efter, {namn}. Ensam."
+				],
+				[
+					"gorm",
+					"Du svor eden i går – då är det här din sak. Se efter och vänd. Slåss bara om du måste."
 				],
 				[
 					"gorm",
@@ -210,7 +218,7 @@
 					"Gå försiktigt. Och om klockorna börjar ringa – spring inte mot dem."
 				],
 				"elin": [
-					"Sitt still, Arvid. Ja, det svider. Det ska svida, annars hjälper det inte."
+					"Sitt still, Arvid. Jag vet att det svider. Håll i min hand."
 				],
 				"alrik": [
 					"Ben som reser sig … jag har en bok om det. Någonstans. Eller så handlade den om rovor."
@@ -224,6 +232,18 @@
 			"event": "sword_level",
 			"level": 3,
 			"talk": [
+				[
+					"gorm",
+					"Ni är hemma. Bra. Vad hittade ni där nere?"
+				],
+				[
+					"imma",
+					"Ben. Massor av ben, och alla ville resa sig. Längst ned sitter en Benfurste som tror att han äger stället."
+				],
+				[
+					"gorm",
+					"En Benfurste. Då vaknade de inte av sig själva. Det får vi tala om."
+				],
 				[
 					"gorm",
 					"Imma. Jag sa att du skulle stanna här."
@@ -254,7 +274,7 @@
 			},
 			"at": {
 				"hedda": [
-					"Svärdet är på nivå {svärdsnivå} av 3. Nästa nivå kostar {nästa_nivå} silver – ta med det från kryptan, så ska du få se på annat."
+					"Svärdet är på nivå {svärdsnivå} av 3. Nästa nivå kostar {nästa_nivå} silver. Lägg fram det, så börjar jag."
 				]
 			},
 			"auto": true,
@@ -265,11 +285,11 @@
 	"replies": {
 		"gate": "Porten är stängd tills Gorm säger annat. Inte för att jag är sömnig.",
 		"practice": "Övningsgården väntar. Men först det Gorm bad dig om – han har bättre minne än han låter.",
-		"altar": "Altaret är tyst. Gorm vill tala med dig först – han sitter i sin kammare.",
+		"altar": "Altaret är tyst. Gör klart det du håller på med först.",
 		"smith": "Kom tillbaka när du har något att smida. Och silver. Mest silver.",
 		"macros": "Makrona kommer när du har hållit ett riktigt svärd.",
 		"library": "Böckerna springer ingenstans. De har inga ben. Gör klart det du håller på med.",
-		"inn": "Här bor bara folk du har räddat. Kom tillbaka med vänner, så dukar jag fram."
+		"inn": "Kom tillbaka när du har någon som behöver husrum. Då dukar jag fram."
 	},
 	"imma_joins": {
 		"_comment": "0.25: Imma dyker upp på rumskartan efter den första striden i den första nedstigningen.",
@@ -284,7 +304,7 @@
 			],
 			[
 				"imma",
-				"Säg ingenting. Gå bara. Jag håller ryggen."
+				"Säg ingenting. Gå bara. Jag håller dig om ryggen."
 			]
 		]
 	}

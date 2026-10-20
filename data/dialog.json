@@ -145,7 +145,7 @@
 					"text": "Försvara dig när det blir hett. Eller var snabbare. Helst båda."
 				},
 				{
-					"text": "Jag har lärt hundra paladiner att hålla ett svärd. Nittioåtta håller det rätt ände upp."
+					"text": "Jag har lärt hundra paladiner att hålla ett svärd. Nittioåtta håller det med rätt ände upp."
 				},
 				{
 					"text": "Brokk slog sönder två dockor i går. Det var inte ens hans tur.",
@@ -259,7 +259,7 @@
 			"tag": "Makron",
 			"options": [
 				{
-					"label": "Skriv makron vid skrivbordet",
+					"label": "Skriv makron vid kartbordet",
 					"open": "macros"
 				}
 			]
@@ -358,7 +358,7 @@
 				"Om Gorm frågar så gick jag och lade mig tidigt, {namn}. Du med."
 			],
 			"rare_find": [
-				"Titta! Den glittrar! Får jag hålla den? Bara lite?",
+				"Får jag hålla den? Jag har nästan rena händer.",
 				"Det där är det finaste jag sett sedan Mor Elins äppelkaka."
 			],
 			"rescue": [
@@ -382,7 +382,7 @@
 				"Drick vatten. Alla. Ja, du också, Imma."
 			],
 			"rescue": [
-				"Ännu en att lappa ihop. Välkommen."
+				"Välkommen. Var har du ont?"
 			]
 		},
 		"brokk": {
