@@ -15,7 +15,7 @@ func _init() -> void:
 	for setup in Audit.setups(data):
 		for s in seeds:
 			audit.run_battle(setup.encounter, setup.floor, setup.depth, 1000 + s * 17 + setup.i, setup.party,
-					setup.artifacts, setup.statuses, setup.rules, setup.level, setup.traits)
+					setup.artifacts, setup.statuses, setup.rules, setup.level, setup.traits, setup.bonus)
 	print("Strider: %d" % audit.counts.battles)
 	print("Händelser: %s" % str(audit.counts))
 	print("Modifierare som förekom: %s" % str(audit.mods_seen))

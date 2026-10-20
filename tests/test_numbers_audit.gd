@@ -70,7 +70,7 @@ func test_every_number_in_seeded_battles() -> void:
 	var audit := Audit.new(_data)
 	for setup in Audit.setups(_data):
 		audit.run_battle(setup.encounter, setup.floor, setup.depth, 500 + setup.i, setup.party, setup.artifacts,
-				setup.statuses, setup.rules, setup.level, setup.traits)
+				setup.statuses, setup.rules, setup.level, setup.traits, setup.bonus)
 	for m in audit.mismatches:
 		runner.fail("[%d] %s" % [audit.by_key.values()[audit.mismatches.find(m)].n, m])
 	assert_true(audit.counts.damage > 2000 and audit.counts.heal > 100 and audit.counts.dodge > 20,
@@ -153,3 +153,24 @@ func test_hero_sheet_faces_the_enemy_of_the_party() -> void:
 	var alva := sim.unit("alva")
 	assert_eq(sim.expected_heal(alva, alva, "healing_light"), roundf(alva.intelligence * 2.3 * 1.5), "Större helning")
 	assert_eq(screen.sheet_traits(_data, prof).paladin[0], prof.oath, "kallet")
+
+
+## Profilens första nedstigning (0.24, vårt val): RunState ger striden ×0,85, som docs/formler.md §9 säger.
+func test_first_descent_scales_the_enemies_like_the_docs() -> void:
+	var state := RunState.new()
+	state.first_descent = true
+	assert_near(float(state.battle_opts().get("stat_bonus", 1.0)), Ref.battle_bonus(false, true), 1e-9, "första")
+	state.first_descent = false
+	assert_near(float(state.battle_opts().get("stat_bonus", 1.0)), 1.0, 1e-9, "senare")
+	assert_near(RunState.PORTAL_STATS, Ref.battle_bonus(true, false), 1e-9, "Portalen")
+	# Fienderna i striden: bas × 0,85 före sällskapets storlek, avrundat som referensen.
+	var sim := CombatSim.create(_data, "crypt_1", 2, ["paladin", "imma"], {}, {}, {}, 1,
+			{"stat_bonus": Ref.battle_bonus(false, true), "elite_chance": 0.0})
+	var enc: Dictionary = _data.encounters.crypt_1
+	assert_eq(sim.enemies.map(func(x: CombatUnit) -> String: return x.kind),
+			Ref.lineup(_data.enemies, _data.traits, enc.enemies, 2), "fienderna mot två hjältar")
+	for e in sim.enemies:
+		var want := Ref.enemy_stats(_data.enemies[e.kind].stats, float(enc.get("stat_mult", 1.0)), 1, 2, 1.0, false, false,
+				0.85)
+		assert_eq(e.max_hp, want.health, e.kind)
+		assert_eq(e.attack, want.attack, e.kind)

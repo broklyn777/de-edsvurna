@@ -173,7 +173,8 @@ func _draw_log(_data: Dictionary) -> void:
 func _enemy_list(enc: Dictionary) -> String:
 	var data: Dictionary = run.data
 	var names := {}
-	for kind in enc.enemies:
+	# Fienderna som faktiskt möter sällskapet (ett litet sällskap möter färre, CombatSim.enemy_lineup).
+	for kind in CombatSim.enemy_lineup(data, enc.enemies, run.profile.party.size()):
 		names[data.enemies[kind].name] = names.get(data.enemies[kind].name, 0) + 1
 	var parts: Array[String] = []
 	for n in names:
