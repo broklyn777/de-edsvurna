@@ -79,7 +79,7 @@ func test_the_narrator_speaks_in_parentheses() -> void:
 
 func test_every_help_box_is_short_and_in_the_handbook() -> void:
 	var want := ["room_map", "realm_quest", "trophies", "macros", "artifacts", "materials", "depth", "instability",
-			"perks", "disciples", "timeline", "statuses", "forfeit"]
+			"perks", "disciples", "timeline", "statuses", "forfeit", "charges"]
 	var order := Help.order(_data)
 	assert_eq(order.size(), want.size())
 	for id in want:
@@ -179,3 +179,28 @@ func test_hedda_says_how_much_silver_is_missing() -> void:
 	var enough: Array = Intro.at_lines(_data, p, "hedda")
 	assert_true(" ".join(enough).find("fattas") < 0, "räcker silvret säger hon inget om det")
 	assert_true(Intro.quest_text(_data, p).find("fattas") < 0)
+
+
+## 0.26.2: "Så du är den nya" och "Du måste vara {namn}" hör till första mötet och kommer inte tillbaka sedan.
+func test_first_meeting_greetings_only_once() -> void:
+	for who in ["stig", "hedda", "elin", "gorm", "alrik", "sven"]:
+		var g: Array = Dialog.person(_data, who).greet
+		assert_eq(Dialog.greeting(_data, who, 0), g[0], who)
+		for turn in range(1, 12):
+			assert_true(Dialog.greeting(_data, who, turn) != g[0], "%s hälsar som första gången vid möte %d" % [who, turn])
+
+
+## 0.26.2: räcker silvret ber Hedda om det (inte "ta med det från kryptan"), och på nivå 3 säger hon inget om nästa nivå.
+func test_hedda_asks_for_the_silver_and_stops_at_level_three() -> void:
+	var p := Profile.new()
+	while Intro.current(_data, p).get("id", "") not in ["", "crypt"]:
+		Intro.talked(_data, p)
+		Intro.notify(_data, p, Intro.current(_data, p).get("event", ""), 3)
+	p.silver = Profile.FORGE_COST
+	p.forge("paladin", "sword", "")
+	p.intro_talked = true
+	p.silver = 1000
+	var text := " ".join(Intro.at_lines(_data, p, "hedda").map(func(l: String) -> String: return Dialog.fill_for(l, p)))
+	assert_true(text.find("Lägg fram det") >= 0 and text.find("kryptan") < 0, text)
+	p.artifacts.paladin.level = 3
+	assert_eq(Intro.at_lines(_data, p, "hedda"), null, "ingen nästa nivå på nivå 3")

@@ -83,6 +83,10 @@ static func who_at(data: Dictionary, profile: Profile, station: String) -> Strin
 ## fattas när det inte räcker till nästa nivå (0.26.1). null om personen inte har någon replik för steget.
 static func at_lines(data: Dictionary, profile: Profile, who: String) -> Variant:
 	var step := current(data, profile)
+	# 0.26.2: ingen "nästa nivå"-replik när svärdet redan har nått stegets nivå.
+	if step.get("event", "") == "sword_level" \
+			and int(profile.artifact("paladin").get("level", 0)) >= int(step.get("level", 3)):
+		return null
 	if step.get("event", "") == "sword_level" and silver_short(profile) > 0 and step.get("at_short", {}).has(who):
 		return step.at_short[who]
 	return step.get("at", {}).get(who, null)

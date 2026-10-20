@@ -154,6 +154,10 @@ func _ready() -> void:
 var _help_ok := false
 
 
+func _help_charges() -> void:
+	HelpBox.offer(self, ["charges"], true)
+
+
 func _help_statuses() -> void:
 	HelpBox.offer(self, ["statuses"], true)
 
@@ -689,6 +693,9 @@ func _handle(e: Dictionary) -> void:
 				sfx.play("k_ready", -14.0, 0.0)
 		"action":
 			_on_action(e)
+			# 0.26.2: Charges-rutan första gången en hjälte använder en förmåga.
+			if _help_ok and e.get("action", "") == "ability" and sim.unit(e.unit).team == 0:
+				_after(_cursor + 0.6, _help_charges)
 		"damage":
 			_after(_effect_delay(e), _on_damage.bind(e))
 		"timeline_move":
