@@ -71,3 +71,31 @@ ut med `tools/cut_symbols.gd`). Skicka i samma chatt som det första arket:
 > vial (Poisoned),
 > 19 a cracked broken heart (Scorned), 20 a crescent moon with z-shapes (Sleeping), 21 a coiled rope snare
 > (Snared), 22 a stone statue head (Stone).
+
+## Hemmet (0.24)
+
+Klistra in **stilblocket** först, sedan motivet. Gör båda i samma chatt så att stilen blir lika.
+
+**H1. Borgen uppifrån** (planritning, 3:2, 1536×1024):
+
+> A top-down view of a small medieval paladin keep, drawn like an old hand-inked floor plan seen from directly
+> above, with walls, roofs cut away so you can see inside each room. Rooms: a central courtyard with a well and
+> the main gate at the bottom; a smithy with an anvil, a forge with glowing coals, a water barrel and tools; a
+> small chapel with a stone altar and candles; a library with bookshelves, a reading desk and scrolls; an inn
+> hall with a big hearth, long tables and benches; a training yard with straw dummies and weapon racks; a small
+> study with a writing desk and maps. Cozy, lived-in details everywhere. Outside the walls only dark swirling
+> ink, as if the keep is a warm island in the darkness. No people, no text, no labels.
+
+**H2. Porträttark** (ett ark, 3 kolumner × 2 rader, lika stora rutor):
+
+> A sheet of six head-and-shoulders character portraits in the same engraving style, in a grid of 3 columns
+> and 2 rows with equal squares and space between, light parchment background, no text. Each face clear even
+> when small. In order:
+> 1 Master Gorm, an old stern but kind paladin mentor, grey beard, scar, simple tabard;
+> 2 Hedda the smith, a strong grumpy woman in a leather apron, soot on her cheek, hair tied back;
+> 3 Brother Alrik the librarian, an absent-minded elderly monk with round spectacles and a book;
+> 4 Imma, a cheerful mischievous young woman archer with short messy copper-pink hair, freckles and a grin;
+> 5 Stig the weapon master, a wiry middle-aged man with a dry smirk and a shaved head;
+> 6 Mother Elin the innkeeper, a warm round-faced older woman with a kerchief and a ladle.
+
+Skicka bilderna till Huvudtråden.
