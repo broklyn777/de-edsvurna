@@ -56,6 +56,10 @@ var intro_step := 0
 var intro_done := false
 ## 0.24: sant när man har pratat med den som ger introts aktuella uppdrag (nästa uppdrag kommer först efter samtalet).
 var intro_talked := false
+## 0.24.2: paladinens namn (Siralim låter spelaren namnge sig). Tomt blir DEFAULT_NAME.
+var hero_name := DEFAULT_NAME
+const DEFAULT_NAME := "Paladinen"
+const NAME_MAX := 16
 ## 0.24: påbörjade nedstigningar per Realm (Syster Alva räddas på den andra i kryptan) och samtal per person
 ## (vardagsrepliken växlar).
 var descents := {}
@@ -122,6 +126,12 @@ func choose_depth(d: int) -> void:
 
 
 ## Hela kryptan klarad på djupet: öppnar nästa.
+## Sätter paladinens namn: trimmat, högst NAME_MAX tecken, tomt blir "Paladinen".
+func set_hero_name(n: String) -> void:
+	n = n.strip_edges().substr(0, NAME_MAX).strip_edges()
+	hero_name = n if n != "" else DEFAULT_NAME
+
+
 func total_descents() -> int:
 	var n := 0
 	for r in descents:
@@ -484,6 +494,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "intro_done", intro_done)
 	cfg.set_value("progress", "inn_seen", inn_seen)
 	cfg.set_value("progress", "intro_talked", intro_talked)
+	cfg.set_value("progress", "hero_name", hero_name)
 	cfg.set_value("progress", "descents", descents)
 	cfg.set_value("progress", "talks", talks)
 	cfg.set_value("progress", "practice_equipped", practice_equipped)
@@ -531,6 +542,7 @@ static func load_from(path: String) -> Profile:
 	p.intro_step = int(cfg.get_value("progress", "intro_step", 0))
 	p.inn_seen = int(cfg.get_value("progress", "inn_seen", p.recruited.size()))
 	p.intro_talked = bool(cfg.get_value("progress", "intro_talked", false))
+	p.set_hero_name(String(cfg.get_value("progress", "hero_name", DEFAULT_NAME)))
 	p.talks = cfg.get_value("progress", "talks", {})
 	if p.intro_done and not p.recruited.has(STARTER):
 		p.recruited.append(STARTER)  # Imma bor i borgen; äldre profiler hittar henne i Värdshuset

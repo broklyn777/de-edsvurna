@@ -84,6 +84,7 @@ func _ready() -> void:
 	_load_macros()
 	roll_rules()
 	_dev_args()
+	apply_name()  # en påhittad profil från en utvecklarflagga
 
 
 ## Byter till sparplatsen: sökvägarna pekar dit (mappen skapas vid behov).
@@ -97,7 +98,7 @@ func _use_slot(i: int) -> void:
 
 ## Sparplatsskärmen väljer en plats: profilen, makrona och körningen laddas därifrån, och spelet fortsätter som
 ## förut (en pågående körning återupptas). En tom plats börjar introt.
-func choose_slot(i: int) -> void:
+func choose_slot(i: int, new_name := "") -> void:
 	_use_slot(i)
 	SaveSlots.set_last(i)
 	state = RunState.new()
@@ -110,11 +111,26 @@ func choose_slot(i: int) -> void:
 	_load_macros()
 	roll_rules()
 	if SaveSlots.is_empty(i):
+		profile.set_hero_name(new_name)
+		apply_name()
 		_save()
 		save_macros()
 	ui("ui_confirm", -8.0)
 	get_tree().change_scene_to_file(BASE_SCENE)
 	_resume_run()
+
+
+## 0.24.2: paladinens namn syns där hjälten visas (stridens ram, hjältebladet, makroskärmen, korten): datan för
+## "paladin" får profilens namn. Rollen ("Paladinen", titeln "Edsvuren") står kvar där den beskriver klassen.
+func apply_name() -> void:
+	data.heroes.paladin.name = profile.hero_name
+	data.heroes.paladin.short = profile.hero_name
+
+
+func rename(n: String) -> void:
+	profile.set_hero_name(n)
+	apply_name()
+	_save()
 
 
 ## Introduktionen (0.23, Intro): en händelse som kan avsluta aktuellt uppdrag. Repliker för nästa steg visas i borgen.
@@ -273,6 +289,8 @@ func _dev_args() -> void:
 			sheet_heroes = profile.party.duplicate()
 			sheet_can_change_personality = true
 			get_tree().change_scene_to_file.call_deferred(HERO_SCENE)
+		elif arg.begins_with("--name="):
+			profile.set_hero_name(arg.get_slice("=", 1))  # paladinens namn (0.24.2), sparas inte av sig självt
 		elif arg == "--keep":
 			get_tree().change_scene_to_file.call_deferred(BASE_SCENE)  # borgen direkt (0.24)
 		elif arg.begins_with("--intro-step="):
@@ -796,6 +814,7 @@ func _load() -> void:
 	state.perks = profile.active_perks(data, profile.oath)
 	state.party = profile.party.duplicate()
 	state.artifacts = profile.artifacts.duplicate(true)
+	apply_name()
 
 
 ## Sparar efter ett val i basen; sound är menyljudet för valet.

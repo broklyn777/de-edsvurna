@@ -129,6 +129,8 @@ func _ready() -> void:
 				_go_imma()
 			else:
 				_arrive(st)
+		elif arg == "--rename":
+			_rename()  # namnrutan hos Broder Alrik (0.24.2)
 		elif arg.begins_with("--walk="):
 			_go(arg.get_slice("=", 1))  # --walk=<station>: paladinen går dit (för att se gången och raden)
 
@@ -297,7 +299,8 @@ func _start_dialog() -> void:
 
 
 func _talk(who: String, lines: Array, station: String, menu: bool, after := Callable()) -> void:
-	_conv = {"who": who, "lines": lines.filter(func(l: String) -> bool: return l != ""), "i": 0, "station": station,
+	var named := lines.map(func(l: String) -> String: return Dialog.fill(l, run.profile.hero_name))
+	_conv = {"who": who, "lines": named.filter(func(l: String) -> bool: return l != ""), "i": 0, "station": station,
 			"menu": menu, "after": after}
 	if _conv.lines.is_empty():
 		_conv = {}
@@ -379,6 +382,25 @@ func _open(station: String) -> void:
 		"inn":
 			run.profile.inn_seen = run.profile.recruited.size()
 			run.go(run.INN_SCENE)
+		"rename":
+			_rename()
+
+
+## 0.24.2: namnet skrivs om i krönikan hos Broder Alrik.
+func _rename() -> void:
+	var entry := NameEntry.new()
+	entry.title = "Skriv om ditt namn i krönikan"
+	entry.hint = "Broder Alrik doppar pennan. Hur ska det stå?"
+	entry.confirm_label = "SKRIV IN"
+	entry.can_cancel = true
+	entry.start_name = "" if run.profile.hero_name == Profile.DEFAULT_NAME else run.profile.hero_name
+	entry.chosen.connect(_renamed)
+	add_child(entry)
+
+
+func _renamed(n: String) -> void:
+	run.rename(n)
+	_talk("alrik", ["Så där. {namn} står i krönikan nu. Med bläck, så det sitter."], "", false)
 
 
 # --- Inmatning ------------------------------------------------------------------

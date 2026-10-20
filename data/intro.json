@@ -3,7 +3,7 @@
 		{
 			"id": "oath", "giver": "gorm", "station": "altar", "event": "oath_chosen",
 			"talk": [
-				"Där är du. God morgon, paladin.",
+				"Där är du, {namn}. God morgon.",
 				"I dag avlägger du din ed. Inte för min skull – för deras skull som inte kan försvara sig själva.",
 				"Välj ditt kall här vid altaret. Ta den tid du behöver. Men inte hela dagen."
 			],
@@ -48,7 +48,7 @@
 		{
 			"id": "imma", "giver": "imma", "station": "yard", "event": "talked", "recruit": "imma",
 			"talk": [
-				"Där är du! Jag har letat i hela borgen. Två gånger.",
+				"{namn}! Där är du! Jag har letat i hela borgen. Två gånger.",
 				"Gorm vill träffa oss. Nu. Han hade sin allvarliga röst, den med rynkan.",
 				"Och jag följer med ned i kryptan – säg inte emot. Jag har smitit undan läxor i den här borgen i tio år. Jag hittar överallt."
 			],
@@ -60,14 +60,14 @@
 				"Kryptans klockor ringde i natt. Ingen har dragit i dem på hundra år.",
 				"Något har vaknat där nere. Skelett, troligen. De är sällan på gott humör.",
 				"Ta Imma med dig. Sven öppnar porten för er.",
-				"Och kom tillbaka. Det är det viktigaste."
+				"Och kom tillbaka, {namn}. Det är det viktigaste."
 			],
 			"quest": "Hör vad Gorm har att säga i kapellet."
 		},
 		{
 			"id": "crypt", "giver": "sven", "station": "smith", "event": "sword_level", "level": 3,
 			"talk": [
-				"Mm? Åh, paladinen. Och Imma. Jag sov inte, jag vilade ögonen. Mot porten.",
+				"Mm? Åh, {namn}. Och Imma. Jag sov inte, jag vilade ögonen. Mot porten.",
 				"Hedda bad mig hälsa: ta med silver hem från kryptan, så gör hon ditt svärd till nivå 3.",
 				"Porten är öppen. Gå försiktigt där nere, och stäng efter er. Det drar."
 			],

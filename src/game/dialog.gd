@@ -6,6 +6,11 @@ extends RefCounted
 ## Ren logik; borgen och rumskartan ritar.
 
 
+## 0.24.2: {namn} i en replik blir paladinens namn.
+static func fill(text: String, hero_name: String) -> String:
+	return text.replace("{namn}", hero_name)
+
+
 static func person(data: Dictionary, id: String) -> Dictionary:
 	return data.get("dialog", {}).get("people", {}).get(id, {})
 
