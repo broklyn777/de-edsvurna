@@ -29,7 +29,7 @@ Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom va
   (research §8b; siffrorna finns i statistiken per egenskap).
 - Introt bygger en liten fungerande kombination i stället för att bara visa systemen (research §8b).
 - **Grottan** (VD 2026-10-20, research §20): 8×8 per våning, bossen synlig, dimma, bevakade och obevakade skatter,
-  helgedomar, grupper av olika storlek och elitgrupper man förbereder sig för. Plan: `docs/plan/0.27-grottan.md` (skrivs).
+  helgedomar, grupper av olika storlek och elitgrupper man förbereder sig för. Plan: `docs/plan/0.27-grottan.md`.
 - **Fienderna** (VD 2026-10-20, kommer efter grottan): lägg krut på hur grupper komponeras, deras AI och stor variation
   bland fienderna, så att grupperna kräver olika byggen.
 - Spell Gems och Rhea (§18.9), efter grottan.
