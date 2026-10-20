@@ -6,11 +6,19 @@
 			"station": "altar",
 			"event": "oath_chosen",
 			"talk": [
-				"Där är du, {namn}. Kom in och stäng dörren, det drar från kartbordet.",
+				"Där är du, {namn}. God morgon.",
 				"I dag avlägger du din ed. Inte för min skull – för deras skull som inte kan försvara sig själva.",
-				"Gå till altaret i kapellet, här intill, och välj ditt kall. Ta den tid du behöver. Men inte hela dagen."
+				"Altaret står här. Välj ditt kall – ta den tid du behöver. Men inte hela dagen."
 			],
-			"quest": "Avlägg din ed vid Kallets altare."
+			"quest": "Avlägg din ed vid Kallets altare.",
+			"where": {
+				"gorm": "altar"
+			},
+			"at": {
+				"gorm": [
+					"Lägg handen på altaret och välj."
+				]
+			}
 		},
 		{
 			"id": "practice",
@@ -19,7 +27,7 @@
 			"event": "practice_won",
 			"silver": 100,
 			"talk": [
-				"Eden är svuren. Jag hörde klockan i kapellet ända hit. Bra.",
+				"Eden är svuren. Klockan i tornet slog när du valde – det gör den bara ibland.",
 				"Men en paladin som inte kan hålla ett svärd är ingen paladin, hur vacker eden än är.",
 				"Gå till Stig i övningsgården, i västra längan. Anfall – och försvara dig när det blir hett."
 			],
@@ -28,6 +36,9 @@
 				"stig": [
 					"Gorm skickade dig? Bra. Ta en docka, vilken som helst – de slår inte tillbaka. Nästan inte."
 				]
+			},
+			"where": {
+				"gorm": "altar"
 			}
 		},
 		{
@@ -121,10 +132,10 @@
 				"Hedda bad mig hälsa: ta med silver hem från kryptan, så gör hon ditt svärd till nivå 3.",
 				"Porten är öppen. Gå försiktigt där nere, och stäng efter er. Det drar."
 			],
-			"quest": "Gå ned i kryptan och gör svärdet till nivå 3 hos Hedda.",
+			"quest": "Gör svärdet till nivå 3 hos Hedda.",
 			"at": {
 				"hedda": [
-					"Svärdet duger. Men ta med silver från kryptan – 140 räcker till nivå 3 – så ska du få se på annat."
+					"Svärdet är på nivå {svärdsnivå} av 3. Nästa nivå kostar {nästa_nivå} silver – ta med det från kryptan, så ska du få se på annat."
 				]
 			}
 		}

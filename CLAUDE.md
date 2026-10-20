@@ -111,7 +111,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `assets/illustrations/borgen.webp` (`-- --keep --keep-debug` visar rutor, dörrar och ljus; `KeepArt` ritar en tuschversion
   om bilden saknas). `-- --walk=<station>` startar en gång. Tryck i ett rum så går paladinpjäsen dit (1–2 sekunder) och sällskapet
   följer i en rad (med porträtt som pjäs om det finns); dubbeltryck hoppar fram. Personerna står vid sina platser med
-  porträtt: Mäster Gorm i sin kammare vid kartbordet (Makron; altaret i kapellet har ingen person och öppnas direkt, 0.24.3), smeden Hedda, Broder Alrik i biblioteket, vapenmästaren Stig, Mor Elin i
+  porträtt: Mäster Gorm i sin kammare vid kartbordet (Makron), utom när ett introsteg flyttar honom (`where`, `Intro.who_at`:
+  vid altaret under eden och övningsuppdraget; altaret har annars ingen person och öppnas direkt, 0.24.3), smeden Hedda, Broder Alrik i biblioteket, vapenmästaren Stig, Mor Elin i
   värdshuset och portvakten Sven (namnen är förslag). **Samtal** (Siralims dialogruta, `Dialog`, `DialogBox`,
   `data/dialog.json`): personen hälsar, säger en vardagsreplik (nyheter först) och erbjuder tjänsterna som val, sist
   "Ingenting just nu". Porträtten läses från `assets/illustrations/portraits/<id>.png` (utklippta ur VD:ns ark
@@ -124,7 +125,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   ensam, svärdet hos Smeden (bara svärdet går att välja), första makroraden, Biblioteket, Imma, Gorms ord om
   klockorna (porten öppnas) och svärdet till nivå 3. Varje steg börjar med ett samtal på 2–5 repliker hos den som
   ger uppdraget (`giver`, `talk`, `Profile.intro_talked`, `Intro.needs_talk()`); nästa uppdrag kommer först efter
-  samtalet. Uppdraget syns bara överst, aldrig i någons mun: personen vid stegets plats säger en egen replik (`at` i
+  samtalet. Uppdraget syns bara överst (svärdssteget med nivå och nästa kostnad), aldrig i någons mun: personen vid stegets plats säger en egen replik (`at` i
   intro.json, 0.24.3). Broder Alrik förklarar troféerna, och kryptans troféer syns som rykten i Biblioteket. Andra
   stationer svarar med en replik. Introt går inte att hoppa över; befintliga profiler har `intro_done`. Efter introt öppnas Värdshuset när
   man har räddat någon (vårt val). Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.

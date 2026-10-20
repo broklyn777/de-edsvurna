@@ -308,7 +308,7 @@ func _toast(text: String) -> void:
 
 
 func _talk(who: String, lines: Array, station: String, menu: bool, after := Callable()) -> void:
-	var named := lines.map(func(l: String) -> String: return Dialog.fill(l, run.profile.hero_name))
+	var named := lines.map(func(l: String) -> String: return Dialog.fill_for(l, run.profile))
 	_conv = {"who": who, "lines": named.filter(func(l: String) -> bool: return l != ""), "i": 0, "station": station,
 			"menu": menu, "after": after}
 	if _conv.lines.is_empty():
@@ -318,7 +318,7 @@ func _talk(who: String, lines: Array, station: String, menu: bool, after := Call
 func _arrive(station: String) -> void:
 	_walking_to = ""
 	var data: Dictionary = run.data
-	var who := Dialog.station_person(data, station)
+	var who := Intro.who_at(data, run.profile, station)
 	var state := Intro.station_state(data, run.profile, station)
 	if not run.profile.intro_done and Intro.needs_talk(data, run.profile) and Intro.giver_station(data, run.profile) == station:
 		var step := Intro.current(data, run.profile)
@@ -552,7 +552,7 @@ func _paint_plan(ci: CanvasItem) -> void:
 	# Människorna vid sina platser (porträtt i en liten ram).
 	for id in keep.rooms:
 		var room: Dictionary = keep.rooms[id]
-		var who := Dialog.station_person(data, id)
+		var who := Intro.who_at(data, run.profile, id)
 		if who == "" or not room.has("person"):
 			continue
 		DialogBox.portrait(ci, data, who, Rect2(_v(room.person) - Vector2(36, 36), Vector2(72, 72)))
@@ -628,7 +628,7 @@ func _paint_ui(ci: CanvasItem) -> void:
 		var lp := to_screen(r.position) + Vector2((r.size.x * scale_k - lw) / 2.0, 6)
 		ci.draw_rect(Rect2(lp, Vector2(lw, 22)), Color(0.93, 0.85, 0.66, 0.92))
 		UiStyle.text(ci, lp + Vector2(0, 17), label, 16, col, HORIZONTAL_ALIGNMENT_CENTER, lw)
-		var who := Dialog.station_person(data, id)
+		var who := Intro.who_at(data, run.profile, id)
 		if who != "" and keep.rooms[id].has("person"):
 			UiStyle.text(ci, to_screen(_v(keep.rooms[id].person) + Vector2(-90, 0)) + Vector2(0, 40 * scale_k + 16),
 					Dialog.display_name(data, who), 15, Color(1, 0.95, 0.85), HORIZONTAL_ALIGNMENT_CENTER, 180 * scale_k, 4)
