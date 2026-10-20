@@ -36,8 +36,11 @@ func _ready() -> void:
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	_build()
-	var ids: Array = run.macros.keys()
-	if not ids.is_empty():
+	var ids := _macro_ids()
+	var own: String = run.assignment.get("paladin", "")
+	if ids.has(own):
+		_select(own)
+	elif not ids.is_empty():
 		_select(ids[0])
 	_refresh_all()
 	if "--edit-line" in OS.get_cmdline_user_args():  # utvecklarflagga för skärmdumpar
@@ -83,8 +86,14 @@ func _build() -> void:
 	left.add_theme_constant_override("separation", 8)
 	body.add_child(left)
 	left.add_child(_header("HJÄLTAR – MAKRO OCH STANDARDHANDLING"))
+	# 0.23.2: hjältarna i en egen rullista, så att makrolistan och raderna alltid får plats.
+	var heroes_scroll := ScrollContainer.new()
+	heroes_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	heroes_scroll.custom_minimum_size = Vector2(0, mini(run.macro_heroes().size(), 4) * 52)
+	left.add_child(heroes_scroll)
 	_heroes_box = VBoxContainer.new()
-	left.add_child(_heroes_box)
+	_heroes_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heroes_scroll.add_child(_heroes_box)
 	left.add_child(_header("MAKRON"))
 	var macro_scroll := ScrollContainer.new()
 	macro_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -195,7 +204,7 @@ func _refresh_all() -> void:
 func _refresh_heroes() -> void:
 	for c in _heroes_box.get_children():
 		c.queue_free()
-	for hero_id in data.heroes:
+	for hero_id in run.macro_heroes():
 		var row := HBoxContainer.new()
 		_heroes_box.add_child(row)
 		var name := Label.new()
@@ -214,7 +223,7 @@ func _refresh_heroes() -> void:
 func _refresh_macros() -> void:
 	for c in _macro_box.get_children():
 		c.queue_free()
-	for id in run.macros:
+	for id in _macro_ids():
 		var b := _button("%s  (%d rader)" % [run.macros[id].name, run.macros[id].lines.size()], _select.bind(id))
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -235,6 +244,8 @@ func _refresh_lines() -> void:
 	if _name_edit.text != macro.name:
 		_name_edit.text = macro.name
 	var lines: Array = macro.lines
+	if lines.is_empty():
+		_empty_hint()
 	for i in lines.size():
 		var row := HBoxContainer.new()
 		row.custom_minimum_size = Vector2(0, ROW_H)
@@ -254,6 +265,45 @@ func _refresh_lines() -> void:
 		row.add_child(_button("✕", _delete_line.bind(i), 52))
 	_add_line.disabled = lines.size() >= MacroRunner.MAX_LINES
 	_add_line.text = "+ Lägg till rad" if not _add_line.disabled else "Max %d rader" % MacroRunner.MAX_LINES
+
+
+## Ett tomt makro (0.23.2): vad en rad är, introts uppdrag och en föreslagen rad som läggs till med ett tryck.
+func _empty_hint() -> void:
+	var info := Label.new()
+	info.text = "Makrot har inga rader än. En rad säger: om något stämmer, gör detta. Tryck på \"+ Lägg till rad\" längst ned, eller ta förslaget:"
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.add_theme_font_size_override("font_size", 17)
+	info.modulate = Color(1, 1, 1, 0.8)
+	_lines_box.add_child(info)
+	if not run.profile.intro_done:
+		var quest := Label.new()
+		quest.text = "Mäster Gorm: anfall den svagaste fienden."
+		quest.add_theme_font_size_override("font_size", 17)
+		quest.add_theme_color_override("font_color", UiStyle.GOLD)
+		_lines_box.add_child(quest)
+	var line: Dictionary = run.FIRST_LINE
+	var b := _button("+ Förslag: " + MacroRunner.describe_line(data, line), _add_suggested)
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	b.custom_minimum_size = Vector2(0, ROW_H)
+	b.add_theme_color_override("font_color", UiStyle.GOLD)
+	_lines_box.add_child(b)
+
+
+func _add_suggested() -> void:
+	if current == "":
+		return
+	run.macros[current].lines.append(run.FIRST_LINE.duplicate(true))
+	run.save_macros()
+	run.ui("ui_confirm", -8.0)
+	_refresh_lines()
+	_refresh_macros()
+
+
+## Makrona som listas: alla utom startmakrona för hjältar som inte har anslutit ännu.
+func _macro_ids() -> Array:
+	var heroes: Array = run.macro_heroes()
+	return run.macros.keys().filter(func(id: String) -> bool: return not data.heroes.has(id) or heroes.has(id))
 
 
 # --- Handlingar -----------------------------------------------------------------
@@ -287,12 +337,13 @@ func _delete_macro() -> void:
 	for hero_id in run.assignment:
 		if run.assignment[hero_id] == current:
 			run.assignment[hero_id] = ""
-	current = run.macros.keys()[0] if not run.macros.is_empty() else ""
+	var ids := _macro_ids()
+	current = ids[0] if not ids.is_empty() else ""
 	_refresh_all()
 
 
 func _cycle_macro(hero_id: String) -> void:
-	var ids: Array = [""] + run.macros.keys()
+	var ids: Array = [""] + _macro_ids()
 	var i := ids.find(run.assignment.get(hero_id, ""))
 	run.assignment[hero_id] = ids[(i + 1) % ids.size()]
 	_refresh_heroes()

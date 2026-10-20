@@ -192,6 +192,8 @@ uppdaterad när nya begrepp tillkommer.
   läger → rumskarta … → bas;
   bas → Övningsgården → strid → Övningsgården) och sparar makrona i `user://macros.json`
   (startmakron i `data/macros.json`).
+  Makroskärmen (0.23.2) visar bara Paladinen och de som har anslutit (`Run.macro_heroes()`), och ett tomt makro
+  föreslår `Run.FIRST_LINE` (anfall fienden med lägst liv) som läggs till med ett tryck. `--new-profile` sparar inte makrona.
   Skärmar i `scripts/screens/`: `base_screen` (borgen, första skärmen), `inn_screen` (Värdshuset), `campaign_screen` (kampanjkartan),
   `room_map_screen` (rumskartan), `parchment.gd` (pergamentets shader), `start_screen` (Förberedelser),
   `altar_screen` (Kallets altare), `practice_screen`, `smith_screen`, `library_screen`, `camp_screen`, `macro_screen`. De flesta ärver
