@@ -12,6 +12,20 @@ const PARTY_SIZE := 4
 const MIN_PARTY := 2
 
 
+## 0.25.1: den som väntar på rumskartan ansluter nu (nivå efter sällskapet, Charges, profilens sällskap).
+## Returnerar hjälten, eller "" om ingen väntade.
+func join_waiting(data: Dictionary, profile: Profile) -> String:
+	var hero_id := joins_next
+	joins_next = ""
+	if hero_id == "" or party.has(hero_id):
+		return ""
+	profile.recruit(data, hero_id, float(profile.hero(data, "paladin").level))
+	party.append(hero_id)
+	add_charges_for(data, hero_id)
+	profile.set_party(party.slice(1))
+	return hero_id
+
+
 ## 0.25: sällskapet kan gå ned: Paladinen och minst en följeslagare, eller Paladinen ensam när ingen har anslutit än
 ## (introts nedstigning; Imma smiter efter).
 static func can_start(profile: Profile) -> bool:
@@ -87,6 +101,9 @@ var found := {"amber": 0, "trick": 0, "nether": 0}
 var barks_used: Array = []
 ## 0.24: profilens första nedstigning (FIRST_DESCENT_RAMP).
 var first_descent := false
+## 0.25.1: den som ansluter när sällskapet är tillbaka på rumskartan (Imma som smiter efter den första striden), eller "".
+## Segerskärmen visar bara dem som var med i striden; anslutningen görs först på kartan (join_waiting).
+var joins_next := ""
 ## 0.23: fångar på våningarna, floor (som text) -> {hero, first}. Den första är tidig och obevakad.
 var prisoners := {}
 
@@ -616,7 +633,7 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "room_id", "visited",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
-		"barks_used", "first_descent"]
+		"barks_used", "first_descent", "joins_next"]
 
 
 func to_dict() -> Dictionary:

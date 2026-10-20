@@ -115,3 +115,30 @@ func test_the_paladin_may_go_down_alone_only_before_anyone_has_joined() -> void:
 	assert_true(not RunState.can_start(p), "sedan minst en följeslagare")
 	p.set_party(["imma"])
 	assert_true(RunState.can_start(p))
+
+
+## 0.25.1 (VD:ns fel): Imma var inte med i den första striden och ska inte stå på segerskärmen eller få trofé och
+## erfarenhet. Striden märker bara att hon väntar; hon ansluter på rumskartan, och sparas så om appen stängs däremellan.
+func test_imma_joins_on_the_map_not_on_the_victory_screen() -> void:
+	const RunScript := preload("res://scripts/game/run.gd")
+	var p := Profile.new()
+	while Intro.current(_data, p).id != "descent":
+		Intro.talked(_data, p)
+		Intro.notify(_data, p, Intro.current(_data, p).event)
+	var s := RunState.new_run(p, _data)
+	s.first_descent = true
+	s.start_expedition(_data, 3)
+	assert_eq(s.party, ["paladin"], "paladinen går ned ensam")
+	RunScript.mark_sneak(_data, p, s)
+	assert_eq(s.party, ["paladin"], "segerskärmen visar bara den som var med i striden")
+	assert_true(not p.recruited.has("imma"), "ingen trofé eller erfarenhet till Imma än")
+	assert_eq(s.joins_next, "imma")
+	var saved := RunState.from_dict(s.to_dict())
+	assert_eq(saved.joins_next, "imma", "väntar kvar om appen stängs i lägret")
+	assert_eq(saved.join_waiting(_data, p), "imma", "på rumskartan ansluter hon")
+	assert_eq(saved.party, ["paladin", "imma"])
+	assert_true(p.recruited.has("imma") and p.party == ["paladin", "imma"])
+	assert_true(saved.charges.has("imma"), "med egna Charges")
+	assert_eq(saved.join_waiting(_data, p), "", "bara en gång")
+	RunScript.mark_sneak(_data, p, saved)
+	assert_eq(saved.joins_next, "", "redan med")

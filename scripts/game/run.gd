@@ -721,7 +721,7 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 			if data.enemies[kind].get("boss", false):
 				profile.defeat_boss(kind)
 				narrate("first_boss")
-	imma_sneaks()
+	mark_sneak(data, profile, state)
 	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
 	quest_reward = {}
 	room_result = ""
@@ -751,16 +751,21 @@ func narrate(kind: String) -> void:
 
 
 ## 0.25 (plan §1.5): under introts första nedstigning går paladinen ned ensam, och direkt efter den första striden dyker
-## Imma upp på rumskartan. Hon ansluter på sällskapets nivå och följer med resten av vägen.
+## Imma upp. 0.25.1: striden bara märker att hon väntar (segerskärmen och trofén gäller dem som var med); hon ansluter
+## när sällskapet är tillbaka på rumskartan (imma_sneaks, anropas därifrån).
+static func mark_sneak(game_data: Dictionary, prof: Profile, run_state: RunState) -> void:
+	if Intro.current(game_data, prof).get("id", "") == "descent" and not run_state.party.has("imma") \
+			and not run_state.practice:
+		run_state.joins_next = "imma"
+
+
 func imma_sneaks() -> void:
-	if Intro.current(data, profile).get("id", "") != "descent" or state.party.has("imma") or state.practice:
+	if state.join_waiting(data, profile) == "":
 		return
-	profile.recruit(data, "imma", float(profile.hero(data, "paladin").level))
-	state.party.append("imma")
-	state.add_charges_for(data, "imma")
-	profile.set_party(state.party.slice(1))
 	pending_story += Intro.speech(data.intro.get("imma_joins", {}).get("lines", []))
 	pending_bark = {}
+	_save()
+	save_run()
 
 
 ## Troféfynd: ljudet efter den finaste trofén i erbjudandet.
