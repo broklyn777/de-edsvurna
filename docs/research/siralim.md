@@ -1240,7 +1240,8 @@ Tabellen kan bli vår skala om vi vill närma oss originalet. Det påverkar bala
 
 ### 18.4 Egenskaper (enchantments), hela listan
 
-Material = ädelsten som hittas i Realms (eller köps av en gud). Alla egenskaper passar inte alla gems.
+Material = en ädelsten per egenskap. **I 2.0 köps de i gudarnas butiker för 1 Emblem styck** (eller fås från Experiment-uppdrag);
+uppgiften om fynd i Realms gäller äldre versioner (se 18.8). Alla egenskaper passar inte alla gems.
 
 | Egenskap | Vad den gör | Material |
 |---|---|---|
@@ -1252,7 +1253,7 @@ Material = ädelsten som hittas i Realms (eller köps av en gud). Alla egenskape
 | Generous | övriga i laget får en ethereal kopia med 1 Charge | Jade |
 | Healing Increased | mer helning | Obsidian |
 | Magnetic | +15 % per likadan gem i laget | Beryl |
-| Singular | +30 % per tom gem-plats hos varelsen | Aventurine |
+| Singular | +30 % (wiki.gg) eller +50 % (andra källor) per tom gem-plats hos varelsen | Aventurine |
 | Stat +/- Increased | starkare stat-ändringar | Malachite |
 | Chance to Attack | chans att anfalla en slumpad fiende efter casten | Bloodstone |
 | Chance to Cast After (handling) | chans att kasta efter Anfall, Försvara, Helning av annan eller Provocera | Citrine |
@@ -1303,6 +1304,28 @@ Det här är den största byggdelen som saknas efter troféer, artefakter och ka
   "per likadan gem", ethereal kopior.
 - Makroredigeraren behöver redan visa förmågor per hjälte; den följer med om listan kommer från gems.
 
+### 18.8 Komplettering (VD:ns andra källa, 2026-10-20)
+
+VD tog fram en andra genomgång (Ultimate 2.0.x, med SÄKERT/TROLIGT). Det som ändrar eller fyller i ovan:
+
+| Punkt | Uppgift | Säkerhet |
+|---|---|---|
+| Receptkällor och priser | Kistor och inskriptionsobelisker; gudarnas butiker för **10 Emblems**; Booze hos spelande dvärgar för 2 000 Notoriety; Arsenal i Arenan för 2 000 Glory; False Gods | Säkert |
+| Rheas priser (Crystal) | Tillverka 2 000; tier 1→5 250 per steg, 5→10 1 000, 10→15 2 000; förtrolla 1 000 + material; ta bort gratis men materialet går förlorat | Troligt (äldre guide) |
+| Material i 2.0 | Köps hos gudarna för 1 Emblem styck, eller från Experiment-uppdrag. Inte längre vanligt byte. | Säkert (2.0-patchnoterna) |
+| Undantag från klassregeln | Class Swap (Opal); Evokers fem Mastery-perks (60 poäng var, hela laget får bära den klassen); samma perks som Anointment; Aurum-varelsens trait Pandora (alla klasser); ethereal gems | Säkert |
+| Fler platser | Evokers *Expanded Mind*: +1 plats per rank, högst +5 (8 totalt) | Säkert |
+| Charges per spell | **Spridningen är större än 4–8**: Magic Missile har 25, Recharge 1. Varje spell har sitt eget tal. | Säkert. Rättar 3b, som bara tog exempel ur den starka änden. |
+| Återladdning | Inget mellan strider i samma Realm; fullt hemma; vid ny Realm enligt Codex (Troligt). Vissa Realm-förmåner fyller på (Path of the Damned, Favor 20: svampar). | Säkert / Troligt |
+| Chance to Cast Twice | Den extra casten kan kosta en Charge | Säkert |
+| Generous | Kopiorna har 1 Charge och försvinner efter striden; alla ethereal gems har inte 1 Charge | Säkert |
+| Sällsynthet | Gems har ingen sällsynthetstrappa; utvecklingen är tier + egenskaper. Twisted gems och tier 30 hör till **3.0** och ska inte blandas in. | Troligt |
+| Makron | Raden "cast <spell> på that creature"; makrocasting räknas som manuell. **Det finns troligen inget villkor "har Charges kvar"** i 2.0. | Troligt |
+
+**Avvikelse att känna till:** vårt makrosystem har villkoret `has_charges` ("har Charges kvar på …",
+`src/combat/macro_runner.gd`). Om originalet saknar det är det vårt eget val. I originalet hoppar en rad vars spell inte
+går att kasta troligen över till nästa rad, vilket ger nästan samma resultat; exakt hur är inte belagt.
+
 ## 19. Vad man hittar i en Realm (underlag, 2026-10-20)
 
 Fråga från huvudtråden: VD vill ha "mer spel" på rumskartan. Inget är beslutat. Källor: wikins sidor Realms,
@@ -1325,8 +1348,8 @@ ger "Increased View Distance". Det mesta nedan ligger utspritt och måste letas 
 | **Breakables** | Krossbara föremål med smått byte | Många; välsignelser ger +1 | Valfritt | Bekräftat (Blessings) |
 | **Ljus** (Candle) | Sällsynt. Tänds för +200 Favor hos Realmens gud. | Sällsynt | Valfritt | Bekräftat (Realms) |
 | **Skattkarta** | Ritar ett rött X på kartan; man gräver upp skatten där | Ibland | **Ja**: skickar en till en viss punkt | Bekräftat (Realms) |
-| **Treasure Golem** | Fiende som **flyr**. Ger mycket skatt om man hinner fånga den. | Slumpad | Ja, man jagar den | Bekräftat (Blessings: "Never Flee", "Spawn Chance") |
-| **Dumpling** | Som golemen men ger mycket erfarenhet. Flyr. | Slumpad | Ja | Bekräftat (Blessings, Nether Realm) |
+| **Treasure Golem** | Vandrar på kartan (i 2.0; före 2.0 sprang den undan spelaren). **I striden** försöker den fly varje tur (traitet Animated Treasure). Ger mycket skatt om man fäller den innan den flyr. | Slumpad | Delvis | Bekräftat (Blessings, Treasure Golem, japanska wikin) |
+| **Dumpling** | Som golemen men ger mycket erfarenhet. Kan fly. | Slumpad | Delvis | Bekräftat (Blessings, Nether Realm) |
 | **Mimic** | Ser ut som en kista men startar en strid | Slumpad | Fälla | Bekräftat |
 | **Pandemonium Shrine** | Slumpad effekt: skatt, en Dumpling, strid mot Pandemonium King & Queen, ingenting, eller Favor hos alla gudar | Ibland | Valfritt | Bekräftat (Realms) |
 | **Nether Realm-dörr** (från djup 21) | En liten egen bana. Exempel: taverna, korridor med skräp och en gycklare bakom, tre kistor (en med skatt, en med något dåligt, en tom; mimics), en kista med fyra kranar där kranarnas läge avgör innehållet, många kistor, 5 golems, en mini-boss som tappar sitt trait-material, en hantverkare som gör ett projekt gratis | Ibland | Valfritt; en överraskning bakom dörren | Bekräftat (Nether Realm, ofullständig lista) |
@@ -1387,7 +1410,9 @@ kanske 5–10 strider. Kontrollera gärna mot VD:ns eget spelande.
   VD:ns önskan om överraskning.
 - **Realmens egna föremål:** svampar (buff för våningen), fällor, en NPC som vill ha något. Ger Realmen
   personlighet; några per Realm räcker.
-- **Treasure Golem som flyr:** fungerar som ett rum som försvinner om man inte går dit inom N steg.
+- **Treasure Golem:** i originalet är flykten en regel *i striden* (den försöker fly varje tur), inte på kartan. Den går
+  direkt att göra som en strid: fäll den innan den flyr. *Vårt val vore* ett rum som försvinner efter N steg; det finns inte
+  i 2.0.
 - **Quest-typer som skickar runt:** "besegra 3 av X" och "samla 3 föremål" kräver ett nät, inte en enkelriktad
   väg.
 - **Favor per Realm:** belönar att gå tillbaka till samma Realm (synvidd, fler kistor), som VD vill.
@@ -1403,6 +1428,30 @@ kanske 5–10 strider. Kontrollera gärna mot VD:ns eget spelande.
 **Skepsis:** att gå tillbaka i ett rumsnät är originalets känsla, men varje steg tillbaka på en telefon är ett
 tryck utan innehåll. Originalet löser det med att kartan är full av saker. Ett nät på 10–15 rum fungerar bara om
 nästan varje rum har något, och om utgången är dold så att man har ett skäl att leta.
+
+### 19.6 Komplettering (VD:ns andra källa, 2026-10-20)
+
+| Punkt | Uppgift | Säkerhet |
+|---|---|---|
+| Fog of war | Patch 2.0 gjorde om den: förut syntes hela kartans form, nu måste även formen upptäckas | Säkert |
+| Strider | Kontakt med synliga, vandrande grupper; dessutom kartföremål (t.ex. Worm Pits och Hives i Forbidden Depths). Inga stegslumpmöten belagda men inte heller uteslutna. | Troligt |
+| Synvidd | Blessings vid Favor 8, 31 och 55; Shrine syns från start vid 9, altaret vid 16 | Säkert |
+| Realm Boosts | Gäller i alla strider sedan 2.0; vissa gäller bara nästa strid | Säkert |
+| Fler kombinationer | Forbidden Depths: musikkristaller (A+B Power, A+C buff för dina i Realmen, B+C debuff för fienderna); Refuge of the Magi: kemibord | Säkert |
+| Tid | 5 respektive 15 minuter för full utforskning (två spelare, före 2.0) | Troligt |
+
+**Realm Quest-typer som går att belägga** (ingen fullständig lista för 2.0):
+
+- **Samla** föremål (t.ex. drycker i Caustic Reactor; patch 0.4.0). Säkert historiskt.
+- **Gräv upp skatt** efter skattkartans X. Säkert.
+- **Undersök eller förstör** utpekade föremål på kartan. Säkert (japanska wikin).
+- **Sök upp personer** som placerats på kartan: rekryter, förrädare, invånare, förrymda varelser. Säkert (japanska wikin).
+- **Gåtdvärgen:** försök svara på gåtor; fel svar hindrar inte att questen klaras. Säkert (japanska wikin).
+- **Besegra bossen** på Nether Boss- och False God-våningar. Säkert.
+- Rädda eller eskortera: **inte belagt.** Vår questtyp "Rädda" och fånge-rummen för lärjungar är alltså vårt val.
+
+Det stärker bedömningen i 19.5: nästan alla typer skickar spelaren till utspridda platser, så de kräver ett nät där man
+kan välja väg och gå tillbaka. "Sök upp personer" ligger nära våra fånge-rum.
 
 ---
 
