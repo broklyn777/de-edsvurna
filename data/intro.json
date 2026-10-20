@@ -96,48 +96,143 @@
 			}
 		},
 		{
-			"id": "imma",
-			"giver": "imma",
+			"id": "workers",
+			"giver": "tor",
 			"station": "yard",
 			"event": "talked",
-			"recruit": "imma",
+			"auto": true,
+			"_comment": "0.25 (docs/plan/0.25-berattelsen.md §1): natten efter introdagen. Samtalet spelas direkt i borgen; rader är [talare, text], \"narrator\" är berättarens ruta på svart.",
+			"where": {
+				"gorm": "yard",
+				"elin": "yard",
+				"alrik": "yard"
+			},
+			"scene": true,
 			"talk": [
-				"{namn}! Där är du! Jag har letat i hela borgen. Två gånger.",
-				"Gorm vill träffa oss. Nu. Han hade sin allvarliga röst, den med rynkan.",
-				"Och jag följer med ned i kryptan – säg inte emot. Jag har smitit undan läxor i den här borgen i tio år. Jag hittar överallt."
+				[
+					"narrator",
+					"(Efter en lång dag av att lära sig de allra enklaste sakerna går du och lägger dig.)"
+				],
+				[
+					"narrator",
+					"(Du vaknar av rop från gården.)"
+				],
+				[
+					"tor",
+					"Släpp in oss! Försiktigt med Arvid – hans ben pekar åt ett håll som ben inte ska peka åt."
+				],
+				[
+					"tor",
+					"Vi lagade valvet i kryptans andra sal. Då blev det kallt. Inte källarkallt – kallt som i januari, mitt i oktober."
+				],
+				[
+					"tor",
+					"Sedan började benen röra på sig. Gamla ben, i gamla kistor. De satte sig upp, som om någon ropat på dem till frukost."
+				],
+				[
+					"tor",
+					"Och klockorna ringde. Av sig själva. Repen har varit ruttna i hundra år."
+				],
+				[
+					"tor",
+					"Vi sprang. Det är ingen skam att springa när benen jagar en. Skammen är att inte springa fort nog."
+				],
+				[
+					"gorm",
+					"Något har vaknat där nere. Gå ned och se efter, {namn}. Ensam."
+				],
+				[
+					"gorm",
+					"Imma, du stannar här."
+				],
+				[
+					"imma",
+					"Men jag—"
+				],
+				[
+					"gorm",
+					"Du stannar. Mor Elin behöver händer, och Broder Alrik behöver någon som hittar hans glasögon."
+				],
+				[
+					"imma",
+					"…Ja, Mäster Gorm."
+				],
+				[
+					"gorm",
+					"Sven öppnar porten. Och kom tillbaka – det är det viktigaste."
+				]
 			],
-			"quest": "Prata med Imma på gården."
+			"quest": "Hör vad som har hänt på gården."
 		},
 		{
-			"id": "bells",
-			"giver": "gorm",
-			"station": "macros",
-			"event": "talked",
-			"talk": [
-				"Kryptans klockor ringde i natt. Ingen har dragit i dem på hundra år.",
-				"Något har vaknat där nere. Skelett, troligen. De är sällan på gott humör.",
-				"Ta Imma med dig. Sven öppnar porten för er.",
-				"Och kom tillbaka, {namn}. Det är det viktigaste."
-			],
-			"quest": "Hör vad Gorm har att säga i sin kammare."
+			"id": "descent",
+			"station": "gate",
+			"event": "came_home",
+			"recruit": "imma",
+			"_comment": "0.25: paladinen går ned ensam; Imma smiter efter och ansluter efter första striden (Run.imma_sneaks). Steget är klart när man kommer hem igen.",
+			"where": {
+				"elin": "yard",
+				"alrik": "yard"
+			},
+			"scene": true,
+			"quest": "Gå ned i kryptan ensam. Sven öppnar porten.",
+			"at": {
+				"sven": [
+					"Ensam, sa Gorm. Jag hörde det. Hela borgen hörde det. Gå försiktigt där nere, och stäng efter dig – det drar."
+				],
+				"gorm": [
+					"Porten väntar, {namn}. Ta det lugnt där nere, och lita på svärdet."
+				],
+				"imma": [
+					"Jag stannar här. Jag lovade. Jag lovar mycket, faktiskt."
+				],
+				"tor": [
+					"Gå försiktigt. Och om klockorna börjar ringa – spring inte mot dem."
+				],
+				"elin": [
+					"Sitt still, Arvid. Ja, det svider. Det ska svida, annars hjälper det inte."
+				],
+				"alrik": [
+					"Ben som reser sig … jag har en bok om det. Någonstans. Eller så handlade den om rovor."
+				]
+			}
 		},
 		{
 			"id": "crypt",
-			"giver": "sven",
+			"giver": "gorm",
 			"station": "smith",
 			"event": "sword_level",
 			"level": 3,
 			"talk": [
-				"Mm? Åh, {namn}. Och Imma. Jag sov inte, jag vilade ögonen. Mot porten.",
-				"Hedda bad mig hälsa: ta med silver hem från kryptan, så gör hon ditt svärd till nivå 3.",
-				"Porten är öppen. Gå försiktigt där nere, och stäng efter er. Det drar."
+				[
+					"gorm",
+					"Imma. Jag sa att du skulle stanna här."
+				],
+				[
+					"imma",
+					"Du sa det. Jag hörde det. Jag tänkte på det hela vägen ned."
+				],
+				[
+					"gorm",
+					"Tio år har du smitit från läxor, och nu från mig. …Men {namn} kom hem, och det var inte ensam. Det räknas."
+				],
+				[
+					"imma",
+					"Så jag får följa med nästa gång?"
+				],
+				[
+					"gorm",
+					"Du följer med ändå, antar jag. Gå till Hedda med silvret från kryptan, {namn}. Ett svärd på nivå 3 biter bättre."
+				]
 			],
 			"quest": "Gör svärdet till nivå 3 hos Hedda.",
 			"at": {
 				"hedda": [
 					"Svärdet är på nivå {svärdsnivå} av 3. Nästa nivå kostar {nästa_nivå} silver – ta med det från kryptan, så ska du få se på annat."
 				]
-			}
+			},
+			"auto": true,
+			"_comment": "0.25: Gorm tar emot er när ni kommer hem. Sedan svärdet till nivå 3 hos Hedda."
 		}
 	],
 	"done": "Svärdet är ditt, och borgen står öppen. Resten får du upptäcka själv.",
@@ -149,5 +244,22 @@
 		"macros": "Makrona kommer när du har hållit ett riktigt svärd.",
 		"library": "Böckerna springer ingenstans. De har inga ben. Gör klart det du håller på med.",
 		"inn": "Här bor bara folk du har räddat. Kom tillbaka med vänner, så dukar jag fram."
+	},
+	"imma_joins": {
+		"_comment": "0.25: Imma dyker upp på rumskartan efter den första striden i den första nedstigningen.",
+		"lines": [
+			[
+				"imma",
+				"Trodde du verkligen att jag skulle sitta och läsa?"
+			],
+			[
+				"imma",
+				"Jag har smitit från lärare och läxor i tio år, {namn}. Gorm är bara en lärare till – med större ögonbryn."
+			],
+			[
+				"imma",
+				"Säg ingenting. Gå bara. Jag håller ryggen."
+			]
+		]
 	}
 }

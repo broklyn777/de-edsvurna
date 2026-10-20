@@ -75,6 +75,9 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Samtal, dialogruta | `Dialog`, `DialogBox`, `data/dialog.json` | dialogue box | Personen hälsar och erbjuder tjänsterna som val; sist "Ingenting just nu". |
 | Vardagsreplik | idle (`Dialog.idle_line`) | – | Det personen säger när inget uppdrag gäller; nyheter (ny lärjunge, besegrad boss) först. |
 | Replik under nedstigningen | bark (`Dialog.bark`, `Run.pending_bark`) | – | En rad från sällskapet efter en svår strid, vid lägerelden m.m.; vårt Baldur's Gate-drag. |
+| Berättarruta | `StoryBox.narrator`, talaren `"narrator"` (intro.json, dialog.json "narrator") | narrator text | 0.25: en kursiv rad inom parentes på svart när tid går eller platsen byts. |
+| Hjälpruta | `Help`, `HelpBox`, `data/help.json` | help box ("?") | 0.25: ett grönt ? och 2–3 stycken första gången man möter ett system; en gång per profil (`Profile.help_seen`). |
+| Handboken | `handbook_screen`, Broder Alriks val "Läs i handboken" | – | 0.25: alla hjälprutor att läsa igen. |
 | Nedstigning | descent (`Profile.descents`) | – | En påbörjad körning i en Realm. Alva räddas på den andra i kryptan; den första har svagare fiender. |
 | Hedda, Broder Alrik, Stig, Mor Elin, Sven | hedda, alrik, stig, elin, sven | (Sabon m.fl.) | Smeden, bibliotekarien, vapenmästaren, värdshusvärden och portvakten (namnen är förslag, 0.24). |
 | Introduktionen | intro (`data/intro.json`, `Intro`) | Tutorial | Småuppdrag i borgen för en ny profil. |

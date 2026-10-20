@@ -30,6 +30,8 @@ var _move_id := ""
 const MOMENT_KINDS := ["treasure", "shrine", "campfire", "portal", "prisoner"]
 ## 0.24: en replik från sällskapet (Run.pending_bark): rader {who, text}, en i taget, ungefär fem sekunder var.
 var _bark: Array = []
+## 0.25: berättelsens rutor ovanpå kartan (StoryBox), eller null.
+var _story: StoryBox
 var _bark_t := 0.0
 const BARK_TIME := 5.0
 
@@ -44,6 +46,13 @@ func _ready() -> void:
 	if run.pending_rescue != "":
 		_dialog = _rescue_dialog(run.pending_rescue)
 		run.pending_rescue = ""
+	# 0.25: berättelsen först (den första porten, Imma som smiter efter), sedan hjälprutorna för kartan.
+	_story = StoryBox.play(self, run.pending_story)
+	run.pending_story = []
+	if _story:
+		await _story.finished
+		_story = null
+	HelpBox.offer(self, ["room_map", "realm_quest"])
 	# Utvecklare: --enter=<typ> går in i första rummet av den typen (för att se ögonblicket).
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--enter="):
@@ -58,7 +67,7 @@ func _process(delta: float) -> void:
 	if _zoom_t < 1.0:
 		_zoom_t = minf(1.0, _zoom_t + delta / ZOOM_TIME)
 		parchment.set_view(lerpf(3.2, 1.0, _smooth(_zoom_t)), Vector2(0.5, 0.5))
-	if _bark.is_empty() and not run.pending_bark.is_empty() and _dialog.is_empty() and _moment == null \
+	if _bark.is_empty() and not run.pending_bark.is_empty() and _dialog.is_empty() and _moment == null and _story == null \
 			and _move_t < 0.0 and _zoom_t >= 1.0:
 		_bark = run.pending_bark.lines.duplicate()
 		run.pending_bark = {}

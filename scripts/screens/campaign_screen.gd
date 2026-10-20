@@ -54,6 +54,9 @@ var _zoom_t := -1.0
 
 func _ready() -> void:
 	super()
+	# 0.25: djup och instabilitet förklaras efter den första nedstigningen (den första hålls enkel).
+	if run.profile.total_descents() > 0:
+		HelpBox.offer(self, ["depth", "instability"])
 	parchment = Parchment.new()
 	add_child(parchment)
 	if not run.data.realms.has(run.profile.realm):
@@ -129,7 +132,7 @@ func _tap(p: Vector2) -> void:
 			return
 	if _prep_rect().has_point(p):
 		run.go(run.START_SCENE)
-	elif _start_rect().has_point(p) and prof.party.size() >= RunState.MIN_PARTY:
+	elif _start_rect().has_point(p) and RunState.can_start(prof):
 		run.ui("ui_door", -8.0)
 		_zoom_t = 0.0
 
@@ -341,8 +344,8 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 		UiStyle.text(self, Vector2(x, y + 46), "Sägs sitta fången här: " + ", ".join(captives), 15, Color("#ffd27a"),
 				HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 
-	var companions: Array = prof.party.slice(1).map(func(id: String) -> String: return data.heroes[id].name)
-	UiStyle.text(self, Vector2(x, _prep_rect().position.y - 10), "Sällskap: Paladinen, " + ", ".join(companions), 13,
+	var companions: Array = prof.party.map(func(id: String) -> String: return data.heroes[id].name)
+	UiStyle.text(self, Vector2(x, _prep_rect().position.y - 10), "Sällskap: " + ", ".join(companions), 13,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 	small_button(_prep_rect(), "FÖRBEREDELSER")
-	UiStyle.big_button(self, _start_rect(), "IN I " + str(realm.short).to_upper(), _t, prof.party.size() >= RunState.MIN_PARTY)
+	UiStyle.big_button(self, _start_rect(), "IN I " + str(realm.short).to_upper(), _t, RunState.can_start(prof))

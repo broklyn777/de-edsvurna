@@ -301,5 +301,44 @@
 	"hearth": [
 		310,
 		412
-	]
+	],
+	"scene": {
+		"_comment": "0.25: arbetarna från kryptan på gården (introts steg med \"scene\"). Personer och de skadade.",
+		"people": {
+			"tor": [
+				785,
+				605
+			],
+			"gorm": [
+				655,
+				545
+			],
+			"imma": [
+				570,
+				470
+			],
+			"elin": [
+				590,
+				640
+			],
+			"alrik": [
+				965,
+				505
+			]
+		},
+		"wounded": [
+			[
+				690,
+				670
+			],
+			[
+				880,
+				672
+			],
+			[
+				960,
+				600
+			]
+		]
+	}
 }

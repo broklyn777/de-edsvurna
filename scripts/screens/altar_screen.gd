@@ -13,6 +13,7 @@ var _flash := 0.0
 
 func _ready() -> void:
 	super()
+	HelpBox.offer(self, ["perks"])  # 0.25: hjälprutan första gången
 	anoint_mode = OS.get_cmdline_user_args().has("--anoint")
 
 

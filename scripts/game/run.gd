@@ -25,6 +25,7 @@ var slot := 1
 const SLOTS_SCENE := "res://scenes/slots.tscn"
 const HERO_SCENE := "res://scenes/hero.tscn"
 const INN_SCENE := "res://scenes/inn.tscn"
+const HANDBOOK_SCENE := "res://scenes/handbook.tscn"
 
 var data: Dictionary
 var state := RunState.new()
@@ -106,6 +107,7 @@ func choose_slot(i: int, new_name := "") -> void:
 	assignment = {}
 	default_action = {}
 	intro_lines = {}
+	pending_story = []
 	last_silver = 0
 	_load()
 	_load_macros()
@@ -135,6 +137,9 @@ func rename(n: String) -> void:
 
 ## Introduktionen (0.23, Intro): en händelse som kan avsluta aktuellt uppdrag. Repliker för nästa steg visas i borgen.
 var intro_lines := {}
+## 0.25: berättelsens rader som nästa skärm visar ({who, text}; "narrator" är berättarens ruta på svart): den första
+## porten, Imma som smiter efter och den första bossen.
+var pending_story: Array = []
 const INTRO_PRACTICE := "intro_yard"
 
 
@@ -310,11 +315,20 @@ func _dev_args() -> void:
 				profile.silver = keep_silver - Profile.FORGE_COST + 77 if profile.intro_step >= 7 else 0
 		elif arg.begins_with("--bark="):
 			pending_bark = Dialog.bark(data, arg.get_slice("=", 1), state.party, state.barks_used, rng)  # replik på rumskartan
+		elif arg.begins_with("--story="):
+			# 0.25: --story=imma_joins | first_gate | first_boss visar berättelsen på nästa skärm (rumskartan, borgen)
+			var kind := arg.get_slice("=", 1)
+			if kind == "imma_joins":
+				pending_story = Intro.speech(data.intro.imma_joins.lines)
+			else:
+				profile.narrated.erase(kind)
+				narrate(kind)
 		elif arg == "--descents":
 			profile.descents = {"crypt": 1}  # som efter första nedstigningen (sparas inte om profilen är påhittad)
-		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn"]:
+		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn", "--handbook"]:
 			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE, "--inn": INN_SCENE,
-					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE}[arg]
+					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE,
+					"--handbook": HANDBOOK_SCENE}[arg]
 			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)
@@ -360,6 +374,7 @@ func start_run(party: Array[String]) -> void:
 	var seen := int(profile.descents.get(state.realm, 0))
 	profile.descents[state.realm] = seen + 1
 	pending_bark = {}
+	narrate("first_gate")
 	if seen == 0:
 		bark("new_realm")
 	_save()
@@ -705,6 +720,8 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		for kind in data.encounters[state.encounter()].enemies:
 			if data.enemies[kind].get("boss", false):
 				profile.defeat_boss(kind)
+				narrate("first_boss")
+	imma_sneaks()
 	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
 	quest_reward = {}
 	room_result = ""
@@ -719,6 +736,31 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 	_save()
 	save_run()
 	get_tree().change_scene_to_file(CAMP_SCENE)
+
+
+## 0.25 (plan §2): berättarens rader för ett tillfälle som bara händer en gång per profil (Profile.narrated).
+func narrate(kind: String) -> void:
+	if profile.narrated.has(kind):
+		return
+	var lines: Array = data.dialog.get("narrator", {}).get(kind, [])
+	if lines.is_empty():
+		return
+	profile.narrated.append(kind)
+	for l in lines:
+		pending_story.append({"who": StoryBox.NARRATOR, "text": String(l)})
+
+
+## 0.25 (plan §1.5): under introts första nedstigning går paladinen ned ensam, och direkt efter den första striden dyker
+## Imma upp på rumskartan. Hon ansluter på sällskapets nivå och följer med resten av vägen.
+func imma_sneaks() -> void:
+	if Intro.current(data, profile).get("id", "") != "descent" or state.party.has("imma") or state.practice:
+		return
+	profile.recruit(data, "imma", float(profile.hero(data, "paladin").level))
+	state.party.append("imma")
+	state.add_charges_for(data, "imma")
+	profile.set_party(state.party.slice(1))
+	pending_story += Intro.speech(data.intro.get("imma_joins", {}).get("lines", []))
+	pending_bark = {}
 
 
 ## Troféfynd: ljudet efter den finaste trofén i erbjudandet.

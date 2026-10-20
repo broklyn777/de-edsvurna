@@ -1,0 +1,110 @@
+{
+	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
+	"order": ["timeline", "room_map", "realm_quest", "trophies", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "forfeit"],
+	"entries": {
+		"timeline": {
+			"title": "Tidslinjen",
+			"text": [
+				"Striden har inga rundor. Tidslinjen överst visar vem som står på tur; den som är snabbast börjar högst upp.",
+				"Den som har agerat läggs längst ned och får vänta på sin tur igen. Fienderna visar vad de tänker göra härnäst.",
+				"Tryck och håll på en figur för att granska den. Det kostar ingen tur."
+			]
+		},
+		"room_map": {
+			"title": "Rumskartan",
+			"text": [
+				"Varje våning är några steg med två eller tre rum i taget. Tryck på ett rum som lyser för att gå dit.",
+				"Strid och Elit ger erfarenhet och troféer, Skattkammaren silver, Helgedomen en gåva och Lägerelden fler Charges.",
+				"Våningens slut ligger längst till höger. Klara den, så går ni ned till nästa."
+			]
+		},
+		"realm_quest": {
+			"title": "Realm Quest",
+			"text": [
+				"Varje nedstigning har ett uppdrag. Det står på rumskartan: jaga en nemesis, rensa elitstrider eller rena helgedomar.",
+				"Klarar du det får du silver. Första gången du klarar uppdraget i en Realm på ett nytt djup får du också en perk-poäng till ditt kall.",
+				"Uppdraget går förlorat om du ger upp eller faller."
+			]
+		},
+		"trophies": {
+			"title": "Troféer",
+			"text": [
+				"Besegrade monster lämnar ibland en trofé. Den som bär den får monstrets egenskap.",
+				"Vanliga troféer är pålitliga byggdelar, elitfiendernas är specialiserade, och en bosstrofé ändrar en regel – med en kostnad.",
+				"Välj vem som bär vad i Förberedelser. Alla troféer du har sett finns i Biblioteket."
+			]
+		},
+		"macros": {
+			"title": "Makron",
+			"text": [
+				"Ett makro är en lista med rader: vem, när och vad. Raderna prövas uppifrån och ned, och den första som passar vinner.",
+				"Till exempel: anfall fienden med lägst liv. Eller: hela den allierade som har mindre än hälften kvar.",
+				"Tryck på Auto i striden så spelar makrona åt dig. Loggen visar vilken rad som matchade och varför."
+			]
+		},
+		"artifacts": {
+			"title": "Artefakter och nivåer",
+			"text": [
+				"Varje hjälte kan bära en artefakt. Typen höjer en stat och avgör när förmågan i den slår till av sig själv: svärdet när du anfaller, skölden när du försvarar dig.",
+				"Hos Smeden höjer silver artefaktens nivå. Varje nivå gör den starkare, och vissa nivåer öppnar nya platser.",
+				"Typen går att byta utan att nivån går förlorad."
+			]
+		},
+		"materials": {
+			"title": "Material och platser",
+			"text": [
+				"I kryptan hittar du bärnsten, trick och ibland en Nether Stone. De sätts in i artefaktens platser.",
+				"Bärnsten höjer stats, trick lägger till ett knep, och en Nether Stone kan bära flera egenskaper.",
+				"Bärnsten och trick förstörs när de tas ut. En Nether Stone går tillbaka till förrådet."
+			]
+		},
+		"statuses": {
+			"title": "Statusar",
+			"text": [
+				"Buffar hjälper den som bär dem, debuffar stjälper. De syns som små ikoner under livmätarna.",
+				"De flesta varar några turer, räknat i ägarens egna turer. En del försvinner när något särskilt händer.",
+				"Granska en figur för att se vad varje status gör och hur länge den varar."
+			]
+		},
+		"perks": {
+			"title": "Kallets perks",
+			"text": [
+				"Ditt kall gäller hela sällskapet. Kärnan verkar alltid; perks köps med perk-poäng här vid altaret.",
+				"Du får poäng från början och fler när du klarar Realm Quests på nya djup. Varje kall har en egen pott.",
+				"Perks kan återställas gratis. Prova gärna något annat."
+			]
+		},
+		"disciples": {
+			"title": "Lärjungar och Värdshuset",
+			"text": [
+				"Ondskan håller folk fångna i kryptorna. Befria dem i fångrummen på rumskartan, så ansluter de till dig.",
+				"Paladinen och tre till får plats i sällskapet. Den som inte följer med bor i Värdshuset och behåller sin nivå.",
+				"Den som ligger efter får mer erfarenhet tills hen har kommit ikapp."
+			]
+		},
+		"depth": {
+			"title": "Djup",
+			"text": [
+				"Varje Realm har flera djup. Ett nytt djup öppnas när du har klarat det föregående.",
+				"Djupare ned är fienderna starkare, men silvret och troféchansen blir större.",
+				"Kör du fast går det bra att gå tillbaka till ett lägre djup och träna."
+			]
+		},
+		"instability": {
+			"title": "Instabilitet",
+			"text": [
+				"Instabilitet ger varje nedstigning extra regler: en del syns, en del avslöjas först när de slår till.",
+				"Ju högre instabilitet, desto svårare, men silvret och troféerna blir bättre.",
+				"Noll är alltid tryggt. Höj när sällskapet tål det."
+			]
+		},
+		"forfeit": {
+			"title": "Ge upp",
+			"text": [
+				"Går en strid inte att vinna kan du trycka GE UPP. Det räknas som en förlust.",
+				"Nedstigningen och uppdragets belöning går förlorade, och du börjar om från våning 1.",
+				"Erfarenhet, troféer, silver och material som du redan har vunnit behåller du."
+			]
+		}
+	}
+}

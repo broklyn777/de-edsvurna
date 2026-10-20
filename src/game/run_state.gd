@@ -10,6 +10,12 @@ const FLOORS := ["crypt_1", "crypt_2", "crypt_3"]
 ## Största sällskapet (Paladinen + 3). 0.23: det minsta är Paladinen + 1.
 const PARTY_SIZE := 4
 const MIN_PARTY := 2
+
+
+## 0.25: sällskapet kan gå ned: Paladinen och minst en följeslagare, eller Paladinen ensam när ingen har anslutit än
+## (introts nedstigning; Imma smiter efter).
+static func can_start(profile: Profile) -> bool:
+	return profile.party.size() >= MIN_PARTY or profile.recruited.is_empty()
 const OFFER_SIZE := 3
 ## Troféchans (Realm Depth ger bättre byte): första trofén efter en seger är säker, varje ytterligare
 ## plats i erbjudandet kommer med den här chansen, +15 procentenheter per djup över 1.
@@ -313,6 +319,9 @@ const PORTAL_STATS := 1.15
 ## våning (vårt val; följer aldrig hjältarnas nivå): första våningen nästan alltid vunnen, den andra lite svårare och
 ## Benfursten en riktig utmaning. Mätt med botarna (BALANS=forsta), docs/formler.md §9.
 const FIRST_DESCENT_RAMP := [0.70, 0.88, 0.81]
+## 0.25: den första striden gör paladinen ensam (Imma smiter efter först efteråt). Den ska vara lika lätt som övningen:
+## fienderna ×0,80 till (vårt val, mätt med botarna: tests/test_story.gd och BALANS=forsta).
+const FIRST_FIGHT_ALONE := 0.80
 
 
 ## Fiendernas skalning på profilens första nedstigning för en våning (1 = ingen).
@@ -449,6 +458,8 @@ func battle_opts() -> Dictionary:
 		opts.stat_bonus = PORTAL_STATS
 	if first_descent:
 		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * first_descent_mult(floor)
+		if party.size() == 1:
+			opts.stat_bonus *= FIRST_FIGHT_ALONE
 	return opts
 
 

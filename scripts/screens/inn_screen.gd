@@ -8,6 +8,7 @@ var companions: Array[String] = []
 
 func _ready() -> void:
 	super()
+	HelpBox.offer(self, ["disciples"])  # 0.25: hjälprutan första gången
 	for id in run.profile.party:
 		if id != "paladin":
 			companions.append(id)
