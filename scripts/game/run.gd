@@ -198,6 +198,7 @@ func _dev_args() -> void:
 			dev_profile = true
 			profile = Profile.new()
 			state = RunState.new_run(profile, data)
+			_load_macros(true)
 		elif arg == "--rescue-demo":
 			# --rescue-demo: rumskartan med befrielsedialogen för Alva och hennes makroförslag (sparas inte)
 			dev_profile = true
@@ -445,6 +446,15 @@ func macro_hint(hero_id: String) -> Dictionary:
 	return hint
 
 
+## Hjältarna som makroskärmen visar (0.23.2): Paladinen och de som har anslutit.
+func macro_heroes() -> Array:
+	return (["paladin"] + Array(profile.recruited)).filter(func(id: String) -> bool: return data.heroes.has(id))
+
+
+## Raden som föreslås i ett tomt makro (0.23.2), som introts "anfall den svagaste fienden".
+const FIRST_LINE := {"subject": "any_enemy", "cond": "lowest_hp", "value": 0, "action": "attack", "ability": "", "target": "that"}
+
+
 ## Lägger förslagets rad först i hjältens makro.
 func add_macro_hint(hero_id: String) -> void:
 	var hint := macro_hint(hero_id)
@@ -669,7 +679,7 @@ func new_macro_id() -> String:
 
 
 func save_macros() -> void:
-	var f := FileAccess.open(MACROS_PATH, FileAccess.WRITE)
+	var f: FileAccess = null if dev_profile else FileAccess.open(MACROS_PATH, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify({"macros": macros, "assignment": assignment, "default_action": default_action}, "\t"))
 	# Introt: Paladinens första makrorad.
@@ -677,10 +687,14 @@ func save_macros() -> void:
 		intro("macro_line")
 
 
-## Startmakron från data/macros.json första gången; sedan spelarens egna.
-func _load_macros() -> void:
+## Startmakron från data/macros.json första gången; sedan spelarens egna. fresh = som en ny profil (--new-profile).
+func _load_macros(fresh := false) -> void:
 	var parsed: Variant = null
-	if FileAccess.file_exists(MACROS_PATH):
+	if fresh:
+		macros = {}
+		assignment = {}
+		default_action = {}
+	elif FileAccess.file_exists(MACROS_PATH):
 		parsed = JSON.parse_string(FileAccess.get_file_as_string(MACROS_PATH))
 	if parsed is Dictionary and parsed.has("macros"):
 		macros = parsed.macros
