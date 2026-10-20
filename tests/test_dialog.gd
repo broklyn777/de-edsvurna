@@ -24,7 +24,7 @@ func test_every_station_has_a_person_and_a_conversation() -> void:
 		assert_eq(opts.back().label, "Ingenting just nu", "sist kommer Ingenting just nu")
 		assert_eq(opts.back().open, "")
 		for o in opts.slice(0, opts.size() - 1):
-			assert_true(_data.keep.rooms.has(o.open) or o.open in ["rename", "talk_trophies"], "%s öppnar något som finns" % o.label)
+			assert_true(_data.keep.rooms.has(o.open) or o.open in ["rename", "talk_trophies", "handbook"], "%s öppnar något som finns" % o.label)
 		assert_true(Dialog.reply(_data, id) != "", "%s har ett svar när den är stängd" % id)
 
 
@@ -87,7 +87,10 @@ func test_the_first_descent_has_weaker_enemies_and_no_prisoner() -> void:
 	assert_true(s.prisoners.is_empty(), "ingen fånge första gången")
 	s.first_descent = true
 	s.start_expedition(_data, 4)
-	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), RunState.first_descent_mult(0), 1e-6)
+	assert_eq(s.party, ["paladin"], "0.25: paladinen går ned ensam")
+	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), RunState.first_descent_mult(0) * RunState.FIRST_FIGHT_ALONE, 1e-6)
+	s.party.append("imma")
+	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), RunState.first_descent_mult(0), 1e-6, "när Imma har kommit")
 	assert_true(RunState.first_descent_mult(0) < RunState.first_descent_mult(1), "våning 2 är svårare än våning 1")
 	assert_true(RunState.first_descent_mult(2) < 1.0, "Benfursten är också lite svagare första gången")
 	var saved := RunState.from_dict(s.to_dict())
@@ -132,9 +135,9 @@ func test_the_name_token_fills_the_lines_now_and_then() -> void:
 			total += 1
 			named += 1 if String(g).contains("{namn}") else 0
 	for step in Intro.steps(_data):
-		for l in step.get("talk", []):
+		for l in Intro.lines(step):
 			total += 1
-			named += 1 if String(l).contains("{namn}") else 0
+			named += 1 if String(l.text).contains("{namn}") else 0
 	assert_true(named >= 6, "namnet sägs ibland (%d repliker)" % named)
 	assert_true(named * 3 < total, "men inte i varje replik (%d av %d)" % [named, total])
 	var p := Profile.new()
@@ -157,8 +160,9 @@ func _spoken() -> Array:
 		for l in p.get("trophies", []):
 			out.append([who, l])
 	for step in Intro.steps(_data):
-		for l in step.get("talk", []):
-			out.append([step.giver, l])
+		for l in Intro.lines(step):
+			if l.who != StoryBox.NARRATOR:
+				out.append([l.who, l.text])
 		for who in step.get("at", {}):
 			var at: Variant = step.at[who]
 			for l in (at if at is Array else [at]):
@@ -178,7 +182,7 @@ func _spoken() -> Array:
 func test_no_one_reads_the_quest_or_names_themselves() -> void:
 	var quests := Intro.steps(_data).map(func(s: Dictionary) -> String: return s.quest)
 	var own := {"gorm": "Gorm", "hedda": "Hedda", "alrik": "Alrik", "stig": "Stig", "elin": "Elin", "sven": "Sven",
-			"imma": "Imma", "alva": "Alva", "brokk": "Brokk", "eira": "Eira", "solveig": "Solveig"}
+			"imma": "Imma", "tor": "Tor", "alva": "Alva", "brokk": "Brokk", "eira": "Eira", "solveig": "Solveig"}
 	var lines := _spoken()
 	assert_true(lines.size() > 60, "alla repliker granskas (%d)" % lines.size())
 	for pair in lines:

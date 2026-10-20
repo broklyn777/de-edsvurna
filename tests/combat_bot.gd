@@ -166,7 +166,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		if RunState.is_battle(r):
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
@@ -191,6 +191,16 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					HeroStats.add_xp(levels[hero_id], xp)
 			if r.kind == "prisoner":
 				_bot_recruit(data, state, levels, r)
+			# 0.25: opts.joins (t.ex. "imma") ansluter efter den första vunna striden, som Run.imma_sneaks.
+			if fights == 1 and opts.has("joins") and not state.party.has(opts.joins):
+				state.party.append(opts.joins)
+				state.add_charges_for(data, opts.joins)
+				if not levels.is_empty():
+					levels[opts.joins] = {"level": 2 if int(levels.paladin.level) >= 4 else 1, "xp": 0,
+							"personality": data.heroes[opts.joins].get("personality", "")}
+			if fights >= int(opts.get("max_fights", 999)):
+				return {"cleared": false, "fights": fights, "won": true, "rooms": rooms, "f0_fights": f0_fights,
+						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver}
 			state.battle_won()
 			if state.floor_cleared():
 				state.next_floor(data)

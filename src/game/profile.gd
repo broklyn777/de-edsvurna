@@ -64,6 +64,9 @@ const NAME_MAX := 16
 ## (vardagsrepliken växlar).
 var descents := {}
 var talks := {}
+## 0.25: hjälprutorna som redan har visats (Help), och berättarens rutor som har lästs (första porten, första bossen).
+var help_seen: Array = []
+var narrated: Array = []
 ## Hur många följeslagare man hade senast man var i Värdshuset (det lyser när någon ny har kommit).
 var inn_seen := 0
 const LEGACY_COMPANIONS := ["brokk", "alva", "eira", "solveig"]
@@ -497,6 +500,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "hero_name", hero_name)
 	cfg.set_value("progress", "descents", descents)
 	cfg.set_value("progress", "talks", talks)
+	cfg.set_value("progress", "help_seen", help_seen)
+	cfg.set_value("progress", "narrated", narrated)
 	cfg.set_value("progress", "practice_equipped", practice_equipped)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
@@ -544,6 +549,8 @@ static func load_from(path: String) -> Profile:
 	p.intro_talked = bool(cfg.get_value("progress", "intro_talked", false))
 	p.set_hero_name(String(cfg.get_value("progress", "hero_name", DEFAULT_NAME)))
 	p.talks = cfg.get_value("progress", "talks", {})
+	p.help_seen = cfg.get_value("progress", "help_seen", [])
+	p.narrated = cfg.get_value("progress", "narrated", [])
 	if p.intro_done and not p.recruited.has(STARTER):
 		p.recruited.append(STARTER)  # Imma bor i borgen; äldre profiler hittar henne i Värdshuset
 	var saved: Array = cfg.get_value("progress", "party", [])

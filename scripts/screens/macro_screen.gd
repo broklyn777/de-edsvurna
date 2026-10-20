@@ -30,6 +30,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	data = run.data
 	run.base_music()
+	HelpBox.offer(self, ["macros"])  # 0.25: hjälprutan första gången
 	theme = _make_theme()
 	var bg := ColorRect.new()
 	bg.color = Color(0.04, 0.035, 0.06)

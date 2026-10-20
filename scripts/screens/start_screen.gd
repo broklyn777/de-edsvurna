@@ -97,8 +97,13 @@ func _tap(p: Vector2) -> void:
 	if _macro_rect().has_point(p):
 		run.open_macros(run.START_SCENE)
 		return
-	if _button_rect().has_point(p) and not companions.is_empty():
+	if _button_rect().has_point(p) and _can_go():
 		_done()
+
+
+## 0.25: minst en följeslagare, utom när ingen har anslutit än (introts nedstigning, paladinen går ned ensam).
+func _can_go() -> bool:
+	return not companions.is_empty() or run.profile.recruited.is_empty()
 
 
 ## Sparar sällskapet och trofén att ta med och går tillbaka till kampanjkartan.
@@ -190,7 +195,9 @@ func _draw() -> void:
 	UiStyle.text(self, Vector2(0, 76), "Sällskapet och trofén du tar med. Realm, djup och instabilitet väljer du på kampanjkartan.", 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 	var roster := _roster()
-	UiStyle.text(self, Vector2(MARGIN, 230), "FÖLJESLAGARE – VÄLJ EN TILL TRE (%d/3)" % companions.size(), 16, Color(1, 1, 1, 0.6))
+	var head := "FÖLJESLAGARE – VÄLJ EN TILL TRE (%d/3)" % companions.size() if not run.profile.recruited.is_empty() \
+			else "FÖLJESLAGARE – INGA ÄN. DU GÅR NED ENSAM."
+	UiStyle.text(self, Vector2(MARGIN, 230), head, 16, Color(1, 1, 1, 0.6))
 	for i in roster.size():
 		var id: String = roster[i]
 		var h: Dictionary = data.heroes[id]
@@ -221,7 +228,7 @@ func _draw() -> void:
 			UiStyle.text(self, r.position + Vector2(0, 27), data.heroes[party[i]].name, 16, Color.WHITE,
 					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
-	UiStyle.big_button(self, _button_rect(), "KLAR", _t, not companions.is_empty())
+	UiStyle.big_button(self, _button_rect(), "KLAR", _t, _can_go())
 	_small_button(_macro_rect(), "MAKRON")
 
 

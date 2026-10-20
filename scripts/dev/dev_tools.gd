@@ -14,6 +14,7 @@ func _ready() -> void:
 		elif arg.begins_with("--frames="):
 			_frames_left = int(arg.get_slice("=", 1))
 	set_process(_screenshot_path != "")
+	process_mode = Node.PROCESS_MODE_ALWAYS  # 0.25: också när en hjälpruta har pausat striden
 
 
 func _process(_delta: float) -> void:

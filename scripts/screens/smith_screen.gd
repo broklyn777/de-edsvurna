@@ -31,6 +31,10 @@ var _message_t := 0.0
 
 func _ready() -> void:
 	super()
+	# 0.25: hjälprutorna första gången; material och platser när en plats har öppnats eller något har hittats.
+	var later: bool = not run.profile.materials.is_empty() or run.profile.artifacts.values().any(
+			func(a: Dictionary) -> bool: return int(a.get("level", 1)) >= 2)
+	HelpBox.offer(self, ["artifacts", "materials"] if later else ["artifacts"])
 	_pick_hero(hero)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--smith-hero="):

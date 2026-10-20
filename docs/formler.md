@@ -208,6 +208,9 @@ följer hjältarnas nivå: ×0,70 på våning 1, ×0,88 på våning 2 och ×0,81
 tal är lägre än våning 2:s). Med en ny profils makron (botarna, `BALANS=forsta`, 200 körningar) vinns våning 1 nästan
 alltid (100 %), våning 2 i 94 % av dem som når den och Benfursten i 88 %; hela nedstigningen i 83 %. Målet är ungefär
 80 %. Från den andra nedstigningen gäller vanliga siffror (då kommer Syster Alva).
+0.25: paladinen går ned ensam och Imma smiter efter först efter den första striden. Den striden gör paladinen ensam med
+fienderna ×0,80 till (`RunState.FIRST_FIGHT_ALONE`, *vårt val*: ×0,70 × 0,80 = ×0,56 före sällskapets ×0,45), så att den
+blir lika lätt som övningen.
 
 ## 10. Hjältebladets "Vad det betyder"
 

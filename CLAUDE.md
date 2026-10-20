@@ -34,7 +34,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   svagaste – vårt val, förebild Mesmerist) ansluter i introt. De andra befrias ur **fånge-rum** på rumskartan:
   varje Realm har egna lärjungar per djup (`realms.json` "disciples", en i taget sedan 0.24; Kryptan: Syster Alva på
   den andra nedstigningen (`after_descents`, `Profile.descents`), sedan Brokk (bevakad), Eira, Tove, Solveig, Sefir;
-  Kapellet: Lirien, Ragnhild, Hulda, Ronja). Profilens första nedstigning gör Paladinen och Imma ensamma (hela kryptan),
+  Kapellet: Lirien, Ragnhild, Hulda, Ronja). Profilens första nedstigning gör Paladinen ensam i första striden och sedan med Imma (hela kryptan, 0.25),
   med en trappa i fiendernas stats per våning: ×0,70 / ×0,88 / ×0,81 för Benfursten (`RunState.FIRST_DESCENT_RAMP`, vårt
   val, docs/formler.md §9; ungefär 80 % med en ny profils makron). Alva räddas tidigt på den andra, på våning 1, och
   hennes makroförslag lär ut ett villkor ("hela den som har lågt liv"); följeslagare med ett förslag börjar utan den
@@ -122,13 +122,26 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Realm eller när paladinen står ensam kvar; högst en per rum, aldrig i striden, inget upprepas samma körning
   (`RunState.barks_used`); ibland ett kort samtal mellan två (`pairs`). Visas på rumskartan.
   **Introduktionen** för en ny profil (`data/intro.json`, `src/game/intro.gd`): eden vid altaret, en övningsstrid
-  ensam, svärdet hos Smeden (bara svärdet går att välja), första makroraden, Biblioteket, Imma, Gorms ord om
-  klockorna (porten öppnas) och svärdet till nivå 3. Varje steg börjar med ett samtal på 2–5 repliker hos den som
+  ensam, svärdet hos Smeden (bara svärdet går att välja), första makroraden, Biblioteket, och (0.25 "Berättelsen",
+  `docs/plan/0.25-berattelsen.md`) natten: berättarens rutor, sedan arbetarna från kryptan på gården (de skadade på
+  bårar, Mor Elin och Broder Alrik hos dem, `keep.json` "scene"). Gravgrävaren Tor berättar, Gorm skickar paladinen
+  ned ensam och Imma får stanna (stegen `workers` och `descent`; steg med `"auto"` spelar samtalet direkt i borgen,
+  rader är text eller `[talare, text]`, `Intro.lines`). Den första striden gör paladinen ensam (fienderna ×0,80 till,
+  `RunState.FIRST_FIGHT_ALONE`, ~99 % vinst); direkt efter den smiter Imma efter (`Run.imma_sneaks`, hennes porträtt
+  på rumskartan, `intro.json` "imma_joins") och följer med resten av vägen. Hemma igen (`came_home`) skäller Gorm lite
+  på henne, och sedan svärdet till nivå 3. Varje steg börjar med ett samtal på 2–5 repliker hos den som
   ger uppdraget (`giver`, `talk`, `Profile.intro_talked`, `Intro.needs_talk()`); nästa uppdrag kommer först efter
   samtalet. Uppdraget syns bara överst (svärdssteget med nivå och nästa kostnad), aldrig i någons mun: personen vid stegets plats säger en egen replik (`at` i
   intro.json, 0.24.3). Broder Alrik förklarar troféerna, och kryptans troféer syns som rykten i Biblioteket. Andra
   stationer svarar med en replik. Introt går inte att hoppa över; befintliga profiler har `intro_done`. Efter introt öppnas Värdshuset när
   man har räddat någon (vårt val). Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
+  **Berättarrutor** (0.25, Siralims kursiva rutor, `StoryBox`): talaren `"narrator"` ger en rad inom parentes på svart;
+  också första gången genom porten och efter den första bossen (`dialog.json` "narrator", `Run.narrate`,
+  `Profile.narrated`, `Run.pending_story` som rumskartan och borgen visar). **Hjälprutor** (0.25, Siralims "?"-rutor,
+  `Help`, `HelpBox`, `data/help.json`): ett grönt ?, en rubrik och 2–3 stycken första gången man möter ett system
+  (rumskartan, Realm Quest, troféer, makron, artefakter, material, djup, instabilitet, perks, lärjungar, tidslinjen,
+  statusar, ge upp), en gång per profil (`Profile.help_seen`); i striden pausas spelet medan rutan syns. Alla går att
+  läsa igen i Broder Alriks handbok (`handbook_screen`). `--no-help` stänger av dem för skärmdumpar.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
@@ -361,6 +374,11 @@ godot --path . -- --keep
 godot --path . -- --intro-step=imma --keep --talk=imma
 godot --path . -- --all-companions --keep --talk=smith
 godot --path . -- --intro-step=crypt --map --bark=new_realm
+
+# 0.25: natten och arbetarna (--line=N visar en viss rad i samtalet), Imma som smiter efter, handboken
+godot --path . -- --intro-step=workers --keep --line=3
+godot --path . -- --intro-step=descent --map --story=imma_joins
+godot --path . -- --handbook
 
 # Första nedstigningen och små sällskap i balansrapporten
 BALANS=forsta godot --headless --path . --script res://tests/balance_report.gd

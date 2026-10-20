@@ -44,12 +44,22 @@ func test_the_chain_waits_for_each_conversation() -> void:
 	Intro.notify(_data, p, "forged")
 	for e in ["macro_line", "library_read"]:
 		_do(p, e)
-	assert_eq(Intro.current(_data, p).id, "imma")
-	assert_eq(Intro.giver_station(_data, p), "yard", "Imma väntar på gården")
+	# 0.25: natten efter introdagen. Arbetarna kommer upp ur kryptan, och samtalet spelas direkt i borgen.
+	assert_eq(Intro.current(_data, p).id, "workers")
+	assert_true(Intro.auto_talk(_data, p), "arbetarnas berättelse spelas av sig själv")
+	assert_true(Intro.scene(_data, p), "de skadade ligger på gården")
+	assert_eq(Intro.lines(Intro.current(_data, p))[0].who, StoryBox.NARRATOR, "berättaren först")
+	assert_eq(Intro.station_state(_data, p, "gate"), "locked")
 	Intro.notify(_data, p, "talked")
-	assert_true(p.recruited.has("imma") and p.party == ["paladin", "imma"], "Imma följer med")
-	Intro.notify(_data, p, "talked")
-	assert_eq(Intro.station_state(_data, p, "gate"), "current", "porten öppnas efter Gorms ord, och Sven har ett uppdrag")
+	assert_eq(Intro.current(_data, p).id, "descent")
+	assert_true(not p.recruited.has("imma") and p.party == ["paladin"], "paladinen går ned ensam")
+	assert_true(not Intro.needs_talk(_data, p), "Gorm har redan gett uppdraget")
+	assert_eq(Intro.station_state(_data, p, "gate"), "current", "porten öppnas")
+	assert_eq(Intro.quest_text(_data, p), "Gå ned i kryptan ensam. Sven öppnar porten.")
+	Intro.notify(_data, p, "came_home")
+	assert_true(p.recruited.has("imma") and p.party == ["paladin", "imma"], "Imma följde med (och är kvar)")
+	assert_eq(Intro.current(_data, p).id, "crypt")
+	assert_true(Intro.auto_talk(_data, p), "Gorm tar emot er när ni kommer hem")
 	Intro.talked(_data, p)
 	assert_eq(Intro.station_state(_data, p, "gate"), "open")
 	assert_true(Intro.notify(_data, p, "sword_level", 2).is_empty(), "nivå 2 räcker inte")
@@ -62,10 +72,19 @@ func test_the_chain_waits_for_each_conversation() -> void:
 
 func test_every_step_has_a_conversation() -> void:
 	for step in Intro.steps(_data):
-		assert_true(step.has("giver") and not Dialog.person(_data, step.giver).is_empty(), step.id)
-		var n: int = step.get("talk", []).size()
-		assert_true(n >= 2 and n <= 5, "%s har %d repliker" % [step.id, n])
 		assert_true(step.get("quest", "") != "", step.id)
+		if not step.has("giver"):
+			assert_eq(step.event, "came_home", "bara nedstigningen saknar samtal (Gorm gav uppdraget på gården)")
+			continue
+		assert_true(not Dialog.person(_data, step.giver).is_empty(), step.id)
+		# 2–5 repliker per talare (0.25: arbetarnas berättelse har flera talare och berättaren).
+		var per := {}
+		for l in Intro.lines(step):
+			assert_true(l.who == StoryBox.NARRATOR or not Dialog.person(_data, l.who).is_empty(), "%s: %s" % [step.id, l.who])
+			per[l.who] = int(per.get(l.who, 0)) + 1
+		assert_true(int(per.get(step.giver, 0)) >= 2, "%s: %s säger minst två repliker" % [step.id, step.giver])
+		for who in per:
+			assert_true(per[who] <= 5, "%s: %s har %d repliker" % [step.id, who, per[who]])
 
 
 

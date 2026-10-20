@@ -225,6 +225,20 @@
 			"where": "på gården",
 			"color": "#e0806a",
 			"hero": "imma"
+		},
+		"tor": {
+			"name": "Tor",
+			"title": "Gravgrävaren",
+			"where": "på gården",
+			"color": "#7d6b52",
+			"greet": [
+				"Tack för att ni släppte in oss."
+			],
+			"idle": [
+				{
+					"text": "Valvet får vänta. Jag går inte ned dit igen förrän klockorna har tystnat."
+				}
+			]
 		}
 	},
 	"stations": {
@@ -281,6 +295,10 @@
 				{
 					"label": "Läs om troféerna",
 					"open": "library"
+				},
+				{
+					"label": "Läs i handboken",
+					"open": "handbook"
 				},
 				{
 					"label": "Fråga om troféerna",
@@ -441,5 +459,15 @@
 				]
 			]
 		}
-	]
+	],
+	"narrator": {
+		"_comment": "0.25 (plan §2): berättarens rutor på svart, i Siralims kursiva stil, när tid går eller platsen byts.",
+		"first_gate": [
+			"(Porten slår igen bakom dig. Det luktar fukt, gamla ben och lite grand av Svens kvällsmat.)"
+		],
+		"first_boss": [
+			"(Det sista benet slutar skramla. För en stund är det alldeles tyst där nere.)",
+			"(Långt ovanför, i borgens torn, slår klockan en gång. Ingen har dragit i repet.)"
+		]
+	}
 }

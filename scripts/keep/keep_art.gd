@@ -246,3 +246,23 @@ static func pawn(ci: CanvasItem, c: Vector2, s: float, tint: Color) -> void:
 	ci.draw_line(c + Vector2(-s * 0.2, s * 0.14), c + Vector2(s * 0.2, s * 0.14), tint, s * 0.12)
 	ci.draw_circle(c + Vector2(0, -s * 0.28), s * 0.2, FLOOR)
 	ci.draw_arc(c + Vector2(0, -s * 0.28), s * 0.2, 0, TAU, 20, INK, 3.0, true)
+
+
+## 0.25: en skadad gravgrävare på en bår, sedd uppifrån: båren, kroppen under en filt och huvudet med ett bandage.
+static func wounded(ci: CanvasItem, c: Vector2, s: float) -> void:
+	var bed := Rect2(c - Vector2(s * 0.62, s * 0.24), Vector2(s * 1.24, s * 0.48))
+	ci.draw_rect(bed, Color(0.55, 0.42, 0.26))
+	ci.draw_rect(bed, INK, false, 2.5)
+	for x in [bed.position.x - s * 0.08, bed.end.x + s * 0.08]:
+		ci.draw_line(Vector2(x, bed.position.y + 3), Vector2(x, bed.end.y - 3), INK, 3.0)
+	var blanket := PackedVector2Array()
+	for i in 17:
+		var a := TAU * i / 16.0
+		blanket.append(c + Vector2(s * 0.08 + cos(a) * s * 0.4, sin(a) * s * 0.17))
+	ci.draw_colored_polygon(blanket, Color(0.42, 0.45, 0.50))
+	ci.draw_polyline(blanket, INK, 2.0, true)
+	var head := c + Vector2(-s * 0.42, 0)
+	ci.draw_circle(head, s * 0.15, FLOOR)
+	ci.draw_arc(head, s * 0.15, 0, TAU, 20, INK, 2.5, true)
+	ci.draw_line(head + Vector2(-s * 0.14, -s * 0.05), head + Vector2(s * 0.14, -s * 0.05), Color(0.97, 0.95, 0.9), s * 0.07)
+	ci.draw_line(head + Vector2(-s * 0.02, -s * 0.08), head + Vector2(s * 0.03, -s * 0.08), Color(0.7, 0.12, 0.1), s * 0.05)

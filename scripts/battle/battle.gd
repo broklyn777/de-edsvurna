@@ -119,6 +119,13 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout)
 	_start_music()
 	_layout()
+	# 0.25: hjälprutorna (tidslinjen i den första striden, Ge upp när kryptan börjar bli svår); inte i demo-läget.
+	_help_ok = not demo and warp_turns == 0
+	if _help_ok:
+		var ids := ["timeline"]
+		if not state.practice and run.profile.total_descents() >= 2:
+			ids.append("forfeit")
+		HelpBox.offer(self, ids, true)
 	if warp_turns > 0:
 		sim.begin()
 		for i in warp_turns:
@@ -141,6 +148,14 @@ func _ready() -> void:
 		started = true
 		_countdown = 0.0
 	auto_chip.on = _auto
+
+
+## 0.25: hjälprutorna visas bara när en människa spelar (inte --demo eller --turns).
+var _help_ok := false
+
+
+func _help_statuses() -> void:
+	HelpBox.offer(self, ["statuses"], true)
 
 
 func _build_scene() -> void:
@@ -692,6 +707,8 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e), _on_heal.bind(e))
 		"aura_applied":
 			_after(_effect_delay(e), _on_aura.bind(e))
+			if _help_ok and e.get("aura_kind", "") in ["buff", "debuff"]:
+				_after(_effect_delay(e) + 0.4, _help_statuses)
 		"aura_removed":
 			if e.aura == "defend":
 				models[e.unit].set_blocking(false)

@@ -20,6 +20,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	run.base_music()
 	if not run.offer.is_empty():
+		HelpBox.offer(self, ["trophies"])  # 0.25: den första trofén
+	if not run.offer.is_empty():
 		chosen = run.camp_chosen if run.offer.has(run.camp_chosen) else run.offer[0]
 		run.camp_chosen = chosen
 		selected = chosen

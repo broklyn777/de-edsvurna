@@ -95,7 +95,8 @@ var _trail: Array[Vector2] = []
 var _walking_to := ""
 var _last_tap_ms := -1000
 var _last_tap_station := ""
-## Samtalet: {who, lines, i, station, menu (visa valen på sista raden), after (Callable)}.
+## Samtalet: {lines: [{who, text}], i, station, menu (visa valen på sista raden), after (Callable)}. 0.25: en rad med
+## talaren "narrator" är berättarens ruta på svart (StoryBox.narrator).
 var _conv := {}
 var _option_rects: Array[Rect2] = []
 ## En kort text mitt på skärmen (en plats utan person som är stängd), och hur länge den syns.
@@ -126,12 +127,14 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--talk="):
 			var st := arg.get_slice("=", 1)
-			pal = _v(keep.rooms[st].stand) if keep.rooms.has(st) else _v(keep.yard.imma) + Vector2(70, 40)
+			pal = _v(keep.rooms[st].stand) if keep.rooms.has(st) else _v(keep.scene.people.get(st, keep.yard.home)) + Vector2(70, 40)
 			_trail.append(pal)
-			if st == "imma":
-				_go_imma()
+			if keep.scene.people.has(st):
+				_talk_scene(st)  # en av dem på gården under introts scen (0.25)
 			else:
 				_arrive(st)
+		elif arg.begins_with("--line=") and not _conv.is_empty():
+			_conv.i = clampi(int(arg.get_slice("=", 1)), 0, _conv.lines.size() - 1)  # 0.25: en viss rad i samtalet
 		elif arg == "--rename":
 			_rename()  # namnrutan hos Broder Alrik (0.24.2)
 		elif arg.begins_with("--walk="):
@@ -242,8 +245,17 @@ func _follower_pos(i: int) -> Vector2:
 	return _trail[maxi(idx, 0)]
 
 
-func _imma_waiting() -> bool:
-	return not run.profile.recruited.has("imma") and Intro.current(run.data, run.profile).get("id", "") == "imma"
+## 0.25: introts scen på gården (arbetarna från kryptan). Personerna som står där just nu: Tor och Imma (som inte har
+## anslutit) och de som steget flyttar till gården (Gorm, Mor Elin, Broder Alrik).
+func _scene_people() -> Array:
+	if not Intro.scene(run.data, run.profile):
+		return []
+	var out := []
+	for who in keep.scene.people:
+		if who == "tor" or (who == "imma" and not run.profile.recruited.has("imma")) \
+				or Intro.person_station(run.data, run.profile, who) == "yard":
+			out.append(who)
+	return out
 
 
 ## Rummet vid en punkt i planen ("yard" för gården, "" utanför).
@@ -295,11 +307,23 @@ func _jump() -> void:
 
 # --- Samtal -------------------------------------------------------------------
 
-## När man kommer tillbaka till borgen: slutet på introt sägs direkt.
+## När man kommer tillbaka till borgen: slutet på introt sägs direkt, berättaren efter den första bossen, och introts
+## samtal som spelas av sig själva (0.25: natten när arbetarna kommer, hemkomsten efter den första nedstigningen).
 func _start_dialog() -> void:
+	var data: Dictionary = run.data
+	# 0.25: den första nedstigningen är klar när man är hemma igen (vunnen eller inte).
+	if Intro.current(data, run.profile).get("event", "") == "came_home" and run.profile.total_descents() > 0:
+		run.intro("came_home")
+	var story: Array = run.pending_story
+	run.pending_story = []
 	if not run.intro_lines.is_empty():
-		_talk(run.intro_lines.speaker, run.intro_lines.lines, "", false)
+		story += Intro.speech(run.intro_lines.lines, run.intro_lines.speaker)
 		run.intro_lines = {}
+	if Intro.auto_talk(data, run.profile):
+		var step := Intro.current(data, run.profile)
+		_talk("", story + Intro.lines(step), "", false, _after_intro_talk.bind(""))
+	elif not story.is_empty():
+		_talk("", story, "", false)
 
 
 func _toast(text: String) -> void:
@@ -307,11 +331,14 @@ func _toast(text: String) -> void:
 	_toast_t = 3.0
 
 
+## Ett samtal. Raderna är texter (who säger dem) eller {who, text} (0.25: flera talare och berättaren).
 func _talk(who: String, lines: Array, station: String, menu: bool, after := Callable()) -> void:
-	var named := lines.map(func(l: String) -> String: return Dialog.fill_for(l, run.profile))
-	_conv = {"who": who, "lines": named.filter(func(l: String) -> bool: return l != ""), "i": 0, "station": station,
-			"menu": menu, "after": after}
-	if _conv.lines.is_empty():
+	var named := []
+	for l in Intro.speech(lines, who):
+		if l.text != "":
+			named.append({"who": l.who, "text": Dialog.fill_for(l.text, run.profile)})
+	_conv = {"lines": named, "i": 0, "station": station, "menu": menu, "after": after, "shown": _t}
+	if named.is_empty():
 		_conv = {}
 
 
@@ -323,7 +350,7 @@ func _arrive(station: String) -> void:
 	if not run.profile.intro_done and Intro.needs_talk(data, run.profile) and Intro.giver_station(data, run.profile) == station:
 		var step := Intro.current(data, run.profile)
 		_met(step.giver)
-		_talk(step.giver, step.get("talk", []), station, false, _after_intro_talk.bind(station))
+		_talk(step.giver, Intro.lines(step), station, false, _after_intro_talk.bind(station))
 		return
 	# 0.24.3: en plats utan person (altaret i kapellet) öppnas direkt, eller säger kort varför den är stängd.
 	if who == "":
@@ -375,6 +402,7 @@ func _after_intro_talk(station: String) -> void:
 func _advance() -> void:
 	if _conv.i < _conv.lines.size() - 1:
 		_conv.i += 1
+		_conv.shown = _t
 		return
 	if _conv.menu:
 		return  # valen väntar
@@ -412,6 +440,8 @@ func _open(station: String) -> void:
 			run.go(run.INN_SCENE)
 		"rename":
 			_rename()
+		"handbook":
+			run.go(run.HANDBOOK_SCENE)
 		"talk_trophies":
 			_talk("alrik", Dialog.person(run.data, "alrik").get("trophies", []), "library", true)
 
@@ -454,10 +484,11 @@ func _tap(p: Vector2) -> void:
 			_go(STATIONS[i])
 			return
 	var q := to_plan(p)
-	# Pjäserna: Imma som väntar, sällskapet, de som bor i värdshuset och paladinen själv.
-	if _imma_waiting() and _v(keep.yard.imma).distance_to(q) < 70.0:
-		_go_imma()
-		return
+	# Pjäserna: folket på gården under introts scen, sällskapet, de som bor i värdshuset och paladinen själv.
+	for who in _scene_people():
+		if _v(keep.scene.people[who]).distance_to(q) < 50.0:
+			_talk_scene(who)
+			return
 	var party: Array = _followers()
 	for i in party.size():
 		if _follower_pos(i).distance_to(q) < 50.0:
@@ -492,10 +523,16 @@ func _go(station: String) -> void:
 	run.ui_tap()
 
 
-func _go_imma() -> void:
-	var step := Intro.current(run.data, run.profile)
-	_walk_to("yard", _v(keep.yard.imma) + Vector2(70, 40))
-	_talk("imma", step.get("talk", []), "", false, _after_intro_talk.bind(""))
+## 0.25: någon på gården under introts scen säger sin replik för steget (eller en vardagsreplik).
+func _talk_scene(who: String) -> void:
+	_walk_to("yard", _v(keep.scene.people[who]) + Vector2(70, 40))
+	var at: Variant = Intro.current(run.data, run.profile).get("at", {}).get(who, null)
+	if at != null:
+		_talk(who, (at as Array).duplicate() if at is Array else [String(at)], "", false)
+	else:
+		var turn := _met(who)
+		_talk(who, [(Dialog.greeting(run.data, who, turn) + " " + Dialog.idle_line(run.data, run.profile, who, turn)).strip_edges()],
+				"", false)
 
 
 # --- Ritning ----------------------------------------------------------------------
@@ -556,10 +593,12 @@ func _paint_plan(ci: CanvasItem) -> void:
 		if who == "" or not room.has("person"):
 			continue
 		DialogBox.portrait(ci, data, who, Rect2(_v(room.person) - Vector2(36, 36), Vector2(72, 72)))
-	if _imma_waiting():
-		var c := _v(keep.yard.imma)
-		ci.draw_arc(c, 60.0 + sin(_t * 3.0) * 5.0, 0, TAU, 40, Color(1.0, 0.8, 0.3, 0.75), 6.0, true)
-		DialogBox.portrait(ci, data, "imma", Rect2(c - Vector2(36, 36), Vector2(72, 72)))
+	# 0.25: arbetarna från kryptan på gården: de skadade på marken och folket som tar hand om dem.
+	if Intro.scene(data, run.profile):
+		for w in keep.scene.wounded:
+			KeepArt.wounded(ci, _v(w), 100.0)
+		for who in _scene_people():
+			DialogBox.portrait(ci, data, who, Rect2(_v(keep.scene.people[who]) - Vector2(32, 32), Vector2(64, 64)))
 	# De som bor i värdshuset.
 	var lodgers := _lodgers()
 	for i in mini(lodgers.size(), keep.inn_seats.size()):
@@ -632,6 +671,9 @@ func _paint_ui(ci: CanvasItem) -> void:
 		if who != "" and keep.rooms[id].has("person"):
 			UiStyle.text(ci, to_screen(_v(keep.rooms[id].person) + Vector2(-90, 0)) + Vector2(0, 40 * scale_k + 16),
 					Dialog.display_name(data, who), 15, Color(1, 0.95, 0.85), HORIZONTAL_ALIGNMENT_CENTER, 180 * scale_k, 4)
+	for who in _scene_people():
+		UiStyle.text(ci, to_screen(_v(keep.scene.people[who]) + Vector2(-90, 0)) + Vector2(0, 36 * scale_k + 16),
+				Dialog.display_name(data, who), 15, Color(1, 0.95, 0.85), HORIZONTAL_ALIGNMENT_CENTER, 180 * scale_k, 4)
 	# Uppdraget eller ett rykte, som en rad överst.
 	var quest := _quest_line(data)
 	if quest != "":
@@ -659,7 +701,11 @@ func _paint_ui(ci: CanvasItem) -> void:
 	_option_rects = []
 	if not _conv.is_empty():
 		var last: bool = _conv.i == _conv.lines.size() - 1
-		var box := DialogBox.box(ci, data, size, _conv.who, String(_conv.lines[_conv.i]), _t, not (last and _conv.menu))
+		var line: Dictionary = _conv.lines[_conv.i]
+		if line.who == StoryBox.NARRATOR:
+			StoryBox.narrator(ci, size, line.text, _t - _conv.get("shown", 0.0))
+			return
+		var box := DialogBox.box(ci, data, size, line.who, line.text, _t, not (last and _conv.menu))
 		if last and _conv.menu:
 			_option_rects = DialogBox.options(ci, box, Dialog.options(data, _conv.station).map(
 					func(o: Dictionary) -> String: return o.label))

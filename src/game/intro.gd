@@ -24,6 +24,34 @@ static func needs_talk(data: Dictionary, profile: Profile) -> bool:
 	return step.has("giver") and (not profile.intro_talked or step.get("event", "") == "talked")
 
 
+## 0.25: ett steg med "auto" spelar sitt samtal direkt i borgen (natten när arbetarna kommer, hemkomsten).
+static func auto_talk(data: Dictionary, profile: Profile) -> bool:
+	return current(data, profile).get("auto", false) and needs_talk(data, profile)
+
+
+## 0.25: samtalets rader som {who, text}. En rad är en text (den som ger uppdraget säger den) eller [talare, text];
+## talaren "narrator" är berättarens ruta på svart (Siralims kursiva rader).
+static func lines(step: Dictionary, key := "talk") -> Array:
+	return speech(step.get(key, []), step.get("giver", ""))
+
+
+static func speech(raw: Array, default_who := "") -> Array:
+	var out := []
+	for l in raw:
+		if l is Dictionary:
+			out.append({"who": String(l.get("who", default_who)), "text": String(l.text)})
+		elif l is Array:
+			out.append({"who": String(l[0]), "text": String(l[1])})
+		else:
+			out.append({"who": default_who, "text": String(l)})
+	return out
+
+
+## 0.25: introts scen på gården (arbetarna från kryptan) gäller under stegen med "scene".
+static func scene(data: Dictionary, profile: Profile) -> bool:
+	return current(data, profile).get("scene", false)
+
+
 ## Stationen där personen som ger aktuellt uppdrag står ("yard" för Imma på gården).
 static func giver_station(data: Dictionary, profile: Profile) -> String:
 	var step := current(data, profile)
@@ -94,12 +122,12 @@ static func station_state(data: Dictionary, profile: Profile, station: String) -
 	var target: String = giver_station(data, profile) if needs_talk(data, profile) else step.get("station", "")
 	if target == station:
 		return "current"
-	# Det som redan har gjorts i kedjan går att besöka igen (porten bara efter Gorms ord om klockorna).
+	# Det som redan har gjorts i kedjan går att besöka igen (porten bara efter arbetarnas berättelse).
 	for i in profile.intro_step:
 		var done: Dictionary = steps(data)[i]
 		if done.station == station:
 			return "open"
-	if station == "gate" and profile.intro_step > _index(data, "bells"):
+	if station == "gate" and profile.intro_step > _index(data, "workers"):
 		return "open"
 	return "locked"
 

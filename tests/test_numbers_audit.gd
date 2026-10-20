@@ -159,9 +159,15 @@ func test_hero_sheet_faces_the_enemy_of_the_party() -> void:
 func test_first_descent_scales_the_enemies_like_the_docs() -> void:
 	var state := RunState.new()
 	state.first_descent = true
+	state.party.assign(["paladin", "imma"])
 	for f in 3:
 		state.floor = f
 		assert_near(float(state.battle_opts().get("stat_bonus", 1.0)), Ref.battle_bonus(false, true, f), 1e-9, "våning %d" % (f + 1))
+	# 0.25: den första striden gör paladinen ensam, innan Imma smiter efter.
+	state.floor = 0
+	state.party.assign(["paladin"])
+	assert_near(float(state.battle_opts().get("stat_bonus", 1.0)), Ref.battle_bonus(false, true, 0, true), 1e-9, "ensam")
+	state.party.assign(["paladin", "imma"])
 	state.floor = 0
 	state.first_descent = false
 	assert_near(float(state.battle_opts().get("stat_bonus", 1.0)), 1.0, 1e-9, "senare")
