@@ -28,6 +28,10 @@ var _move_t := -1.0
 var _move_id := ""
 ## Rumstyper med ett ögonblick (stridsrum har inget, striden är själv 3D).
 const MOMENT_KINDS := ["treasure", "shrine", "campfire", "portal", "prisoner"]
+## 0.24: en replik från sällskapet (Run.pending_bark): rader {who, text}, en i taget, ungefär fem sekunder var.
+var _bark: Array = []
+var _bark_t := 0.0
+const BARK_TIME := 5.0
 
 
 func _ready() -> void:
@@ -54,6 +58,15 @@ func _process(delta: float) -> void:
 	if _zoom_t < 1.0:
 		_zoom_t = minf(1.0, _zoom_t + delta / ZOOM_TIME)
 		parchment.set_view(lerpf(3.2, 1.0, _smooth(_zoom_t)), Vector2(0.5, 0.5))
+	if _bark.is_empty() and not run.pending_bark.is_empty() and _dialog.is_empty() and _moment == null \
+			and _move_t < 0.0 and _zoom_t >= 1.0:
+		_bark = run.pending_bark.lines.duplicate()
+		run.pending_bark = {}
+		_bark_t = 0.0
+	if not _bark.is_empty():
+		_bark_t += delta
+		if _bark_t >= BARK_TIME:
+			_next_bark()
 	if _move_t >= 0.0:
 		_move_t += delta / MOVE_TIME
 		if _move_t >= 1.0:
@@ -71,6 +84,9 @@ func _tap(p: Vector2) -> void:
 	var state: RunState = run.state
 	if _moment != null or _move_t >= 0.0:
 		return  # ögonblicket tar själv emot trycket (hoppar över); pjäsen är på väg
+	if not _bark.is_empty():
+		_next_bark()
+		return
 	if not _dialog.is_empty():
 		_tap_dialog(p)
 		return
@@ -90,6 +106,11 @@ func _tap(p: Vector2) -> void:
 			_move_t = 0.0
 			run.ui("ui_page", -14.0)
 			return
+
+
+func _next_bark() -> void:
+	_bark.pop_front()
+	_bark_t = 0.0
 
 
 func _enter(id: String) -> void:
@@ -251,6 +272,9 @@ func _draw() -> void:
 	small_button(_moments_rect(), "RUMSÖGONBLICK: " + ("PÅ" if run.profile.room_moments else "AV"))
 	if not _dialog.is_empty():
 		_draw_dialog()
+	if not _bark.is_empty():
+		var l: Dictionary = _bark[0]
+		DialogBox.box(self, run.data, size, l.who, l.text, _t, true, 124.0)
 
 
 ## Var pjäsen står: vid våningens början, i rummet, eller på väg längs stigen.

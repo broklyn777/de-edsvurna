@@ -127,11 +127,11 @@ func intro(event: String, value := 0) -> void:
 	if done.is_empty():
 		return
 	ui("trophy_common", -6.0)
-	var nxt := Intro.current(data, profile)
-	if nxt.is_empty():
-		intro_lines = {"speaker": "Mäster Gorm", "lines": ["Svärdet är ditt, och borgen står öppen. Resten får du upptäcka själv."]}
+	# 0.24: nästa uppdrag kommer först när man har pratat med den som ger det; bara slutet sägs direkt.
+	if profile.intro_done:
+		intro_lines = {"speaker": "gorm", "lines": [data.intro.get("done", "")]}
 	else:
-		intro_lines = {"speaker": nxt.get("speaker", ""), "lines": nxt.get("lines", [])}
+		intro_lines = {}
 	_save()
 
 
@@ -193,6 +193,7 @@ func _dev_args() -> void:
 			for id in data.heroes:
 				if id != "paladin":
 					profile.recruit(data, id, 3.0)
+			profile.intro_done = true
 		elif arg == "--new-profile":
 			# --new-profile: börja som en ny spelare (sparas inte): Paladinen och Brokk
 			dev_profile = true
@@ -271,6 +272,20 @@ func _dev_args() -> void:
 			sheet_heroes = profile.party.duplicate()
 			sheet_can_change_personality = true
 			get_tree().change_scene_to_file.call_deferred(HERO_SCENE)
+		elif arg == "--keep":
+			get_tree().change_scene_to_file.call_deferred(BASE_SCENE)  # borgen direkt (0.24)
+		elif arg.begins_with("--intro-step="):
+			# --intro-step=<id>: en ny profil (sparas inte) på introts steg, t.ex. imma; med --talked är uppdraget givet
+			dev_profile = true
+			profile = Profile.new()
+			while Intro.current(data, profile).get("id", "") not in ["", arg.get_slice("=", 1)]:
+				Intro.talked(data, profile)
+				Intro.notify(data, profile, Intro.current(data, profile).get("event", ""), 3)
+			profile.intro_talked = "--talked" in OS.get_cmdline_user_args()
+		elif arg.begins_with("--bark="):
+			pending_bark = Dialog.bark(data, arg.get_slice("=", 1), state.party, state.barks_used, rng)  # replik på rumskartan
+		elif arg == "--descents":
+			profile.descents = {"crypt": 1}  # som efter första nedstigningen (sparas inte om profilen är påhittad)
 		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn"]:
 			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE, "--inn": INN_SCENE,
 					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE}[arg]
@@ -314,6 +329,14 @@ func start_run(party: Array[String]) -> void:
 	state.rules_hidden = pending_rules.hidden.duplicate()
 	roll_rules()  # nästa körning får nya regler
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
+	# 0.24: nedstigningarna räknas per Realm; första gången i en Realm säger någon något om den.
+	state.first_descent = profile.total_descents() == 0
+	var seen := int(profile.descents.get(state.realm, 0))
+	profile.descents[state.realm] = seen + 1
+	pending_bark = {}
+	if seen == 0:
+		bark("new_realm")
+	_save()
 	if not pending_trophy.is_empty() and profile.collection.has(pending_trophy.trophy):
 		state.take_trophy(pending_trophy.trophy)
 		state.equip(pending_trophy.wearer, pending_trophy.trophy)
@@ -360,6 +383,7 @@ func _resume_run() -> void:
 func enter_room(room_id: String) -> Dictionary:
 	var r := state.enter(room_id)
 	room_result = ""
+	pending_bark = {}  # högst en replik per rum
 	if RunState.is_battle(r):
 		save_run()
 		get_tree().change_scene_to_file(BATTLE_SCENE)
@@ -421,6 +445,7 @@ func show_rare_finds(finds: Array, delay := 0.0) -> void:
 ## Lägereld, skattkammare och helgedom (anropas av rumskartan). Returnerar texten om vad som hände.
 func campfire() -> String:
 	var gained := state.campfire(data)
+	bark("campfire")
 	room_result = "Lägerelden: +%d Charges" % gained
 	save_run()
 	return room_result
@@ -493,6 +518,7 @@ func rescue_prisoner() -> String:
 	else:
 		text += " Sällskapet är fullt – väntar i Värdshuset."
 	ui("room_lock", -4.0)
+	bark("rescue")
 	_save()
 	save_run()
 	return text
@@ -513,6 +539,8 @@ func treasure() -> String:
 		room_result += "\nFynd: " + ", ".join(finds.map(func(f: Dictionary) -> String: return Forge.find_text(data, f)))
 		play_find_sound(finds, 0.4)
 		show_rare_finds(finds, 0.9)
+		if finds.any(func(f: Dictionary) -> bool: return Forge.is_rare_find(f)):
+			bark("rare_find")
 	_save()
 	save_run()
 	return room_result
@@ -550,6 +578,7 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 		var xp := HeroStats.battle_xp(r.get("kind", "end"), state.depth, r.get("boss", false))
 		last_xp = xp
 		var ups := profile.grant_xp(data, state.party, xp)
+		_bark_after_battle(sim)
 		for hero_id in state.party:
 			for lv in ups.get(hero_id, []):
 				var p: String = profile.hero(data, hero_id).personality
@@ -557,6 +586,28 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 						"gains": HeroStats.gains(data, hero_id, lv, p)})
 	_save()
 	return out
+
+
+## 0.24 (plan §3): en kort replik från sällskapet efter striden, som visas på rumskartan.
+func _bark_after_battle(sim: CombatSim) -> void:
+	var standing := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive)
+	if sim.heroes.size() > 1 and standing.size() == 1 and standing[0].id == "paladin":
+		bark("alone")
+	elif last_finds.any(func(f: Dictionary) -> bool: return Forge.is_rare_find(f)):
+		bark("rare_find")
+	elif standing.size() < sim.heroes.size() or standing.any(func(h: CombatUnit) -> bool: return h.hp < h.max_hp * 0.3):
+		bark("hard_fight")
+
+
+## Replikerna under nedstigningen (0.24, Dialog.bark): högst en per rum, aldrig i striden, inget upprepas samma
+## körning. Den väntar i pending_bark tills rumskartan visar den.
+var pending_bark := {}
+
+
+func bark(kind: String) -> void:
+	if not pending_bark.is_empty() or state.practice:
+		return
+	pending_bark = Dialog.bark(data, kind, state.party, state.barks_used, rng)
 
 
 ## Efter lägret: tillbaka till rumskartan, nästa våning, eller hem när körningen är klar.

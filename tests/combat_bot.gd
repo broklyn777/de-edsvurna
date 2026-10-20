@@ -88,6 +88,8 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 			sim.act("attack")
 			continue
 		var macros: Dictionary = data.macros if skill == Skill.MACRO else TUNED_MACROS
+		if skill == Skill.MACRO and opts.has("bot_macros"):
+			macros = opts.bot_macros  # 0.23.3: t.ex. en ny profils få rader (new_profile_macros)
 		# 0.23: följeslagare utan förbättrade makron kör sina startmakron även för TUNED.
 		var macro: Dictionary = macros.get(sim.current.id, data.macros.get(sim.current.id, {"lines": []}))
 		var decision := MacroRunner.decide(sim, sim.current, macro)
@@ -134,6 +136,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	state.set_realm(data, realm)
 	state.depth = depth
 	state.instability = int(opts.get("instability", 0))
+	state.first_descent = opts.get("first_descent", false)  # 0.24: profilens första nedstigning
 	state.rules_visible = opts.get("rules", []).duplicate()
 	if opts.has("party"):
 		state.party.assign(opts.party)  # 0.23: sällskap med 2–4 hjältar
@@ -163,7 +166,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		if RunState.is_battle(r):
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
@@ -212,6 +215,18 @@ static func _count_finds(counts: Dictionary, finds: Array) -> void:
 	for f in finds:
 		counts[f.kind] += int(f.get("count", 1))
 		counts.rare += 1 if Forge.is_rare_find(f) else 0
+
+
+## Makrona i en ny profil (0.23.3, som Run._load_macros): Paladinen har introts föreslagna rad, följeslagarna sina
+## två första rader.
+static func new_profile_macros(data: Dictionary) -> Dictionary:
+	var out: Dictionary = data.macros.duplicate(true)
+	out.paladin.lines = [{"subject": "any_enemy", "cond": "lowest_hp", "value": 0, "action": "attack", "ability": "",
+			"target": "that"}]
+	for id in out:
+		if id != "paladin":
+			out[id].lines = out[id].lines.slice(0, 2)
+	return out
 
 
 ## Sällskapet på en viss nivå med de förvalda personligheterna (för balansrapporten).

@@ -31,7 +31,9 @@ func _init() -> void:
 		var r: Array = entry.rect if entry is Dictionary else entry
 		var paper: float = papers[source]
 		var img: Image = images[source].get_region(Rect2i(r[0], r[1], r[2], r[3]))
-		for y in img.get_height():
+		# 0.24: porträtten behåller pergamentet ("opaque") och hamnar i en egen mapp ("out").
+		var opaque: bool = entry is Dictionary and entry.get("opaque", false)
+		for y in (0 if opaque else img.get_height()):
 			for x in img.get_width():
 				var c := img.get_pixel(x, y)
 				var dark := (paper - c.get_luminance()) / paper
@@ -42,7 +44,9 @@ func _init() -> void:
 		if entry is Dictionary and entry.has("height"):
 			var h := int(entry.height)
 			img.resize(int(img.get_width() * float(h) / img.get_height()), h, Image.INTERPOLATE_LANCZOS)
-		var path := ProjectSettings.globalize_path(cfg.out + name + ".png")
+		var out_dir: String = entry.get("out", cfg.out) if entry is Dictionary else cfg.out
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out_dir))
+		var path := ProjectSettings.globalize_path(out_dir + name + ".png")
 		img.save_png(path)
 		print("%s → %s (%d×%d)" % [name, path.get_file(), r[2], r[3]])
 	quit()

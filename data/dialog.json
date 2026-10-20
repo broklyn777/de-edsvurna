@@ -1,0 +1,148 @@
+{
+	"people": {
+		"gorm": {
+			"name": "Mäster Gorm", "title": "Paladinernas mästare", "station": "altar", "where": "i kapellet",
+			"color": "#8a7a5a",
+			"greet": ["Väl mött, paladin.", "Där är du. Bra.", "Paladin. Sätt dig inte, vi har saker att göra."],
+			"idle": [
+				{"text": "Det går ett rykte om en helare som sitter fången i kryptan. Syster Alva. Hon lappade ihop halva byn en gång – nu är det vår tur.", "when": {"min_descents": 1, "not_recruited": "alva"}},
+				{"text": "Syster Alva har redan bytt förband på mig två gånger. Jag hade inget sår.", "when": {"recruited": "alva"}},
+				{"text": "Benfursten är slagen. Men ondskan sover lätt. Håll ögonen öppna, och svärdet vasst.", "when": {"boss": "bone_lich"}},
+				{"text": "Längre ned blir det mörkare. Ta med en lykta. Och Imma.", "when": {"min_best_depth": 1}},
+				{"text": "Ett svärd blir inte vassare av att ligga i skidan. Inte du heller."},
+				{"text": "Jag har sett tre generationer paladiner gå ned i kryptan. Du är den första som kommer upp med jord i håret och ett leende."},
+				{"text": "Ät något innan du går. Mor Elin blir sur annars, och då blir jag också det."},
+				{"text": "Makrona är som böner: korta, ärliga och i rätt ordning."}
+			]
+		},
+		"hedda": {
+			"name": "Hedda", "title": "Smeden", "station": "smith", "where": "i smedjan", "color": "#9a4a2a",
+			"greet": ["Jaså. Du igen.", "Rör inte städet.", "Hm. Kom in, men stå inte i ljuset."],
+			"idle": [
+				{"text": "Brokk vill att jag gör honom en större yxa. Jag sa att han får växa i den han har.", "when": {"recruited": "brokk"}},
+				{"text": "Bärnsten från kryptan? Lägg den här. Nej, inte där. Här.", "when": {"min_descents": 1}},
+				{"text": "Rör inte städet. Det är mitt städ. Du har ett svärd, var nöjd med det."},
+				{"text": "Ett bra svärd sjunger när man slipar det. Ditt gnäller mest."},
+				{"text": "Kol, järn och tålamod. Två av dem har jag gott om."},
+				{"text": "Gorm säger att jag är butter. Jag säger att jag är noggrann. Vi har båda rätt."}
+			]
+		},
+		"alrik": {
+			"name": "Broder Alrik", "title": "Bibliotekarien", "station": "library", "where": "i biblioteket", "color": "#5a6a8a",
+			"greet": ["Ah, besök! Vänta, jag ska bara … nej, det var inget.", "Välkommen, välkommen. Tyst på hyllorna, de sover."],
+			"idle": [
+				{"text": "Jag har skrivit en hel sida om Benfursten. Två ord är felstavade, men ändå.", "when": {"boss": "bone_lich"}},
+				{"text": "Var lade jag nu … ah, glasögonen. På näsan. Naturligtvis."},
+				{"text": "Den här boken handlar om troll. Eller om tröskverk. Handstilen är svår."},
+				{"text": "Varje trofé har en historia. De flesta slutar med att någon blev slagen."},
+				{"text": "Imma lånade en bok om bågskytte för sex år sedan. Jag har inte glömt. Jag glömmer mycket, men inte det."}
+			]
+		},
+		"stig": {
+			"name": "Stig", "title": "Vapenmästaren", "station": "practice", "where": "i övningsgården", "color": "#6a7a4a",
+			"greet": ["Paladin.", "Svärdet i handen, inte i munnen. Vad vill du?"],
+			"idle": [
+				{"text": "Halmdockorna klagar aldrig. Det är därför jag gillar dem."},
+				{"text": "Försvara dig när det blir hett. Eller var snabbare. Helst båda."},
+				{"text": "Jag har lärt hundra paladiner att hålla ett svärd. Nittioåtta håller det rätt ände upp."},
+				{"text": "Brokk slog sönder två dockor i går. Det var inte ens hans tur.", "when": {"recruited": "brokk"}}
+			]
+		},
+		"elin": {
+			"name": "Mor Elin", "title": "Värdshusvärden", "station": "inn", "where": "i värdshuset", "color": "#a8743a",
+			"greet": ["Sätt dig, sätt dig!", "Där är du ju! Har du ätit?"],
+			"idle": [
+				{"text": "Syster Alva hjälper mig i köket. Allt smakar lite salvia nu.", "when": {"recruited": "alva"}},
+				{"text": "Vem är den nya? Äter hon gröt? Alla äter gröt hos mig.", "when": {"min_recruited": 3}},
+				{"text": "Soppan är varm och bänken är nästan hel."},
+				{"text": "Imma stal en äppelkaka när hon var sju. Jag har förlåtit henne. Nästan."},
+				{"text": "Ett hem är där någon väntar med maten. Här väntar jag."}
+			]
+		},
+		"sven": {
+			"name": "Sven", "title": "Portvakten", "station": "gate", "where": "vid porten", "color": "#6a6a6a",
+			"greet": ["Hm? Nej, jag sov inte.", "Porten, ja. Den är kvar."],
+			"idle": [
+				{"text": "Jag vilade ögonen. Mot porten. Det är en sorts vakt."},
+				{"text": "Porten knarrar. Den har gjort det i fyrtio år. Den är som jag."},
+				{"text": "Gå försiktigt där nere. Och stäng efter dig, det drar."},
+				{"text": "Ni kom tillbaka! Jag sa ju att ni skulle. Jag sa det till porten.", "when": {"min_descents": 1}}
+			]
+		},
+		"imma": {
+			"name": "Imma", "title": "Barndomsvännen", "where": "på gården", "color": "#e0806a", "hero": "imma"
+		}
+	},
+	"stations": {
+		"altar": {"person": "gorm", "name": "Kallets kapell", "tag": "Kall och perks",
+			"options": [{"label": "Kallet och perks", "open": "altar"}]},
+		"macros": {"person": "gorm", "name": "Gorms kammare", "tag": "Makron",
+			"options": [{"label": "Skriv makron vid skrivbordet", "open": "macros"}]},
+		"smith": {"person": "hedda", "name": "Smedjan", "tag": "Artefakter",
+			"options": [{"label": "Smid", "open": "smith"}, {"label": "Uppgradera", "open": "smith"},
+				{"label": "Sätt in", "open": "smith"}, {"label": "Ta ut", "open": "smith"}]},
+		"library": {"person": "alrik", "name": "Biblioteket", "tag": "Troféer",
+			"options": [{"label": "Läs om troféerna", "open": "library"}]},
+		"practice": {"person": "stig", "name": "Övningsgården", "tag": "Arena",
+			"options": [{"label": "Öva en strid", "open": "practice"}]},
+		"inn": {"person": "elin", "name": "Värdshuset", "tag": "Följeslagarna",
+			"options": [{"label": "Välj sällskap", "open": "inn"}]},
+		"gate": {"person": "sven", "name": "Porten", "tag": "Kampanjkartan",
+			"options": [{"label": "Till kampanjkartan", "open": "gate"}]}
+	},
+	"nothing": "Ingenting just nu",
+	"barks": {
+		"imma": {
+			"hard_fight": [
+				"Puh. Det där var nära. Jag andades inte på hela striden.",
+				"Säg att vi inte ska göra så där igen. Ljug om det behövs.",
+				"Jag har ett blåmärke format som ett skelett. Nu."
+			],
+			"campfire": [
+				"Jag tog med äpplen. Två av dem är nästan inte mosade.",
+				"Elden är varm. Vet du vad som inte är varmt? Kryptan.",
+				"Om Gorm frågar så gick jag och lade mig tidigt."
+			],
+			"rare_find": [
+				"Titta! Den glittrar! Får jag hålla den? Bara lite?",
+				"Det där är det finaste jag sett sedan Mor Elins äppelkaka."
+			],
+			"rescue": [
+				"Välkommen! Vi har ingen plan, men vi har varandra.",
+				"En till! Nu kan vi inte förlora. Ungefär."
+			],
+			"new_realm": [
+				"Det här stället luktar konstigt. Inte farligt. Bara konstigt.",
+				"Ny plats, nya monster. Jag hade hoppats på nya kakor."
+			],
+			"alone": [
+				"Jag låg bara och vilade. Bra, du klarade dem själv! Hjälp mig upp?",
+				"Du stod kvar ensam. Jag såg det. Typ. Med ena ögat."
+			]
+		},
+		"alva": {
+			"hard_fight": ["Sitt still. Det här kommer att svida, och sedan blir det bättre."],
+			"campfire": ["Drick vatten. Alla. Ja, du också, Imma."],
+			"rescue": ["Ännu en att lappa ihop. Välkommen."]
+		},
+		"brokk": {
+			"hard_fight": ["Ha! Är det allt? … Nej, säg inte att det är allt."],
+			"campfire": ["Jag tar första vakten. Och andra. Jag sover ändå inte."]
+		},
+		"eira": {
+			"hard_fight": ["Jag räknade pilarna. Vi har färre nu."],
+			"campfire": ["Hör ni? Ingenting. Det är det bästa ljudet här nere."]
+		},
+		"solveig": {
+			"campfire": ["Elden ser sjuk ut. Jag ska bara … så. Nu brinner den ordentligt."]
+		}
+	},
+	"pairs": [
+		{"heroes": ["imma", "alva"], "kind": "campfire",
+			"lines": [["imma", "Alva, varför luktar dina förband salvia?"], ["alva", "För att Mor Elin tog all min kamomill."]]},
+		{"heroes": ["imma", "brokk"], "kind": "campfire",
+			"lines": [["brokk", "Den lilla bågskytten pratar mycket."], ["imma", "Den stora yxmannen lyssnar mycket. Vi passar ihop."]]},
+		{"heroes": ["alva", "brokk"], "kind": "hard_fight",
+			"lines": [["alva", "Brokk, du blöder."], ["brokk", "Det är skeletten som blöder. Jag bara står nära."]]}
+	]
+}

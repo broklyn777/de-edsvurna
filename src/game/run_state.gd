@@ -77,6 +77,10 @@ var finished := false
 var trait_totals := {}
 ## Fynden i körningen (0.20), visas på rumskartan: bärnsten, trick och Nether Stones.
 var found := {"amber": 0, "trick": 0, "nether": 0}
+## 0.24: replikerna som redan har sagts den här körningen (Dialog.bark upprepar dem inte).
+var barks_used: Array = []
+## 0.24: profilens första nedstigning (FIRST_DESCENT_STATS).
+var first_descent := false
 ## 0.23: fångar på våningarna, floor (som text) -> {hero, first}. Den första är tidig och obevakad.
 var prisoners := {}
 
@@ -91,23 +95,24 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.depth = profile.depth
 	s.set_realm(data, profile.realm)
 	s.fill_charges(data)
-	s.place_prisoners(data, profile.recruited)
+	s.place_prisoners(data, profile.recruited, int(profile.descents.get(profile.realm, 0)))
 	return s
 
 
-## Lärjungar som sitter fångna i den här Realmen på det här djupet (0.23, Siralims varelser per Realm):
-## de man inte redan har och vars djup är nått, högst en per våning.
-func place_prisoners(data: Dictionary, recruited: Array) -> void:
+## Lärjungar som sitter fångna i den här Realmen på det här djupet (0.23, Siralims varelser per Realm): de man inte
+## redan har och vars djup är nått. 0.24: en i taget (den första i listan som passar), och "after_descents" kräver så
+## många tidigare nedstigningar i Realmen (Syster Alva på den andra i kryptan). descents < 0 = räkna inte (botarna).
+func place_prisoners(data: Dictionary, recruited: Array, descents := -1) -> void:
 	prisoners.clear()
 	for d in data.realms[realm].get("disciples", []):
 		if recruited.has(d.hero) or depth < int(d.depth):
 			continue
+		if descents >= 0 and descents < int(d.get("after_descents", 0)):
+			continue
 		var f := clampi(int(d.floor), 0, floor_ids.size() - 1)
-		while prisoners.has(str(f)) and f < floor_ids.size() - 1:
-			f += 1
-		if not prisoners.has(str(f)):
-			prisoners[str(f)] = {"hero": d.hero, "first": d.get("first", false),
-					"guarded": d.get("guarded", not d.get("first", false))}
+		prisoners[str(f)] = {"hero": d.hero, "first": d.get("first", false),
+				"guarded": d.get("guarded", not d.get("first", false))}
+		return
 
 
 ## En strid i Övningsgården: samma sällskap, makron och artefakter, troféer ur samlingen och fulla
@@ -234,7 +239,8 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = 
 		if t != "" and not sure.has(t) and not trophies.has(t):
 			sure.append(t)
 	var offer: Array[String] = []
-	for kind in data.encounters[encounter()].enemies:
+	# 0.23.3: bara de fiender som faktiskt mötte sällskapet (ett litet sällskap möter färre).
+	for kind in CombatSim.enemy_lineup(data, data.encounters[encounter()].enemies, party.size()):
 		if data.enemies[kind].get("boss", false) and not unlocked_bosses.has(kind):
 			continue
 		var t: String = data.enemies[kind].get("trophy", "")
@@ -303,6 +309,9 @@ const TREASURE_SILVER := 0.6
 const TREASURE_TROPHY_CHANCE := 0.2
 ## Portalens strid: starkare fiender, mer silver och bättre troféchans.
 const PORTAL_STATS := 1.15
+## 0.24: den allra första nedstigningen gör Paladinen och Imma ensamma, med svagare fiender (vårt val, mätt med
+## botarna: 64 % med en ny profils makron, BALANS=forsta).
+const FIRST_DESCENT_STATS := 0.85
 const PORTAL_SILVER := 1.0
 const PORTAL_TROPHY_BONUS := 0.25
 
@@ -432,6 +441,8 @@ func battle_opts() -> Dictionary:
 		opts.nemesis = true
 	if r.get("kind", "") == "portal_battle":
 		opts.stat_bonus = PORTAL_STATS
+	if first_descent:
+		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * FIRST_DESCENT_STATS
 	return opts
 
 
@@ -587,7 +598,8 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "room_id", "visited",
-		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners"]
+		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
+		"barks_used", "first_descent"]
 
 
 func to_dict() -> Dictionary:

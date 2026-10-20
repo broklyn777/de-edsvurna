@@ -84,7 +84,7 @@ const MAX_TRAIT_CHAIN := 10
 ## besvärjelser och mottagna helningar, plus en övergripande gräns.
 const TURN_LIMIT := 5
 ## 0.23: fiendernas styrka efter sällskapets storlek (1–4 hjältar). Vårt val, mätt med botarna.
-const PARTY_SCALE := {1: 0.45, 2: 0.56, 3: 0.74, 4: 1.0}
+const PARTY_SCALE := {1: 0.45, 2: 0.54, 3: 0.64, 4: 1.0}
 const TURN_PROC_LIMIT := 60
 ## Handlingar en hjälte kan göra på sin tur ("ability" kräver vilken förmåga).
 const ACTIONS := ["attack", "ability", "defend", "provoke", "skip"]
@@ -187,8 +187,9 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	# 0.23: ett mindre sällskap möter svagare fiender (Health, Attack och Intelligence; vårt val).
 	var party_mult := float(PARTY_SCALE[clampi(sim.heroes.size(), 1, 4)])
 	var counts := {}
-	for i in enc.enemies.size():
-		var kind: String = enc.enemies[i]
+	var lineup := enemy_lineup(game_data, enc.enemies, sim.heroes.size())
+	for i in lineup.size():
+		var kind: String = lineup[i]
 		counts[kind] = counts.get(kind, 0) + 1
 		var e := CombatUnit.from_data("%s_%d" % [kind, counts[kind]], game_data.enemies[kind], 1)
 		e.kind = kind
@@ -226,6 +227,43 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 
 
 # --- Publikt API ------------------------------------------------------------
+
+## 0.23.3: högst så många fler fiender än hjältar (vårt val). Fyra fiender mot två hjältar fick dubbelt så många turer
+## som sällskapet även med svagare stats.
+const EXTRA_ENEMIES := 1
+
+
+## Fienderna som möter ett sällskap av den storleken. Ett litet sällskap möter färre: först tas dubbletter bort
+## bakifrån, sedan de sista i listan. Den första (våningens ledare) och bossar blir alltid kvar, och så en fiende som
+## en annan behöver (som Kultisten som gör biskopen immun).
+static func enemy_lineup(game_data: Dictionary, kinds: Array, party_size: int) -> Array:
+	var out := kinds.duplicate()
+	var cap := maxi(party_size, 1) + EXTRA_ENEMIES
+	for only_duplicates in [true, false]:
+		var i := out.size() - 1
+		while out.size() > cap and i > 0:
+			var kind: String = out[i]
+			var duplicate := out.count(kind) > 1
+			if (duplicate or not only_duplicates) and _can_drop(game_data, out, i):
+				out.remove_at(i)
+			i -= 1
+	return out
+
+
+static func _can_drop(game_data: Dictionary, kinds: Array, i: int) -> bool:
+	var kind: String = kinds[i]
+	if game_data.enemies[kind].get("boss", false):
+		return false
+	if kinds.count(kind) > 1:
+		return true
+	for j in kinds.size():
+		if j == i:
+			continue
+		for t in game_data.enemies[kinds[j]].get("traits", []):
+			if game_data.traits.get(t, {}).get("modify", {}).get("immune_while_ally_kind", "") == kind:
+				return false
+	return true
+
 
 ## Chansen att en vanlig fiende är en elitvariant: 5 % och mer med djup och instabilitet, högst 30 %.
 static func elite_chance(at_depth: int, instability := 0) -> float:

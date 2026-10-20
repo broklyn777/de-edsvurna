@@ -26,12 +26,16 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   **Lärjungar och Värdshuset** (0.23, Siralims rekrytering och Menagerie, `docs/plan/0.23-vardshuset.md`): en ny
   profil börjar med Paladinen ensam; Imma (barndomsvännen, bågskytt, Fingerfärdig stjäl fiendens buff åt den
   svagaste – vårt val, förebild Mesmerist) ansluter i introt. De andra befrias ur **fånge-rum** på rumskartan:
-  varje Realm har egna lärjungar per djup och våning (`realms.json` "disciples"; Kryptan: Brokk först, bevakad,
-  sedan Alva, Eira, Tove, Solveig, Sefir; Kapellet: Lirien, Ragnhild, Hulda, Ronja). De ansluter direkt på nivå
+  varje Realm har egna lärjungar per djup (`realms.json` "disciples", en i taget sedan 0.24; Kryptan: Syster Alva på
+  den andra nedstigningen (`after_descents`, `Profile.descents`), sedan Brokk (bevakad), Eira, Tove, Solveig, Sefir;
+  Kapellet: Lirien, Ragnhild, Hulda, Ronja). Profilens första nedstigning gör Paladinen och Imma ensamma, med fiender
+  ×0,85 (`RunState.FIRST_DESCENT_STATS`, vårt val). De ansluter direkt på nivå
   1–2 om det finns plats (Paladinen + 3), annars väntar de i **Värdshuset**, där man väljer sällskap och de som
   stannar behåller sin nivå. `Profile.recruited`, `recruit()`, `set_party()`; `RunState.place_prisoners()`;
   `Run.rescue_prisoner()`. Ikapphämtning (vårt val): +50 % erfarenhet per nivå under sällskapets snitt, högst ×3.
-  Fiender efter sällskapets storlek (vårt val): `CombatSim.PARTY_SCALE` (×0,56 för två, ×0,74 för tre).
+  Fiender efter sällskapets storlek (vårt val): högst sällskapet + 1 fiender (0.23.3, `CombatSim.enemy_lineup`,
+  `EXTRA_ENEMIES`: dubbletter går först, aldrig ledaren, bossen eller den som gör en annan immun) och
+  `CombatSim.PARTY_SCALE` (×0,54 för två, ×0,64 för tre). `BALANS=forsta` mäter första nedstigningen med en ny profils makron.
   När en ny sorts hjälte ansluter föreslår spelet en makrorad (`heroes.json` "macro_hint"). Äldre profiler
   behåller sina fyra och får Imma i Värdshuset.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
@@ -91,14 +95,26 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`HeroStats.SOURCES`; 0.20 lägger till material och Nether Stone), vad de
   betyder i skada och helning mot en typisk fiende, egenskaper med körningens statistik, förmågor,
   artefakt och historik. Nivåuppgångar syns och hörs på segerskärmen.
-- **Borgen** (0.12 som basen, 0.23 en borggård i 3D, `scripts/castle/castle_world.gd` + `base_screen.gd`):
-  stationerna Porten (kampanjkartan), Övningsgården, Kallets altare, Smeden, Makron, Värdshuset och Biblioteket.
-  Tryck på en station så går paladinen dit (ungefär en sekund); dubbeltryck hoppar över gången. Namnen står över
-  stationerna, och den med något nytt lyser; kortraden längst ned är genvägar. Sällskapet står vid värdshuset.
+- **Borgen** (0.12 som basen, 0.24 "Hemmet", `docs/plan/0.24-hemmet.md`, `base_screen.gd` + `scripts/keep/keep_art.gd`):
+  en planritning i tusch på pergament sedd uppifrån, som rumskartan; fördärvet flyter som bläck utanför murarna
+  (shader), innanför kvällsljus, rök, gnistor och en härd som sprakar (`ambience_home`, `tools/gen_home_ambience.py`).
+  Rummen och gångarna står i `data/keep.json` (planens pixlar, 1536×1024); VD:ns bild `assets/illustrations/borgen.webp`
+  ersätter tuschritningen när den finns. Tryck i ett rum så går paladinpjäsen dit (1–2 sekunder) och sällskapet
+  följer i en rad; dubbeltryck hoppar fram. Personerna står vid sina platser med porträtt: Mäster Gorm i kapellet
+  (och Gorms kammare med Makron), smeden Hedda, Broder Alrik i biblioteket, vapenmästaren Stig, Mor Elin i
+  värdshuset och portvakten Sven (namnen är förslag). **Samtal** (Siralims dialogruta, `Dialog`, `DialogBox`,
+  `data/dialog.json`): personen hälsar, säger en vardagsreplik (nyheter först) och erbjuder tjänsterna som val, sist
+  "Ingenting just nu". Porträtten läses från `assets/illustrations/portraits/<id>.png` (klipps ur VD:ns ark med
+  `tools/cut_symbols.gd`, `"opaque": true`, `"out"`); tills dess ritas en tuschbyst. Befriade som inte är med bor i
+  värdshuset. Kortraden längst ned är genvägar. **Repliker under nedstigningen** (`Dialog.bark`, `Run.bark`):
+  Imma (och andra) säger en rad efter en svår strid, vid lägerelden, vid ett sällsynt fynd, en befrielse, i en ny
+  Realm eller när paladinen står ensam kvar; högst en per rum, aldrig i striden, inget upprepas samma körning
+  (`RunState.barks_used`); ibland ett kort samtal mellan två (`pairs`). Visas på rumskartan.
   **Introduktionen** för en ny profil (`data/intro.json`, `src/game/intro.gd`): eden vid altaret, en övningsstrid
   ensam, svärdet hos Smeden (bara svärdet går att välja), första makroraden, Biblioteket, Imma, Gorms ord om
-  klockorna (porten öppnas) och svärdet till nivå 3. Aktuellt uppdrag syns i hörnet; andra stationer svarar med en
-  replik. Introt går inte att hoppa över; befintliga profiler har `intro_done`. Efter introt öppnas Värdshuset när
+  klockorna (porten öppnas) och svärdet till nivå 3. Varje steg börjar med ett samtal på 2–5 repliker hos den som
+  ger uppdraget (`giver`, `talk`, `Profile.intro_talked`, `Intro.needs_talk()`); nästa uppdrag kommer först efter
+  samtalet. Uppdraget syns överst; andra stationer svarar med en replik. Introt går inte att hoppa över; befintliga profiler har `intro_done`. Efter introt öppnas Värdshuset när
   man har räddat någon (vårt val). Förlust eller klarad krypta leder hem. Silver ges per vunnen strid.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
@@ -319,6 +335,15 @@ godot --path . -- --realm=chapel --map
 
 # Profilskärmen med raderingsbekräftelsen öppen (för skärmdumpar)
 godot --path . -- --confirm-delete=1
+
+# Borgen direkt (0.24): på ett introsteg (en påhittad profil), i ett samtal, och en replik på rumskartan
+godot --path . -- --keep
+godot --path . -- --intro-step=imma --keep --talk=imma
+godot --path . -- --all-companions --keep --talk=smith
+godot --path . -- --intro-step=crypt --map --bark=new_realm
+
+# Första nedstigningen och små sällskap i balansrapporten
+BALANS=forsta godot --headless --path . --script res://tests/balance_report.gd
 
 # Öppna en plats i basen direkt (--gate = kampanjkartan, --practice, --altar, --smith, --library)
 godot --path . -- --smith

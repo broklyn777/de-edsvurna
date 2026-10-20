@@ -70,7 +70,12 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Lärjunge | disciple (`realms.json` "disciples") | Creature (rekrytering) | Följeslagare som befrias ur ett fånge-rum och ansluter på låg nivå. |
 | Fånge-rum | prisoner | – (vårt tema för rekrytering) | Rum på rumskartan med en lärjunge; den första är tidig. |
 | Värdshuset | inn (`inn_screen`) | Menagerie | Där följeslagarna bor; välj sällskap, de som stannar behåller nivån. |
-| Borgen | castle (`castle_world.gd`, `base_screen`) | Castle | Basen som en borggård att gå runt i (0.23). |
+| Borgen | keep (`base_screen`, `KeepArt`, `data/keep.json`) | Castle | Basen som en planritning i tusch att gå runt i (0.24; 3D-gård i 0.23). |
+| Samtal, dialogruta | `Dialog`, `DialogBox`, `data/dialog.json` | dialogue box | Personen hälsar och erbjuder tjänsterna som val; sist "Ingenting just nu". |
+| Vardagsreplik | idle (`Dialog.idle_line`) | – | Det personen säger när inget uppdrag gäller; nyheter (ny lärjunge, besegrad boss) först. |
+| Replik under nedstigningen | bark (`Dialog.bark`, `Run.pending_bark`) | – | En rad från sällskapet efter en svår strid, vid lägerelden m.m.; vårt Baldur's Gate-drag. |
+| Nedstigning | descent (`Profile.descents`) | – | En påbörjad körning i en Realm. Alva räddas på den andra i kryptan; den första har svagare fiender. |
+| Hedda, Broder Alrik, Stig, Mor Elin, Sven | hedda, alrik, stig, elin, sven | (Sabon m.fl.) | Smeden, bibliotekarien, vapenmästaren, värdshusvärden och portvakten (namnen är förslag, 0.24). |
 | Introduktionen | intro (`data/intro.json`, `Intro`) | Tutorial | Småuppdrag i borgen för en ny profil. |
 | Imma, Mäster Gorm | imma, gorm | – | Paladinens barndomsvän (första följeslagaren) och borgens präst. |
 | Uträkning | `calc`, `DamageExplain` | – (vårt tillägg) | Hela vägen till en siffra: stat, variation, Defense, modifierare, krit, barriär. Tryck på en siffra i striden. |
