@@ -23,9 +23,9 @@ func test_depth_scales_enemy_stats_but_not_speed() -> void:
 	var d: Dictionary = _data.enemies.skeleton_warrior.stats
 	var deep := _sim("crypt_1", 3).unit("skeleton_warrior_1")
 	assert_near(CombatSim.depth_mult(3), 1.16)
-	assert_eq(deep.max_hp, roundf(d.health * 1.16), "Health")
-	assert_eq(deep.attack, roundf(d.attack * 1.16), "Attack")
-	assert_eq(deep.defense, roundf(d.defense * 1.16), "Defense")
+	assert_eq(deep.max_hp, CombatSim.snap_stat(d.health * 1.16), "Health")
+	assert_eq(deep.attack, CombatSim.snap_stat(d.attack * 1.16), "Attack")
+	assert_eq(deep.defense, CombatSim.snap_stat(d.defense * 1.16), "Defense")
 	assert_eq(deep.speed, float(d.speed), "Speed skalar inte")
 	assert_eq(deep.base_stats.attack, deep.attack, "startvärdet följer med (golvet 20 %)")
 	var shallow := _sim("crypt_1", 1).unit("skeleton_warrior_1")
@@ -37,7 +37,7 @@ func test_later_floors_are_stronger() -> void:
 	assert_true(float(_data.encounters.crypt_2.stat_mult) > 1.0)
 	assert_true(float(_data.encounters.crypt_3.stat_mult) >= float(_data.encounters.crypt_2.stat_mult))
 	var warden := _sim("crypt_2").unit("grave_warden_1")
-	assert_eq(warden.max_hp, roundf(_data.enemies.grave_warden.stats.health * float(_data.encounters.crypt_2.stat_mult)))
+	assert_eq(warden.max_hp, CombatSim.snap_stat(_data.enemies.grave_warden.stats.health * float(_data.encounters.crypt_2.stat_mult)))
 
 
 func test_profile_unlocks_depth_after_clearing() -> void:
@@ -81,10 +81,10 @@ func test_boss_is_resistant_to_debuffs() -> void:
 	sim._add_aura(sim.unit("eira"), lich, "marked")
 	assert_near(lich.auras.marked.damage_taken_mult, 1.2, 0.001, "Märkt verkar fullt")
 	sim._add_aura(sim.unit("alva"), lich, "burning")
-	assert_eq(lich.auras.burning.dot, roundf(sim.unit("alva").intelligence * 0.3), "Brinner verkar fullt")
+	assert_near(lich.auras.burning.dot, sim.unit("alva").intelligence * 0.3, 1e-9, "Brinner verkar fullt")
 	sim = _sim("crypt_3")
 	lich = sim.unit("bone_lich_1")
-	lich.hp = 1000.0
+	lich.hp = 100.0
 	sim._add_aura(sim.unit("eira"), lich, "bleeding")
 	sim.drain_events()
 	sim._tick_turn_start(lich)
@@ -92,7 +92,7 @@ func test_boss_is_resistant_to_debuffs() -> void:
 	for e in sim.drain_events():
 		if e.type == "damage" and e.ability == "bleeding":
 			bled = e.amount
-	assert_eq(bled, 100.0, "Blöder: resistent tar 10 % av livet i stället för 30 %")
+	assert_eq(bled, 10.0, "Blöder: resistent tar 10 % av livet i stället för 30 %")
 
 
 func test_every_enemy_has_a_trait() -> void:
@@ -150,7 +150,7 @@ func test_ember_skeleton_sets_burning_from_intelligence() -> void:
 	var brokk := sim.unit("brokk")
 	_hit(sim, ember, brokk)
 	assert_true(brokk.auras.has("burning"))
-	assert_eq(brokk.auras.burning.dot, roundf(ember.intelligence * 0.3))
+	assert_near(brokk.auras.burning.dot, ember.intelligence * 0.3, 1e-9)
 
 
 func test_lich_wrath_triggers_once_below_half() -> void:

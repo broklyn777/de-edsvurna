@@ -81,7 +81,8 @@ func _draw() -> void:
 
 	Glyphs.draw(self, UiStyle.GLYPHS.get(unit.id, "diamond"), Vector2(19, 15), 8.0, unit.color)
 	UiStyle.text(self, Vector2(32, 21), unit.name, 17, unit.color)
-	var hp_text := "DÖD" if not unit.alive else "%d / %d" % [int(unit.hp), int(unit.max_hp)]
+	# 0.26: livet har decimaler; den som lever visar minst 1.
+	var hp_text := "DÖD" if not unit.alive else "%d / %d" % [maxi(roundi(unit.hp), 1), roundi(unit.max_hp)]
 	UiStyle.text(self, Vector2(10, 21), hp_text, 13, Color(1, 1, 1, 0.8), HORIZONTAL_ALIGNMENT_RIGHT, size.x - 20)
 
 	var hp_rect := Rect2(10, 28, size.x - 20, 18)

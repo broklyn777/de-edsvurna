@@ -23,13 +23,13 @@ func test_twenty_personalities_cover_every_pair() -> void:
 func test_each_level_adds_thirty_percent_of_base() -> void:
 	var base: Dictionary = _data.heroes.brokk.stats
 	var neutral := HeroStats.level_stats(_data, "brokk", 3, "")
-	assert_eq(neutral.attack, roundf(base.attack * 1.6))
+	assert_eq(neutral.attack, CombatSim.snap_stat(base.attack * 1.6))
 	assert_eq(neutral.speed, roundf(base.speed * 1.6), "Speed växer också")
 	# Envis: Health 40 %, Speed 20 %.
 	var envis := HeroStats.level_stats(_data, "brokk", 3, "envis")
-	assert_eq(envis.health, roundf(base.health * 1.8))
+	assert_eq(envis.health, CombatSim.snap_stat(base.health * 1.8))
 	assert_eq(envis.speed, roundf(base.speed * 1.4))
-	assert_eq(envis.attack, roundf(base.attack * 1.6))
+	assert_eq(envis.attack, CombatSim.snap_stat(base.attack * 1.6))
 	assert_eq(HeroStats.level_stats(_data, "brokk", 1, "envis").health, float(base.health), "personligheten ändrar inte nivå 1")
 
 
@@ -118,7 +118,7 @@ func test_enemy_level_follows_depth_and_floor_not_the_party() -> void:
 	var w := sim.unit("skeleton_warrior_1")
 	var lv := HeroStats.enemy_level(1, 0)
 	assert_near(w.level, lv, 0.001)
-	assert_eq(w.max_hp, roundf(hp * HeroStats.level_mult(lv)))
+	assert_eq(w.max_hp, CombatSim.snap_stat(hp * HeroStats.level_mult(lv)))
 	var low := CombatSim.create(_data, "crypt_1", 1, [], {}, {}, {}, 1, {"levels": {"paladin": {"level": 1}}, "elite_chance": 0.0})
 	assert_eq(low.unit("skeleton_warrior_1").level, w.level, "sällskapets nivå spelar ingen roll")
 	var later := CombatSim.create(_data, "crypt_1", 1, [], {}, {}, {}, 1, {"levels": levels, "elite_chance": 0.0, "floor": 2})

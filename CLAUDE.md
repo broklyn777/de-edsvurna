@@ -168,6 +168,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
   Försvara: −35 % skada och +50 % Defense; Provocera: −35 % Defense. Krit och undvikande från Speed-kvoten
   (vårt val, formeln är inte publicerad). Barriär tar skada före livet. Se `docs/research/siralim.md` §12.
+  **Små tal** (0.26, som Siralim): grundvärdena för Health, Attack, Intelligence och Defense delades med 10 (Paladinen 90
+  Health, Brokk 115, en vanlig träff 10–15). Stats har en decimal (`CombatSim.snap_stat`, Speed i heltal); skada och
+  helning avrundas till heltal en gång på slutet (inget golv på 1 längre; en mycket svag träff kan göra 0 men räknas som en träff för egenskaperna), och skadeloggen visar mellanleden med en decimal och
+  avrundningen. Balansen är densamma (botarna före och efter, `docs/formler.md`).
 - **Statusar** (0.22, Siralims buffar och debuffar, `docs/formler.md` §5, `docs/research/siralim.md` §17): 12 buffar
   (Smidig, Arkan, Bärsärk, Defensiv, Immun, Livstörst, Läkning, Beskyddad, Pånyttfödd, Vildsint, Skyddsskal,
   Utmanande) och 10 debuffar (Blöder, Fördärvad, Förblindad, Förvirrad, Frusen, Förgiftad, Hånad, Sover, Snärjd,

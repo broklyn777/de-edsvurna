@@ -93,7 +93,7 @@ func test_spells_use_intelligence_and_never_crit() -> void:
 	assert_true(not hit.crit, "spells blir inte kritiska")
 	var tier: Array = CombatSim.SPELL_TIERS[_data.abilities.judgement.tier]
 	var high := CombatSim.spell_damage(alva.intelligence * tier[0] * 1.1, warrior.defense, 1.0, tier[1])
-	assert_true(hit.amount > 10.0 and hit.amount <= roundf(high), "skadan följer Int, inte Attack")
+	assert_true(hit.amount > 1.0 and hit.amount <= roundf(high), "skadan följer Int, inte Attack")
 
 
 func test_defend_and_provoke_change_defense() -> void:
@@ -121,12 +121,12 @@ func test_indirect_damage_cannot_be_dodged_or_crit() -> void:
 	var priest := sim.unit("grave_priest_1")
 	eira.speed = 1000.0  # skulle undvika nästan allt
 	for i in 20:
-		sim._deal_damage(priest, eira, 30.0, "fire", "burning", true, false, "indirect")
+		sim._deal_damage(priest, eira, 3.0, "fire", "burning", true, false, "indirect")
 	var events := sim.drain_events()
 	assert_eq(events.filter(func(e: Dictionary) -> bool: return e.type == "dodge").size(), 0)
 	var hits := events.filter(func(e: Dictionary) -> bool: return e.type == "damage" and e.target == "eira")
 	assert_eq(hits.size(), 20)
-	assert_eq(hits[0].amount, roundf(CombatSim.indirect_damage(30.0, eira.defense)))
+	assert_eq(hits[0].amount, roundf(CombatSim.indirect_damage(3.0, eira.defense)))
 	assert_true(hits.all(func(e: Dictionary) -> bool: return not e.crit))
 
 
@@ -146,19 +146,19 @@ func test_fast_target_dodges_attacks() -> void:
 func test_barrier_absorbs_before_health_and_triggers_nothing() -> void:
 	var sim := _sim()
 	var alva := sim.unit("alva")
-	sim._add_barrier(alva, alva, 100.0)
+	sim._add_barrier(alva, alva, 10.0)
 	assert_true(alva.auras.has("barrier"))
-	sim._add_barrier(alva, alva, 40.0)
-	assert_eq(alva.barrier, 100.0, "den starkaste Barrier gäller, de staplas inte")
+	sim._add_barrier(alva, alva, 4.0)
+	assert_eq(alva.barrier, 10.0, "den starkaste Barrier gäller, de staplas inte")
 	sim.drain_events()
-	sim._deal_damage(sim.unit("skeleton_archer_1"), alva, 60.0, "physical", "bone_arrow", false, true)
+	sim._deal_damage(sim.unit("skeleton_archer_1"), alva, 6.0, "physical", "bone_arrow", false, true)
 	var events := sim.drain_events()
 	assert_eq(alva.hp, alva.max_hp, "Barrier tog allt")
-	assert_eq(alva.barrier, 40.0)
+	assert_eq(alva.barrier, 4.0)
 	assert_eq(events.filter(func(e: Dictionary) -> bool: return e.get("ability", "") == "oath_vengeance").size(), 0,
 			"en träff som Barrier tog sätter inte igång Domens kall")
-	sim._deal_damage(sim.unit("skeleton_archer_1"), alva, 60.0, "physical", "bone_arrow", false, true)
-	assert_eq(alva.hp, alva.max_hp - 20.0)
+	sim._deal_damage(sim.unit("skeleton_archer_1"), alva, 6.0, "physical", "bone_arrow", false, true)
+	assert_eq(alva.hp, alva.max_hp - 2.0)
 	assert_true(not alva.auras.has("barrier"), "Barrier försvinner när den är slut")
 
 

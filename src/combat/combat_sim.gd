@@ -65,6 +65,14 @@ const DODGE_TRAIT_MAX := 0.75
 ## (våning 2 och 3 är starkare än 1, som i Siralim där fienderna skalar snabbare än laget).
 const DEPTH_STEP := 0.08
 const SCALED_STATS := ["health", "attack", "intelligence", "defense"]
+## 0.26: talen börjar små som i Siralim (grundvärdena delades med 10). Health, Attack, Intelligence och Defense har därför
+## en decimal (förut heltal, samma upplösning i förhållande till värdet); Speed är kvar i heltal. Skada och helning
+## räknas med decimaler och avrundas en gång till heltal på slutet.
+const STAT_STEP := 0.1
+
+
+static func snap_stat(v: float) -> float:
+	return roundf(v * 10.0) / 10.0
 ## Elitvarianter (0.17, som Siralims sällsynta varelser): chans och styrka.
 const ELITE_CHANCE := 0.05
 const ELITE_PER_DEPTH := 0.01
@@ -194,10 +202,10 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		e.position = ENEMY_SLOTS[i]
 		scale_unit(e, enemy_mult(enc, sim.depth) * float(opts.get("stat_bonus", 1.0)))
 		if party_mult != 1.0:
-			e.max_hp = roundf(e.max_hp * party_mult)
+			e.max_hp = snap_stat(e.max_hp * party_mult)
 			e.hp = e.max_hp
-			e.attack = roundf(e.attack * party_mult)
-			e.intelligence = roundf(e.intelligence * party_mult)
+			e.attack = snap_stat(e.attack * party_mult)
+			e.intelligence = snap_stat(e.intelligence * party_mult)
 			e.base_stats.health = e.max_hp
 			e.base_stats.attack = e.attack
 			e.base_stats.intelligence = e.intelligence
@@ -274,10 +282,10 @@ static func elite_chance(at_depth: int, instability := 0) -> float:
 static func make_elite(e: CombatUnit, def: Dictionary) -> void:
 	e.elite = true
 	e.name = def.get("name", e.name)
-	e.max_hp = roundf(e.max_hp * ELITE_HEALTH)
+	e.max_hp = snap_stat(e.max_hp * ELITE_HEALTH)
 	e.hp = e.max_hp
-	e.attack = roundf(e.attack * ELITE_POWER)
-	e.intelligence = roundf(e.intelligence * ELITE_POWER)
+	e.attack = snap_stat(e.attack * ELITE_POWER)
+	e.intelligence = snap_stat(e.intelligence * ELITE_POWER)
 	e.base_stats.health = e.max_hp
 	e.base_stats.attack = e.attack
 	e.base_stats.intelligence = e.intelligence
@@ -299,11 +307,11 @@ static func enemy_mult(enc: Dictionary, depth: int) -> float:
 static func scale_unit(u: CombatUnit, mult: float) -> void:
 	if is_equal_approx(mult, 1.0):
 		return
-	u.max_hp = roundf(u.max_hp * mult)
+	u.max_hp = snap_stat(u.max_hp * mult)
 	u.hp = u.max_hp
-	u.attack = roundf(u.attack * mult)
-	u.intelligence = roundf(u.intelligence * mult)
-	u.defense = roundf(u.defense * mult)
+	u.attack = snap_stat(u.attack * mult)
+	u.intelligence = snap_stat(u.intelligence * mult)
+	u.defense = snap_stat(u.defense * mult)
 	for stat in SCALED_STATS:
 		u.base_stats[stat] = u.stat(stat) if stat != "health" else u.max_hp
 
@@ -334,7 +342,7 @@ func equip_artifact(hero: CombatUnit, art: Dictionary) -> void:
 		for part in parts:
 			value += float(parts[part].get(stat, 0.0))
 		if stat == "health":
-			hero.max_hp = roundf(value)
+			hero.max_hp = snap_stat(value)
 			hero.hp = hero.max_hp
 		else:
 			hero.set(stat, value)
@@ -630,7 +638,7 @@ func _tick_turn_start(u: CombatUnit) -> void:
 		u.cooldowns[key] = maxf(0.0, u.cooldowns[key] - 1.0)
 	if u.team == 0 and _rule("cursed_ground"):
 		_rule_hit("cursed_ground")
-		_deal_damage(u, u, roundf(u.max_hp * CURSED_GROUND), "shadow", "cursed_ground", false, false, "indirect")
+		_deal_damage(u, u, u.max_hp * CURSED_GROUND, "shadow", "cursed_ground", false, false, "indirect")
 		if not u.alive:
 			return
 	for aura_id in u.auras.keys():
@@ -640,12 +648,12 @@ func _tick_turn_start(u: CombatUnit) -> void:
 		var source := unit(a.source)
 		var d: Dictionary = data.auras.get(aura_id, {})
 		if d.has("hot_max_hp_pct"):
-			var mend := roundf(u.max_hp * float(d.hot_max_hp_pct))
+			var mend := u.max_hp * float(d.hot_max_hp_pct)
 			_heal_ctx = {"base": mend, "hot": true}
 			_heal(source if source else u, u, mend, aura_id)
 		if d.has("bleed_pct"):
 			var pct := float(d.resisted_bleed_pct if u.resistant else d.bleed_pct)
-			_deal_damage(source if source else u, u, roundf(u.hp * pct), "physical", aura_id, false, false, "pure")
+			_deal_damage(source if source else u, u, u.hp * pct, "physical", aura_id, false, false, "pure")
 			if not u.alive:
 				return
 		if a.hot > 0.0:
@@ -1217,7 +1225,9 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		calc.defense_base = tgt.defense
 		calc.defense_parts = defense_parts(tgt)
 		dmg = indirect_damage(dmg, tgt.defense_now())
-	var total := maxf(1.0, roundf(dmg)) + roundf(additional)
+	# 0.26: avrundas en gång, utan golvet på 1 som fanns förut. Med de små talen gjorde golvet svaga träffar (t.ex. 0,4
+	# mot en som försvarar sig) upp till dubbelt så starka, och den första nedstigningen blev 5 procentenheter svårare.
+	var total := roundf(dmg) + roundf(additional)
 	calc.additional = roundf(additional)
 	var absorbed := minf(tgt.barrier, total)
 	if absorbed > 0.0:
@@ -1230,7 +1240,10 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	calc.absorbed = absorbed
 	calc.lost = lost
 	tgt.hp = maxf(0.0, tgt.hp - lost)
-	if direct and lost > 0.0:
+	# 0.26: en träff som Barriären inte tog räknas som en träff även om den avrundas till 0 (förut gav golvet på 1 alltid
+	# minst 1). Då slår Domens kall, Rotskott och andra egenskaper till som förut, utan att den svaga träffen gör mer skada.
+	var landed := lost > 0.0 or (absorbed <= 0.0 and dmg + additional > 0.0)
+	if direct and landed:
 		tgt.times_hit += 1
 	var leech := 0.0
 	var leech_id := ""
@@ -1239,7 +1252,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			leech += float(src.auras[aura_id].leech)
 			leech_id = aura_id
 	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": lost, "absorbed": absorbed,
-			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct, "calc": calc})
+			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct, "calc": calc,
+			"landed": landed})
 	if tgt.hp <= 0.0:
 		_kill(tgt)
 	# Leeching (0.22): en andel av skadan helar anfallaren; helningens uträkning pekar på träffen.
@@ -1248,20 +1262,20 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 				"damage_calc": calc}
 		_heal(src, src, life_lost * leech, leech_id)
 	# Rotskott (0.23, Hulda): en direkt träff från en fiende slår tillbaka genom rötterna.
-	if direct and lost > 0.0 and src.team != tgt.team and src.alive:
+	if direct and landed and src.team != tgt.team and src.alive:
 		for aura_id in tgt.auras.keys():
 			var root := float(data.auras.get(aura_id, {}).get("root_thorns", 0.0))
 			var from := unit(tgt.auras.get(aura_id, {}).get("source", ""))
 			if root > 0.0 and from != null and from.alive:
-				var hit := roundf(from.stat("intelligence") * root * int(tgt.auras[aura_id].get("stacks", 1)))
+				var hit := from.stat("intelligence") * root * int(tgt.auras[aura_id].get("stacks", 1))
 				_deal_damage(from, src, hit, "nature", aura_id, false, false, "indirect")
 	# Sover: vaknar av skada.
-	if lost > 0.0 and tgt.alive and tgt.auras.has("sleeping"):
+	if landed and tgt.alive and tgt.auras.has("sleeping"):
 		_remove_aura(tgt, "sleeping", "woke")
 	# Speglande ben (våningsregel): en del av skadan från hjältarnas direkta träffar studsar tillbaka.
-	if direct and lost > 0.0 and src.team == 0 and tgt.team == 1 and src.alive and _rule("mirror_bones"):
+	if direct and landed and src.team == 0 and tgt.team == 1 and src.alive and _rule("mirror_bones"):
 		_rule_hit("mirror_bones")
-		_deal_damage(tgt, src, roundf(lost * 0.2), school, "mirror_bones", false, false, "indirect")
+		_deal_damage(tgt, src, lost * 0.2, school, "mirror_bones", false, false, "indirect")
 
 
 ## Undvikande: från fartkvoten plus egenskaper med "dodge_add" (t.ex. Gastens Eterisk), högst 75 %.
@@ -1324,7 +1338,7 @@ func _revive(u: CombatUnit, pct: float) -> void:
 	if u.alive:
 		return
 	u.alive = true
-	u.hp = roundf(u.max_hp * pct)
+	u.hp = u.max_hp * pct
 	u.revives += 1
 	u.stacks.clear()
 	if not order.has(u.id) and u != current:
@@ -1341,7 +1355,7 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 	if blight != "":
 		_heal_ctx = {}
 		_emit({"type": "blighted", "unit": tgt.id})
-		_deal_damage(src, tgt, roundf(base * float(data.auras[blight].blight)), "shadow", blight, false, false, "pure")
+		_deal_damage(src, tgt, base * float(data.auras[blight].blight), "shadow", blight, false, false, "pure")
 		return
 	var crit := false
 	var fx: Array = []
@@ -1398,11 +1412,11 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 	# DoT som en andel av källans stat (Siralims Burning: 30 % av Int, Poisoned: 30 % av Attack).
 	var dot := float(d.get("dot", 0.0))
 	if d.has("dot_stat"):
-		dot = roundf(src.stat(d.dot_stat) * float(d.get("dot_pct", 0.3)))
+		dot = src.stat(d.dot_stat) * float(d.get("dot_pct", 0.3))
 	# HoT på samma sätt (0.21: Förnyelse växer med kastarens Intelligence i stället för ett fast belopp).
 	var hot := float(d.get("hot", 0.0))
 	if d.has("hot_stat"):
-		hot = roundf(src.stat(d.hot_stat) * float(d.get("hot_pct", 0.5)))
+		hot = src.stat(d.hot_stat) * float(d.get("hot_pct", 0.5))
 	var a := {"remaining": duration, "duration": duration, "kind": kind, "stacks": stacks,
 			"haste": float(d.get("haste", 0.0)), "leech": float(d.get("leech", 0.0)),
 			"hot": hot * stacks, "dot": dot * stacks,
@@ -1477,7 +1491,7 @@ func _raise_stat(u: CombatUnit, effect: Dictionary) -> void:
 	var cap := float(u.base_stats.get(stat, now)) * 3.0
 	var v := minf(now * (1.0 + float(effect.get("pct", 0.1))), cap)
 	if stat == "health":
-		u.max_hp = roundf(v)
+		u.max_hp = snap_stat(v)
 	else:
 		u.set(stat, v)
 	_emit({"type": "stat_raised", "unit": u.id, "stat": stat, "value": v})
@@ -1628,7 +1642,7 @@ func _emit(e: Dictionary) -> void:
 	_count_stats(e)
 	if _trait_depth >= MAX_TRAIT_CHAIN or outcome != "" or _turn_procs >= TURN_PROC_LIMIT:
 		return
-	if e.type == "damage" and e.amount <= 0.0:
+	if e.type == "damage" and e.amount <= 0.0 and not e.get("landed", false):
 		return  # Siralim: bara skada på livet räknas (inte träffar som Barrier tog)
 	for owner in units:
 		if not owner.alive:

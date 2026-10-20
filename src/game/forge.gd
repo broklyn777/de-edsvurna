@@ -117,7 +117,7 @@ static func stat_parts(data: Dictionary, art: Dictionary, values: Dictionary) ->
 			_add(out.nether, affix.stat, float(values[affix.stat]) * float(affix.pct))
 	for part in out:
 		if out[part].has("health"):
-			out[part].health = roundf(out[part].health)
+			out[part].health = CombatSim.snap_stat(out[part].health)
 	return out
 
 

@@ -98,9 +98,14 @@ static func heal(intel: float, power: float, roll: float, factors: Array) -> flo
 
 # --- §1 Stats -------------------------------------------------------------------
 
+## 0.26: stats avrundas till en decimal (talen delades med 10), Speed till heltal.
+static func stat_round(v: float, stat := "") -> float:
+	return roundf(v) if stat == "speed" else roundf(v * 10.0) / 10.0
+
+
 ## En stat på en nivå: bas × (1 + tillväxt × (nivå − 1)), tillväxt 30 % (personlighet 40/20 %), avrundat.
-static func level_stat(base: float, level: int, growth: float) -> float:
-	return roundf(base * (1.0 + growth * (maxi(level, 1) - 1)))
+static func level_stat(base: float, level: int, growth: float, stat := "") -> float:
+	return stat_round(base * (1.0 + growth * (maxi(level, 1) - 1)), stat)
 
 
 ## Artefaktnivåns styrka: +10 % per nivå över 1 (nivå 1–10).
@@ -175,19 +180,19 @@ static func enemy_stats(base: Dictionary, stat_mult: float, depth: int, party: i
 	var m := stat_mult * depth_mult(depth) * bonus
 	if absf(m - 1.0) > 1e-9:
 		for k in ["health", "attack", "intelligence", "defense"]:
-			s[k] = roundf(s[k] * m)
+			s[k] = stat_round(s[k] * m)
 	var p := party_scale(party)
 	if p != 1.0:
 		for k in ["health", "attack", "intelligence"]:
-			s[k] = roundf(s[k] * p)
+			s[k] = stat_round(s[k] * p)
 	if with_level:
 		var lm := 1.0 + 0.3 * (maxf(level, 1.0) - 1.0)
 		if absf(lm - 1.0) > 1e-9:
 			for k in ["health", "attack", "intelligence", "defense"]:
-				s[k] = roundf(s[k] * lm)
+				s[k] = stat_round(s[k] * lm)
 		s.speed = roundf(s.speed * lm)
 	if elite:
-		s.health = roundf(s.health * 1.25)
-		s.attack = roundf(s.attack * 1.1)
-		s.intelligence = roundf(s.intelligence * 1.1)
+		s.health = stat_round(s.health * 1.25)
+		s.attack = stat_round(s.attack * 1.1)
+		s.intelligence = stat_round(s.intelligence * 1.1)
 	return s

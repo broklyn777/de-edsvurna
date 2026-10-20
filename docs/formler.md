@@ -5,6 +5,13 @@ Där originalet (Siralim Ultimate) har en publicerad formel använder vi den; d�
 Underlaget finns i `docs/research/siralim.md` §12. I striden går det att se uträkningen bakom varje siffra:
 tryck på en skadesiffra, eller öppna **Skadeloggen** och tryck på en rad.
 
+**0.26: talen börjar små, som i Siralim.** Alla grundvärden för Health, Attack, Intelligence och Defense delades med 10
+(Paladinen 90 Health, Brokk 115; kryptans vanliga fiender 40–80 innan djup, våning och sällskapets storlek skalar dem), och sköldens +10 Defense blev +1. Allt annat är procent och
+multiplikatorer och är oförändrat, så striderna är desamma: samma antal träffar för att fälla någon och samma vinstchans
+(mätt med botarna före och efter). Speed är oförändrad (bara kvoten räknas). Stats har en decimal; skada och helning
+räknas med decimaler och avrundas till heltal en gång på slutet. Golvet på minst 1 skada togs bort: med de små talen gjorde det svaga träffar upp till dubbelt så starka (botarna: första nedstigningen 5 procentenheter svårare med golvet, oförändrad utan). En mycket svag träff kan därför göra 0, men den räknas ändå som en träff (om inte Barriären tog den), så att egenskaper som slår till vid en träff, t.ex. Domens kall, gör det som förut (`landed` i händelsen; utan det vann sällskapet bossen i kapellet 86 % i stället för 99 %). Belopp som DoT, HoT, Blöder och
+våningsreglernas skada avrundas inte längre på vägen.
+
 ## 1. De fem statsen
 
 | Stat | Gör |
@@ -23,8 +30,10 @@ Statsen kommer från flera källor, som alla når striden och syns i hjälteblad
 - Bärnsten: +6 % av statsen före artefakten per Stat-plats (en plats tar 5 bärnsten; tvåfärgad 3,6 % på var), gånger
   artefaktnivåns styrka.
 - Nether Stone: sin egen procent av statsen före artefakten (inte gånger artefaktnivån).
-- Health avrundas per källa. De andra statsen behåller decimalerna och striden räknar med dem; de visas med en
-  decimal när de inte är heltal (0.23.3, `HeroStats.shown`), och hjältebladets delar blir alltid den visade summan.
+- Health, Attack, Intelligence och Defense avrundas till en decimal (0.26, `CombatSim.snap_stat`; förut heltal, samma
+  upplösning i förhållande till värdet), Speed till heltal. Material och Nether Stone behåller decimalerna och striden
+  räknar med dem; de visas med en decimal när de inte är heltal (0.23.3, `HeroStats.shown`), och hjältebladets delar
+  blir alltid den visade summan.
 
 **Defense just nu** (`defense_now()`): Defense gånger auror. Försvara ×1,5 (+50 %), Provocera ×0,65 (−35 %),
 Saltad jord ×0,8. Aldrig under 20 % av startvärdet (originalet).
@@ -37,8 +46,8 @@ Först kommer en **variation**: varje träff slår ett tal mellan 0,90 och 1,10 
 
     skada = (max(Attack × variation − Defense, 0) + 1 % av Attack × variation) × förmågans styrka
 
-Exempel: Eira har 198 Attack, variationen blir 1,00, och Botgöraren har 22 Defense och försvarar sig
-(×1,5 = 33): (198 − 33) + 2 = 167, × styrka 1,0 = 167.
+Exempel: Eira har 19,8 Attack, variationen blir 1,00, och Botgöraren har 2,2 Defense och försvarar sig
+(×1,5 = 3,3): (19,8 − 3,3) + 0,2 = 16,7, × styrka 1,0 = 16,7, avrundat 17.
 
 Den sista procenten gör att även en hjälte med lägre Attack än målets Defense alltid gör lite skada.
 
@@ -66,7 +75,7 @@ ett **anfall** om datan inte säger "indirect": det kan undvikas och bli krit, m
 **Tillägg** (originalets "additional damage", t.ex. Bästa försvaret: +30 % av Defense) läggs på sist. Det går förbi
 Defense och alla minskningar (originalet); hos oss går det också förbi ökningarna och kritten (*vårt val*).
 
-**Avrundning** (*vårt val*): skadan avrundas till ett heltal efter modifierarna, kritten och Defense, och blir minst 1.
+**Avrundning** (*vårt val*): skadan avrundas till ett heltal efter modifierarna, kritten och Defense (0.26: inget golv på 1 längre).
 Barriären tar sedan sin del, och resten dras från livet.
 
 ## 3. Modifierarna
@@ -173,7 +182,7 @@ staten).
 
     helning = Intelligence × förmågans styrka × variation × modifierare
 
-Exempel: Helande ljus har styrka 2,3. Med 104 Intelligence och variationen 1,00 blir det 239.
+Exempel: Helande ljus har styrka 2,3. Med 10,4 Intelligence och variationen 1,00 blir det 23,9, avrundat 24.
 
 Helningar blir aldrig krit. Vissnad nåd (våningsregel) ger −40 %.
 
@@ -234,6 +243,8 @@ Testet `tests/test_numbers_audit.gd` kör ett urval (72 strider) varje gång tes
 
 ## 12. Där koden, dokumentet och originalet skiljer sig (granskningen 0.23.3)
 
+Talen i tabellen är från före 0.26 (tio gånger större än nu).
+
 | Vad | Originalet | Koden | Före 0.23.3 i dokumentet | Bedömning |
 |---|---|---|---|---|
 | Resistent och Sårbar | bara Resistant-versionerna | som originalet | §3: "halv effekt, Sårbar +25 %" | fel i dokumentet, rättat |
@@ -248,7 +259,7 @@ Testet `tests/test_numbers_audit.gd` kör ett urval (72 strider) varje gång tes
 | Variation ±10 % | ingen publicerad | ±10 % | ja | vårt val |
 | Krit-chans och undvikande | formeln okänd | fartkvoten | ja | vårt val |
 | Krit och modifierarna | krit-bonusar adderas | krit multiplicerar efter modifierarna | – | vårt val, nu dokumenterat |
-| Minsta skada och avrundning | – | heltal, minst 1 | – | vårt val, nu dokumenterat |
+| Minsta skada och avrundning | – | heltal, minst 1 (0.26: inget golv) | – | vårt val, nu dokumenterat |
 | Barriärens tak | 200 % av högsta stat | max liv | – | vårt val, nu dokumenterat |
 | Blöder hos resistenta | 66 % mindre (≈ 10,2 %) | 10 % | 10 % | vårt val (avrundat) |
 | Blöder och Fördärvad | – | ingen Defense, men källans och målets modifierare | ja | vårt val |

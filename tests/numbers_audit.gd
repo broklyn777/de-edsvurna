@@ -195,7 +195,7 @@ func hero_stats(hero_id: String, level: int, personality: String, art: Dictionar
 		var v := 0.0
 		for k in parts[s]:
 			v += float(parts[s][k])
-		out[s] = roundf(v) if s == "health" else v
+		out[s] = Ref.stat_round(v) if s == "health" else v
 	return out
 
 
@@ -208,8 +208,8 @@ func hero_parts(hero_id: String, level: int, personality: String, art: Dictionar
 	for s in ["health", "attack", "intelligence", "defense", "speed"]:
 		var g := 0.4 if pers.get("up", "") == s else (0.2 if pers.get("down", "") == s else 0.3)
 		var b := float(base[s])
-		var neutral := Ref.level_stat(b, level, 0.3)
-		var with_p := Ref.level_stat(b, level, g)
+		var neutral := Ref.level_stat(b, level, 0.3, s)
+		var with_p := Ref.level_stat(b, level, g, s)
 		out[s] = {"base": b, "levels": neutral - b, "personality": with_p - neutral, "artifact": 0.0, "material": 0.0,
 				"nether": 0.0}
 		before[s] = with_p
@@ -231,7 +231,7 @@ func hero_parts(hero_id: String, level: int, personality: String, art: Dictionar
 		if affix.kind == "stat":
 			out[affix.stat].nether += before[affix.stat] * float(affix.pct)
 	for k in ["artifact", "material", "nether"]:
-		out.health[k] = roundf(out.health[k])
+		out.health[k] = Ref.stat_round(out.health[k])
 	return out
 
 
@@ -513,7 +513,7 @@ func check_damage(sim: CombatSim, r: Dictionary) -> void:
 	var dmg := raw * mods * (1.0 + cb)
 	if kind == "indirect":
 		dmg = Ref.indirect_after(dmg, def)
-	var total := maxf(1.0, roundf(dmg)) + roundf(additional)
+	var total := roundf(dmg) + roundf(additional)  # 0.26: inget golv på 1
 	# Exakt på ,5 kan flyttalen landa på vilken sida som helst (18,4999… eller 18,5): båda räknas som rätt.
 	if absf(dmg - floorf(dmg) - 0.5) < 1e-6 and absf(float(e.amount) + float(e.absorbed) - total + 1.0) < EPS:
 		total -= 1.0
@@ -559,13 +559,13 @@ func _check_fixed(sim: CombatSim, r: Dictionary, label: String) -> void:
 	var want := NAN
 	var aura: Dictionary = data.auras.get(r.ability, {})
 	if aura.has("bleed_pct"):
-		want = roundf(float(tgt.hp) * float(aura.resisted_bleed_pct if tgt.resistant else aura.bleed_pct))
+		want = float(tgt.hp) * float(aura.resisted_bleed_pct if tgt.resistant else aura.bleed_pct)
 	elif aura.has("dot_stat") and tgt.auras.has(r.ability):
 		# Belopp per tur = 30 % av källans stat när statusen lades, gånger staplar.
 		want = float(tgt.auras[r.ability].dot)
 		var by: Dictionary = r.units.get(tgt.auras[r.ability].source, {})
 		if not by.is_empty():
-			var expect := roundf(_stat(by, aura.dot_stat) * float(aura.get("dot_pct", 0.3))) \
+			var expect := _stat(by, aura.dot_stat) * float(aura.get("dot_pct", 0.3)) \
 					* int(tgt.auras[r.ability].get("stacks", 1))
 			if absf(expect - want) > EPS:
 				_fail("dot_amount_" + r.ability, "%s: %s per tur är %s, väntat %s (30 %% av %s %s)" % [label,
@@ -573,20 +573,20 @@ func _check_fixed(sim: CombatSim, r: Dictionary, label: String) -> void:
 	elif aura.has("blight"):
 		var p: Dictionary = r.parent
 		if not p.is_empty() and p.kind == "heal":
-			want = roundf(float(p.base) * float(aura.blight))
+			want = float(p.base) * float(aura.blight)
 	elif aura.has("root_thorns"):
 		# Rotskott: kastarens Int × 15 % × staplar på den som blev träffad (föräldraträffens mål).
 		var p: Dictionary = r.parent
 		if not p.is_empty():
 			var hit: Dictionary = r.units.get(p.target, {}).get("auras", {}).get(r.ability, {})
 			if not hit.is_empty():
-				want = roundf(_stat(src, "intelligence") * float(aura.root_thorns) * int(hit.get("stacks", 1)))
+				want = _stat(src, "intelligence") * float(aura.root_thorns) * int(hit.get("stacks", 1))
 	elif r.ability == "cursed_ground":
-		want = roundf(float(tgt.max_hp) * 0.02)
+		want = float(tgt.max_hp) * 0.02
 	elif r.ability == "mirror_bones":
 		var p: Dictionary = r.parent
 		if not p.is_empty() and not p.event.is_empty() and p.event.type == "damage":
-			want = roundf(float(p.event.amount) * 0.2)
+			want = float(p.event.amount) * 0.2
 	elif sim_traits.has(r.ability):
 		var options := []
 		for eff in sim_traits[r.ability].get("effects", []):
@@ -686,12 +686,12 @@ func check_heal(sim: CombatSim, r: Dictionary) -> void:
 				pct += float(data.auras.get(id, {}).get("leech", 0.0))
 			base = lost * pct
 	elif aura.has("hot_max_hp_pct"):
-		base = roundf(float(tgt.max_hp) * float(aura.hot_max_hp_pct))
+		base = float(tgt.max_hp) * float(aura.hot_max_hp_pct)
 	elif aura.has("hot_stat") and tgt.auras.has(r.ability):
 		base = float(tgt.auras[r.ability].hot)
 		var by: Dictionary = r.units.get(tgt.auras[r.ability].source, {})
 		if not by.is_empty():
-			var expect := roundf(_stat(by, aura.hot_stat) * float(aura.get("hot_pct", 0.5)))
+			var expect := _stat(by, aura.hot_stat) * float(aura.get("hot_pct", 0.5))
 			if absf(expect - base) > EPS:
 				_fail("hot_amount", "%s: %s per tur %s, väntat %s" % [label, aura.name, base, expect])
 	elif ctx.has("roll"):

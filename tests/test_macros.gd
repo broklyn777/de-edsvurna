@@ -29,8 +29,8 @@ func test_first_matching_line_wins_top_to_bottom() -> void:
 
 func test_any_picks_first_match_in_slot_order() -> void:
 	var sim := _sim()
-	sim.unit("alva").hp = 100.0
-	sim.unit("brokk").hp = 100.0
+	sim.unit("alva").hp = 10.0
+	sim.unit("brokk").hp = 10.0
 	var d := MacroRunner.decide(sim, sim.unit("eira"),
 			{"lines": [_line("any_ally", "hp_below", 50, "ability", "hunters_mark")]})
 	assert_true(not d.ok, "Märk byte är en fiendeförmåga – en allierad är inget giltigt mål")
@@ -44,7 +44,7 @@ func test_test_next_line_remembers_the_matched_unit() -> void:
 	var alva := sim.unit("alva")
 	for id in ["paladin", "brokk", "alva"]:
 		sim._add_aura(alva, sim.unit(id), "renew")
-	sim.unit("eira").hp = 300.0  # låg och saknar Förnyelse
+	sim.unit("eira").hp = 30.0  # låg och saknar Förnyelse
 	var macro := {"lines": [
 		_line("any_ally", "lacks_status", "renew", "test_next"),
 		_line("any_ally", "hp_below", 90, "ability", "renew")]}
@@ -92,7 +92,7 @@ func test_no_matching_line_returns_not_ok() -> void:
 
 func test_explanation_names_line_and_condition() -> void:
 	var sim := _sim()
-	sim.unit("brokk").hp = 300.0
+	sim.unit("brokk").hp = 30.0
 	var alva := sim.unit("alva")
 	var d := MacroRunner.decide(sim, alva, {"lines": [
 		_line("self", "hp_below", 10, "defend"),

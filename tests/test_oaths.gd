@@ -103,8 +103,9 @@ func test_vengeance_zeal_hits_harder_for_a_provoking_ally() -> void:
 		sim._add_aura(alva, alva, "provoke")
 		sim.rng.seed = 11
 		sim.drain_events()
-		sim._deal_damage(sim.unit("skeleton_archer_1"), alva, 50.0, "physical", "bone_arrow", false, true)
-		amounts.append(_by(sim.drain_events(), "oath_vengeance")[0].amount)
+		sim._deal_damage(sim.unit("skeleton_archer_1"), alva, 20.0, "physical", "bone_arrow", false, true)
+		# 0.26: talen är små, så jämför före avrundningen (heltalet kan skilja ±1).
+		amounts.append(float(_by(sim.drain_events(), "oath_vengeance")[0].calc.before_defense))
 	assert_near(amounts[1] / amounts[0], 1.5, 0.05, "Iver: +50 %")
 
 
@@ -154,18 +155,18 @@ func test_vengeance_execution_when_ally_dies() -> void:
 func test_dawn_core_turns_healing_into_barrier() -> void:
 	var sim := _sim(["oath_dawn"])
 	var brokk := sim.unit("brokk")
-	brokk.hp = 100.0
-	sim._heal(sim.unit("alva"), brokk, 200.0, "healing_light")
-	assert_eq(brokk.barrier, roundf(200.0 * _data.traits.oath_dawn.effects[0].pct_of_event), "en andel av helningen")
+	brokk.hp = 10.0
+	sim._heal(sim.unit("alva"), brokk, 20.0, "healing_light")
+	assert_eq(brokk.barrier, roundf(20.0 * _data.traits.oath_dawn.effects[0].pct_of_event), "en andel av helningen")
 	assert_true(brokk.auras.has("barrier"))
 
 
 func test_dawn_greater_healing_applies_to_whole_party() -> void:
 	var sim := _sim(["oath_dawn", "dawn_greater_healing"])
 	var brokk := sim.unit("brokk")
-	brokk.hp = 100.0
-	sim._heal(sim.unit("alva"), brokk, 200.0, "healing_light")
-	assert_eq(brokk.hp, 400.0, "Alvas helning +50 % (scope party)")
+	brokk.hp = 10.0
+	sim._heal(sim.unit("alva"), brokk, 20.0, "healing_light")
+	assert_eq(brokk.hp, 40.0, "Alvas helning +50 % (scope party)")
 
 
 func test_dawn_guiding_light_at_battle_start() -> void:
@@ -246,14 +247,14 @@ func test_ward_titanic_rage_and_best_offense() -> void:
 	_no_luck(sim)
 	var brokk := sim.unit("brokk")
 	var warrior := sim.unit("skeleton_archer_1")  # utan Benrustning
-	sim._deal_damage(brokk, warrior, 100.0, "physical", "axe_chop", true, true)
+	sim._deal_damage(brokk, warrior, 10.0, "physical", "axe_chop", true, true)
 	var plain: float = sim.drain_events().filter(func(e: Dictionary) -> bool: return e.type == "damage")[0].amount
-	assert_eq(plain, 100.0 + roundf(brokk.defense * 0.3), "Bästa försvaret: + 30 % av Defense")
+	assert_eq(plain, 10.0 + roundf(brokk.defense * 0.3), "Bästa försvaret: + 30 % av Defense")
 	sim._add_aura(warrior, warrior, "defend")
 	sim.drain_events()
-	sim._deal_damage(brokk, warrior, 100.0, "physical", "axe_chop", true, true)
+	sim._deal_damage(brokk, warrior, 10.0, "physical", "axe_chop", true, true)
 	var raged: float = sim.drain_events().filter(func(e: Dictionary) -> bool: return e.type == "damage")[0].amount
-	assert_eq(raged, roundf(100.0 * 1.5 * 0.65) + roundf(brokk.defense * 0.3), "Titanisk vrede mot en som försvarar sig")
+	assert_eq(raged, roundf(10.0 * 1.5 * 0.65) + roundf(brokk.defense * 0.3), "Titanisk vrede mot en som försvarar sig")
 
 
 # --- Perk-nivåer och lånade perks (0.15) ------------------------------------------
@@ -319,3 +320,28 @@ func test_anointment_unlocks_on_boss_and_borrows_one_perk() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	assert_eq(p.reset_perks(_data, "oath_dawn"), 2)
 	assert_true(not p.anointed.has("oath_dawn"), "återställningen tar också lånet")
+
+
+## 0.26: talen delades med 10. En mycket svag träff kan avrundas till 0, men den räknas ändå som en träff (förut gav
+## golvet på 1 alltid minst 1), så att Domens kall slår tillbaka som förut. En träff som Barriären tog räknas inte.
+func test_a_weak_hit_that_rounds_to_zero_still_counts_as_a_hit() -> void:
+	assert_eq(float(_data.heroes.paladin.stats.health), 90.0, "Paladinen börjar med 90 liv")
+	assert_eq(float(_data.heroes.brokk.stats.health), 115.0)
+	var sim := _sim(["oath_vengeance"])
+	_no_luck(sim)
+	var alva := sim.unit("alva")
+	var archer := sim.unit("skeleton_archer_1")
+	sim.drain_events()
+	sim._deal_damage(archer, alva, 0.3, "physical", "bone_arrow", false, true, "pure")
+	var events := sim.drain_events()
+	var hit: Array = _by(events, "bone_arrow")
+	assert_eq(hit[0].amount, 0.0, "0,3 avrundas till 0")
+	assert_true(hit[0].landed, "men räknas som en träff")
+	assert_eq(_by(events, "oath_vengeance").size(), 1, "Domens kall slår tillbaka")
+	assert_eq(alva.hp, alva.max_hp, "och inget liv försvann")
+	var sim2 := _sim(["oath_vengeance"])
+	_no_luck(sim2)
+	sim2._add_barrier(sim2.unit("alva"), sim2.unit("alva"), 5.0)
+	sim2.drain_events()
+	sim2._deal_damage(sim2.unit("skeleton_archer_1"), sim2.unit("alva"), 3.0, "physical", "bone_arrow", false, true, "pure")
+	assert_eq(_by(sim2.drain_events(), "oath_vengeance").size(), 0, "Barriären tog träffen: ingenting slår till")
