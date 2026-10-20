@@ -1536,6 +1536,71 @@ nästan varje rum har något, och om utgången är dold så att man har ett skä
 Det stärker bedömningen i 19.5: nästan alla typer skickar spelaren till utspridda platser, så de kräver ett nät där man
 kan välja väg och gå tillbaka. "Sök upp personer" ligger nära våra fånge-rum.
 
+## 20. Grottan: underlag för en rutnätsvåning (2026-10-20)
+
+Uppdrag från huvudtråden: VD vill byta stigkartan mot en grotta, ett rutnät på 8×8 där varje tryck flyttar ett steg.
+Bossen syns från start och resten ligger under dimma. Rutorna är tomma, har obevakad eller bevakad skatt, en helgedom,
+fiendegrupper eller en elitgrupp man nätt och jämnt klarar och kan förbereda sig mot. Kanske 1–2 stora våningar per
+körning. VD:s regel: "vi tar det som funkar bäst från Siralim." Inget är beslutat. Detaljerna står i §19 och 19.6.
+**Siralim** = belagt i originalet (med säkerhet). **GISSNING** = vår bedömning eller andra spel.
+
+### 20.1 Vad originalet gör, kort
+
+| Fråga | Svar | Märkning |
+|---|---|---|
+| Storlek och tid | Ingen källa anger storleken. Spelare: ungefär 5 respektive 15 minuter för full utforskning (före 2.0). Ungefär 5–10 strider. | Siralim (troligt) |
+| Hur fiender visas | Synliga grupper som vandrar på kartan; kontakt startar striden. Nemesis-grupper har en varningstext över sig (Hearty, Thorns, Brutal …) som säger vad man ger sig in på. Föremål kan också starta strider (flöjter, mimics, Worm Pits, Hives). Inga stegslumpmöten belagda. | Siralim (troligt för "inga slumpmöten") |
+| Dimma | Ja. Sedan 2.0 är även kartans form dold. Man ser en bit runt sig (synvidd); välsignelser ökar synvidden. | Siralim (säkert) |
+| Vad som är dolt | Utgången (Teleportation Shrine) och gudens altare är dolda tills man hittar dem; välsignelser kan avslöja dem från start. | Siralim (säkert) |
+| Föremål | Kistor (flera sorter), materialkistor, Inscriptions, Emblems, resursnoder, krossbara föremål, ljus (Favor), skattkarta med X, Treasure Golem och Dumpling, mimics, Pandemonium Shrine, Nether-dörrar till små överraskningsrum, Otherworld Portal (Exotic-boss), Nether Boss-portal, mini-boss-rum, Realmens egna föremål (svampar, fällor, NPC:er med önskemål, kombinationer) | Siralim (säkert), se §19.1 |
+| Realm Quest | En per Realm, måste klaras innan utgången fungerar. Typer som kan beläggas: samla föremål, gräv vid X, undersök eller förstör föremål, sök upp personer på kartan, gåtdvärgen, besegra bossen (bossvåningar). Alla utom bossen skickar spelaren runt hela kartan. | Siralim (säkert för typerna, ingen fullständig lista) |
+| Realm Properties | Regler för hela Realmen (synliga och dolda, de dolda avslöjas när de slår till), väljs med instabilitet. Vissa påverkar kartan: "Extra Nemesis Creatures", "Inhabited by X". | Siralim (säkert) |
+| Boss | Vanliga Realms har ingen boss; utgången är målet. Bossar finns på story-djup, Nether Boss-djup, False God-djup och bakom portaler. | Siralim (säkert) |
+| Förbereda sig | Varningstexten på Nemesis-gruppen och Inspect visar vad som väntar. Makron går att ändra i menyn när som helst. Om man kan byta varelser eller traits ute i en Realm är *inte belagt* (troligen bara i slottet). | Siralim (makron troligt; byte okänt) |
+
+### 20.2 Vad spelarna säger om utforskningen (se §8b)
+
+- Kritik: kartorna känns lika, vägen mellan intressanta beslut är lång, målen är svaga. Önskan om en övervärld där man
+  väljer dungeon. (Siralim, säkert)
+- Genomgångens slutsats: två olika behov. **Mindre rutin** (kortare väg mellan beslut) och **mer äventyr** (känsla av plats,
+  upptäckt, riktning). Mer automatisk förflyttning hjälper bara det första. (Siralim, troligt)
+
+### 20.3 Spel som gör "synlig bevakad skatt under dimma" bra (GISSNING, från allmän kännedom)
+
+| Spel | Vad det gör | Lärdom för grottan |
+|---|---|---|
+| **Desktop Dungeons** | Liten karta under dimma. Fiender syns med sin nivå när rutan avslöjas. Att avslöja nya rutor återställer liv och mana, så **utforskningen är en resurs** man hushållar med. Ordningen man tar fienderna i är hela spelet. | Det närmaste VD:s idé. Att gå till en ny ruta bör ge något (t.ex. Charges eller liv), annars blir dimman bara tryckande. |
+| **Pixel Dungeon / Shattered** | Mobilspel, tryck för att gå, dimma, rum och korridorer, kistor och nycklar | Bevisar att tryck-för-att-gå fungerar på telefon. Men det har en automatisk gång till en tryckt ruta, inte ett steg per tryck. |
+| **FTL** | Sektorkarta med dimma; sensorer visar vad som finns i grannoder; fienden jagar bakifrån | Att se grannrutornas *typ* utan detaljer ger planering utan att avslöja allt. |
+| **Darkest Dungeon** | Rum och korridorer; scouting avslöjar rum i förväg; ljuset ger risk mot belöning | Scouting som belöning eller förmåga. |
+| **Into the Breach** | Fienden visar exakt vad den ska göra | Samma princip som våra avsikter och Nemesis-varningen: synlig fara ger beslut, inte överraskning. |
+| **Slay the Spire** (dagens modell) | Hela kartan syns, man väljer väg | Bra planering, ingen upptäckt. Det VD vill bort från. |
+
+### 20.4 Bedömning och frågor (GISSNING, för huvudtråden och VD)
+
+**Stämmer med Siralim:**
+- Dimma, synliga fiendegrupper och en elit med varningstext (Nemesis) som man kan förbereda sig mot. Precis originalets modell.
+- Skatt, helgedom (≈ Pandemonium Shrine eller gudens altare) och tomma rutor.
+- En Realm Quest som kräver att man går runt, och en utgång som först fungerar när questen är klar.
+
+**Avviker från Siralim (skepsis):**
+1. **Bossen synlig från start.** I originalet är *utgången dold* och det är det som driver utforskningen. Med en synlig boss kan
+   spelaren gå raka vägen. *Fråga:* ska bossrutan vara låst tills questen är klar (som Shrinen), så att målet syns men vägen dit
+   kräver utforskning?
+2. **Bara den egna rutan syns.** Originalet har en synvidd runt spelaren. *Förslag:* grannrutorna syns som typ (en symbol: strid,
+   skatt, okänt), inte med innehåll. Då kan man välja väg, som i originalet.
+3. **Ett tryck per ruta.** 8×8 = 64 rutor; med en väg tillbaka blir det många tryck utan innehåll (VD:s egen farhåga i §19.5).
+   *Förslag:* tryck på en redan besökt ruta så går man dit automatiskt (som Pixel Dungeon). Bara nya rutor kostar ett tryck var.
+4. **1–2 stora våningar i stället för 3 små.** Originalets Realm är *en* stor karta med en quest, så det stämmer. Men Charges
+   fylls inte inom en Realm i originalet, och dagens lägereld (+3) är redan en avvikelse (jamforelse.md §8). En stor våning
+   behöver ett beslut om hur Charges räcker.
+5. **Byta troféer inför eliten.** Om originalet tillåter byte av traits ute i Realmen är inte belagt; makron går att ändra. Att
+   tillåta trofébyte i grottan är troligen ett eget val (VAL) men passar ledstjärnan ("vill prova den direkt").
+
+**Det som gör en ruta värd ett tryck** (från §19 och Desktop Dungeons): nästan varje ruta bör ha något. Annars blir 64 rutor
+tomt tryckande. Kandidater ur originalet: kistor, materialkistor, Realmens egna föremål, en skattkarta som pekar ut en ruta,
+en person som questen söker, en Nether-dörr (överraskning).
+
 ---
 
 ## Källor
