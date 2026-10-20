@@ -288,6 +288,39 @@ med virtuell handkontroll och daterat gränssnitt.
 förklaringslogg (mot "varför hände det där?"), och riktig touch (mot mobilkritiken). Grinden (Charges,
 Brimstone, nivåer) är inte det som gör spelet roligt och kan hållas liten.
 
+### 8b. Vad spelarna tycker, andra genomgången (VD:ns källa, 2026-10-20)
+
+Kvalitativ genomgång av Steam, Google Play, App Store, Reddit och utvecklarens enkät (2024, 500+ svar). 93 % positiva
+Steam-recensioner, 4,7 på Google Play. Visar teman, inte andelar. SÄKERT = åsikten finns uttryckligen; TROLIGT = tolkning.
+
+| # | Tema | Säkerhet | Hos oss i dag |
+|---|---|---|---|
+| 1 | **Det bästa: att upptäcka en egen kombination** (en rad i en trait väcker en hel strategi; "som Magic") | Säkert | Ledstjärnan. Inget att ändra. |
+| 2 | Byta lag eller specialization ger en ny upplevelse | Säkert | 3 kall, troféer, Värdshuset |
+| 3 | Bestående progression gör upprepningen värd det, om man vet vad den leder till | Säkert | Nivåer, Smeden, djup, kampanjkartan |
+| 4 | Ett färdigt lag som spelar sig självt är ett kvitto på planeringen | Säkert | Makron och Auto |
+| 5 | Samma sparfil på flera enheter, offline | Säkert | – |
+| 6 | **Sökning och jämförelse** saknas: sök i traits, filtrera, se flera förmågor sida vid sida, hela lagets bygge på ett ställe | Säkert, bland de starkaste | Biblioteket listar troféer, ingen sökning. Behovet växer med samlingen; med få hjältar är det litet ännu. |
+| 7 | **Förstå varför striden gick som den gick** (vem satte igång vad, varifrån immuniteten kom); en lång logg räcker inte | Säkert | Starkt redan: skadeloggen med uträkningar, makrons förklaring, kedjor steg för steg. *Idé (gissning):* en kort sammanfattning efter striden: största skadekällan, egenskapen som avgjorde, fiendens farligaste effekt. Hjältebladet har redan körningens statistik per egenskap. |
+| 8 | **Att pröva ett nytt lag kostar för mycket**, så man återgår till det gamla | Säkert | Övningsgården (valfritt möte, fulla Charges), perks återställs gratis, artefaktens typ byts utan förlust. Material förstörs när de tas ut (originalet). |
+| 9 | Loot: vissa saknar överraskningen sedan 2.0, andra vill kunna köpa precis det de vill ha. Förslag: båda vägarna. Utvecklaren: loot känns tunt, 3.0 ska rätta. | Säkert | Fynd med sällsynta stenar och en egen scen (överraskning); Smeden köper nivåer (kontroll). Båda finns. |
+| 10 | Vissa saknar beslut **under** striden; andra älskar att laget sköter sig | Säkert, delad | Avsikter syns, man kan alltid ta över från Auto. Delad preferens: inget att ändra. |
+| 11 | **Utforskningen blir enformig**, liknande kartor, svaga mål; önskan om en övervärld där man väljer dungeons | Säkert | Kampanjkartan är övervärlden. Rumskartan: se §19 (dold utgång, händelserum, quests som kräver ett nät). |
+| 12 | Introt fungerar ojämnt: menyer, ikoner och makron överväldigar; vill kunna trycka på saker och få dem förklarade | Säkert | Introt med uppdrag och hjälprutor (0.24–0.25). *Idé (gissning):* låt introt bygga en liten fungerande kombination, inte bara visa systemen. |
+| 13 | Friktion: menyer, virtuell styrka, svårt att hitta rätt spell i makroeditorns lista, sparfiler som försvinner | Säkert att det rapporteras | Touch från grunden. **Samma fel hos oss:** Inspect var dolt (VD hittade det inte, 2026-10-20). Tre sparplatser. |
+| 14 | PvP, Siralim 3:s Talismans och Itherian Realms, striktare lag | Säkert men svagt stöd | Inget att göra nu. |
+| 15 | 2.0 gav redan: **Sandbox Mode**, **Menagerie Duels** (strid mot kopior av sparade lag), **Calm Mode** (färre kedjor), Relaxed/Ruthless, slumpinställningar, hoppa över berättelsen | Säkert | Övningsgården motsvarar delvis Menagerie Duels. |
+
+**Genomgångens egen prioritering** (troligt, inte statistik): 1 sökning och lagplanering, 2 begriplig stridsanalys, 3 billigare
+väg från idé till test, 4 loot med både överraskning och riktad väg, 5 menyer och att hitta befintliga hjälpmedel, 6 tydligare
+delmål och omväxlande utforskning.
+
+**För oss:** vi har redan svar på 2, 3 och 4 (förklaringsloggen, Övningsgården, fynd + Smeden). Det som återstår:
+- **Hitta hjälpmedlen** (5): Inspect-fallet visar att vi gör samma misstag som originalet. Allt viktigt behöver synas.
+- **En kort stridssammanfattning** (2): billigt, datan finns redan.
+- **Utforskningen** (6): samma fråga som §19.
+- **Sökning** (1) blir viktig först när samlingen är stor; bra att bygga in när Bestiariet kommer.
+
 ## 9. Macros (makron): nya fynd
 
 Komplement till `docs/ideer/siralim_makron.md`. Fynden kommer från Siralim 3-forum och gäller kanske

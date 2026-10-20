@@ -51,7 +51,7 @@ func _tap(p: Vector2) -> void:
 	for i in profile.party.size():
 		if _hero_rect(i).has_point(p):
 			var hero_id: String = profile.party[i]
-			profile.equip_practice(hero_id, selected)
+			profile.wear(hero_id, selected)
 			selected = ""
 			run.save()
 			return
@@ -122,7 +122,7 @@ func _draw() -> void:
 	for i in profile.party.size():
 		var hero_id: String = profile.party[i]
 		var h: Dictionary = data.heroes[hero_id]
-		var trophy: String = profile.practice_equipped.get(hero_id, "")
+		var trophy: String = profile.worn.get(hero_id, "")
 		var own: String = profile.oath if hero_id == "paladin" else h.traits[0]
 		var art: Dictionary = profile.artifacts.get(hero_id, {})
 		var body := "%s\nTrofé: %s\n%s" % [data.traits[own].name,
@@ -134,8 +134,8 @@ func _draw() -> void:
 	for i in run.collection.size():
 		var t: String = run.collection[i]
 		var who: String = ""
-		for hero_id in profile.practice_equipped:
-			if profile.practice_equipped[hero_id] == t:
+		for hero_id in profile.worn:
+			if profile.worn[hero_id] == t:
 				who = " · " + data.heroes[hero_id].name
 		chip(_chip_rect(i), data.traits[t].name + who, selected == t, 13)
 

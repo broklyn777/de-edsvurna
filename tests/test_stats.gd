@@ -187,3 +187,16 @@ func test_macro_conditions_on_stats() -> void:
 	assert_near(warden.defense_now(), warden.defense * 0.65)
 	assert_eq(MacroRunner.match_line(sim, paladin, line), warden, "Provocera sänker Defense, men väktaren har fortfarande högst")
 	assert_eq(MacroRunner.condition_name(_data, "lowest_defense", 0), "har lägst Defense")
+
+
+func test_follow_up_share_of_a_hit_never_crits_again() -> void:
+	# 0.26.3: Skelettets fingerled gör 40 % av en kritisk träff; följdanfallet blir inte kritiskt en gång till.
+	var sim := _sim()
+	var paladin := sim.unit("paladin")
+	var archer := sim.unit("skeleton_archer_1")
+	paladin.crit_chance = 10.0
+	var effect: Dictionary = _data.traits.bone_finger.effects[0]
+	sim._run_trait_effect(paladin, "bone_finger", effect, archer, {"amount": 50.0})
+	var hit: Dictionary = _hits(sim, "paladin")[0]
+	assert_true(not hit.calc.crit, "ingen ny krit")
+	assert_true(hit.amount <= 25, "högst 40 %% av 50 (%d)" % hit.amount)

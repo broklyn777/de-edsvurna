@@ -1806,6 +1806,7 @@ func _trait_targets(owner: CombatUnit, where: String, e: Dictionary, ability_tar
 
 
 func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, tgt: CombatUnit, e := {}) -> void:
+	# 0.26.3: en andel av en träff (pct_of_event) blir aldrig kritisk igen; träffen den räknas på kan redan ha varit det.
 	var amount := 0.0
 	if effect.has("pct_of_event"):
 		amount = float(e.get(effect.get("event_field", "amount"), 0.0)) * float(effect.pct_of_event)
@@ -1823,7 +1824,7 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			if kind != "indirect" and not _within_limit(owner, kind):
 				return
 			_deal_damage(owner, tgt, amount, effect.get("school", "physical"), trait_id,
-					not effect.get("no_crit", false), false, kind, _scaled(effect))
+					not effect.get("no_crit", false) and not effect.has("pct_of_event"), false, kind, _scaled(effect))
 		"heal":
 			if not _within_limit(tgt, "heal"):
 				return

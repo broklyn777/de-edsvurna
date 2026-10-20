@@ -59,7 +59,7 @@ func test_profile_saves_and_loads() -> void:
 	p.perks = {"oath_ward": ["ward_rest_up"]}
 	p.recruited.assign(["brokk", "alva", "solveig"])
 	p.party.assign(["paladin", "brokk", "alva", "solveig"])
-	p.equip_practice("alva", "bone_rage")
+	p.wear("alva", "bone_rage")
 	assert_eq(p.save(TMP_PROFILE), OK)
 	var q := Profile.load_from(TMP_PROFILE)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TMP_PROFILE))
@@ -69,7 +69,7 @@ func test_profile_saves_and_loads() -> void:
 	assert_eq(q.oath, "oath_ward")
 	assert_eq(q.owned_perks("oath_ward"), ["ward_rest_up"])
 	assert_eq(q.party, p.party)
-	assert_eq(q.practice_equipped, {"alva": "bone_rage"})
+	assert_eq(q.worn, {"alva": "bone_rage"})
 	assert_eq(Profile.load_from("user://finns_inte.cfg").silver, Profile.START_SILVER, "ny profil har startsilver")
 
 
@@ -81,8 +81,8 @@ func test_practice_has_full_charges_trophies_and_artifacts() -> void:
 	p.party.assign(["paladin", "brokk", "alva", "eira"])
 	var trophy: String = _data.enemies.skeleton_warrior.trophy
 	p.add_trophy(trophy)
-	p.equip_practice("brokk", trophy)
-	p.equip_practice("eira", "inte_i_samlingen")
+	p.wear("brokk", trophy)
+	p.wear("eira", "inte_i_samlingen")
 	p.artifacts = {"brokk": {"type": "shield", "ability": "healing_light"}}
 	var s := RunState.new_practice(p, _data, "crypt_3")
 	assert_true(s.practice)
@@ -248,3 +248,22 @@ func test_dead_units_modifiers_stop() -> void:
 	sim._kill(solveig_like)
 	assert_eq(sim._modify(solveig_like, "modify_damage", {}, "damage_mult", 1.0), 1.0,
 			"en död figurs egenskaper ändrar inga siffror (t.ex. brännskada som tickar efter döden)")
+
+
+func test_worn_trophies_follow_into_every_run() -> void:
+	# 0.26.3 (Siralim): troféerna hjältarna bär följer med tills man byter, och byten i lägret varar.
+	var p := Profile.new()
+	p.recruited.assign(["imma"])
+	p.party.assign(["paladin", "imma"])
+	p.add_trophy("bone_finger")
+	p.add_trophy("bone_rage")
+	p.wear("imma", "bone_finger")
+	var s := RunState.new_run(p, _data)
+	assert_eq(s.equipped, {"imma": "bone_finger"})
+	assert_true(s.hero_traits(_data).imma.has("bone_finger"))
+	s.take_trophy("bone_rage")
+	s.equip("paladin", "bone_rage")
+	s.equip("imma", "")
+	p.keep_worn(s.equipped, s.party)
+	assert_eq(p.worn, {"paladin": "bone_rage"})
+	assert_eq(RunState.new_run(p, _data).equipped, {"paladin": "bone_rage"}, "nästa körning")

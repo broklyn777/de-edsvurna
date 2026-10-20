@@ -119,6 +119,12 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.set_realm(data, profile.realm)
 	s.fill_charges(data)
 	s.place_prisoners(data, profile.recruited, int(profile.descents.get(profile.realm, 0)))
+	# 0.26.3 (Siralim): hjältarna bär sina troféer ur samlingen in i varje körning.
+	for hero_id in profile.worn:
+		var trophy_id: String = profile.worn[hero_id]
+		if s.party.has(hero_id) and profile.collection.has(trophy_id):
+			s.take_trophy(trophy_id)
+			s.equip(hero_id, trophy_id)
 	return s
 
 
@@ -138,17 +144,12 @@ func place_prisoners(data: Dictionary, recruited: Array, descents := -1) -> void
 		return
 
 
-## En strid i Övningsgården: samma sällskap, makron och artefakter, troféer ur samlingen och fulla
-## Charges. Inget förloras och inget vinns.
+## En strid i Övningsgården: samma sällskap, makron, artefakter och troféer, och fulla Charges. Inget förloras
+## och inget vinns.
 static func new_practice(profile: Profile, data: Dictionary, encounter_id: String) -> RunState:
 	var s := new_run(profile, data)
 	s.practice = true
 	s.practice_encounter = encounter_id
-	for hero_id in profile.practice_equipped:
-		var trophy_id: String = profile.practice_equipped[hero_id]
-		if s.party.has(hero_id) and profile.collection.has(trophy_id):
-			s.take_trophy(trophy_id)
-			s.equip(hero_id, trophy_id)
 	return s
 
 
