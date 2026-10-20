@@ -30,7 +30,7 @@ func test_the_workers_tell_what_happened_and_gorm_sends_you_alone() -> void:
 
 func test_imma_sneaks_after_and_gorm_greets_you_at_home() -> void:
 	var join: Array = Intro.speech(_data.intro.imma_joins.lines)
-	assert_eq(join[0].text, "Trodde du verkligen att jag skulle sitta och läsa?")
+	assert_eq(join[0].text, "Trodde du verkligen att jag skulle stanna och leta glasögon åt Broder Alrik?")
 	assert_true(join.all(func(l: Dictionary) -> bool: return l.who == "imma"))
 	var home := Intro.lines(_step("crypt"))
 	assert_eq(home[0].who, "gorm")
@@ -142,3 +142,40 @@ func test_imma_joins_on_the_map_not_on_the_victory_screen() -> void:
 	assert_eq(saved.join_waiting(_data, p), "", "bara en gång")
 	RunScript.mark_sneak(_data, p, saved)
 	assert_eq(saved.joins_next, "", "redan med")
+
+
+## 0.26.1 (provspelet): Imma syns och pratar under introdagen, men ansluter inte förrän hon smiter efter i kryptan.
+func test_imma_shows_up_during_the_day_but_does_not_join_early() -> void:
+	var p := Profile.new()
+	var heard := 0
+	while Intro.current(_data, p).get("id", "") not in ["", "descent"]:
+		var step := Intro.current(_data, p)
+		for who in step.get("at", {}):
+			for l in Intro.speech(step.at[who], who):
+				heard += 1 if l.who == "imma" else 0
+				if l.who == "imma":
+					assert_true(l.text.find("följer med") < 0 and l.text.find("ansluter") < 0, l.text)
+		assert_true(not p.recruited.has("imma") and not p.party.has("imma"), "Imma är inte med i steget %s" % step.id)
+		Intro.talked(_data, p)
+		Intro.notify(_data, p, step.get("event", ""), 3)
+	assert_true(heard >= 2, "Imma säger något under dagen före gårdsscenen (%d repliker)" % heard)
+
+
+## 0.26.1: räcker inte silvret till svärdets nästa nivå säger Hedda och uppdraget hur mycket som fattas.
+func test_hedda_says_how_much_silver_is_missing() -> void:
+	var p := Profile.new()
+	while Intro.current(_data, p).get("id", "") not in ["", "crypt"]:
+		Intro.talked(_data, p)
+		Intro.notify(_data, p, Intro.current(_data, p).get("event", ""), 3)
+	p.silver = Profile.FORGE_COST
+	p.forge("paladin", "sword", "")
+	p.intro_talked = true
+	p.silver = Forge.level_cost(1) - 10
+	var short: Array = Intro.at_lines(_data, p, "hedda")
+	var text := " ".join(short.map(func(l: String) -> String: return Dialog.fill_for(l, p)))
+	assert_true(text.find("Det fattas 10") >= 0 and text.find("kryptan igen") >= 0, text)
+	assert_true(Intro.quest_text(_data, p).find("det fattas 10 silver") >= 0, Intro.quest_text(_data, p))
+	p.silver = Forge.level_cost(1)
+	var enough: Array = Intro.at_lines(_data, p, "hedda")
+	assert_true(" ".join(enough).find("fattas") < 0, "räcker silvret säger hon inget om det")
+	assert_true(Intro.quest_text(_data, p).find("fattas") < 0)

@@ -234,6 +234,10 @@ func _dev_args() -> void:
 			state.party.append("alva")
 			state.add_charges_for(data, "alva")
 			last_recruit = "alva"
+			# Som i en ny profil: Alvas startrader utan den rad som förslaget lär ut (sparas inte, dev_profile).
+			var alva_id: String = assignment.get("alva", "alva")
+			if macros.has(alva_id):
+				macros[alva_id].lines = starter_lines(data, "alva", data.macros.get("alva", {}).get("lines", []))
 			pending_rescue = "Syster Alva befrias! Präst, Klok. Följer med direkt (nivå 1)."
 			get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
 		elif arg == "--forge-demo":

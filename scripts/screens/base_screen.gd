@@ -368,7 +368,7 @@ func _arrive(station: String) -> void:
 	var greeting := Dialog.greeting(data, who, turn)
 	# Under introt säger personen sin egen replik för steget (uppdraget står bara överst, aldrig i någons mun);
 	# annars hälsningen och en vardagsreplik (ibland bara hälsningen).
-	var at: Variant = Intro.current(data, run.profile).get("at", {}).get(who, null) if not run.profile.intro_done else null
+	var at: Variant = Intro.at_lines(data, run.profile, who) if not run.profile.intro_done else null
 	if state == "current" and at != null:
 		var lines: Array = (at as Array).duplicate() if at is Array else [String(at)]
 		if turn == 0:
@@ -526,7 +526,7 @@ func _go(station: String) -> void:
 ## 0.25: någon på gården under introts scen säger sin replik för steget (eller en vardagsreplik).
 func _talk_scene(who: String) -> void:
 	_walk_to("yard", _v(keep.scene.people[who]) + Vector2(70, 40))
-	var at: Variant = Intro.current(run.data, run.profile).get("at", {}).get(who, null)
+	var at: Variant = Intro.at_lines(run.data, run.profile, who)
 	if at != null:
 		_talk(who, (at as Array).duplicate() if at is Array else [String(at)], "", false)
 	else:

@@ -34,7 +34,19 @@
 			"quest": "Vinn en övningsstrid hos Stig i övningsgården.",
 			"at": {
 				"stig": [
-					"Gorm skickade dig? Bra. Ta en docka, vilken som helst – de slår inte tillbaka. Nästan inte."
+					"Gorm skickade dig? Bra. Ta en docka, vilken som helst – de slår inte tillbaka. Nästan inte.",
+					[
+						"imma",
+						"{namn}! Om Gorm frågar så har jag läst läxor hela förmiddagen. Jag övade bara lite på dockorna. Med pilar. I huvudet."
+					],
+					[
+						"stig",
+						"Imma. Böckerna. Nu."
+					],
+					[
+						"imma",
+						"Jag går, jag går. Lycka till med dockan – den till vänster fuskar."
+					]
 				]
 			},
 			"where": {
@@ -89,6 +101,14 @@
 			"at": {
 				"alrik": [
 					"Troféer! Äntligen någon som frågar.",
+					[
+						"imma",
+						"Hej, {namn}. Jag läser. Ser du? En bok. …Den handlar om bågskytte, men det är fortfarande en bok."
+					],
+					[
+						"alrik",
+						"Den har varit utlånad i sex år, Imma. Nå. Var var vi?"
+					],
 					"Varje monster du besegrar kan lämna något efter sig – ett ben, en ring, en flisa. Den som bär det får monstrets egenskap.",
 					"Vanliga troféer är pålitliga. Elitfiendernas är sällsynta och märkliga, och bossens trofé ändrar en regel – men tar alltid något tillbaka.",
 					"Jag har skrivit upp vad folk säger om kryptans troféer. Rykten, mest. Läs själv."
@@ -226,6 +246,12 @@
 				]
 			],
 			"quest": "Gör svärdet till nivå 3 hos Hedda.",
+			"at_short": {
+				"hedda": [
+					"Svärdet är på nivå {svärdsnivå} av 3. Nästa nivå kostar {nästa_nivå} silver, och du har {silver}.",
+					"Det fattas {fattas}. Gå ned i kryptan igen – skeletten bär mer silver än man tror. Jag väntar. Jag har städet."
+				]
+			},
 			"at": {
 				"hedda": [
 					"Svärdet är på nivå {svärdsnivå} av 3. Nästa nivå kostar {nästa_nivå} silver – ta med det från kryptan, så ska du få se på annat."
@@ -250,7 +276,7 @@
 		"lines": [
 			[
 				"imma",
-				"Trodde du verkligen att jag skulle sitta och läsa?"
+				"Trodde du verkligen att jag skulle stanna och leta glasögon åt Broder Alrik?"
 			],
 			[
 				"imma",

@@ -79,6 +79,21 @@ static func who_at(data: Dictionary, profile: Profile, station: String) -> Strin
 	return ""
 
 
+## Vad personen vid stationen säger under steget ("at"). I svärdssteget säger "at_short" hur mycket silver som
+## fattas när det inte räcker till nästa nivå (0.26.1). null om personen inte har någon replik för steget.
+static func at_lines(data: Dictionary, profile: Profile, who: String) -> Variant:
+	var step := current(data, profile)
+	if step.get("event", "") == "sword_level" and silver_short(profile) > 0 and step.get("at_short", {}).has(who):
+		return step.at_short[who]
+	return step.get("at", {}).get(who, null)
+
+
+## Hur mycket silver som fattas till svärdets nästa nivå (0 om det räcker).
+static func silver_short(profile: Profile) -> int:
+	var lv := int(profile.artifact("paladin").get("level", 0))
+	return maxi(Forge.level_cost(lv) - profile.silver, 0)
+
+
 ## Personen har pratat klart. Ett samtalssteg ("talked") avslutas av händelsen (Run.intro); annars får man uppdraget.
 static func talked(data: Dictionary, profile: Profile) -> void:
 	var step := current(data, profile)
@@ -98,7 +113,11 @@ static func quest_text(data: Dictionary, profile: Profile) -> String:
 	if step.get("event", "") == "sword_level":
 		# 0.24.3: hur långt svärdet har kommit, och vad nästa nivå kostar.
 		var lv := int(profile.artifact("paladin").get("level", 0))
-		q += " Nu nivå %d av %d – nästa nivå %d silver." % [lv, int(step.get("level", 3)), Forge.level_cost(lv)]
+		# 0.26.1: räcker inte silvret står det hur mycket som fattas (Hedda säger att kryptan har mer), kort nog för 1280.
+		if silver_short(profile) > 0:
+			q += " Nivå %d av %d – det fattas %d silver." % [lv, int(step.get("level", 3)), silver_short(profile)]
+		else:
+			q += " Nu nivå %d av %d – nästa nivå %d silver." % [lv, int(step.get("level", 3)), Forge.level_cost(lv)]
 	return q
 
 
