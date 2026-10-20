@@ -1282,7 +1282,7 @@ uppgiften om fynd i Realms gäller äldre versioner (se 18.8). Alla egenskaper p
 | Generous | övriga i laget får en ethereal kopia med 1 Charge | Jade |
 | Healing Increased | mer helning | Obsidian |
 | Magnetic | +15 % per likadan gem i laget | Beryl |
-| Singular | +30 % (wiki.gg) eller +50 % (andra källor) per tom gem-plats hos varelsen | Aventurine |
+| Singular | +50 % per tom gem-plats hos varelsen (2.0; förut 30 %, som wiki.gg fortfarande anger) | Aventurine |
 | Stat +/- Increased | starkare stat-ändringar | Malachite |
 | Chance to Attack | chans att anfalla en slumpad fiende efter casten | Bloodstone |
 | Chance to Cast After (handling) | chans att kasta efter Anfall, Försvara, Helning av annan eller Provocera | Citrine |
@@ -1354,6 +1354,27 @@ VD tog fram en andra genomgång (Ultimate 2.0.x, med SÄKERT/TROLIGT). Det som �
 **Avvikelse att känna till:** vårt makrosystem har villkoret `has_charges` ("har Charges kvar på …",
 `src/combat/macro_runner.gd`). Om originalet saknar det är det vårt eget val. I originalet hoppar en rad vars spell inte
 går att kasta troligen över till nästa rad, vilket ger nästan samma resultat; exakt hur är inte belagt.
+
+### 18.9 Rhea i 2.0: komplettering (VD:ns källa, 2026-10-20)
+
+| Punkt | Uppgift | Säkerhet |
+|---|---|---|
+| Tjänster | Craft, Upgrade, Enchant, Disenchant. Craft, Upgrade och Enchant kostar Crystal. | Säkert |
+| I introt | Rhea finns från början; introt skickar dig till henne **efter Sabon**, och där tillverkar och utrustar man sin första gem | Säkert |
+| Första receptet | Varje Specialization börjar med ett eget spellrecept, så det finns något att tillverka direkt | Säkert (2.0) |
+| Verkstadens ranker | **3 ranker**, taket för gemmens tier 5 / 10 / 15 (1 / 2 / 3 egenskapsplatser). Byggs som Projects hos Everett: rank 2 = 3 000 Granite, 10 Blood Candle, 1 Exquisite Crystal Ball, 1 500 Creature Parts, 300 Arcane Dust; rank 3 = 5 000 Granite, 25 Blood Candle, Spell Book, Soul Mirror, 2 500 Creature Parts, 500 Arcane Dust. | Ranker säkert; antal troligt |
+| Enchant | Materialet avgör egenskapen (inget slumpmoment). Samma egenskap kan inte staplas på en gem; olika "Cast After"-utlösare kan kombineras, två Class Swap inte. | Säkert |
+| Material | Gudarnas butiker, troligen från **Favor 4** (t.ex. Jade hos Azural), och Experiment-uppdrag | Säkert / troligt (Favor 4) |
+| 2.0-värden | Cascading +5 % (förut 3 %), Singular +50 % (förut 30 %). Skada, helning och stat-egenskaperna stärktes också. | Säkert (patchnoterna) |
+| Disenchant | Tar bort en egenskap; materialet och tidigare betald Crystal går förlorade; gem och tier finns kvar. Troligen gratis. | Säkert / troligt (avgift) |
+| Tier och styrka | Wikins mekaniksida: tier ger bara platser. Spelets tutorialtext säger att tier ökar styrkan. **Motstridigt**; 3.0 annonserar ökad styrka och Charges per tier. | Troligt: bara platser |
+| Undantag | *Sacrifice to the Light* kan inte tillverkas i 2.0, bara hittas | Säkert |
+| I artefaktens spell-plats | Gemmens tier och egenskaper ignoreras (se 15.7) | Säkert |
+| Mala ned gems | Hos Refinery, inte Rhea | Säkert |
+| Totalpris (troligt) | Tier 1→15 = 16 000 Crystal; med tillverkning och tre egenskaper 21 000 plus material. Guiden själv anger 22 000, vilket inte går ihop. | Troligt |
+
+**Mönstret hos både Sabon och Rhea:** tjänsten finns från introt, men taket (artefaktnivå, gemmens tier) höjs genom
+Projects med föremål från utforskningen. Det är originalets koppling mellan Realm-innehållet (§19) och byggdelarna.
 
 ## 19. Vad man hittar i en Realm (underlag, 2026-10-20)
 
