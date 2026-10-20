@@ -291,6 +291,8 @@ func _dev_args() -> void:
 			get_tree().change_scene_to_file.call_deferred(HERO_SCENE)
 		elif arg.begins_with("--name="):
 			profile.set_hero_name(arg.get_slice("=", 1))  # paladinens namn (0.24.2), sparas inte av sig självt
+		elif arg.begins_with("--silver="):
+			profile.silver = int(arg.get_slice("=", 1))  # för skärmdumpar (sparas inte om profilen är påhittad)
 		elif arg == "--keep":
 			get_tree().change_scene_to_file.call_deferred(BASE_SCENE)  # borgen direkt (0.24)
 		elif arg.begins_with("--intro-step="):

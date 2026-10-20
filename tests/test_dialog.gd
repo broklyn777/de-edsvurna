@@ -11,15 +11,20 @@ func test_every_station_has_a_person_and_a_conversation() -> void:
 		var st := Dialog.station(_data, id)
 		assert_true(not st.is_empty(), "%s har ett samtal" % id)
 		var who := Dialog.station_person(_data, id)
-		var p := Dialog.person(_data, who)
-		assert_true(p.get("name", "") != "", "%s: %s har ett namn" % [id, who])
-		assert_true(p.get("greet", []).size() >= 1 and p.get("idle", []).size() >= 3, "%s hälsar och har vardagsrepliker" % who)
+		if who == "":
+			assert_eq(id, "altar", "bara altaret står utan person (0.24.3)")
+			assert_true(not _data.keep.rooms[id].has("person"), "ingen står vid altaret på kartan")
+		else:
+			var p := Dialog.person(_data, who)
+			assert_true(p.get("name", "") != "", "%s: %s har ett namn" % [id, who])
+			assert_true(p.get("greet", []).size() >= 1 and p.get("idle", []).size() >= 3, "%s hälsar och har vardagsrepliker" % who)
+			assert_true(_data.keep.rooms[id].has("person"), "%s står på kartan" % who)
 		var opts := Dialog.options(_data, id)
 		assert_true(opts.size() >= 2, id)
 		assert_eq(opts.back().label, "Ingenting just nu", "sist kommer Ingenting just nu")
 		assert_eq(opts.back().open, "")
 		for o in opts.slice(0, opts.size() - 1):
-			assert_true(_data.keep.rooms.has(o.open) or o.open == "rename", "%s öppnar en station som finns" % o.label)
+			assert_true(_data.keep.rooms.has(o.open) or o.open in ["rename", "talk_trophies"], "%s öppnar något som finns" % o.label)
 		assert_true(Dialog.reply(_data, id) != "", "%s har ett svar när den är stängd" % id)
 
 
@@ -138,3 +143,59 @@ func test_the_name_token_fills_the_lines_now_and_then() -> void:
 	assert_true(not Dialog.fill(Dialog.greeting(_data, "gorm", 0), p.hero_name).contains("{namn}"))
 	assert_true(Dialog.options(_data, "library").any(func(o: Dictionary) -> bool: return o.open == "rename"),
 			"Broder Alrik kan skriva om namnet")
+
+
+## Allt som någon säger: [talare, text] (hälsningar, vardagsrepliker, introts samtal och repliker, svar, trofésamtal).
+func _spoken() -> Array:
+	var out := []
+	for who in _data.dialog.people:
+		var p := Dialog.person(_data, who)
+		for g in p.get("greet", []):
+			out.append([who, g])
+		for l in p.get("idle", []):
+			out.append([who, l.text])
+		for l in p.get("trophies", []):
+			out.append([who, l])
+	for step in Intro.steps(_data):
+		for l in step.get("talk", []):
+			out.append([step.giver, l])
+		for who in step.get("at", {}):
+			var at: Variant = step.at[who]
+			for l in (at if at is Array else [at]):
+				out.append([who, l])
+	for st in _data.intro.replies:
+		var who := Dialog.station_person(_data, st)
+		if who != "":
+			out.append([who, _data.intro.replies[st]])
+	for who in _data.dialog.barks:
+		for kind in _data.dialog.barks[who]:
+			for l in _data.dialog.barks[who][kind]:
+				out.append([who, l])
+	return out
+
+
+## 0.24.3: uppdraget står bara överst, aldrig i någons mun, och ingen talar om sig själv i tredje person.
+func test_no_one_reads_the_quest_or_names_themselves() -> void:
+	var quests := Intro.steps(_data).map(func(s: Dictionary) -> String: return s.quest)
+	var own := {"gorm": "Gorm", "hedda": "Hedda", "alrik": "Alrik", "stig": "Stig", "elin": "Elin", "sven": "Sven",
+			"imma": "Imma", "alva": "Alva", "brokk": "Brokk", "eira": "Eira", "solveig": "Solveig"}
+	var lines := _spoken()
+	assert_true(lines.size() > 60, "alla repliker granskas (%d)" % lines.size())
+	for pair in lines:
+		var text: String = pair[1]
+		for q in quests:
+			assert_true(not text.contains(q), "%s läser upp uppdraget: %s" % [pair[0], text])
+		if own.has(pair[0]):
+			assert_true(not text.contains(own[pair[0]]), "%s nämner sig själv: %s" % [pair[0], text])
+		assert_true(not text.begins_with("{namn}.") and not text.contains(". {namn}."), "namnet som en egen mening: " + text)
+
+
+func test_every_intro_step_has_a_line_from_the_person_there() -> void:
+	for step in Intro.steps(_data):
+		if step.event == "talked":
+			continue
+		var who := Dialog.station_person(_data, step.station)
+		if who != "":
+			assert_true(step.get("at", {}).has(who), "%s säger något egen vid %s" % [who, step.id])
+	assert_eq(Dialog.person(_data, "gorm").station, "macros", "Gorm bor i sin kammare")
+	assert_true(Dialog.person(_data, "alrik").get("trophies", []).size() >= 3, "Alrik förklarar troféerna")

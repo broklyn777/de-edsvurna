@@ -160,8 +160,12 @@ func _tap_artifact(p: Vector2, art: Dictionary) -> void:
 					run.ui_tap()
 				return
 	if _button_rect().has_point(p):
+		var cost: int = run.profile.artifact_level_cost(hero)
 		var opened: Variant = run.profile.level_artifact(hero)
 		if opened == null:
+			if cost > 0:
+				# 0.24.3: säg tydligt vad som fattas.
+				_say("Nivå %d kostar %d silver – du har %d." % [int(art.level) + 1, cost, run.profile.silver])
 			run.ui("ui_error", -10.0)
 			return
 		_flash = 1.0
@@ -434,7 +438,7 @@ func _draw_artifact(data: Dictionary, profile: Profile, art: Dictionary) -> void
 	if cost > 0:
 		var opens := Forge.unlock_text(level + 1)
 		var sub := ("Öppnar %s" % opens) if opens != "" else "Stärker allt med 10 %"
-		UiStyle.text(self, _button_rect().position + Vector2(0, -10), sub + ("" if profile.silver >= cost else " · för lite silver"),
+		UiStyle.text(self, _button_rect().position + Vector2(0, -10), sub + ("" if profile.silver >= cost else " · du har %d silver" % profile.silver),
 				17, Color(UiStyle.GOLD) if opens != "" else Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER,
 				_button_rect().size.x, 3)
 

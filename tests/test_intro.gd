@@ -11,8 +11,9 @@ func test_a_new_profile_starts_alone_with_gorm() -> void:
 	assert_true(p.recruited.is_empty())
 	assert_eq(Intro.current(_data, p).id, "oath")
 	assert_true(Intro.needs_talk(_data, p))
-	assert_eq(Intro.station_state(_data, p, "altar"), "current", "Gorm står vid altaret")
-	assert_eq(Intro.quest_text(_data, p), "Prata med Mäster Gorm i kapellet.")
+	assert_eq(Intro.station_state(_data, p, "macros"), "current", "Gorm sitter i sin kammare")
+	assert_eq(Intro.station_state(_data, p, "altar"), "locked", "altaret väntar på Gorms ord")
+	assert_eq(Intro.quest_text(_data, p), "Prata med Mäster Gorm i sin kammare.")
 	assert_eq(Intro.station_state(_data, p, "gate"), "locked", "porten är stängd")
 	assert_true(Dialog.reply(_data, "smith") != "")
 
