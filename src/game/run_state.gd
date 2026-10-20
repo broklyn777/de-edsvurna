@@ -234,7 +234,8 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = 
 		if t != "" and not sure.has(t) and not trophies.has(t):
 			sure.append(t)
 	var offer: Array[String] = []
-	for kind in data.encounters[encounter()].enemies:
+	# 0.23.3: bara de fiender som faktiskt mötte sällskapet (ett litet sällskap möter färre).
+	for kind in CombatSim.enemy_lineup(data, data.encounters[encounter()].enemies, party.size()):
 		if data.enemies[kind].get("boss", false) and not unlocked_bosses.has(kind):
 			continue
 		var t: String = data.enemies[kind].get("trophy", "")
