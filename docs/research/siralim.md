@@ -1578,6 +1578,34 @@ nästan varje rum har något, och om utgången är dold så att man har ett skä
 Det stärker bedömningen i 19.5: nästan alla typer skickar spelaren till utspridda platser, så de kräver ett nät där man
 kan välja väg och gå tillbaka. "Sök upp personer" ligger nära våra fånge-rum.
 
+### 19.7 Komplettering enligt ChatGPT, ej kontrollerat (2026-10-21)
+
+VD:s fråga till ChatGPT med källor. Det som redan står i 19.6 upprepas inte. Inget här är kontrollerat av oss; ChatGPT:s egen
+märkning (säkert/troligt) står inom parentes.
+
+| Punkt | Uppgift |
+|---|---|
+| Fiendräknaren | Räknar återstående vanliga kartfiender. Räknar inte golems, dumplings, dolda mimics, möten från föremål, portalbossar eller quest-NPC:er som startar strider (troligt, japanska wikin). |
+| Favor som ger fler saker | Rank 11 +1 Emblem, 13 +1 kista, 14 +1 resursnod, 17 +1 krossbart, 33 +1 Nemesis, 42 +100 % chans till Pandemonium Shrine; Zonte rank 60: teleskop avslöjar mer (troligt). |
+| False God (2.0) | Portalen öppnas när alla 5 runor är hittade, inte när alla fiender är besegrade (säkert). Rättar texten i 19.2. |
+| Övrigt i 2.0 | Snabbare generering, en sällsynt bugg med för små Realms rättad; Otherworld Portal dubbelt så vanlig och inte längre bara på högsta djupet; tydligare meddelande när Project-föremål hittas (säkert). Inga kartmått i patchnoterna. |
+| Realm Properties som rör kartan | Extra Nemesis Creatures, Inhabited by X Race, Enemies Belong To Same Race (säkert, Codex 2.0.37). Inga belagda properties för kartstorlek, synvidd eller fällor. Creature Randomizer är ett spelval, inte en property. |
+| Byta saker inne i en Realm | Makro och grundstrategi: ja (troligt). Artefakter, Spell Gems, traits och varelser: bara i slottet (troligt, japanska menyn). Stöder att trofébyte i grottan vore vårt val (§20.4 punkt 5). |
+| Realmens egna föremål (exempel) | Frostbite Caverns: lägereldar, gravar, diamanter, iglos, Mummy Graves och Frozen Yetis (startar strider). Arachnid Nest: ägg, offer, Ichor, spindelhelgedomar. Refuge of the Magi: kemibord, drycker, teleskop, fasportaler, bokhyllor. Forbidden Depths: musikkristaller, magnetstenar, Worm Pits, Hives. **Temple of Lies: låsta stora kistor och nycklar.** Kingdom of Heretics: blodfläckar, bokhyllor, vapensköldar, gömmor, riddare. Astral Gallery: en pensel som flyttar sig och skapar fler fiender (troligt). |
+
+**Nycklar finns alltså i originalet, men i en enda Realm.** Vårt beslut att stryka låsta dörrar och nycklar står kvar.
+
+**Vad spelarna säger** (enligt ChatGPT, källorna inte öppnade av oss):
+- Steam 2025–: striderna och lagbygget får beröm, kartdelen kallas utfyllnad; önskan om auto-explore; en spelare slutade på grund av all förflyttning.
+- Steam 2026: kritik mot hur 2.0-dimman ser ut och hur lätt den är att läsa; önskan om den gamla.
+- Reddit 2026: kistorna blev tråkigare när kostymer och möbler flyttade till butiken.
+- Google Play 2026: djupet i bygget får beröm; våningarna känns lika, grind, man skyndar genom striderna.
+- Slutsats (ChatGPT): skiljelinjen går mellan belönande samlande och förflyttning utan nya beslut, inte mot kartor eller dimma i sig.
+
+**Mobilspel med dimma** (ChatGPT:s analys): Desktop Dungeons skiljer på att välja och att utföra, så att granska aldrig startar
+en strid; Dungelot har avslöjade fiender som spärrar rutorna intill (välj att slåss eller leta runt); Shattered Pixel Dungeon
+går automatiskt genom känt område och stannar när en ny fiende syns.
+
 ## 20. Grottan: underlag för en rutnätsvåning (2026-10-20)
 
 Uppdrag från huvudtråden: VD vill byta stigkartan mot en grotta, ett rutnät på 8×8 där varje tryck flyttar ett steg.
