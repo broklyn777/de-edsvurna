@@ -508,7 +508,7 @@ func _trophy_line(u: CombatUnit) -> String:
 func _show_inspect(unit_id: String) -> void:
 	var u := sim.unit(unit_id)
 	var lines: Array[String] = ["Liv %d/%d · Attack %s · Intelligence %s · Defense %s · Speed %s" % [
-			u.hp, u.max_hp, HeroStats.shown(u.attack), HeroStats.shown(u.intelligence), HeroStats.shown(u.defense_now()),
+			maxi(roundi(u.hp), 1 if u.alive else 0), roundi(u.max_hp), HeroStats.shown(u.attack), HeroStats.shown(u.intelligence), HeroStats.shown(u.defense_now()),
 			HeroStats.shown(u.speed)]]
 	if u.team == 0 and u.personality != "":
 		var p: Dictionary = data.personalities[u.personality]

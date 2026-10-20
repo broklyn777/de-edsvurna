@@ -256,29 +256,29 @@ func test_status_leeching_counts_only_life_lost() -> void:
 	var p := sim.unit("paladin")
 	var e := sim.enemies[0]
 	p.speed = e.speed
-	p.hp = 100.0
+	p.hp = 10.0
 	sim._add_aura(p, p, "leeching")
-	e.hp = 30.0  # överskott räknas inte (vårt val)
+	e.hp = 3.0  # överskott räknas inte (vårt val)
 	sim.drain_events()
 	sim._deal_damage(p, e, 1.0, "physical", "attack", false, true, "attack", true)
 	var heal := sim.drain_events().filter(func(x: Dictionary) -> bool: return x.type == "heal")
-	assert_eq(heal[0].amount, roundf(30.0 * 0.25))
+	assert_eq(heal[0].amount, roundf(3.0 * 0.25))
 
 
 func test_status_mending_and_bleeding_at_turn_start() -> void:
 	var sim := _fresh()
 	var b := sim.unit("brokk")
-	b.hp = 100.0
+	b.hp = 10.0
 	sim._add_aura(b, b, "mending")
 	sim._tick_turn_start(b)
-	assert_eq(b.hp, 100.0 + roundf(b.max_hp * 0.25), "Läkning: 25 % av livet")
+	assert_eq(b.hp, 10.0 + roundf(b.max_hp * 0.25), "Läkning: 25 % av livet")
 	var e := sim.enemies[0]
-	e.hp = 500.0
+	e.hp = 50.0
 	sim._add_aura(b, e, "bleeding")
 	sim.drain_events()
 	sim._tick_turn_start(e)
 	var dmg := sim.drain_events().filter(func(x: Dictionary) -> bool: return x.type == "damage")
-	assert_eq(dmg[0].amount, roundf(500.0 * 0.3) * dmg[0].calc.mod_total if dmg[0].calc.mod_total != 1.0 else 150.0)
+	assert_eq(dmg[0].amount, roundf(50.0 * 0.3 * dmg[0].calc.mod_total))
 
 
 func test_status_poisoned_and_burning_use_the_source_stats() -> void:
@@ -287,8 +287,8 @@ func test_status_poisoned_and_burning_use_the_source_stats() -> void:
 	var e := sim.enemies[0]
 	sim._add_aura(p, e, "poisoned")
 	sim._add_aura(p, e, "burning")
-	assert_eq(e.auras.poisoned.dot, roundf(p.attack * 0.3))
-	assert_eq(e.auras.burning.dot, roundf(p.intelligence * 0.3))
+	assert_near(e.auras.poisoned.dot, p.attack * 0.3, 1e-9)
+	assert_near(e.auras.burning.dot, p.intelligence * 0.3, 1e-9)
 	assert_eq(e.auras.poisoned.remaining, 3.0)
 
 

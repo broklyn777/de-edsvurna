@@ -6,10 +6,10 @@
 		"role": "leader",
 		"color": "#f2c85b",
 		"stats": {
-			"health": 900,
-			"attack": 95,
-			"intelligence": 95,
-			"defense": 50,
+			"health": 90,
+			"attack": 9.5,
+			"intelligence": 9.5,
+			"defense": 5,
 			"speed": 10
 		},
 		"personality": "trofast",
@@ -77,10 +77,10 @@
 		"role": "dps",
 		"color": "#ff9a4a",
 		"stats": {
-			"health": 620,
-			"attack": 106,
-			"intelligence": 80,
-			"defense": 18,
+			"health": 62,
+			"attack": 10.6,
+			"intelligence": 8,
+			"defense": 1.8,
 			"speed": 18
 		},
 		"personality": "rastlos",
@@ -119,10 +119,10 @@
 		"role": "tank",
 		"color": "#c69b6d",
 		"stats": {
-			"health": 1150,
-			"attack": 78,
-			"intelligence": 77,
-			"defense": 60,
+			"health": 115,
+			"attack": 7.8,
+			"intelligence": 7.7,
+			"defense": 6,
 			"speed": 7
 		},
 		"personality": "envis",
@@ -193,10 +193,10 @@
 		"role": "healer",
 		"color": "#f4f4f4",
 		"stats": {
-			"health": 700,
-			"attack": 65,
-			"intelligence": 65,
-			"defense": 25,
+			"health": 70,
+			"attack": 6.5,
+			"intelligence": 6.5,
+			"defense": 2.5,
 			"speed": 11
 		},
 		"personality": "klok",
@@ -260,10 +260,10 @@
 		"role": "dps",
 		"color": "#7fe05a",
 		"stats": {
-			"health": 650,
-			"attack": 90,
-			"intelligence": 90,
-			"defense": 20,
+			"health": 65,
+			"attack": 9,
+			"intelligence": 9,
+			"defense": 2,
 			"speed": 14
 		},
 		"personality": "rastlos",
@@ -315,10 +315,10 @@
 		"role": "dps",
 		"color": "#ff8a2a",
 		"stats": {
-			"health": 600,
-			"attack": 83,
-			"intelligence": 83,
-			"defense": 15,
+			"health": 60,
+			"attack": 8.3,
+			"intelligence": 8.3,
+			"defense": 1.5,
 			"speed": 12
 		},
 		"personality": "drommande",
@@ -376,10 +376,10 @@
 		"role": "control",
 		"color": "#c9a46a",
 		"stats": {
-			"health": 650,
-			"attack": 92,
-			"intelligence": 69,
-			"defense": 25,
+			"health": 65,
+			"attack": 9.2,
+			"intelligence": 6.9,
+			"defense": 2.5,
 			"speed": 15
 		},
 		"personality": "snabbfotad",
@@ -419,10 +419,10 @@
 		"role": "support",
 		"color": "#9fd3ff",
 		"stats": {
-			"health": 620,
-			"attack": 69,
-			"intelligence": 98,
-			"defense": 20,
+			"health": 62,
+			"attack": 6.9,
+			"intelligence": 9.8,
+			"defense": 2,
 			"speed": 13
 		},
 		"personality": "drommande",
@@ -470,10 +470,10 @@
 		"role": "tank",
 		"color": "#e2b36b",
 		"stats": {
-			"health": 750,
-			"attack": 98,
-			"intelligence": 46,
-			"defense": 25,
+			"health": 75,
+			"attack": 9.8,
+			"intelligence": 4.6,
+			"defense": 2.5,
 			"speed": 16
 		},
 		"personality": "lattfotad",
@@ -511,10 +511,10 @@
 		"role": "support",
 		"color": "#6fbf73",
 		"stats": {
-			"health": 700,
-			"attack": 57,
-			"intelligence": 103,
-			"defense": 30,
+			"health": 70,
+			"attack": 5.7,
+			"intelligence": 10.3,
+			"defense": 3,
 			"speed": 8
 		},
 		"personality": "klok",
@@ -565,10 +565,10 @@
 		"role": "dps",
 		"color": "#ffd27a",
 		"stats": {
-			"health": 800,
-			"attack": 86,
-			"intelligence": 92,
-			"defense": 45,
+			"health": 80,
+			"attack": 8.6,
+			"intelligence": 9.2,
+			"defense": 4.5,
 			"speed": 9
 		},
 		"personality": "stadig",
@@ -608,10 +608,10 @@
 		"role": "dps",
 		"color": "#ff6f61",
 		"stats": {
-			"health": 600,
-			"attack": 95,
-			"intelligence": 40,
-			"defense": 15,
+			"health": 60,
+			"attack": 9.5,
+			"intelligence": 4,
+			"defense": 1.5,
 			"speed": 17
 		},
 		"personality": "impulsiv",

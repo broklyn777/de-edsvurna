@@ -72,6 +72,13 @@ static func lines(data: Dictionary, e: Dictionary) -> Array[String]:
 	if kind == "indirect":
 		out.append("%s − 20 %% av Defense %s (%s) = %s" % [num(c.before_defense), num(c.defense), num(c.indirect_defense),
 				num(maxf(float(c.before_defense) - float(c.indirect_defense), 0.0))])
+	# 0.26: skadan räknas med decimaler och avrundas en gång. Visa avrundningen så att stegen går ihop.
+	var exact := float(c.get("before_defense", c.get("raw", 0.0)))
+	if kind == "indirect":
+		exact = maxf(exact - float(c.get("indirect_defense", 0.0)), 0.0)
+	var whole := roundf(exact)
+	if absf(exact - whole) > 0.001:
+		out.append("%s avrundas till %s" % [num(exact), num(whole)])
 	if float(c.get("additional", 0.0)) > 0.0:
 		out.append("+ %s extra (%s)" % [num(c.additional), c.get("additional_name", "egenskap")])
 	if float(c.get("absorbed", 0.0)) > 0.0:
@@ -99,6 +106,9 @@ static func _heal_lines(data: Dictionary, c: Dictionary) -> Array[String]:
 		for m in mods:
 			parts.append("%s %s" % [m.name, signed_pct(float(m.f))])
 		out.append("Modifierare: %s → ×%s" % [", ".join(parts), dec(c.mod_total)])
+	var exact := float(c.get("base", 0.0)) * float(c.get("mod_total", 1.0))
+	if absf(exact - float(c.amount)) > 0.001:
+		out.append("%s avrundas till %s" % [num(exact), num(c.amount)])
 	var over := float(c.amount) - float(c.effective)
 	out.append("= %s helat%s" % [num(c.effective), "" if over < 1.0 else " (%s över fullt liv)" % num(over)])
 	return out
@@ -145,8 +155,9 @@ static func _source_name(data: Dictionary, id: String) -> String:
 	return id
 
 
+## 0.26: talen är små, så mellanleden visas med en decimal ("9,8"); skadan och helningen är heltal och visas utan.
 static func num(v: Variant) -> String:
-	return "%d" % roundi(float(v))
+	return HeroStats.shown(float(v))
 
 
 static func dec(v: Variant) -> String:

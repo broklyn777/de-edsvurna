@@ -123,11 +123,11 @@ func test_shield_heals_when_defending() -> void:
 	var sim := _sim({"brokk": {"type": "shield", "ability": "healing_light"}})
 	_always(sim, "brokk")
 	var alva := sim.unit("alva")
-	alva.hp = 100.0
+	alva.hp = 10.0
 	sim._perform(sim.unit("brokk"), "defend", "defend", "")
 	var events := sim.drain_events()
 	assert_eq(_artifact_casts(events, "brokk").size(), 1, "skölden slår till vid Försvara")
-	assert_true(alva.hp > 100.0, "Helande ljus når den svagaste")
+	assert_true(alva.hp > 10.0, "Helande ljus når den svagaste")
 
 
 func test_helm_on_provoke_staff_on_ability() -> void:
@@ -158,7 +158,7 @@ func test_artifact_stats() -> void:
 			"alva": {"type": "shield", "ability": ""}, "eira": {"type": "boots", "ability": ""}})
 	var a: Dictionary = _data.artifacts
 	assert_near(sim.unit("paladin").attack, plain.unit("paladin").attack * a.sword.stat_mult, 0.01, "svärd: Attack")
-	assert_eq(sim.unit("brokk").max_hp, roundf(plain.unit("brokk").max_hp * a.helm.stat_mult), "hjälm: liv")
+	assert_eq(sim.unit("brokk").max_hp, CombatSim.snap_stat(plain.unit("brokk").max_hp * a.helm.stat_mult), "hjälm: liv")
 	assert_eq(sim.unit("brokk").hp, sim.unit("brokk").max_hp)
 	assert_near(sim.unit("alva").defense, plain.unit("alva").defense + a.shield.stat_add, 0.001, "sköld: Defense")
 	assert_eq(sim.unit("eira").speed, plain.unit("eira").speed + a.boots.stat_add, "stövlar: snabbhet")

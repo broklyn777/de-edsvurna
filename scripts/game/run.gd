@@ -332,7 +332,7 @@ func _dev_args() -> void:
 			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)
-			last_receipt = ["Domens kall (Paladinen): slog till 7 gånger – 312 skada"]
+			last_receipt = ["Domens kall (Paladinen): slog till 7 gånger – 31 skada"]
 			get_tree().change_scene_to_file.call_deferred(CAMP_SCENE)
 
 

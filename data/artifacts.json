@@ -22,12 +22,12 @@
 	"shield": {
 		"name": "Sköld",
 		"stat": "defense",
-		"stat_text": "+10 Defense",
+		"stat_text": "+1 Defense",
 		"trigger": "defend",
 		"chance": 0.5,
 		"trigger_text": "50 % chans vid Försvara",
 		"icon": "shield",
-		"stat_add": 10
+		"stat_add": 1
 	},
 	"helm": {
 		"name": "Hjälm",

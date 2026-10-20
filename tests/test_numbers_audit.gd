@@ -13,7 +13,7 @@ var _data := GameData.load_all()
 
 func test_reference_gives_the_examples_in_the_docs() -> void:
 	# formler.md §2: Eira 198 Attack mot Botgörarens 22 Defense som försvarar sig (×1,5 = 33) → 167.
-	assert_eq(roundf(Ref.attack(198, 1.0, Ref.defense_now(22, 22, [1.5]), 1.0)), 167.0, "Eiras exempel")
+	assert_eq(roundf(Ref.attack(19.8, 1.0, Ref.defense_now(2.2, 2.2, [1.5]), 1.0)), 17.0, "Eiras exempel (0.26: ÷10)")
 	# §7: Helande ljus, styrka 2,3, 104 Intelligence → 239.
 	assert_eq(Ref.heal(104, 2.3, 1.0, []), 239.0, "Helande ljus")
 	# Siralim: +75 % och +75 % = +150 %; −60 % och −50 % = −80 %; en minskning stannar vid −80 %.

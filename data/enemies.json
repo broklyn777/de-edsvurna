@@ -3,10 +3,10 @@
 		"name": "Skelettkrigare",
 		"color": "#e8e0d0",
 		"stats": {
-			"health": 576,
-			"attack": 174,
-			"intelligence": 174,
-			"defense": 20,
+			"health": 57.6,
+			"attack": 17.4,
+			"intelligence": 17.4,
+			"defense": 2,
 			"speed": 9
 		},
 		"crit_chance": 0.05,
@@ -40,10 +40,10 @@
 		"name": "Skelettbågskytt",
 		"color": "#d8cfb4",
 		"stats": {
-			"health": 396,
-			"attack": 148,
-			"intelligence": 148,
-			"defense": 10,
+			"health": 39.6,
+			"attack": 14.8,
+			"intelligence": 14.8,
+			"defense": 1,
 			"speed": 13
 		},
 		"crit_chance": 0.08,
@@ -106,10 +106,10 @@
 		"name": "Gravpräst",
 		"color": "#b8a6e0",
 		"stats": {
-			"health": 414,
-			"attack": 102,
-			"intelligence": 102,
-			"defense": 10,
+			"health": 41.4,
+			"attack": 10.2,
+			"intelligence": 10.2,
+			"defense": 1,
 			"speed": 8
 		},
 		"crit_chance": 0.05,
@@ -179,10 +179,10 @@
 		"name": "Gravväktare",
 		"color": "#9fb4d8",
 		"stats": {
-			"health": 810,
-			"attack": 137,
-			"intelligence": 137,
-			"defense": 45,
+			"health": 81,
+			"attack": 13.7,
+			"intelligence": 13.7,
+			"defense": 4.5,
 			"speed": 6
 		},
 		"crit_chance": 0.05,
@@ -260,10 +260,10 @@
 		"name": "Glödskelett",
 		"color": "#ff8a2a",
 		"stats": {
-			"health": 432,
-			"attack": 124,
-			"intelligence": 124,
-			"defense": 15,
+			"health": 43.2,
+			"attack": 12.4,
+			"intelligence": 12.4,
+			"defense": 1.5,
 			"speed": 11
 		},
 		"crit_chance": 0.08,
@@ -328,10 +328,10 @@
 		"boss": true,
 		"color": "#cbbfe6",
 		"stats": {
-			"health": 1800,
-			"attack": 118,
-			"intelligence": 118,
-			"defense": 20,
+			"health": 180,
+			"attack": 11.8,
+			"intelligence": 11.8,
+			"defense": 2,
 			"speed": 9
 		},
 		"crit_chance": 0.05,
@@ -414,10 +414,10 @@
 		"name": "Kultist",
 		"color": "#e07a6a",
 		"stats": {
-			"health": 420,
-			"attack": 110,
-			"intelligence": 120,
-			"defense": 10,
+			"health": 42,
+			"attack": 11,
+			"intelligence": 12,
+			"defense": 1,
 			"speed": 10
 		},
 		"crit_chance": 0.05,
@@ -453,10 +453,10 @@
 		"name": "Gast",
 		"color": "#9fd8ff",
 		"stats": {
-			"health": 380,
-			"attack": 150,
-			"intelligence": 100,
-			"defense": 10,
+			"health": 38,
+			"attack": 15,
+			"intelligence": 10,
+			"defense": 1,
 			"speed": 16
 		},
 		"crit_chance": 0.1,
@@ -492,10 +492,10 @@
 		"name": "Fallen riddare",
 		"color": "#b06a7a",
 		"stats": {
-			"health": 820,
-			"attack": 160,
-			"intelligence": 100,
-			"defense": 40,
+			"health": 82,
+			"attack": 16,
+			"intelligence": 10,
+			"defense": 4,
 			"speed": 7
 		},
 		"crit_chance": 0.05,
@@ -540,10 +540,10 @@
 		"name": "Häxa",
 		"color": "#9adf7a",
 		"stats": {
-			"health": 420,
-			"attack": 120,
-			"intelligence": 130,
-			"defense": 10,
+			"health": 42,
+			"attack": 12,
+			"intelligence": 13,
+			"defense": 1,
 			"speed": 12
 		},
 		"crit_chance": 0.05,
@@ -584,10 +584,10 @@
 		"name": "Botgörare",
 		"color": "#c89a6a",
 		"stats": {
-			"health": 560,
-			"attack": 165,
-			"intelligence": 80,
-			"defense": 15,
+			"health": 56,
+			"attack": 16.5,
+			"intelligence": 8,
+			"defense": 1.5,
 			"speed": 9
 		},
 		"crit_chance": 0.08,
@@ -644,10 +644,10 @@
 		"name": "Den fallne biskopen",
 		"color": "#f0e0b0",
 		"stats": {
-			"health": 1700,
-			"attack": 120,
-			"intelligence": 130,
-			"defense": 20,
+			"health": 170,
+			"attack": 12,
+			"intelligence": 13,
+			"defense": 2,
 			"speed": 9
 		},
 		"crit_chance": 0.05,

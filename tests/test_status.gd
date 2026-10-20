@@ -53,7 +53,7 @@ func test_stacking_multiplies_the_effect_up_to_the_cap() -> void:
 	assert_near(e.auras.t_stack.damage_taken_mult, 1.3, 1e-9, "tre staplar à +10 %")
 	for i in 2:
 		sim._add_aura(p, e, "t_dot")
-	assert_eq(e.auras.t_dot.dot, roundf(p.attack * 0.1) * 2, "DoT gånger staplarna")
+	assert_near(e.auras.t_dot.dot, p.attack * 0.1 * 2, 1e-9, "DoT gånger staplarna")
 	sim._add_aura(p, p, "inspired")
 	sim._add_aura(p, p, "inspired")
 	assert_eq(p.auras.inspired.stacks, 1, "standard: varaktigheten fylls på, ingen stapel")

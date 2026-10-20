@@ -69,7 +69,7 @@ func test_risen_dead_revives_each_enemy_once() -> void:
 	var w := sim.unit("skeleton_warrior_1")
 	sim._kill(w)
 	assert_true(w.alive, "vaknar")
-	assert_eq(w.hp, roundf(w.max_hp * CombatSim.RISEN_DEAD_HP))
+	assert_near(w.hp, w.max_hp * CombatSim.RISEN_DEAD_HP, 1e-9)
 	sim._kill(w)
 	assert_true(not w.alive, "bara en gång")
 	sim._kill(sim.unit("paladin"))
@@ -89,9 +89,9 @@ func test_heavy_air_and_withered_grace() -> void:
 	var wraith_like := sim.unit("skeleton_archer_1")
 	assert_eq(sim._dodge_for(sim.unit("brokk"), wraith_like, 0.1, {"kind": "attack"}), 0.0, "ingen undviker")
 	var brokk := sim.unit("brokk")
-	brokk.hp = 100.0
-	sim._heal(sim.unit("alva"), brokk, 100.0, "healing_light")
-	assert_eq(brokk.hp, 160.0, "helning −40 %")
+	brokk.hp = 10.0
+	sim._heal(sim.unit("alva"), brokk, 10.0, "healing_light")
+	assert_eq(brokk.hp, 16.0, "helning −40 %")
 
 
 func test_vigilant_guards_defend_after_their_turn() -> void:
@@ -113,6 +113,8 @@ func test_cursed_ground_and_fog_of_weakness() -> void:
 		assert_true(h.auras.has("weak"), "%s börjar Försvagad" % h.name)
 	var brokk := sim.unit("brokk")
 	var hp := brokk.hp
+	brokk.defense = 0.0  # 0.26: 2 % av livet är litet, så Defense och Försvagad tar annars allt (inget golv på 1)
+	sim._remove_aura(brokk, "weak", "test")
 	sim._tick_turn_start(brokk)
 	assert_true(brokk.hp < hp, "förbannad mark")
 
@@ -171,7 +173,7 @@ func test_elites_are_stronger_and_carry_their_trait() -> void:
 	var w := sim.unit("skeleton_warrior_1")
 	assert_true(w.elite)
 	assert_eq(w.name, _data.enemies.skeleton_warrior.elite.name)
-	assert_eq(w.max_hp, roundf(roundf(_data.enemies.skeleton_warrior.stats.health * float(_data.encounters.crypt_3.stat_mult))
+	assert_eq(w.max_hp, CombatSim.snap_stat(CombatSim.snap_stat(_data.enemies.skeleton_warrior.stats.health * float(_data.encounters.crypt_3.stat_mult))
 			* CombatSim.ELITE_HEALTH))
 	assert_true(w.traits.has("first_strike"))
 	assert_true(not sim.unit("bone_lich_1").elite, "bossar blir aldrig elit")

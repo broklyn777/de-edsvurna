@@ -35,8 +35,10 @@ static func growth(data: Dictionary, personality: String, stat: String) -> float
 	return GROWTH
 
 
-static func stat_at(base: float, level: int, g: float) -> float:
-	return roundf(base * (1.0 + g * (maxi(level, 1) - 1)))
+## 0.26: Health, Attack, Intelligence och Defense med en decimal (CombatSim.STAT_STEP), Speed i heltal.
+static func stat_at(base: float, level: int, g: float, stat := "") -> float:
+	var v := base * (1.0 + g * (maxi(level, 1) - 1))
+	return roundf(v) if stat == "speed" else CombatSim.snap_stat(v)
 
 
 ## Hjältens fem stats på nivån med personligheten (utan artefakt).
@@ -44,7 +46,7 @@ static func level_stats(data: Dictionary, hero_id: String, level: int, personali
 	var base: Dictionary = data.heroes[hero_id].stats
 	var out := {}
 	for stat in STATS:
-		out[stat] = stat_at(float(base[stat]), level, growth(data, personality, stat))
+		out[stat] = stat_at(float(base[stat]), level, growth(data, personality, stat), stat)
 	return out
 
 
@@ -64,8 +66,8 @@ static func breakdown(data: Dictionary, hero_id: String, level: int, personality
 	var out := {}
 	for stat in STATS:
 		var b := float(base[stat])
-		var neutral := stat_at(b, level, GROWTH)
-		var with_p := stat_at(b, level, growth(data, personality, stat))
+		var neutral := stat_at(b, level, GROWTH, stat)
+		var with_p := stat_at(b, level, growth(data, personality, stat), stat)
 		out[stat] = {"base": b, "levels": neutral - b, "personality": with_p - neutral, "artifact": 0.0}
 	var values := {}
 	for stat in STATS:
