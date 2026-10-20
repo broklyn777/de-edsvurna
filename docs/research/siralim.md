@@ -1036,6 +1036,35 @@ bara +2 %.
    Trick-plats". *Litet eget tillägg:* artefakten syns i 3D på hjälten och får en glöd per öppnad plats,
    bara utseende.
 
+### 15.7 Smeden Sabon i 2.0: komplettering och jämförelse med vår Smed (VD:ns källa, 2026-10-20)
+
+VD:ns andra genomgång (Ultimate 2.0.x, SÄKERT/TROLIGT, inte prövat i spelet). Det nya och det som skiljer mot oss:
+
+| Punkt | Originalet (2.0) | Säkerhet | Hos oss (0.20) |
+|---|---|---|---|
+| Tjänster | Smida, uppgradera, sätta in, ta ut, namnge artefakt (Brand) och Nether Stone (Etch). Namnen påverkar inte styrkan. | Säkert | Smida, nivå, sätta in, ta ut. Ingen namngivning. |
+| Från start | Sabon finns från introt | Säkert | Samma (Hedda i borgen) |
+| Smida | 1 000 Brimstone (japanska wikin: 500) | Troligt | Silver |
+| Nivåpris | 250 per steg (1→10), 500, 750, 1 000, sedan 5 000 (40→50); sista steget till Nether 25 000. Totalt 1→50: 74 750. | Troligt | 10 nivåer för silver (anpassning) |
+| Platserna | Stat 3, Trick 5, Stat 10, Trait 15, Trick 25, Stat 35, Spell 50, Nether efter 50 | Säkert | Stat 2, Trick 3, Stat 5, Trick 7, Stat 9, Nether 10. Ingen Trait-plats (trofén), ingen Spell-plats (se nedan). |
+| Insättning kostar | Två betalningar: nivån öppnar platsen, insättningen kostar Brimstone. Första stat-platsen 100; övriga stat 2 500; trick 2 500–5 000; trait ~10 000; spell 25 000; Nether efter stenens sällsynthet | Första: säkert; övriga: troligt | **Gratis**: bara materialet förbrukas |
+| Material per plats | Amber 5, **trick 3**, trait 1, spell 1 gem, Nether 1 sten | Säkert | Amber 5, **trick 1** |
+| Samma trick två gånger | **Förbjudet** (sedan före 1.0). Samma stat i flera stat-platser är tillåtet. | Säkert | **Tillåtet**: `Profile.socket()` kontrollerar inte den andra trick-platsen |
+| Trick-sorter | Whetstone (attackskada), Arcane Sigil (spell potency), Jagged Rock (krit), Armor Scrap (mindre skada), Slippery Stone (undvikande), **Pump Drill (fler gem-platser)**, Slate of … (buff vid skada), Curio of … (debuff vid skada), **… Crippler (styrka mot en klass, tak 80 %)** | Säkert | Brynsten, Taggsten, Rustningsskrot, Hal sten, Arkant sigill, Styrkans skiffer, Sårbarhetens kuriosa. Pump Drill och Crippler saknas (vi har inga gems eller klasser än). |
+| Spell-platsen | Nivå 50. En Spell Gem sätts in; tier och egenskaper ignoreras; klassen behöver inte stämma; kastas automatiskt av typens handling utan Charges; räknas som automatisk cast | Säkert | Artefakten har en förmåga från start (vårt val), också utan Charges och klassfri |
+| Ta ut | Amber, trick, trait och spell gem förstörs; Nether Stone går tillbaka (sedan 1.0.3). Platsen och nivån finns kvar. Avgift ~1 000. | Säkert; avgift troligt | Samma, utan avgift |
+| Nether Stones | En plats per artefakt; slumpade bonusar (stats, trick, traits, spells); sällsynthetstal. Ingen omslumpning eller sammanslagning hos Sabon (Nether Workshop är 3.0). | Säkert / troligt | Samma (1–4 egenskaper efter sällsynthet) |
+| Smedjans ranker | 5 ranker, var och en höjer taket med 10 nivåer. Uppgraderas som **Projects** hos Everett: Granite, göt (koppar, järn, förtrollat kol från krossbara föremål), hammare som hittas på marken, Creature Parts (strider), Arcane Dust (Realm Quests). Första projektet efter djup 6. | Säkert; antal troligt | Saknas: alla 10 nivåer går att köpa direkt |
+| Trait-material | Ger exakt den egenskapen. Även via Assassination-uppdrag när varelsens Knowledge nått S (~40 000 Granite). Alla traits finns inte som material. | Säkert / troligt | Troféerna (ersätter fusion och trait-material) |
+| Återvinna artefakter | Hos Refinery, inte Sabon | Säkert | Saknas |
+
+**Avvikelser att ta ställning till** (inget beslutat):
+1. **Samma trick två gånger** är tillåtet hos oss men förbjudet i originalet. Det är den enda rena regelskillnaden och lätt att rätta.
+2. **Trick kostar 1 hos oss, 3 i originalet.** Med våra fyndtakter kan 1 vara medvetet; i så fall bör det märkas som vårt val.
+3. **Insättning utan avgift.** Originalet tar betalt för varje insättning, vilket gör silvret till ett beslut. Kan vara en anpassning.
+4. **Smedjans ranker via Projects** saknas. Det är originalets sätt att låta utforskningen (krossbara föremål, hammare på marken, Realm Quests) styra hur långt artefakterna kan växa. Kopplar till §19.
+5. Brand/Etch (namngivning) är billigt och personligt, men påverkar inte spelet.
+
 ## 16. Att ge upp, fly och gå hem (2026-10-19)
 
 VD:ns fråga (bara diskussion): borde det finnas en "ge upp"-knapp för att gå hem och reparera?
