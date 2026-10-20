@@ -76,4 +76,4 @@ static func summary(slot: int, data: Dictionary, root := "user://") -> Dictionar
 	var saved := RunState.load_from(run_path(slot, root))
 	return {"empty": false, "oath": data.traits.get(p.oath, {}).get("name", p.oath), "level": level, "silver": p.silver,
 			"depth": p.best_depth, "run": saved != null and saved.map != null and not saved.finished,
-			"intro": not p.intro_done, "heroes": p.recruited.size() + 1}
+			"intro": not p.intro_done, "heroes": p.recruited.size() + 1, "name": p.hero_name}

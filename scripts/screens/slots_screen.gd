@@ -18,6 +18,8 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--confirm-delete="):
 			confirm_delete = int(a.get_slice("=", 1))
+		elif a.begins_with("--ask-name="):
+			_ask_name(int(a.get_slice("=", 1)))  # utvecklarflagga för skärmdumpar
 
 
 func _refresh() -> void:
@@ -43,6 +45,13 @@ func _no_rect() -> Rect2:
 	return Rect2(size.x / 2 - 260, size.y / 2 + 50, 240, 60)
 
 
+func _ask_name(i: int) -> void:
+	var entry := NameEntry.new()
+	entry.chosen.connect(func(n: String) -> void: run.choose_slot(i, n))
+	add_child(entry)
+	run.ui("ui_page", -10.0)
+
+
 func _tap(p: Vector2) -> void:
 	if confirm_delete > 0:
 		if _yes_rect().has_point(p):
@@ -59,7 +68,10 @@ func _tap(p: Vector2) -> void:
 			run.ui("ui_error", -10.0)
 			return
 		if _card_rect(i).has_point(p):
-			run.choose_slot(i)
+			if _summaries[i].empty:
+				_ask_name(i)  # 0.24.2: en ny profil börjar med paladinens namn
+			else:
+				run.choose_slot(i)
 			return
 
 
@@ -82,6 +94,7 @@ func _draw() -> void:
 					Color(1, 1, 1, 0.7), r.size.x - 56, 3)
 			continue
 		var rows := [
+			["Namn", String(s.name)],
 			["Kall", String(s.oath)],
 			["Högsta hjältenivå", str(s.level)],
 			["Hjältar", str(s.heroes)],
@@ -89,7 +102,7 @@ func _draw() -> void:
 			["Djupaste djup", "inget än" if int(s.depth) == 0 else str(s.depth)],
 		]
 		for j in rows.size():
-			var y := r.position.y + 130 + j * 40
+			var y := r.position.y + 126 + j * 36
 			UiStyle.text(self, Vector2(r.position.x + 28, y), rows[j][0], 18, Color(1, 1, 1, 0.65))
 			UiStyle.text(self, Vector2(r.position.x, y), rows[j][1], 20, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 28, 3)
 		var status := "Introduktionen pågår" if s.intro else ("Körning pågår" if s.run else "I borgen")

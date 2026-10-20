@@ -71,6 +71,7 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Fånge-rum | prisoner | – (vårt tema för rekrytering) | Rum på rumskartan med en lärjunge; den första är tidig. |
 | Värdshuset | inn (`inn_screen`) | Menagerie | Där följeslagarna bor; välj sällskap, de som stannar behåller nivån. |
 | Borgen | keep (`base_screen`, `KeepArt`, `data/keep.json`) | Castle | Basen som en planritning i tusch att gå runt i (0.24; 3D-gård i 0.23). |
+| Paladinens namn | `Profile.hero_name`, `{namn}` (`Dialog.fill`), `NameEntry` | player name | Väljs när en ny profil börjar, skrivs om hos Broder Alrik; "Paladinen" om det lämnas tomt (0.24.2). |
 | Samtal, dialogruta | `Dialog`, `DialogBox`, `data/dialog.json` | dialogue box | Personen hälsar och erbjuder tjänsterna som val; sist "Ingenting just nu". |
 | Vardagsreplik | idle (`Dialog.idle_line`) | – | Det personen säger när inget uppdrag gäller; nyheter (ny lärjunge, besegrad boss) först. |
 | Replik under nedstigningen | bark (`Dialog.bark`, `Run.pending_bark`) | – | En rad från sällskapet efter en svår strid, vid lägerelden m.m.; vårt Baldur's Gate-drag. |

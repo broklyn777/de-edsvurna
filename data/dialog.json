@@ -3,7 +3,7 @@
 		"gorm": {
 			"name": "Mäster Gorm", "title": "Paladinernas mästare", "station": "altar", "where": "i kapellet",
 			"color": "#8a7a5a",
-			"greet": ["Väl mött, paladin.", "Där är du. Bra.", "Paladin. Sätt dig inte, vi har saker att göra."],
+			"greet": ["Väl mött, {namn}.", "Där är du. Bra.", "{namn}. Sätt dig inte, vi har saker att göra."],
 			"idle": [
 				{"text": "Det går ett rykte om en helare som sitter fången i kryptan. Syster Alva. Hon lappade ihop halva byn en gång – nu är det vår tur.", "when": {"min_descents": 1, "not_recruited": "alva"}},
 				{"text": "Syster Alva har redan bytt förband på mig två gånger. Jag hade inget sår.", "when": {"recruited": "alva"}},
@@ -17,7 +17,7 @@
 		},
 		"hedda": {
 			"name": "Hedda", "title": "Smeden", "station": "smith", "where": "i smedjan", "color": "#9a4a2a",
-			"greet": ["Jaså. Du igen.", "Rör inte städet.", "Hm. Kom in, men stå inte i ljuset."],
+			"greet": ["Jaså. {namn}. Du igen.", "Rör inte städet.", "Hm. Kom in, men stå inte i ljuset."],
 			"idle": [
 				{"text": "Brokk vill att jag gör honom en större yxa. Jag sa att han får växa i den han har.", "when": {"recruited": "brokk"}},
 				{"text": "Bärnsten från kryptan? Lägg den här. Nej, inte där. Här.", "when": {"min_descents": 1}},
@@ -29,7 +29,7 @@
 		},
 		"alrik": {
 			"name": "Broder Alrik", "title": "Bibliotekarien", "station": "library", "where": "i biblioteket", "color": "#5a6a8a",
-			"greet": ["Ah, besök! Vänta, jag ska bara … nej, det var inget.", "Välkommen, välkommen. Tyst på hyllorna, de sover."],
+			"greet": ["Ah, besök! Vänta, jag ska bara … nej, det var inget.", "Välkommen, {namn}, välkommen. Tyst på hyllorna, de sover."],
 			"idle": [
 				{"text": "Jag har skrivit en hel sida om Benfursten. Två ord är felstavade, men ändå.", "when": {"boss": "bone_lich"}},
 				{"text": "Var lade jag nu … ah, glasögonen. På näsan. Naturligtvis."},
@@ -40,7 +40,7 @@
 		},
 		"stig": {
 			"name": "Stig", "title": "Vapenmästaren", "station": "practice", "where": "i övningsgården", "color": "#6a7a4a",
-			"greet": ["Paladin.", "Svärdet i handen, inte i munnen. Vad vill du?"],
+			"greet": ["{namn}.", "Svärdet i handen, inte i munnen. Vad vill du?"],
 			"idle": [
 				{"text": "Halmdockorna klagar aldrig. Det är därför jag gillar dem."},
 				{"text": "Försvara dig när det blir hett. Eller var snabbare. Helst båda."},
@@ -50,7 +50,7 @@
 		},
 		"elin": {
 			"name": "Mor Elin", "title": "Värdshusvärden", "station": "inn", "where": "i värdshuset", "color": "#a8743a",
-			"greet": ["Sätt dig, sätt dig!", "Där är du ju! Har du ätit?"],
+			"greet": ["Sätt dig, sätt dig!", "Där är du ju, {namn}! Har du ätit?"],
 			"idle": [
 				{"text": "Syster Alva hjälper mig i köket. Allt smakar lite salvia nu.", "when": {"recruited": "alva"}},
 				{"text": "Vem är den nya? Äter hon gröt? Alla äter gröt hos mig.", "when": {"min_recruited": 3}},
@@ -61,7 +61,7 @@
 		},
 		"sven": {
 			"name": "Sven", "title": "Portvakten", "station": "gate", "where": "vid porten", "color": "#6a6a6a",
-			"greet": ["Hm? Nej, jag sov inte.", "Porten, ja. Den är kvar."],
+			"greet": ["Hm? Nej, jag sov inte.", "Porten, ja. Den är kvar, {namn}."],
 			"idle": [
 				{"text": "Jag vilade ögonen. Mot porten. Det är en sorts vakt."},
 				{"text": "Porten knarrar. Den har gjort det i fyrtio år. Den är som jag."},
@@ -82,7 +82,7 @@
 			"options": [{"label": "Smid", "open": "smith"}, {"label": "Uppgradera", "open": "smith"},
 				{"label": "Sätt in", "open": "smith"}, {"label": "Ta ut", "open": "smith"}]},
 		"library": {"person": "alrik", "name": "Biblioteket", "tag": "Troféer",
-			"options": [{"label": "Läs om troféerna", "open": "library"}]},
+			"options": [{"label": "Läs om troféerna", "open": "library"}, {"label": "Skriv om mitt namn i krönikan", "open": "rename"}]},
 		"practice": {"person": "stig", "name": "Övningsgården", "tag": "Arena",
 			"options": [{"label": "Öva en strid", "open": "practice"}]},
 		"inn": {"person": "elin", "name": "Värdshuset", "tag": "Följeslagarna",
@@ -95,13 +95,13 @@
 		"imma": {
 			"hard_fight": [
 				"Puh. Det där var nära. Jag andades inte på hela striden.",
-				"Säg att vi inte ska göra så där igen. Ljug om det behövs.",
+				"Säg att vi inte ska göra så där igen, {namn}. Ljug om det behövs.",
 				"Jag har ett blåmärke format som ett skelett. Nu."
 			],
 			"campfire": [
 				"Jag tog med äpplen. Två av dem är nästan inte mosade.",
 				"Elden är varm. Vet du vad som inte är varmt? Kryptan.",
-				"Om Gorm frågar så gick jag och lade mig tidigt."
+				"Om Gorm frågar så gick jag och lade mig tidigt, {namn}. Du med."
 			],
 			"rare_find": [
 				"Titta! Den glittrar! Får jag hålla den? Bara lite?",
@@ -117,7 +117,7 @@
 			],
 			"alone": [
 				"Jag låg bara och vilade. Bra, du klarade dem själv! Hjälp mig upp?",
-				"Du stod kvar ensam. Jag såg det. Typ. Med ena ögat."
+				"Du stod kvar ensam, {namn}. Jag såg det. Typ. Med ena ögat."
 			]
 		},
 		"alva": {

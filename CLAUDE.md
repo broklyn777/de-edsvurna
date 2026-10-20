@@ -21,6 +21,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Perk-nivåer (0.15): perks som är rena siffror har 2–3 nivåer som kostar poäng var; regelbrytare har en.
   Lånad perk (0.15, Siralims Anointment): en besegrad boss låser upp en plats där Kallet lånar en perk
   från ett annat kall, för poäng ur den egna potten.
+- **Paladinens namn** (0.24.2, som i Siralim): en ny profil frågar "Vad heter du, edsvurne?" (`NameEntry`, ett textfält
+  som öppnar telefonens tangentbord, högst 16 tecken, tomt blir "Paladinen"). `Profile.hero_name`, `set_hero_name()`;
+  `Run.apply_name()` sätter namnet i datan för "paladin" (stridens ram, hjältebladet, makroskärmen, korten; striden
+  läser sin egen data och gör samma). Repliker använder `{namn}` (`Dialog.fill`) ibland, inte i varje rad. Namnet
+  skrivs om hos Broder Alrik ("Skriv om mitt namn i krönikan"). Rollen ("Paladinen", titeln "Edsvuren") står kvar
+  där den beskriver klassen. Flaggor: `--ask-name=<plats>` på sparplatsskärmen, `--name=Tran`, `--rename` i borgen.
 - **Följeslagare** (Brokk, Syster Alva, Jägaren Eira, Solveig …): namn, roll, egen egenskap och en
   signaturhandling. Börja med 5–8, inte 30.
   **Lärjungar och Värdshuset** (0.23, Siralims rekrytering och Menagerie, `docs/plan/0.23-vardshuset.md`): en ny

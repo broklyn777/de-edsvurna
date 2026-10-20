@@ -19,7 +19,7 @@ func test_every_station_has_a_person_and_a_conversation() -> void:
 		assert_eq(opts.back().label, "Ingenting just nu", "sist kommer Ingenting just nu")
 		assert_eq(opts.back().open, "")
 		for o in opts.slice(0, opts.size() - 1):
-			assert_true(_data.keep.rooms.has(o.open), "%s öppnar en station som finns" % o.label)
+			assert_true(_data.keep.rooms.has(o.open) or o.open == "rename", "%s öppnar en station som finns" % o.label)
 		assert_true(Dialog.reply(_data, id) != "", "%s har ett svar när den är stängd" % id)
 
 
@@ -95,3 +95,46 @@ static func _rect(a: Array) -> Rect2:
 
 static func _v(a: Array) -> Vector2:
 	return Vector2(a[0], a[1])
+
+
+## 0.24.2: paladinens namn.
+func test_the_name_is_saved_and_trimmed() -> void:
+	var p := Profile.new()
+	assert_eq(p.hero_name, "Paladinen", "standardnamnet")
+	p.set_hero_name("  Tran  ")
+	assert_eq(p.hero_name, "Tran")
+	p.set_hero_name("Ett mycket långt namn som inte får plats")
+	assert_true(p.hero_name.length() <= Profile.NAME_MAX)
+	p.set_hero_name("   ")
+	assert_eq(p.hero_name, "Paladinen", "tomt blir Paladinen")
+	p.set_hero_name("Sigrun")
+	var path := "user://test_progress_name.cfg"
+	p.save(path)
+	assert_eq(Profile.load_from(path).hero_name, "Sigrun")
+	var cfg := ConfigFile.new()
+	cfg.set_value("progress", "silver", 10)
+	cfg.save(path)
+	assert_eq(Profile.load_from(path).hero_name, "Paladinen", "äldre profiler heter Paladinen")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func test_the_name_token_fills_the_lines_now_and_then() -> void:
+	assert_eq(Dialog.fill("Väl mött, {namn}.", "Tran"), "Väl mött, Tran.")
+	var named := 0
+	var total := 0
+	for who in _data.dialog.people:
+		for g in Dialog.person(_data, who).get("greet", []):
+			total += 1
+			named += 1 if String(g).contains("{namn}") else 0
+	for step in Intro.steps(_data):
+		for l in step.get("talk", []):
+			total += 1
+			named += 1 if String(l).contains("{namn}") else 0
+	assert_true(named >= 6, "namnet sägs ibland (%d repliker)" % named)
+	assert_true(named * 3 < total, "men inte i varje replik (%d av %d)" % [named, total])
+	var p := Profile.new()
+	p.set_hero_name("Tran")
+	p.intro_done = true
+	assert_true(not Dialog.fill(Dialog.greeting(_data, "gorm", 0), p.hero_name).contains("{namn}"))
+	assert_true(Dialog.options(_data, "library").any(func(o: Dictionary) -> bool: return o.open == "rename"),
+			"Broder Alrik kan skriva om namnet")

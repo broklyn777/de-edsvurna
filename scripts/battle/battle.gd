@@ -80,6 +80,9 @@ func _ready() -> void:
 	run = get_node("/root/Run")
 	Engine.time_scale = 1.0
 	data = GameData.load_all()
+	# 0.24.2: paladinens namn i ramen, tidslinjen och fiendernas avsikter.
+	data.heroes.paladin.name = run.profile.hero_name
+	data.heroes.paladin.short = run.profile.hero_name
 	var seed_value := randi()
 	var warp_turns := 0
 	var demo := false
