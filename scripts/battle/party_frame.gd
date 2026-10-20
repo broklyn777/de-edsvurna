@@ -102,7 +102,7 @@ func _draw() -> void:
 		# Kallets perks (Kallets altare) visas som ett antal efter Kallet.
 		var perks := unit.traits.filter(func(t: String) -> bool: return sim.data.traits[t].get("perk", false)).size()
 		if perks > 0 and not names.is_empty():
-			names[0] += " +%d perks" % perks
+			names[0] += " +%d %s" % [perks, "perk" if perks == 1 else "perks"]
 		var trait_name := " · ".join(names)
 		var col := Color(UiStyle.TRAIT_GOLD, 0.6).lerp(Color.WHITE, _trait_flash * 0.8)
 		if _trait_flash > 0.0:

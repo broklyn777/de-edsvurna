@@ -156,7 +156,7 @@ func _draw_stats(data: Dictionary, prof: Profile, prog: Dictionary) -> void:
 		UiStyle.text(self, Vector2(MARGIN, y), HeroStats.STAT_NAMES[stat] + arrow, 22,
 				UiStyle.GOLD if arrow == " ↑" else (Color("#ff9a7a") if arrow != "" else Color.WHITE), HORIZONTAL_ALIGNMENT_LEFT, 190, 3)
 		UiStyle.text(self, Vector2(MARGIN + 180, y), HeroStats.shown(s.total), 26, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT, 90, 3)
-		UiStyle.text(self, Vector2(MARGIN, y), "nästa nivå +%d" % nxt[stat], 18, Color(UiStyle.TRAIT_GOLD, 0.9),
+		UiStyle.text(self, Vector2(MARGIN, y), "nästa nivå +%s" % HeroStats.shown(nxt[stat]), 18, Color(UiStyle.TRAIT_GOLD, 0.9),
 				HORIZONTAL_ALIGNMENT_RIGHT, lw, 2)
 		var text := "="
 		for source in HeroStats.SOURCES:
@@ -193,7 +193,8 @@ func _draw_enemy_levels(data: Dictionary, prof: Profile, level: int, at: Vector2
 	elif level < lv[2]:
 		verdict = "Räcker för våning 1–2"
 		color = UiStyle.TRAIT_GOLD
-	UiStyle.text(self, at + Vector2(0, 56), verdict, 18, color, HORIZONTAL_ALIGNMENT_LEFT, w, 2)
+	# Två rader i 16 px om det behövs (i 1280 bredd klipptes "… nivåerna kommer under körningen" av), ovanför flikarna.
+	UiStyle.para(self, at + Vector2(0, 50), verdict, 16, color, w, 2)
 
 
 ## Vad statsen betyder: skada och helning mot en typisk fiende i vald Realm på valt djup.
@@ -376,7 +377,7 @@ func _draw_history(data: Dictionary, prog: Dictionary) -> void:
 		var g := HeroStats.gains(data, hero_id, int(entry.level), prog.personality)
 		var parts: Array = []
 		for stat in HeroStats.STATS:
-			parts.append("+%d %s" % [g[stat], HeroStats.STAT_NAMES[stat]])
+			parts.append("+%s %s" % [HeroStats.shown(g[stat]), HeroStats.STAT_NAMES[stat]])
 		UiStyle.text(self, Vector2(MARGIN, y), "Nivå %d (efter strid %d): %s" % [int(entry.level), int(entry.battle),
 				", ".join(parts)], 19, Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 2)
 		y += 30
