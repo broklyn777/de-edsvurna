@@ -472,6 +472,15 @@ func macro_hint(hero_id: String) -> Dictionary:
 	return hint
 
 
+## En ny profils startrader för en följeslagare (0.23, 0.24.1): de två första, men inte raden som makroförslaget
+## lär ut (som Alvas "hela den som har lågt liv"), så att förslaget visas när hen ansluter.
+static func starter_lines(game_data: Dictionary, hero_id: String, lines: Array) -> Array:
+	var hint: Dictionary = game_data.heroes.get(hero_id, {}).get("macro_hint", {}).get("line", {})
+	var rest := lines.filter(func(l: Dictionary) -> bool: return hint.is_empty() or l.get("cond", "") != hint.cond \
+			or l.get("action", "") != hint.action or l.get("ability", "") != hint.get("ability", ""))
+	return rest.slice(0, 2)
+
+
 ## Hjältarna som makroskärmen visar (0.23.2): Paladinen och de som har anslutit.
 func macro_heroes() -> Array:
 	return (["paladin"] + Array(profile.recruited)).filter(func(id: String) -> bool: return data.heroes.has(id))
@@ -762,7 +771,7 @@ func _load_macros(fresh := false) -> void:
 			macros.paladin.lines = []
 			for hero_id in macros:
 				if hero_id != "paladin":
-					macros[hero_id].lines = macros[hero_id].lines.slice(0, 2)
+					macros[hero_id].lines = starter_lines(data, hero_id, macros[hero_id].lines)
 	# 0.23: nya följeslagare får sina startmakron även i en sparad makrofil.
 	for hero_id in data.macros:
 		if not macros.has(hero_id):

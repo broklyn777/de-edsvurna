@@ -28,8 +28,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   svagaste – vårt val, förebild Mesmerist) ansluter i introt. De andra befrias ur **fånge-rum** på rumskartan:
   varje Realm har egna lärjungar per djup (`realms.json` "disciples", en i taget sedan 0.24; Kryptan: Syster Alva på
   den andra nedstigningen (`after_descents`, `Profile.descents`), sedan Brokk (bevakad), Eira, Tove, Solveig, Sefir;
-  Kapellet: Lirien, Ragnhild, Hulda, Ronja). Profilens första nedstigning gör Paladinen och Imma ensamma, med fiender
-  ×0,85 (`RunState.FIRST_DESCENT_STATS`, vårt val). De ansluter direkt på nivå
+  Kapellet: Lirien, Ragnhild, Hulda, Ronja). Profilens första nedstigning gör Paladinen och Imma ensamma (hela kryptan),
+  med en trappa i fiendernas stats per våning: ×0,70 / ×0,88 / ×0,81 för Benfursten (`RunState.FIRST_DESCENT_RAMP`, vårt
+  val, docs/formler.md §9; ungefär 80 % med en ny profils makron). Alva räddas tidigt på den andra, på våning 1, och
+  hennes makroförslag lär ut ett villkor ("hela den som har lågt liv"); följeslagare med ett förslag börjar utan den
+  raden (`Run.starter_lines`). De ansluter direkt på nivå
   1–2 om det finns plats (Paladinen + 3), annars väntar de i **Värdshuset**, där man väljer sällskap och de som
   stannar behåller sin nivå. `Profile.recruited`, `recruit()`, `set_party()`; `RunState.place_prisoners()`;
   `Run.rescue_prisoner()`. Ikapphämtning (vårt val): +50 % erfarenhet per nivå under sällskapets snitt, högst ×3.

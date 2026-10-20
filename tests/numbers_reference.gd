@@ -125,9 +125,10 @@ static func party_scale(n: int) -> float:
 	return [0.45, 0.45, 0.54, 0.64, 1.0][clampi(n, 1, 4)]
 
 
-## Portalens strid (×1,15) och profilens första nedstigning (×0,85, 0.24, vårt val); båda kan gälla.
-static func battle_bonus(portal: bool, first_descent: bool) -> float:
-	return (1.15 if portal else 1.0) * (0.85 if first_descent else 1.0)
+## Portalens strid (×1,15) och profilens första nedstigning (0.24.1, vårt val: en trappa per våning, ×0,70 / ×0,88 /
+## ×0,81 för Benfursten); båda kan gälla.
+static func battle_bonus(portal: bool, first_descent: bool, floor_i := 0) -> float:
+	return (1.15 if portal else 1.0) * ([0.70, 0.88, 0.81][clampi(floor_i, 0, 2)] if first_descent else 1.0)
 
 
 ## Fienderna som möter ett sällskap (0.23.3, vårt val): högst en fler än hjältarna. Först försvinner dubbletter, sedan

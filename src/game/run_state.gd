@@ -79,7 +79,7 @@ var trait_totals := {}
 var found := {"amber": 0, "trick": 0, "nether": 0}
 ## 0.24: replikerna som redan har sagts den här körningen (Dialog.bark upprepar dem inte).
 var barks_used: Array = []
-## 0.24: profilens första nedstigning (FIRST_DESCENT_STATS).
+## 0.24: profilens första nedstigning (FIRST_DESCENT_RAMP).
 var first_descent := false
 ## 0.23: fångar på våningarna, floor (som text) -> {hero, first}. Den första är tidig och obevakad.
 var prisoners := {}
@@ -309,9 +309,15 @@ const TREASURE_SILVER := 0.6
 const TREASURE_TROPHY_CHANCE := 0.2
 ## Portalens strid: starkare fiender, mer silver och bättre troféchans.
 const PORTAL_STATS := 1.15
-## 0.24: den allra första nedstigningen gör Paladinen och Imma ensamma, med svagare fiender (vårt val, mätt med
-## botarna: 64 % med en ny profils makron, BALANS=forsta).
-const FIRST_DESCENT_STATS := 0.85
+## 0.24.1: den allra första nedstigningen gör Paladinen och Imma ensamma, med en mjuk trappa i fiendernas stats per
+## våning (vårt val; följer aldrig hjältarnas nivå): första våningen nästan alltid vunnen, den andra lite svårare och
+## Benfursten en riktig utmaning. Mätt med botarna (BALANS=forsta), docs/formler.md §9.
+const FIRST_DESCENT_RAMP := [0.70, 0.88, 0.81]
+
+
+## Fiendernas skalning på profilens första nedstigning för en våning (1 = ingen).
+static func first_descent_mult(floor_i: int) -> float:
+	return float(FIRST_DESCENT_RAMP[clampi(floor_i, 0, FIRST_DESCENT_RAMP.size() - 1)])
 const PORTAL_SILVER := 1.0
 const PORTAL_TROPHY_BONUS := 0.25
 
@@ -442,7 +448,7 @@ func battle_opts() -> Dictionary:
 	if r.get("kind", "") == "portal_battle":
 		opts.stat_bonus = PORTAL_STATS
 	if first_descent:
-		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * FIRST_DESCENT_STATS
+		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * first_descent_mult(floor)
 	return opts
 
 
