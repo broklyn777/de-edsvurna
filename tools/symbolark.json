@@ -130,6 +130,31 @@
 					20
 				]
 			]
+		},
+		"portratt": {
+			"path": "res://assets/illustrations/portrattark.webp",
+			"paper": [
+				[
+					512,
+					256
+				],
+				[
+					1024,
+					256
+				],
+				[
+					512,
+					768
+				],
+				[
+					1024,
+					768
+				],
+				[
+					768,
+					505
+				]
+			]
 		}
 	},
 	"symbols": {
@@ -434,6 +459,78 @@
 				244
 			],
 			"height": 96
+		},
+		"gorm": {
+			"source": "portratt",
+			"rect": [
+				8,
+				8,
+				496,
+				496
+			],
+			"opaque": true,
+			"out": "res://assets/illustrations/portraits/",
+			"height": 256
+		},
+		"hedda": {
+			"source": "portratt",
+			"rect": [
+				520,
+				8,
+				496,
+				496
+			],
+			"opaque": true,
+			"out": "res://assets/illustrations/portraits/",
+			"height": 256
+		},
+		"alrik": {
+			"source": "portratt",
+			"rect": [
+				1032,
+				8,
+				496,
+				496
+			],
+			"opaque": true,
+			"out": "res://assets/illustrations/portraits/",
+			"height": 256
+		},
+		"imma": {
+			"source": "portratt",
+			"rect": [
+				8,
+				520,
+				496,
+				496
+			],
+			"opaque": true,
+			"out": "res://assets/illustrations/portraits/",
+			"height": 256
+		},
+		"stig": {
+			"source": "portratt",
+			"rect": [
+				520,
+				520,
+				496,
+				496
+			],
+			"opaque": true,
+			"out": "res://assets/illustrations/portraits/",
+			"height": 256
+		},
+		"elin": {
+			"source": "portratt",
+			"rect": [
+				1032,
+				520,
+				496,
+				496
+			],
+			"opaque": true,
+			"out": "res://assets/illustrations/portraits/",
+			"height": 256
 		}
 	}
 }

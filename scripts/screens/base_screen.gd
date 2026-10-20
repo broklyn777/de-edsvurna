@@ -129,6 +129,8 @@ func _ready() -> void:
 				_go_imma()
 			else:
 				_arrive(st)
+		elif arg.begins_with("--walk="):
+			_go(arg.get_slice("=", 1))  # --walk=<station>: paladinen går dit (för att se gången och raden)
 
 
 func _exit_tree() -> void:
@@ -487,7 +489,9 @@ func _paint_plan(ci: CanvasItem) -> void:
 		ci.draw_texture_rect(_plan_tex, Rect2(Vector2.ZERO, _v(keep.size)), false)
 	else:
 		KeepArt.plan(ci, keep)
-	KeepArt.ambience(ci, keep, _t)
+	KeepArt.ambience(ci, keep, _t, _plan_tex != null)
+	if "--keep-debug" in OS.get_cmdline_user_args():
+		_paint_debug(ci)
 	# Gyllene ringar kring det som lyser.
 	for id in STATIONS:
 		if _glows(id):
@@ -512,9 +516,29 @@ func _paint_plan(ci: CanvasItem) -> void:
 	var party: Array = _followers()
 	for i in range(party.size() - 1, -1, -1):
 		KeepArt.pawn(ci, _follower_pos(i), 70.0, Color(data.heroes[party[i]].color))
+	# Ett ljust sken under pjäsen, så att den syns mot en detaljerad bild.
+	for j in 3:
+		ci.draw_circle(pal + Vector2(0, -PIECE_H * 0.2), PIECE_H * (0.62 - j * 0.14), Color(1.0, 0.93, 0.74, 0.18 + j * 0.12))
 	var bob := sin(_t * 9.0) * 4.0 if not _path.is_empty() else sin(_t * 2.0) * 1.5
 	InkArt.icon(ci, "paladin", pal + Vector2(0, -PIECE_H * 0.35 + bob), PIECE_H)
 	ci.draw_set_transform(Vector2.ZERO)
+
+
+## Utvecklarflagga --keep-debug: rummens rutor, dörrar, gångar, platser och ljus, för att passa in en ny bild.
+func _paint_debug(ci: CanvasItem) -> void:
+	for id in keep.rooms:
+		var room: Dictionary = keep.rooms[id]
+		ci.draw_rect(_r(room.rect), Color(0, 0.6, 1, 0.9), false, 4.0)
+		ci.draw_circle(_v(room.door), 10, Color.RED)
+		ci.draw_circle(_v(room.yard), 10, Color.ORANGE)
+		ci.draw_circle(_v(room.stand), 10, Color.GREEN)
+		ci.draw_line(_v(room.door), _v(room.yard), Color.RED, 3.0)
+	ci.draw_rect(_r(keep.yard.rect), Color(1, 1, 0, 0.9), false, 4.0)
+	ci.draw_rect(_r(keep.walls), Color(1, 0, 1, 0.9), false, 4.0)
+	for l in keep.lights:
+		ci.draw_arc(Vector2(l[0], l[1]), l[2], 0, TAU, 32, Color(1, 1, 0.5, 0.8), 2.0)
+	for p in keep.inn_seats:
+		ci.draw_circle(_v(p), 8, Color.BLUE)
 
 
 func _chip_rect(i: int) -> Rect2:

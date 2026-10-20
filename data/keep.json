@@ -1,25 +1,25 @@
 {
-	"_comment": "Borgen uppifrån (0.24). Koordinater i planritningens pixlar (1536×1024, samma mått som VD:ns bild H1 i docs/illustrationer.md). rect = [x, y, bredd, höjd]. door = dörren i rummets vägg, yard = där gången når gården, stand = där paladinen ställer sig, person = där personen står. Byt siffrorna när bilden kommer.",
+	"_comment": "Borgen uppifrån (0.24). Koordinater i planritningens pixlar (assets/illustrations/borgen.webp, 1536×1024). rect = [x, y, bredd, höjd]. door = dörren i rummets vägg, yard = där gången når gården, stand = där paladinen ställer sig, person = där personen står. walls = där bläcket utanför tar vid. lights = [x, y, radie] för kvällsljusets lyktor (högst 10). Kontrollera med -- --keep --keep-debug.",
 	"size": [1536, 1024],
 	"image": "borgen",
-	"walls": [100, 80, 1336, 880],
-	"yard": {"rect": [500, 390, 536, 410], "well": [768, 590], "home": [768, 735], "imma": [630, 500]},
+	"walls": [50, 44, 1436, 936],
+	"yard": {"rect": [530, 385, 470, 330], "well": [768, 535], "home": [860, 640], "imma": [660, 630]},
 	"rooms": {
-		"altar": {"rect": [120, 100, 340, 270], "door": [460, 300], "yard": [500, 400], "stand": [395, 290], "person": [300, 245]},
-		"inn": {"rect": [500, 100, 536, 250], "door": [768, 350], "yard": [768, 395], "stand": [768, 300], "person": [930, 190]},
-		"library": {"rect": [1076, 100, 340, 300], "door": [1076, 350], "yard": [1036, 400], "stand": [1140, 330], "person": [1230, 230]},
-		"macros": {"rect": [120, 390, 340, 190], "door": [460, 485], "yard": [500, 485], "stand": [395, 485]},
-		"smith": {"rect": [1076, 420, 340, 260], "door": [1076, 560], "yard": [1036, 560], "stand": [1145, 560], "person": [1245, 600]},
-		"practice": {"rect": [120, 600, 340, 320], "door": [460, 700], "yard": [500, 700], "stand": [395, 720], "person": [330, 670]},
-		"gate": {"rect": [600, 820, 336, 120], "door": [768, 820], "yard": [768, 795], "stand": [768, 855], "person": [670, 890]}
+		"library": {"rect": [165, 80, 445, 220], "door": [565, 300], "yard": [565, 395], "stand": [520, 250], "person": [420, 225]},
+		"altar": {"rect": [625, 40, 275, 260], "door": [770, 300], "yard": [770, 395], "stand": [770, 280], "person": [700, 235]},
+		"macros": {"rect": [915, 80, 375, 200], "door": [965, 280], "yard": [965, 395], "stand": [1080, 240]},
+		"inn": {"rect": [165, 320, 330, 400], "door": [495, 600], "yard": [540, 600], "stand": [455, 600], "person": [420, 430], "seats": true},
+		"smith": {"rect": [1020, 300, 400, 190], "door": [1020, 430], "yard": [995, 430], "stand": [1075, 430], "person": [1300, 440]},
+		"practice": {"rect": [1020, 500, 390, 220], "door": [1020, 610], "yard": [995, 610], "stand": [1075, 610], "person": [1320, 590]},
+		"gate": {"rect": [690, 715, 160, 175], "door": [768, 715], "yard": [768, 705], "stand": [768, 800], "person": [705, 820]}
 	},
-	"store": [1076, 700, 340, 220],
-	"inn_seats": [[600, 200], [660, 280], [820, 230], [700, 160], [880, 290], [580, 300], [990, 290]],
+	"store": [0, 0, 0, 0],
+	"inn_seats": [[245, 500], [245, 600], [345, 505], [345, 610], [390, 490], [480, 520], [480, 610]],
 	"lights": [
-		[768, 590, 150], [300, 170, 120], [960, 140, 150], [1330, 480, 160], [1220, 200, 110],
-		[280, 470, 90], [768, 880, 120], [560, 430, 70], [980, 430, 70], [330, 760, 110]
+		[310, 410, 190], [770, 150, 150], [300, 190, 150], [1160, 190, 150], [1235, 390, 190],
+		[535, 345, 110], [940, 345, 110], [690, 865, 100], [845, 865, 100], [370, 540, 130]
 	],
-	"chimney": [1340, 455],
-	"forge": [1330, 500],
-	"hearth": [960, 132]
+	"chimney": [1240, 315],
+	"forge": [1235, 392],
+	"hearth": [310, 412]
 }

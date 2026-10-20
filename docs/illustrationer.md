@@ -100,6 +100,9 @@ Klistra in **stilblocket** först, sedan motivet. Gör båda i samma chatt så a
 
 Skicka bilderna till Huvudtråden.
 
+**Inlagda 2026-10-20.** Borgen ritar `borgen.webp` och rummen i `data/keep.json` är inpassade (kontrollera med
+`-- --keep --keep-debug`); porträtten är utklippta till `assets/illustrations/portraits/`. Så här görs det igen:
+
 **När bilderna kommer (0.24 är byggt för att de ska bytas in):**
 
 - **H1** sparas som `assets/illustrations/borgen.webp` (1536×1024). Borgen ritar den i stället för tuschritningen

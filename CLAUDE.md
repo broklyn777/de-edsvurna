@@ -98,14 +98,15 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Borgen** (0.12 som basen, 0.24 "Hemmet", `docs/plan/0.24-hemmet.md`, `base_screen.gd` + `scripts/keep/keep_art.gd`):
   en planritning i tusch på pergament sedd uppifrån, som rumskartan; fördärvet flyter som bläck utanför murarna
   (shader), innanför kvällsljus, rök, gnistor och en härd som sprakar (`ambience_home`, `tools/gen_home_ambience.py`).
-  Rummen och gångarna står i `data/keep.json` (planens pixlar, 1536×1024); VD:ns bild `assets/illustrations/borgen.webp`
-  ersätter tuschritningen när den finns. Tryck i ett rum så går paladinpjäsen dit (1–2 sekunder) och sällskapet
+  Rummen och gångarna står i `data/keep.json` (planens pixlar, 1536×1024), inpassade i VD:ns bild
+  `assets/illustrations/borgen.webp` (`-- --keep --keep-debug` visar rutor, dörrar och ljus; `KeepArt` ritar en tuschversion
+  om bilden saknas). `-- --walk=<station>` startar en gång. Tryck i ett rum så går paladinpjäsen dit (1–2 sekunder) och sällskapet
   följer i en rad; dubbeltryck hoppar fram. Personerna står vid sina platser med porträtt: Mäster Gorm i kapellet
   (och Gorms kammare med Makron), smeden Hedda, Broder Alrik i biblioteket, vapenmästaren Stig, Mor Elin i
   värdshuset och portvakten Sven (namnen är förslag). **Samtal** (Siralims dialogruta, `Dialog`, `DialogBox`,
   `data/dialog.json`): personen hälsar, säger en vardagsreplik (nyheter först) och erbjuder tjänsterna som val, sist
-  "Ingenting just nu". Porträtten läses från `assets/illustrations/portraits/<id>.png` (klipps ur VD:ns ark med
-  `tools/cut_symbols.gd`, `"opaque": true`, `"out"`); tills dess ritas en tuschbyst. Befriade som inte är med bor i
+  "Ingenting just nu". Porträtten läses från `assets/illustrations/portraits/<id>.png` (utklippta ur VD:ns ark
+  `portrattark.webp` med `tools/cut_symbols.gd`, `"opaque": true`, `"out"`); Sven och följeslagarna utom Imma ritas som en tuschbyst. Befriade som inte är med bor i
   värdshuset. Kortraden längst ned är genvägar. **Repliker under nedstigningen** (`Dialog.bark`, `Run.bark`):
   Imma (och andra) säger en rad efter en svår strid, vid lägerelden, vid ett sällsynt fynd, en befrielse, i en ny
   Realm eller när paladinen står ensam kvar; högst en per rum, aldrig i striden, inget upprepas samma körning

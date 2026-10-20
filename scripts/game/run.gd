@@ -194,6 +194,7 @@ func _dev_args() -> void:
 				if id != "paladin":
 					profile.recruit(data, id, 3.0)
 			profile.intro_done = true
+			profile.set_party(["imma", "alva", "brokk"])
 		elif arg == "--new-profile":
 			# --new-profile: börja som en ny spelare (sparas inte): Paladinen och Brokk
 			dev_profile = true

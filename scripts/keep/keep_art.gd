@@ -191,13 +191,23 @@ static func _half_disc(c: Vector2, r: float) -> PackedVector2Array:
 
 
 ## Stämningen: rök ur smedjans skorsten, gnistor från ässjan, eld i härden och ljus i kapellet. t = tid.
-static func ambience(ci: CanvasItem, k: Dictionary, t: float) -> void:
+## image: VD:ns bild ligger under (den har egen eld och egna ljus), så bara ett mjukt sken, gnistor och rök läggs till.
+static func ambience(ci: CanvasItem, k: Dictionary, t: float, image := false) -> void:
 	var chimney := _v(k.chimney)
 	for i in 7:
 		var ph := fmod(t * 0.18 + i / 7.0, 1.0)
 		var c := chimney + Vector2(sin(ph * 4.0 + i) * 16.0 - ph * 30.0, -ph * 150.0)
 		ci.draw_circle(c, 10.0 + ph * 26.0, Color(0.32, 0.28, 0.3, (1.0 - ph) * 0.28))
 	var forge := _v(k.forge)
+	if image:
+		_glow(ci, forge, 46.0, t, 7.0)
+		_glow(ci, _v(k.hearth), 52.0, t, 6.0)
+		for i in 9:
+			var ph := fmod(t * 1.1 + i * 0.37, 1.0)
+			ci.draw_circle(forge + Vector2(sin(i * 7.3) * 22.0 + sin(t * 5.0 + i) * 5.0, -ph * 60.0), 2.5, Color(1.0, 0.75, 0.3, 1.0 - ph))
+			var ph2 := fmod(t * 0.8 + i * 0.29, 1.0)
+			ci.draw_circle(_v(k.hearth) + Vector2(sin(i * 5.1) * 26.0, -ph2 * 40.0), 2.0, Color(1.0, 0.7, 0.3, 1.0 - ph2))
+		return
 	ci.draw_circle(forge, 26.0 + sin(t * 7.0) * 3.0, Color(EMBER, 0.55 + 0.15 * sin(t * 11.0)))
 	for i in 9:
 		var ph := fmod(t * 1.1 + i * 0.37, 1.0)
@@ -216,6 +226,13 @@ static func ambience(ci: CanvasItem, k: Dictionary, t: float) -> void:
 		var c := altar.position + Vector2(80 + i * 45, 50)
 		ci.draw_circle(c, 5.0, Color(0.95, 0.92, 0.85))
 		ci.draw_circle(c + Vector2(0, -6), 4.0 + sin(t * 9.0 + i * 2.0), Color(1.0, 0.8, 0.35, 0.9))
+
+
+## Ett mjukt, fladdrande eldsken (lager av genomskinliga cirklar).
+static func _glow(ci: CanvasItem, c: Vector2, r: float, t: float, speed: float) -> void:
+	var fl := 0.85 + 0.15 * sin(t * speed) * sin(t * speed * 1.7 + 1.0)
+	for j in 4:
+		ci.draw_circle(c, r * fl * (1.0 - j * 0.2), Color(1.0, 0.62, 0.22, 0.07 + j * 0.03))
 
 
 ## En liten tuschpjäs för en följeslagare: en bonde med ett band i hjältens färg.
