@@ -11,6 +11,11 @@ const ROW_H := 54
 
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 @onready var run: Node = get_node("/root/Run")
+## 0.29.5: redigeraren kan ligga ovanpå en pausad strid (embedded); Klar stänger den då och striden fortsätter med de
+## ändrade makrona. focus_hero väljer den hjältens makro först.
+signal closed
+var embedded := false
+var focus_hero := ""
 var data: Dictionary
 var current := ""  # macro_id som redigeras
 var _heroes_box: VBoxContainer
@@ -29,7 +34,8 @@ var _preview: Label
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	data = run.data
-	run.base_music()
+	if not embedded:
+		run.base_music()
 	HelpBox.offer(self, ["macros"])  # 0.25: hjälprutan första gången
 	theme = _make_theme()
 	var bg := ColorRect.new()
@@ -38,7 +44,7 @@ func _ready() -> void:
 	add_child(bg)
 	_build()
 	var ids := _macro_ids()
-	var own: String = run.assignment.get("paladin", "")
+	var own: String = run.assignment.get(focus_hero if focus_hero != "" else "paladin", "")
 	if ids.has(own):
 		_select(own)
 	elif not ids.is_empty():
@@ -46,6 +52,16 @@ func _ready() -> void:
 	_refresh_all()
 	if "--edit-line" in OS.get_cmdline_user_args():  # utvecklarflagga för skärmdumpar
 		_open_editor(0)
+
+
+func _done() -> void:
+	if not embedded:
+		run.close_macros()
+		return
+	run.save_macros()
+	run.ui("ui_back", -12.0)
+	closed.emit()
+	queue_free()
 
 
 # --- Bygga gränssnittet ---------------------------------------------------------
@@ -73,7 +89,7 @@ func _build() -> void:
 	hint.add_theme_font_size_override("font_size", SMALL)
 	hint.modulate = Color(1, 1, 1, 0.65)
 	top.add_child(hint)
-	var done := _button("Klar", func() -> void: run.close_macros(), 140)
+	var done := _button("Tillbaka till striden" if embedded else "Klar", _done, 240 if embedded else 140)
 	top.add_child(done)
 
 	var body := HBoxContainer.new()
@@ -86,7 +102,7 @@ func _build() -> void:
 	left.custom_minimum_size = Vector2(390, 0)
 	left.add_theme_constant_override("separation", 8)
 	body.add_child(left)
-	left.add_child(_header("HJÄLTAR – MAKRO OCH STANDARDHANDLING"))
+	left.add_child(_header("HJÄLTAR OCH DERAS MAKRO"))
 	# 0.23.2: hjältarna i en egen rullista, så att makrolistan och raderna alltid får plats.
 	var heroes_scroll := ScrollContainer.new()
 	heroes_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
