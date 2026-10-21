@@ -160,6 +160,7 @@ func _tap(p: Vector2) -> void:
 func _back() -> void:
 	var from: int = run.state.pos
 	run.back_off()
+	run.bark("back")
 	_walk_from = from
 	_walk = [run.state.pos]
 	_walk_t = 0.0
@@ -188,6 +189,10 @@ func _arrive() -> void:
 	var r := state.current_room()
 	if state.at_group():
 		run.ui("room_lock", -10.0)
+		if r.get("boss", false) or r.get("kind", "") == "end":
+			run.bark("boss")
+		elif r.get("elite", false) or r.get("nemesis", false) or r.get("kind", "") == "elite":
+			run.bark("elite")
 		return
 	var kind: String = r.get("kind", "empty")
 	var fresh: bool = not r.get("done", false) and not r.get("rescued", false)

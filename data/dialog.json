@@ -350,12 +350,28 @@
 			"hard_fight": [
 				"Puh. Det där var nära. Jag andades inte på hela striden.",
 				"Säg att vi inte ska göra så där igen, {namn}. Ljug om det behövs.",
-				"Jag har ett blåmärke format som ett skelett. Nu."
+				"Jag har ett blåmärke format som ett skelett. Nu.",
+				{
+					"id": "imma_close_1",
+					"text": "Jag tänkte precis föreslå att vi skolkar från resten av grottan."
+				},
+				{
+					"id": "imma_close_2",
+					"text": "Du skrämde mig. Det ska du få höra om när vi badar i ån."
+				}
 			],
 			"campfire": [
 				"Jag tog med äpplen. Två av dem är nästan inte mosade.",
 				"Elden är varm. Vet du vad som inte är varmt? Kryptan.",
-				"Om Gorm frågar så gick jag och lade mig tidigt, {namn}. Du med."
+				"Om Gorm frågar så gick jag och lade mig tidigt, {namn}. Du med.",
+				{
+					"id": "imma_fire_1",
+					"text": "Minns du när vi tältade hemma? Din mamma bar ut kvällsmat."
+				},
+				{
+					"id": "imma_fire_2",
+					"text": "Kan någon hålla min pil? Jag ska bara peta lite i glöden."
+				}
 			],
 			"rare_find": [
 				"Får jag hålla den? Jag har nästan rena händer.",
@@ -372,38 +388,764 @@
 			"alone": [
 				"Jag låg bara och vilade. Bra, du klarade dem själv! Hjälp mig upp?",
 				"Du stod kvar ensam, {namn}. Jag såg det. Typ. Med ena ögat."
+			],
+			"cave": [
+				{
+					"id": "imma_cave_1",
+					"text": "Så här dimmigt var det när jag gömde läxboken i mjölsäcken."
+				},
+				{
+					"id": "imma_cave_2",
+					"text": "Du först, {namn}. Jag täcker ryggen. Precis som vid äppelstölden."
+				}
+			],
+			"elite": [
+				{
+					"id": "imma_elite_1",
+					"text": "De där behöver nog två pilar. Typiskt. Jag hade räknat med en."
+				},
+				{
+					"id": "imma_elite_2",
+					"text": "Den stora har sett oss. Jag vinkade inte ens."
+				}
+			],
+			"back": [
+				{
+					"id": "imma_back_1",
+					"text": "Vi hämtar bara mer ansats. Åt andra hållet."
+				},
+				{
+					"id": "imma_back_2",
+					"text": "Vi tar vägen runt. Som när smedens katt vaktade grinden."
+				}
+			],
+			"treasure": [
+				{
+					"id": "imma_treasure_1",
+					"text": "Den här gömman var lättare än din mammas kakburk."
+				},
+				{
+					"id": "imma_treasure_2",
+					"text": "Vi delar lika. Jag räknar. Du får gärna kontrollräkna den här gången."
+				}
+			],
+			"stairs": [
+				{
+					"id": "imma_stairs_1",
+					"text": "Klart! Det ordet skrev jag alltid innan läxan faktiskt var färdig."
+				},
+				{
+					"id": "imma_stairs_2",
+					"text": "Där är trappan! Först ner slipper diska. Vänta, bågen fastnade!"
+				}
+			],
+			"boss": [
+				{
+					"id": "imma_boss_1",
+					"text": "Jag önskar att vi övat på sånt här i kojan."
+				},
+				{
+					"id": "imma_boss_2",
+					"text": "Jag har en pil redo. Du får gärna ha en plan."
+				}
+			],
+			"fallen": [
+				{
+					"id": "imma_fallen_1",
+					"text": "Jag håller din plats vid elden. Den med minst rök."
+				},
+				{
+					"id": "imma_fallen_2",
+					"text": "Du får låna min lyckopil tills du är på benen igen."
+				},
+				{
+					"id": "imma_fallen_3",
+					"text": "Jag stannar här. Någon måste ju vakta dig mot Brokks snarkningar."
+				}
+			],
+			"home": [
+				{
+					"id": "imma_home_1",
+					"text": "Hemma! Minns du när vi trodde att vår koja var en borg?"
+				},
+				{
+					"id": "imma_home_2",
+					"text": "Vi borde fira på marknaden. Den här gången har vi faktiskt råd."
+				},
+				{
+					"id": "imma_home_3",
+					"text": "Jag tänker berätta allt. Utom biten där jag snubblade på bågen."
+				}
 			]
 		},
 		"alva": {
 			"hard_fight": [
-				"Sitt still. Det här kommer att svida, och sedan blir det bättre."
+				"Sitt still. Det här kommer att svida, och sedan blir det bättre.",
+				{
+					"id": "alva_close_1",
+					"text": "Titta på mig, {namn}. Bra. Nu andas vi lugnt tills det slutar snurra."
+				},
+				{
+					"id": "alva_close_2",
+					"text": "Ingen reser sig innan darrningarna lagt sig. Jag hämtar vatten till er."
+				}
 			],
 			"campfire": [
-				"Drick vatten. Alla. Ja, du också, Imma."
+				"Drick vatten. Alla. Ja, du också, Imma.",
+				{
+					"id": "alva_fire_1",
+					"text": "Av med stövlarna. Ja, båda. Den andra foten har också gått hit."
+				},
+				{
+					"id": "alva_fire_2",
+					"text": "Välkommen till mottagningen. Bänken är en sten, men filten är varm."
+				}
 			],
 			"rescue": [
 				"Välkommen. Var har du ont?"
+			],
+			"cave": [
+				{
+					"id": "alva_cave_1",
+					"text": "Känn efter om stövlarna skaver. Jag tänker inte låta dimman få skulden sedan."
+				},
+				{
+					"id": "alva_cave_2",
+					"text": "Fukten går genom manteln. Kom hit, jag fäster den tätare vid halsen."
+				}
+			],
+			"elite": [
+				{
+					"id": "alva_elite_1",
+					"text": "Vänta. Jag knyter förbandsväskan framtill den här gången."
+				},
+				{
+					"id": "alva_elite_2",
+					"text": "De ser välrustade ut. Drick lite vatten innan vi går närmare."
+				}
+			],
+			"back": [
+				{
+					"id": "alva_back_1",
+					"text": "Bra. Här kan jag se om du är yr utan att någon stör."
+				},
+				{
+					"id": "alva_back_2",
+					"text": "Kom bakom mig tills yrseln släpper. Håll i min axel."
+				}
+			],
+			"treasure": [
+				{
+					"id": "alva_treasure_1",
+					"text": "Rent linne! Äntligen en skatt med ordentlig praktisk användning."
+				},
+				{
+					"id": "alva_treasure_2",
+					"text": "Ta guldet. Jag undersöker om kistan är torr nog för förbanden."
+				}
+			],
+			"stairs": [
+				{
+					"id": "alva_stairs_1",
+					"text": "Trappan får vänta tills alla har fått vatten. Ställ er här."
+				},
+				{
+					"id": "alva_stairs_2",
+					"text": "Uppdraget är klart. Nu räknar jag huvuden, sedan får ni gå ner."
+				}
+			],
+			"boss": [
+				{
+					"id": "alva_boss_1",
+					"text": "Låt mig fästa manteln. Du ska inte snubbla när det gäller."
+				},
+				{
+					"id": "alva_boss_2",
+					"text": "Jag står där du kan hitta mig. Försök minnas det innan du behöver mig."
+				}
+			],
+			"fallen": [
+				{
+					"id": "alva_fallen_1",
+					"text": "Jag sitter här tills du är redo. Ingen brådska."
+				},
+				{
+					"id": "alva_fallen_2",
+					"text": "Du behöver inte vara tapper just nu. Jag sköter omsorgen."
+				},
+				{
+					"id": "alva_fallen_3",
+					"text": "Du får den varma filten. Ja, jag har sparat den åt dig."
+				}
+			],
+			"home": [
+				{
+					"id": "alva_home_1",
+					"text": "Bra gjort. Nu vill jag se alla tvätta händerna före firandet."
+				},
+				{
+					"id": "alva_home_2",
+					"text": "Rena lakan och varmt vatten. Borgen vet hur man tar emot hjältar."
+				},
+				{
+					"id": "alva_home_3",
+					"text": "Kom förbi mig efter vilan. Jag vill veta hur du faktiskt mår."
+				}
 			]
 		},
 		"brokk": {
 			"hard_fight": [
-				"Ha! Är det allt? … Nej, säg inte att det är allt."
+				"Ha! Är det allt? … Nej, säg inte att det är allt.",
+				{
+					"id": "brokk_close_1",
+					"text": "Sprucken sköldrem. Inte undra på att jag fick arbeta för två."
+				},
+				{
+					"id": "brokk_close_2",
+					"text": "Jag satte knät i marken. Det var ingen bugning."
+				}
 			],
 			"campfire": [
-				"Jag tar första vakten. Och andra. Jag sover ändå inte."
+				"Jag tar första vakten. Och andra. Jag sover ändå inte.",
+				{
+					"id": "brokk_fire_1",
+					"text": "Ingen ställer grytan på skölden. Förra gången smakade gröten järn i tre dagar."
+				},
+				{
+					"id": "brokk_fire_2",
+					"text": "Farfar brukade sitta så här efter gruvan. Han klagade också på veden."
+				}
+			],
+			"cave": [
+				{
+					"id": "brokk_cave_1",
+					"text": "Dåligt hugget. En dvärg hade skämts för den där väggen."
+				},
+				{
+					"id": "brokk_cave_2",
+					"text": "Håll er bakom skölden. Dimman får väl också lära sig det."
+				}
+			],
+			"elite": [
+				{
+					"id": "brokk_elite_1",
+					"text": "Ordentliga vapen. Hm. Då får skölden äntligen något vettigt att göra."
+				},
+				{
+					"id": "brokk_elite_2",
+					"text": "Ser ni bucklorna i deras rustning? Ingen av dem är min. Än."
+				}
+			],
+			"back": [
+				{
+					"id": "brokk_back_1",
+					"text": "Lugnt bakåt. Skölden stannar vänd åt rätt håll."
+				},
+				{
+					"id": "brokk_back_2",
+					"text": "Jag backar sist. Någon måste ju sköta det ordentligt."
+				}
+			],
+			"treasure": [
+				{
+					"id": "brokk_treasure_1",
+					"text": "Hm. Gångjärnen är bättre smidda än låset. Jag tar gärna båda."
+				},
+				{
+					"id": "brokk_treasure_2",
+					"text": "Det där är dvärgarbete. Försiktigt med det, annars bär jag det själv."
+				}
+			],
+			"stairs": [
+				{
+					"id": "brokk_stairs_1",
+					"text": "En trappa till. Någon kunde ha byggt en ordentlig gruvhiss."
+				},
+				{
+					"id": "brokk_stairs_2",
+					"text": "Uppdraget klart och skölden hel. Bucklor räknas inte."
+				}
+			],
+			"boss": [
+				{
+					"id": "brokk_boss_1",
+					"text": "Bakom den här skölden står generationer av dvärghantverk. Och jag."
+				},
+				{
+					"id": "brokk_boss_2",
+					"text": "Den får komma förbi mig först. Det är hela poängen med skölden."
+				}
+			],
+			"fallen": [
+				{
+					"id": "brokk_fallen_1",
+					"text": "Skölden duger till bår också. Jag har provat med tyngre än dig."
+				},
+				{
+					"id": "brokk_fallen_2",
+					"text": "Ingen lämnas kvar. Det gäller till och med er som kallar mig kort."
+				},
+				{
+					"id": "brokk_fallen_3",
+					"text": "Du vilar. Jag bär. Inga invändningar om dvärgarnas räckvidd."
+				}
+			],
+			"home": [
+				{
+					"id": "brokk_home_1",
+					"text": "Grinden hänger snett. Vi kommer hem med skatter, och jag får arbeta."
+				},
+				{
+					"id": "brokk_home_2",
+					"text": "Skölden höll. Det ska smeden få höra, i detalj."
+				},
+				{
+					"id": "brokk_home_3",
+					"text": "Hemma. Här kan man åtminstone lita på bjälklaget."
+				}
 			]
 		},
 		"eira": {
 			"hard_fight": [
-				"Jag räknade pilarna. Vi har färre nu."
+				"Jag räknade pilarna. Vi har färre nu.",
+				{
+					"id": "eira_close_1",
+					"text": "Jag missade på tre steg. Behöver sitta en stund."
+				},
+				{
+					"id": "eira_close_2",
+					"text": "Våra spår härifrån blir ojämna. Vi går långsamt."
+				}
 			],
 			"campfire": [
-				"Hör ni? Ingenting. Det är det bästa ljudet här nere."
+				"Hör ni? Ingenting. Det är det bästa ljudet här nere.",
+				{
+					"id": "eira_fire_1",
+					"text": "Vinden vänder. Flytta tvätten, annars luktar vi rökt vilt."
+				},
+				{
+					"id": "eira_fire_2",
+					"text": "Lägg på mindre ved. Jag vill höra stegen också."
+				}
+			],
+			"cave": [
+				{
+					"id": "eira_cave_1",
+					"text": "Färska spår. Dimman har inte sopat golvet."
+				},
+				{
+					"id": "eira_cave_2",
+					"text": "Det droppar framför oss. Till vänster är marken torrare."
+				}
+			],
+			"elite": [
+				{
+					"id": "eira_elite_1",
+					"text": "Djupa avtryck. Tung rustning. Marken varnade oss först."
+				},
+				{
+					"id": "eira_elite_2",
+					"text": "De har ställt sig utanför pilhåll. Någon av dem tänker."
+				}
+			],
+			"back": [
+				{
+					"id": "eira_back_1",
+					"text": "Sätt fötterna i våra gamla spår. De är prövade."
+				},
+				{
+					"id": "eira_back_2",
+					"text": "Löv på stövlarna hade hjälpt. Stengolv är sämre på att dölja oss."
+				}
+			],
+			"treasure": [
+				{
+					"id": "eira_treasure_1",
+					"text": "Släpspår fram till kistan. Någon annan fick bära den hit."
+				},
+				{
+					"id": "eira_treasure_2",
+					"text": "Damm på locket. Inga fingeravtryck. Det är åtminstone en början."
+				}
+			],
+			"stairs": [
+				{
+					"id": "eira_stairs_1",
+					"text": "Drag från trappan. Fuktigare där nere. Behåll manteln på."
+				},
+				{
+					"id": "eira_stairs_2",
+					"text": "Spåren fortsätter ner. Uppdraget tog visst slut före fötterna."
+				}
+			],
+			"boss": [
+				{
+					"id": "eira_boss_1",
+					"text": "Spåren viker undan här. Vi håller ihop."
+				},
+				{
+					"id": "eira_boss_2",
+					"text": "Inga flyktspår härifrån. Jag hade gärna sett några."
+				}
+			],
+			"fallen": [
+				{
+					"id": "eira_fallen_1",
+					"text": "Jag tar din packning. Den lämnar djupare spår än min."
+				},
+				{
+					"id": "eira_fallen_2",
+					"text": "Här är torrt och vindstilla. Jag stannar på vakt."
+				},
+				{
+					"id": "eira_fallen_3",
+					"text": "Jag har hittat en jämn väg hem. Du slipper skumpa."
+				}
+			],
+			"home": [
+				{
+					"id": "eira_home_1",
+					"text": "Leran avslöjar hela färden. Torka stövlarna före trappan."
+				},
+				{
+					"id": "eira_home_2",
+					"text": "Ingen följer våra spår. Jag tittade efter två gånger."
+				},
+				{
+					"id": "eira_home_3",
+					"text": "Fåglarna är tillbaka på muren. Vi kan vila."
+				}
 			]
 		},
 		"solveig": {
 			"campfire": [
-				"Elden ser sjuk ut. Jag ska bara … så. Nu brinner den ordentligt."
+				"Elden ser sjuk ut. Jag ska bara … så. Nu brinner den ordentligt.",
+				{
+					"id": "solveig_fire_1",
+					"text": "Flytta grytan. Jag har en idé om lågorna."
+				},
+				{
+					"id": "solveig_fire_2",
+					"text": "Den där pinnen tänker ju brinna. Ge den hit så hjälper jag den."
+				}
+			],
+			"cave": [
+				{
+					"id": "solveig_cave_1",
+					"text": "Våt sten överallt. Inte ens grottan vill hjälpa till."
+				},
+				{
+					"id": "solveig_cave_2",
+					"text": "Får jag tända något? Bara så vi får en ordentlig början."
+				}
+			],
+			"elite": [
+				{
+					"id": "solveig_elite_1",
+					"text": "Bra. Då slipper jag hålla igen så förfärligt mycket."
+				},
+				{
+					"id": "solveig_elite_2",
+					"text": "Metallrustningar. De kommer önska att någon öppnat ett fönster."
+				}
+			],
+			"back": [
+				{
+					"id": "solveig_back_1",
+					"text": "Okej, bakåt. Men jag var nästan klar med en väldigt bra eld."
+				},
+				{
+					"id": "solveig_back_2",
+					"text": "Vi kunde åtminstone ha värmt dem lite innan vi gick."
+				}
+			],
+			"treasure": [
+				{
+					"id": "solveig_treasure_1",
+					"text": "Om låset kärvar kan jag hjälpa till. Säg till innan Brokk börjar föreläsa."
+				},
+				{
+					"id": "solveig_treasure_2",
+					"text": "Ska vi verkligen räkna allt här? Jag vill vidare medan jag är varm."
+				}
+			],
+			"stairs": [
+				{
+					"id": "solveig_stairs_1",
+					"text": "Äntligen! Jag har stått redo så länge att ärmarna börjat ryka."
+				},
+				{
+					"id": "solveig_stairs_2",
+					"text": "Trappan är öppen. Kom nu, innan någon föreslår att vi låter elden slockna."
+				}
+			],
+			"boss": [
+				{
+					"id": "solveig_boss_1",
+					"text": "Vi är framme. Säg till när jag får sluta vara försiktig."
+				},
+				{
+					"id": "solveig_boss_2",
+					"text": "Jag har sparat min största låga. Det har varit olidligt."
+				}
+			],
+			"hard_fight": [
+				{
+					"id": "solveig_close_1",
+					"text": "Jag vet. För stor låga. Ge mig en stund innan föreläsningen."
+				},
+				{
+					"id": "solveig_close_2",
+					"text": "Mina händer skakar. Håll undan mantlarna tills det slutar."
+				}
+			],
+			"fallen": [
+				{
+					"id": "solveig_fallen_1",
+					"text": "Jag håller dig varm. Den här gången med alldeles lagom mycket eld."
+				},
+				{
+					"id": "solveig_fallen_2",
+					"text": "Du får vila. Jag lovar att inte provtända något bredvid dig."
+				},
+				{
+					"id": "solveig_fallen_3",
+					"text": "Jag värmer filten först. Otålig kan jag vara sedan."
+				}
+			],
+			"home": [
+				{
+					"id": "solveig_home_1",
+					"text": "Vi lyckades! Nu vill jag ha en brasa som syns från gården."
+				},
+				{
+					"id": "solveig_home_2",
+					"text": "Äntligen hemma. Jag ska bara kontrollera att ässjan fortfarande fungerar."
+				},
+				{
+					"id": "solveig_home_3",
+					"text": "Jag har en ny idé till fyrfatet. Varför suckar alla redan?"
+				}
+			]
+		},
+		"tove": {
+			"cave": [
+				{
+					"id": "tove_cave_1",
+					"text": "Dimman har bråttom förbi oss. Vi behöver inte följa dess exempel."
+				},
+				{
+					"id": "tove_cave_2",
+					"text": "Ni går fortare när ni är osäkra. Vi kan prova tvärtom."
+				}
+			],
+			"elite": [
+				{
+					"id": "tove_elite_1",
+					"text": "De räknar oss också. Låt dem fundera färdigt."
+				},
+				{
+					"id": "tove_elite_2",
+					"text": "Ett andetag till. Så lärde vi oss möta svåra gäster i klostret."
+				}
+			],
+			"back": [
+				{
+					"id": "tove_back_1",
+					"text": "Ett steg tillbaka är också ett steg man väljer själv."
+				},
+				{
+					"id": "tove_back_2",
+					"text": "Vi lämnar deras tålamod i fred. De verkar ha ont om det."
+				}
+			],
+			"campfire": [
+				{
+					"id": "tove_fire_1",
+					"text": "Vill någon dela bröd? Jag har redan brutit det lite ojämnt."
+				},
+				{
+					"id": "tove_fire_2",
+					"text": "Tystnaden i klostret var sällan så här behaglig. Någon räknade alltid hostningar."
+				}
+			],
+			"treasure": [
+				{
+					"id": "tove_treasure_1",
+					"text": "Min lärare sade att ägodelar tynger. Vi bör fördela vikten rättvist."
+				},
+				{
+					"id": "tove_treasure_2",
+					"text": "Lägg märke till vem som genast räknar. Så var det i klostret också."
+				}
+			],
+			"stairs": [
+				{
+					"id": "tove_stairs_1",
+					"text": "Vi hann färdigt innan någon började förklara hur det borde göras."
+				},
+				{
+					"id": "tove_stairs_2",
+					"text": "Min lärare kallade trappor för tålamodsövningar. Han bodde på bottenvåningen."
+				}
+			],
+			"boss": [
+				{
+					"id": "tove_boss_1",
+					"text": "Jag fäster upp munkkåpan. Lugn blir man lättare om man inte snubblar."
+				},
+				{
+					"id": "tove_boss_2",
+					"text": "Ett stilla andetag. Min lärare behövde också flera ibland."
+				}
+			],
+			"hard_fight": [
+				{
+					"id": "tove_close_1",
+					"text": "Jag räknar andetagen en stund. Det är skönt när räkningen fungerar."
+				},
+				{
+					"id": "tove_close_2",
+					"text": "Vi kan sitta tysta. Jag lovar att inte kalla det en lärdom."
+				}
+			],
+			"fallen": [
+				{
+					"id": "tove_fallen_1",
+					"text": "Du får luta dig mot mig. Munkkåpor är faktiskt ganska mjuka."
+				},
+				{
+					"id": "tove_fallen_2",
+					"text": "Jag stannar hos dig. De andra kan öva tålamod en stund."
+				},
+				{
+					"id": "tove_fallen_3",
+					"text": "Ingen brådska. Jag har aldrig hört borgen klaga på sena gäster."
+				}
+			],
+			"home": [
+				{
+					"id": "tove_home_1",
+					"text": "Samma borg, andra steg. Du går lite stadigare nu."
+				},
+				{
+					"id": "tove_home_2",
+					"text": "Nu ringer de för oss. I klostret betydde klockan oftast mer arbete."
+				},
+				{
+					"id": "tove_home_3",
+					"text": "Vi är hemma tillsammans. Jag tänker sitta ner och uppskatta det ordentligt."
+				}
+			]
+		},
+		"sefir": {
+			"cave": [
+				{
+					"id": "sefir_cave_1",
+					"text": "Dimman gör en storslagen entré. Synd att den skymmer min."
+				},
+				{
+					"id": "sefir_cave_2",
+					"text": "Vilket uselt ljus. Ni får föreställa er hur väl manteln faller."
+				}
+			],
+			"elite": [
+				{
+					"id": "sefir_elite_1",
+					"text": "De har åtminstone klätt upp sig för att möta mig."
+				},
+				{
+					"id": "sefir_elite_2",
+					"text": "Gott om utrymme mellan dem. Där ryms en mycket vacker svärdsdans."
+				}
+			],
+			"back": [
+				{
+					"id": "sefir_back_1",
+					"text": "En elegant reträtt börjar med att ingen trampar på min mantel."
+				},
+				{
+					"id": "sefir_back_2",
+					"text": "Bakåt, med hållning. Vi lämnar dem något vackert att minnas."
+				}
+			],
+			"campfire": [
+				{
+					"id": "sefir_fire_1",
+					"text": "Glöden klär mig. Kan någon säga till när den börjar klä av manteln?"
+				},
+				{
+					"id": "sefir_fire_2",
+					"text": "Mina stövlar behöver torka. Jag accepterar att ni beundrar sömmarna under tiden."
+				}
+			],
+			"treasure": [
+				{
+					"id": "sefir_treasure_1",
+					"text": "En spegel! Äntligen någon i grottan som uppskattar mig omedelbart."
+				},
+				{
+					"id": "sefir_treasure_2",
+					"text": "Den där broschen saknar något. Mig, närmare bestämt."
+				}
+			],
+			"stairs": [
+				{
+					"id": "sefir_stairs_1",
+					"text": "Tillåt mig att gå först. Trappor gör underverk för en mantel."
+				},
+				{
+					"id": "sefir_stairs_2",
+					"text": "Uppdraget fullbordat. Ni får applådera medan jag torkar av klingan."
+				}
+			],
+			"boss": [
+				{
+					"id": "sefir_boss_1",
+					"text": "Jag brukar buga före dansen. För den här räcker en nick."
+				},
+				{
+					"id": "sefir_boss_2",
+					"text": "Jag har dansat inför kräsnare publik. Men sällan så här ovänlig."
+				}
+			],
+			"hard_fight": [
+				{
+					"id": "sefir_close_1",
+					"text": "Jag rev manteln. Försök se förbi det medan jag hämtar andan."
+				},
+				{
+					"id": "sefir_close_2",
+					"text": "Min hand darrar. Håll gärna i den, men säg att jag bjöd upp."
+				}
+			],
+			"fallen": [
+				{
+					"id": "sefir_fallen_1",
+					"text": "Min mantel får bli din filt. Berätta gärna hur mjuk den är."
+				},
+				{
+					"id": "sefir_fallen_2",
+					"text": "Vila du. Jag får väl vara vacker för oss båda en stund."
+				},
+				{
+					"id": "sefir_fallen_3",
+					"text": "Luta dig mot mig. Jag har utmärkt hållning även för två."
+				}
+			],
+			"home": [
+				{
+					"id": "sefir_home_1",
+					"text": "Borgen borde ha en balkong just här. Hemkomsten behöver en värdig avslutning."
+				},
+				{
+					"id": "sefir_home_2",
+					"text": "Hemma, med segern i behåll. Min mantel kräver däremot en skicklig sömmerska."
+				},
+				{
+					"id": "sefir_home_3",
+					"text": "Jag föreslår ett segerporträtt. Vi kan börja med min bästa sida."
+				}
 			]
 		}
 	},
@@ -457,6 +1199,193 @@
 					"brokk",
 					"Det är skeletten som blöder. Jag bara står nära."
 				]
+			]
+		},
+		{
+			"id": "pair_imma_brokk",
+			"heroes": [
+				"imma",
+				"brokk"
+			],
+			"kind": "cave",
+			"lines": [
+				[
+					"imma",
+					"Jag hoppade över skolans staket en gång. Med bågen."
+				],
+				[
+					"brokk",
+					"När jag var liten bar jag staket."
+				],
+				[
+					"imma",
+					"Hela? Hur kom du undan med det?"
+				],
+				[
+					"brokk",
+					"Någon måste bygga ordentligt åt er som hoppar över."
+				]
+			],
+			"ids": [
+				"pair_imma_brokk_1",
+				"pair_imma_brokk_2",
+				"pair_imma_brokk_3",
+				"pair_imma_brokk_4"
+			]
+		},
+		{
+			"id": "pair_alva_solveig",
+			"heroes": [
+				"alva",
+				"solveig"
+			],
+			"kind": "campfire",
+			"lines": [
+				[
+					"alva",
+					"Visa händerna."
+				],
+				[
+					"solveig",
+					"De ryker bara lite."
+				],
+				[
+					"alva",
+					"Då börjar vi med den som ryker mest."
+				],
+				[
+					"solveig",
+					"Den är jag faktiskt ganska stolt över."
+				]
+			],
+			"ids": [
+				"pair_alva_solveig_1",
+				"pair_alva_solveig_2",
+				"pair_alva_solveig_3",
+				"pair_alva_solveig_4"
+			]
+		},
+		{
+			"id": "pair_eira_sefir",
+			"heroes": [
+				"eira",
+				"sefir"
+			],
+			"kind": "cave",
+			"lines": [
+				[
+					"sefir",
+					"Måste jag böja mig? Det förstör hela hållningen."
+				],
+				[
+					"eira",
+					"Taket är mindre förhandlingsvilligt än du."
+				],
+				[
+					"sefir",
+					"En svår publik. Jag bugar ändå."
+				]
+			],
+			"ids": [
+				"pair_eira_sefir_1",
+				"pair_eira_sefir_2",
+				"pair_eira_sefir_3"
+			]
+		},
+		{
+			"id": "pair_tove_brokk",
+			"heroes": [
+				"tove",
+				"brokk"
+			],
+			"kind": "campfire",
+			"lines": [
+				[
+					"tove",
+					"Du putsar alltid samma buckla."
+				],
+				[
+					"brokk",
+					"Den är från min första strid."
+				],
+				[
+					"tove",
+					"Då försöker du alltså få den att synas bättre."
+				],
+				[
+					"brokk",
+					"Bra bucklor förtjänar lyster."
+				]
+			],
+			"ids": [
+				"pair_tove_brokk_1",
+				"pair_tove_brokk_2",
+				"pair_tove_brokk_3",
+				"pair_tove_brokk_4"
+			]
+		},
+		{
+			"id": "pair_imma_eira",
+			"heroes": [
+				"imma",
+				"eira"
+			],
+			"kind": "cave",
+			"lines": [
+				[
+					"imma",
+					"Kan du se på mina spår att jag smet från läxorna?"
+				],
+				[
+					"eira",
+					"Nej. Bara att du gick till köket."
+				],
+				[
+					"imma",
+					"Det var där jag gömde mig."
+				],
+				[
+					"eira",
+					"Med sex bullar. Du tappade smulor."
+				]
+			],
+			"ids": [
+				"pair_imma_eira_1",
+				"pair_imma_eira_2",
+				"pair_imma_eira_3",
+				"pair_imma_eira_4"
+			]
+		},
+		{
+			"id": "pair_tove_sefir",
+			"heroes": [
+				"tove",
+				"sefir"
+			],
+			"kind": "campfire",
+			"lines": [
+				[
+					"sefir",
+					"Jag lärde mig svärdsdans med ett fullt vattenglas på huvudet."
+				],
+				[
+					"tove",
+					"Jag skulle gärna se det med en skål soppa."
+				],
+				[
+					"sefir",
+					"Min konst förtjänar en värdigare prövning."
+				],
+				[
+					"tove",
+					"Svampsoppa, då. Den sparar vi till högtider."
+				]
+			],
+			"ids": [
+				"pair_tove_sefir_1",
+				"pair_tove_sefir_2",
+				"pair_tove_sefir_3",
+				"pair_tove_sefir_4"
 			]
 		}
 	],

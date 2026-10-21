@@ -113,11 +113,19 @@ static func reply(data: Dictionary, station_id: String) -> String:
 # --- Under nedstigningen -----------------------------------------------------------
 
 ## Lägen för replikerna (plan §3).
-const BARK_KINDS := ["hard_fight", "campfire", "rare_find", "rescue", "new_realm", "alone"]
+## 0.28.1 (grottan): cave (ny våning), elite (ser en elitgrupp), back (backar), treasure, stairs (questen klar, trappan
+## öppen), boss (ser bossen), fallen (någon stupade); home finns i datan men visas inte än.
+const BARK_KINDS := ["hard_fight", "campfire", "rare_find", "rescue", "new_realm", "alone",
+		"cave", "elite", "back", "treasure", "stairs", "boss", "fallen", "home"]
 
 
 ## En replik (eller ett kort samtal mellan två) för läget: {lines: [{who, text}]}, eller {} om ingen passar.
 ## Imma först om hon är med; samtal mellan två hjältar ibland; inget upprepas samma körning (used).
+## 0.28.1: en replik är en text eller {id, text} (fasta id:n för eventuella röster senare).
+static func line_text(entry: Variant) -> String:
+	return String(entry.get("text", "")) if entry is Dictionary else String(entry)
+
+
 static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng: RandomNumberGenerator) -> Dictionary:
 	var d: Dictionary = data.get("dialog", {})
 	for pair in d.get("pairs", []):
@@ -130,7 +138,7 @@ static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng:
 	for id in party:
 		if id == "paladin":
 			continue
-		var lines: Array = d.get("barks", {}).get(id, {}).get(kind, [])
+		var lines: Array = d.get("barks", {}).get(id, {}).get(kind, []).map(line_text)
 		if lines.any(func(t: String) -> bool: return not used.has(t)):
 			speakers.append(id)
 	if speakers.is_empty():
@@ -140,7 +148,7 @@ static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng:
 	if who == "":
 		var others := speakers.filter(func(id: String) -> bool: return id != "imma")
 		who = "imma" if speakers.has("imma") and rng.randf() >= 0.3 else String(others[rng.randi() % others.size()])
-	var fresh: Array = d.barks[who][kind].filter(func(t: String) -> bool: return not used.has(t))
+	var fresh: Array = d.barks[who][kind].map(line_text).filter(func(t: String) -> bool: return not used.has(t))
 	var text: String = fresh[rng.randi() % fresh.size()]
 	used.append(text)
 	return {"lines": [{"who": who, "text": text}]}

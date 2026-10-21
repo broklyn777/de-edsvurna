@@ -175,7 +175,7 @@ func _spoken() -> Array:
 	for who in _data.dialog.barks:
 		for kind in _data.dialog.barks[who]:
 			for l in _data.dialog.barks[who][kind]:
-				out.append([who, l])
+				out.append([who, Dialog.line_text(l)])
 	return out
 
 
@@ -237,3 +237,24 @@ func test_the_sword_quest_shows_its_progress() -> void:
 	var hedda: String = Intro.current(_data, p).at.hedda[0]
 	assert_eq(Dialog.fill_for(hedda, p).substr(0, 48), "Svärdet är på nivå 2 av 3. Nästa nivå kostar 80 ")
 	assert_true(Dialog.person(_data, "alrik").get("trophies", []).size() >= 3, "Alrik förklarar troféerna")
+
+
+## 0.28.1: sällskapets repliker i grottan har fasta id:n (för eventuella röster) och finns för varje nytt tillfälle.
+func test_grotto_barks_have_unique_ids() -> void:
+	var ids := {}
+	for who in _data.dialog.barks:
+		for kind in _data.dialog.barks[who]:
+			for l in _data.dialog.barks[who][kind]:
+				if l is Dictionary:
+					assert_true(not ids.has(l.id), "id %s finns en gång" % l.id)
+					ids[l.id] = true
+					assert_true(String(l.id).begins_with(who + "_"), "%s börjar med talaren" % l.id)
+	for who in ["imma", "alva", "brokk", "eira", "solveig", "tove", "sefir"]:
+		for kind in ["cave", "elite", "back", "treasure", "stairs", "boss", "fallen"]:
+			assert_true(not _data.dialog.barks[who].get(kind, []).is_empty(), "%s har en replik för %s" % [who, kind])
+	var used: Array = []
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3
+	var b := Dialog.bark(_data, "elite", ["paladin", "brokk"], used, rng)
+	assert_eq(b.lines[0].who, "brokk")
+	assert_true(String(b.lines[0].text).length() > 0)

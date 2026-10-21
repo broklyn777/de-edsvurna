@@ -395,6 +395,8 @@ func start_run(party: Array[String]) -> void:
 	narrate("first_gate")
 	if seen == 0:
 		bark("new_realm")
+	else:
+		bark("cave")
 	_save()
 	quest_reward = {}
 	room_result = ""
@@ -472,6 +474,7 @@ func descend() -> void:
 		return
 	ui("room_door", -6.0)
 	state.next_floor(data)
+	bark("cave")
 	room_result = "Ni går ned till våning %d." % (state.floor + 1)
 	save_run()
 
@@ -652,6 +655,7 @@ func treasure() -> String:
 		show_rare_finds(finds, 0.9)
 		if finds.any(func(f: Dictionary) -> bool: return Forge.is_rare_find(f)):
 			bark("rare_find")
+	bark("treasure")  # efter ett sällsynt fynd har det redan sagts något (en replik per rum)
 	_save()
 	save_run()
 	return room_result
@@ -706,7 +710,10 @@ func _bark_after_battle(sim: CombatSim) -> void:
 		bark("alone")
 	elif last_finds.any(func(f: Dictionary) -> bool: return Forge.is_rare_find(f)):
 		bark("rare_find")
-	elif standing.size() < sim.heroes.size() or standing.any(func(h: CombatUnit) -> bool: return h.hp < h.max_hp * 0.3):
+	elif standing.size() < sim.heroes.size():
+		bark("fallen")  # 0.28.1: någon stupade (sägs varmt efter striden)
+		bark("hard_fight")  # om ingen har en replik för det
+	elif standing.any(func(h: CombatUnit) -> bool: return h.hp < h.max_hp * 0.3):
 		bark("hard_fight")
 
 
@@ -747,6 +754,7 @@ func _after_quest_check(just_done: bool) -> void:
 		# och hela belöningen kommer med den sista våningens quest (en Realm Quest per körning, som förut).
 		if not state.is_last_floor():
 			room_result += " Questen är klar: +%d silver, och trappan är öppen!" % profile.floor_quest_silver(state.depth)
+			bark("stairs")
 			_save()
 			return
 		quest_reward = profile.complete_quest(state.realm, state.depth)
