@@ -23,6 +23,12 @@ Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom va
 - **Röster kanske senare (VD):** varje replik får ett fast id (t.ex. `imma_elite_1`). `{namn}` och ordlekar får vara kvar (VD 2026-10-21); röstlösning oavgjord (ElevenLabs på svenska, pratljud som Animal Crossing, korta rop). Tidigare tanke:
   inspelade röster inte kan säga spelarens namn. Kort och lätt att säga högt.
 
+## Balans (efter VD:s provspel)
+
+- **Elitgrupperna är för lätta var för sig** (0.29, `BALANS=elitgrupper`): med fulla Charges vinns alla, ingen stupar.
+  Väggarna ska kännas. Mät dem efter några strider (med kvarvarande liv och Charges) och höj dem vid behov.
+- Kryptan med startmakron 34 % i hela körningar (stigkartan gav 48 %), förlusterna mest mot bossen.
+
 ## Putsa
 
 - Lägret säger "SEGER! VÄLJ EN TROFÉ" fast alla erbjudna troféer redan hamnar i samlingen (0.26.3).
