@@ -60,7 +60,10 @@ func _ready() -> void:
 			_dev_enter(arg.get_slice("=", 1))
 
 
-func _dev_enter(want: String) -> void:
+## --enter=<sort>[:möte] (0.27: t.ex. elite:crypt_e5 visar Klockarens kort; striden: --encounter=crypt_e5).
+func _dev_enter(arg: String) -> void:
+	var parts := arg.split(":")
+	var want: String = parts[0]
 	var state: RunState = run.state
 	var m: Grotto = state.map
 	var n: int = Grotto.neighbors(state.pos)[0]
@@ -70,6 +73,8 @@ func _dev_enter(want: String) -> void:
 		cell = m.cells[other[0]].duplicate() if not other.is_empty() else {"kind": "battle", "encounter": state.floor_ids[0]}
 		cell.kind = want
 		cell.elite = want == "elite"
+		if parts.size() > 1:
+			cell.encounter = parts[1]
 	m.cells[n] = cell
 	get_tree().create_timer(0.8).timeout.connect(_go.bind(n))
 
