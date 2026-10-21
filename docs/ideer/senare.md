@@ -23,6 +23,14 @@ Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom va
 - **Röster kanske senare (VD):** varje replik får ett fast id (t.ex. `imma_elite_1`). `{namn}` och ordlekar får vara kvar (VD 2026-10-21); röstlösning oavgjord (ElevenLabs på svenska, pratljud som Animal Crossing, korta rop). Tidigare tanke:
   inspelade röster inte kan säga spelarens namn. Kort och lätt att säga högt.
 
+## Ragnhild Ljusdom (VD 2026-10-21)
+
+- Ny personlighet: sträng, konservativ, lagom nedlåtande men älskvärd; djupt troende. "Vid Ljuset!", "Ljuset bevare oss".
+  Citerar bibelord **endast ur 1917 års kyrkobibel** (fri; Bibel 2000 och Folkbibeln är skyddade), ordagrant med
+  referens – varje vers kontrolleras innan den byggs in. Aldrig för att förlöjliga tron; humorn ligger i hennes stränghet.
+  Hund och katt med Imma. ChatGPT-prompt given (repliker med id:n, samtal, värdshuset).
+- Senare idé (inte bestämt): korta svarsval för paladinen i viktiga ögonblick (paladinen talar annars aldrig).
+
 ## Balans (efter VD:s provspel)
 
 - **Elitgrupperna är för lätta var för sig** (0.29, `BALANS=elitgrupper`): med fulla Charges vinns alla, ingen stupar.
