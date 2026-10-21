@@ -31,6 +31,16 @@ Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom va
   Hund och katt med Imma. ChatGPT-prompt given (repliker med id:n, samtal, värdshuset).
 - Senare idé (inte bestämt): korta svarsval för paladinen i viktiga ögonblick (paladinen talar annars aldrig).
 
+## Ur ChatGPT:s tredje Realm (`docs/ideer/chat-realm3-kallornas-tradgard.md`)
+
+- **Den stora tråden:** kronan med en tom mitt – samma avsändare bakom Benfursten, biskopen och nästa Realm. Fröet kan
+  sås nu: en stämpel på något man hittar efter Benfursten, Broder Alrik undrar vad den betyder.
+- **Tredje Realm: Källornas trädgård** (Slussmästare Alvar befrias), efter balanspasset. Senare: Det kuvade solverket
+  (dvärgar, Brokk), Vårens vinterhus.
+- **"Lösningen före väggen":** när elitgrupperna blir svårare ska svaret (trofé, makro) gå att hitta innan.
+- **Skademarkering "11 → 4 · Glasvalv":** visa varför en träff blev liten, direkt i striden.
+- **Vattenuret:** betala en Charge, se närmaste elitgrupp med motdrag – kan läggas till i kryptan och kapellet.
+
 ## Balans (efter VD:s provspel)
 
 - **Elitgrupperna är för lätta var för sig** (0.29, `BALANS=elitgrupper`): med fulla Charges vinns alla, ingen stupar.
