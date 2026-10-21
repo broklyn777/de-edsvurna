@@ -136,7 +136,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Realm eller när paladinen står ensam kvar; högst en per rum, aldrig i striden, inget upprepas samma körning
   (`RunState.barks_used`); ibland ett kort samtal mellan två (`pairs`). Visas på rumskartan. 0.28.1: tillfällen i grottan (cave, elite, back, treasure, stairs, boss, fallen; home i datan men visas inte än) för
   sju följeslagare ur ChatGPT:s version 2 (`docs/ideer/repliker-v2.tsv`); nya repliker är `{id, text}` med fasta id:n
-  (t.ex. `imma_elite_1`, för eventuella röster senare), `Dialog.line_text`.
+  (t.ex. `imma_elite_1`, för eventuella röster senare), `Dialog.line_text`. Ragnhild Ljusdom (0.29.1) är sträng, konservativ och
+  älskvärd och citerar bibelord **endast ur 1917 års kyrkobibel**, ordagrant och kontrollerade (`ref`,
+  `docs/ideer/ragnhild-bibelord.md`); aldrig för att förlöjliga tron.
   **Introduktionen** för en ny profil (`data/intro.json`, `src/game/intro.gd`): eden vid altaret, en övningsstrid
   ensam, svärdet hos Smeden (bara svärdet går att välja), första makroraden, Biblioteket, och (0.25 "Berättelsen",
   `docs/plan/0.25-berattelsen.md`) natten: berättarens rutor, sedan arbetarna från kryptan på gården (de skadade på

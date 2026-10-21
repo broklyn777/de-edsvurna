@@ -1147,6 +1147,188 @@
 					"text": "Jag föreslår ett segerporträtt. Vi kan börja med min bästa sida."
 				}
 			]
+		},
+		"ragnhild": {
+			"rescue": [
+				{
+					"id": "ragnhild_rescue_1",
+					"text": "Vid Ljuset! Äntligen. Någon hade uppenbarligen glömt hur en räddning går till."
+				},
+				{
+					"id": "ragnhild_rescue_2",
+					"text": "Tack, {namn}. Jag går först härifrån. Du har gjort ditt."
+				},
+				{
+					"id": "ragnhild_rescue_3",
+					"text": "»Min hjälp kommer från Herren, som har gjort himmel och jord.«",
+					"ref": "Ps. 121:2"
+				}
+			],
+			"cave": [
+				{
+					"id": "ragnhild_cave_1",
+					"text": "Torka av stövlarna. Mörkret är ingen ursäkt för dåliga vanor."
+				},
+				{
+					"id": "ragnhild_cave_2",
+					"text": "Dimman får dölja vägen. Den får inte bestämma den."
+				},
+				{
+					"id": "ragnhild_cave_3",
+					"text": "»Ditt ord är mina fötters lykta och ett ljus på min stig.«",
+					"ref": "Ps. 119:105"
+				}
+			],
+			"elite": [
+				{
+					"id": "ragnhild_elite_1",
+					"text": "Finare rustningar. Samma brist på uppfostran."
+				},
+				{
+					"id": "ragnhild_elite_2",
+					"text": "De får gärna hela sig. Mitt Brännmärke håller räkningen."
+				},
+				{
+					"id": "ragnhild_elite_3",
+					"text": "»Stolthet går före undergång, och högmod går före fall.«",
+					"ref": "Ords. 16:18"
+				}
+			],
+			"back": [
+				{
+					"id": "ragnhild_back_1",
+					"text": "Vi backar i ordning. Jag ser till att alla kommer med."
+				},
+				{
+					"id": "ragnhild_back_2",
+					"text": "Det där var ingen flykt. Det var ett uppskjutet avgörande."
+				},
+				{
+					"id": "ragnhild_back_3",
+					"text": "»Den kloke ser faran och söker skydd.« Vi återkommer förberedda.",
+					"ref": "Ords. 27:12"
+				}
+			],
+			"campfire": [
+				{
+					"id": "ragnhild_fire_1",
+					"text": "Sitt närmare elden. Jag tänker inte tillåta tapperhet i form av frusna tår."
+				},
+				{
+					"id": "ragnhild_fire_2",
+					"text": "Filten? Den låg fel. Nu ligger den på dig. Låt den ligga."
+				},
+				{
+					"id": "ragnhild_fire_3",
+					"text": "»Herren är min herde, mig skall intet fattas.«",
+					"ref": "Ps. 23:1"
+				}
+			],
+			"treasure": [
+				{
+					"id": "ragnhild_treasure_1",
+					"text": "Räkna allt. Även det Imma redan räknat som sitt."
+				},
+				{
+					"id": "ragnhild_treasure_2",
+					"text": "En del till borgens behövande. Det skriver jag in innan någon får idéer."
+				},
+				{
+					"id": "ragnhild_treasure_3",
+					"text": "»Bättre är något litet med rättfärdighet än stor vinning med orätt.«",
+					"ref": "Ords. 16:8"
+				}
+			],
+			"stairs": [
+				{
+					"id": "ragnhild_stairs_1",
+					"text": "Uppdraget är fullgjort. Då går vi vidare, utan att ta åt oss hela äran."
+				},
+				{
+					"id": "ragnhild_stairs_2",
+					"text": "Trappan har öppnats. Äntligen något här nere som följer överenskommelsen."
+				},
+				{
+					"id": "ragnhild_stairs_3",
+					"text": "»Varen alltid glada.« Vi höll vårt löfte.",
+					"ref": "1 Tess. 5:16"
+				}
+			],
+			"boss": [
+				{
+					"id": "ragnhild_boss_1",
+					"text": "Må Ljuset döma dig. Jag går först."
+				},
+				{
+					"id": "ragnhild_boss_2",
+					"text": "Skingra lögnen. Här upphör ditt fusk."
+				},
+				{
+					"id": "ragnhild_boss_3",
+					"text": "»Du är mitt beskärm och min sköld; jag hoppas på ditt ord.«",
+					"ref": "Ps. 119:114"
+				}
+			],
+			"hard_fight": [
+				{
+					"id": "ragnhild_close_1",
+					"text": "Bakom mig! Ljusvåg! Ingen mer lämnas ensam här."
+				},
+				{
+					"id": "ragnhild_close_2",
+					"text": "Ljuset bevare oss. Sätt dig. Händerna får skaka färdigt innan du reser dig."
+				},
+				{
+					"id": "ragnhild_close_3",
+					"text": "»Varen glada i hoppet, tåliga i bedrövelsen, uthålliga i bönen.«",
+					"ref": "Rom. 12:12"
+				}
+			],
+			"fallen": [
+				{
+					"id": "ragnhild_fallen_1",
+					"text": "Vi lämnar ingen här. Hjälp mig att bära, så tar jag den tyngsta sidan."
+				},
+				{
+					"id": "ragnhild_fallen_2",
+					"text": "Du behöver inte hitta några ord. Jag sitter här en stund."
+				},
+				{
+					"id": "ragnhild_fallen_3",
+					"text": "»Saliga äro de som sörja, ty de skola bliva tröstade.«",
+					"ref": "Matt. 5:4"
+				}
+			],
+			"home": [
+				{
+					"id": "ragnhild_home_1",
+					"text": "Alla innanför porten? Bra. Nu får någon annan hålla räkningen medan jag sätter mig."
+				},
+				{
+					"id": "ragnhild_home_2",
+					"text": "Herren ser det. Men jag skulle uppskatta om någon också såg den lösa trappstenen."
+				},
+				{
+					"id": "ragnhild_home_3",
+					"text": "»Varen angelägna om att bevisa gästvänlighet.« Öppna porten.",
+					"ref": "Rom. 12:13"
+				}
+			],
+			"alone": [
+				{
+					"id": "ragnhild_alone_1",
+					"text": "Bara vi två. Då får jag väl hålla reda på oss båda."
+				},
+				{
+					"id": "ragnhild_alone_2",
+					"text": "Du får vara rädd, {namn}. Jag går ingenstans."
+				},
+				{
+					"id": "ragnhild_alone_3",
+					"text": "»Herren skall bevara dig för allt ont, han skall bevara din själ.«",
+					"ref": "Ps. 121:7"
+				}
+			]
 		}
 	},
 	"pairs": [
@@ -1387,6 +1569,262 @@
 				"pair_tove_sefir_3",
 				"pair_tove_sefir_4"
 			]
+		},
+		{
+			"id": "pair_ragnhild_imma",
+			"heroes": [
+				"ragnhild",
+				"imma"
+			],
+			"kind": "campfire",
+			"lines": [
+				[
+					"ragnhild",
+					"Läxan först, Imma. Sedan får du öva på undanflykter."
+				],
+				[
+					"imma",
+					"Du lade ditt bröd i min väska."
+				],
+				[
+					"ragnhild",
+					"Mitt bröd? Det låg i vägen. Ät innan det smular."
+				],
+				[
+					"imma",
+					"Då lägger jag min läxbok där i morgon."
+				]
+			],
+			"ids": [
+				"pair_ragnhild_imma_1",
+				"pair_ragnhild_imma_2",
+				"pair_ragnhild_imma_3",
+				"pair_ragnhild_imma_4"
+			]
+		},
+		{
+			"id": "pair_ragnhild_alva",
+			"heroes": [
+				"ragnhild",
+				"alva"
+			],
+			"kind": "campfire",
+			"lines": [
+				[
+					"alva",
+					"Du har bäddat åt de sjuka igen."
+				],
+				[
+					"ragnhild",
+					"»Saliga äro de barmhärtiga, ty dem skall vederfaras barmhärtighet.«"
+				],
+				[
+					"alva",
+					"Och lagt din egen filt över den minsta."
+				],
+				[
+					"ragnhild",
+					"Den passade inte på min säng."
+				]
+			],
+			"ids": [
+				"pair_ragnhild_alva_1",
+				"pair_ragnhild_alva_2",
+				"pair_ragnhild_alva_3",
+				"pair_ragnhild_alva_4"
+			]
+		},
+		{
+			"id": "pair_ragnhild_brokk",
+			"heroes": [
+				"ragnhild",
+				"brokk"
+			],
+			"kind": "cave",
+			"lines": [
+				[
+					"brokk",
+					"Mitt murverk behöver ingen besiktning."
+				],
+				[
+					"ragnhild",
+					"»Men pröven allt, behållen vad gott är.«"
+				],
+				[
+					"brokk",
+					"Ta hammaren då. Försök hitta en spricka."
+				],
+				[
+					"ragnhild",
+					"Inga sprickor. Däremot saknas datumet på protokollet."
+				]
+			],
+			"ids": [
+				"pair_ragnhild_brokk_1",
+				"pair_ragnhild_brokk_2",
+				"pair_ragnhild_brokk_3",
+				"pair_ragnhild_brokk_4"
+			]
+		},
+		{
+			"id": "pair_ragnhild_eira",
+			"heroes": [
+				"ragnhild",
+				"eira"
+			],
+			"kind": "cave",
+			"lines": [
+				[
+					"ragnhild",
+					"Du kunde åtminstone svara när någon talar."
+				],
+				[
+					"eira",
+					"Jag lyssnar efter steg."
+				],
+				[
+					"ragnhild",
+					"»Tiga har sin tid, och tala har sin tid.«"
+				],
+				[
+					"eira",
+					"Nu hör du dem också."
+				]
+			],
+			"ids": [
+				"pair_ragnhild_eira_1",
+				"pair_ragnhild_eira_2",
+				"pair_ragnhild_eira_3",
+				"pair_ragnhild_eira_4"
+			]
+		},
+		{
+			"id": "pair_ragnhild_solveig",
+			"heroes": [
+				"ragnhild",
+				"solveig"
+			],
+			"kind": "elite",
+			"lines": [
+				[
+					"solveig",
+					"En enda eldsvåg. Sedan kan ni tacka mig."
+				],
+				[
+					"ragnhild",
+					"»Hållen icke eder själva för kloka.« Börja med att sikta."
+				],
+				[
+					"solveig",
+					"Jag siktar utmärkt."
+				],
+				[
+					"ragnhild",
+					"Då ber jag dig skona bron den här gången."
+				]
+			],
+			"ids": [
+				"pair_ragnhild_solveig_1",
+				"pair_ragnhild_solveig_2",
+				"pair_ragnhild_solveig_3",
+				"pair_ragnhild_solveig_4"
+			]
+		},
+		{
+			"id": "pair_ragnhild_tove",
+			"heroes": [
+				"ragnhild",
+				"tove"
+			],
+			"kind": "campfire",
+			"lines": [
+				[
+					"ragnhild",
+					"»Men låten allt tillgå på höviskt sätt och med ordning.«"
+				],
+				[
+					"tove",
+					"Jag har ställt skorna bredvid varandra."
+				],
+				[
+					"ragnhild",
+					"På bordet."
+				],
+				[
+					"tove",
+					"Du angav ingen höjd."
+				]
+			],
+			"ids": [
+				"pair_ragnhild_tove_1",
+				"pair_ragnhild_tove_2",
+				"pair_ragnhild_tove_3",
+				"pair_ragnhild_tove_4"
+			]
+		},
+		{
+			"id": "pair_ragnhild_sefir",
+			"heroes": [
+				"ragnhild",
+				"sefir"
+			],
+			"kind": "cave",
+			"lines": [
+				[
+					"sefir",
+					"Ingen här förstår hur mycket arbete min hållning kräver."
+				],
+				[
+					"ragnhild",
+					"»Må en annan berömma dig, och icke din egen mun.«"
+				],
+				[
+					"sefir",
+					"Då får väl du börja."
+				],
+				[
+					"ragnhild",
+					"Din packning är föredömligt lätt. Ta Alvas också."
+				]
+			],
+			"ids": [
+				"pair_ragnhild_sefir_1",
+				"pair_ragnhild_sefir_2",
+				"pair_ragnhild_sefir_3",
+				"pair_ragnhild_sefir_4"
+			]
+		},
+		{
+			"id": "pair_ragnhild_imma_2",
+			"heroes": [
+				"ragnhild",
+				"imma"
+			],
+			"kind": "campfire",
+			"lines": [
+				[
+					"ragnhild",
+					"Du smet från läxan igen. Ljuset bevare oss, Imma."
+				],
+				[
+					"imma",
+					"Stallpojken vågade inte gå hem ensam."
+				],
+				[
+					"ragnhild",
+					"Jag hade fel. Du gjorde rätt. Jag borde ha frågat."
+				],
+				[
+					"imma",
+					"Du får följa med nästa gång. Om du kan smita."
+				]
+			],
+			"ids": [
+				"pair_ragnhild_imma_5",
+				"pair_ragnhild_imma_6",
+				"pair_ragnhild_imma_7",
+				"pair_ragnhild_imma_8"
+			]
 		}
 	],
 	"narrator": {
@@ -1398,5 +1836,6 @@
 			"(Det sista benet slutar skramla. För en stund är det alldeles tyst där nere.)",
 			"(Långt ovanför, i borgens torn, slår klockan en gång. Ingen har dragit i repet.)"
 		]
-	}
+	},
+	"refs_note": "Bibelord ur 1917 års kyrkobibel, kontrollerade ordagrant mot Wikisource (Bibeln 1917) 2026-10-21."
 }
