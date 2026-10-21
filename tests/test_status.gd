@@ -193,3 +193,29 @@ func test_status_modifiers_show_in_the_calculation() -> void:
 	sim._deal_damage(p, e, 1.0, "physical", "attack", false, true, "attack", true)
 	var dmg: Dictionary = sim.drain_events().filter(func(x: Dictionary) -> bool: return x.type == "damage")[0]
 	assert_true(dmg.calc.mods.any(func(m: Dictionary) -> bool: return m.name == "Stapel ×2" and is_equal_approx(m.f, 1.2)))
+
+
+## 0.30: introts kombination. Rökpil gör fienderna Förblindade och Rättfärdigt slag slår 50 % hårdare mot dem;
+## träffen bär orsaken (calc.combo) så att striden kan visa den.
+func test_holy_smite_hits_harder_on_a_blinded_enemy() -> void:
+	var sim := _sim("crypt_1", ["paladin", "imma"])
+	var p := sim.unit("paladin")
+	var imma := sim.unit("imma")
+	var e := sim.enemies[0]
+	var plain := sim.expected_damage(p, e, "holy_smite")
+	sim._add_aura(imma, e, "blind")
+	assert_near(sim.expected_damage(p, e, "holy_smite"), plain * 1.5, 1e-6, "+50 % mot Förblindad")
+	sim.drain_events()
+	sim._deal_damage(p, e, 1.6, "holy", "holy_smite", false, true, "attack", true)
+	var hit: Dictionary = {}
+	for ev in sim.drain_events():
+		if ev.type == "damage":
+			hit = ev
+	assert_eq(hit.calc.combo.applier, "imma", "Imma satte statusen")
+	assert_eq(hit.calc.combo.aura, "blind")
+	var strike := CombatSim.create(_data, "crypt_1", 3, ["paladin", "imma"])
+	strike.drain_events()
+	strike._deal_damage(strike.unit("paladin"), strike.enemies[0], 1.0, "physical", "strike", false, true, "attack", true)
+	for ev in strike.drain_events():
+		if ev.type == "damage":
+			assert_true(not ev.calc.has("combo"), "inget utan status")

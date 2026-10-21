@@ -41,12 +41,17 @@ var speed_chip: ChipButton
 var forfeit_chip: ChipButton
 ## Skadeloggen och uträkningen bakom siffrorna (0.21).
 var log_chip: ChipButton
+var order_chip: ChipButton  # 0.30: "Spara som order" efter ett eget val som makrot inte hade gjort
+var _order := {}  # {hero, line, until_ms}
+var _orders_offered := {}  # hjälte:rad som redan har erbjudits i striden
 var damage_log: DamageLog
 ## Siffror som just visats: [{pos, at_ms, e}] – ett tryck nära en visar dess uträkning.
 var _recent_numbers: Array = []
 var _calc_open := false
 var _dev_calc := false
 var _dev_statuses := false
+var _dev_order := false
+var _dev_combo := false  # 0.30: --combo förblindar fienderna vid start och kör ALLA AUTO (kombinationens ruta)
 var _dev_inspect := ""
 var _dev_log := false
 var _dev_ask_forfeit := false
@@ -101,6 +106,12 @@ func _ready() -> void:
 			seed_value = int(arg.get_slice("=", 1))
 		elif arg == "--statuses":
 			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
+		elif arg == "--combo" or arg == "--offer-order":
+			_dev_combo = true
+			_dev_order = arg == "--offer-order"  # visar "Spara som order" för Rättfärdigt slag (skärmdumpar)
+			for id in ["timeline", "statuses", "charges"]:
+				if not run.profile.help_seen.has(id):
+					run.profile.help_seen.append(id)
 		elif arg == "--show-calc":
 			_dev_calc = true  # visar uträkningen för en av hjältarnas träffar (skärmdumpar)
 		elif arg == "--damage-log":
@@ -126,7 +137,7 @@ func _ready() -> void:
 	_layout()
 	# 0.25: hjälprutorna (tidslinjen i den första striden, Ge upp när kryptan börjar bli svår); inte i demo-läget.
 	_help_ok = not demo and warp_turns == 0
-	if _help_ok:
+	if _help_ok and not _dev_combo:
 		var ids := ["timeline"]
 		if not state.practice and run.profile.total_descents() >= 2:
 			ids.append("forfeit")
@@ -152,7 +163,7 @@ func _ready() -> void:
 			_on_outcome.call_deferred(sim.outcome)  # spolat till slutet: visa resultatet direkt
 		started = true
 		_countdown = 0.0
-	_set_auto_mode(2 if demo else 0)
+	_set_auto_mode(2 if demo or _dev_combo else 0)
 	if "--battle-macros" in OS.get_cmdline_user_args():
 		_open_macro_editor.call_deferred()  # 0.29.5: redigeraren i striden (skärmdumpar)
 
@@ -246,6 +257,11 @@ func _build_ui() -> void:
 	log_chip.setup("SKADELOGG", 140)
 	log_chip.pressed.connect(_open_damage_log)
 	ui.add_child(log_chip)
+	order_chip = ChipButton.new()
+	order_chip.setup("", 560)
+	order_chip.visible = false
+	order_chip.pressed.connect(_save_order)
+	ui.add_child(order_chip)
 	macro_chip = ChipButton.new()
 	macro_chip.setup("MAKRON", 140)
 	macro_chip.pressed.connect(_open_macro_editor)
@@ -275,6 +291,7 @@ func _layout() -> void:
 	forfeit_chip.position = Vector2(speed_chip.position.x - forfeit_chip.size.x - 8, 12)
 	log_chip.position = Vector2(vs.x - log_chip.size.x - 12, 64)
 	macro_chip.position = Vector2(vs.x - macro_chip.size.x - 12, 116)
+	order_chip.position = macro_log.position + Vector2(0, -order_chip.size.y - 8)
 	overlay.size = vs
 
 
@@ -288,6 +305,9 @@ func _process(delta: float) -> void:
 		Engine.time_scale = 0.0  # striden står still medan frågan visas
 		return
 	var now_ms := Time.get_ticks_msec()
+	if order_chip.visible and (now_ms > int(_order.get("until_ms", 0)) or sim.outcome != ""):
+		order_chip.visible = false
+		_order = {}
 	if _press_ms >= 0 and not _inspecting and _press_unit != "" and now_ms - _press_ms >= INSPECT_HOLD_MS:
 		_inspecting = true
 		_show_inspect(_press_unit)
@@ -307,6 +327,17 @@ func _process(delta: float) -> void:
 			sim.begin()
 			if _dev_statuses:
 				_give_dev_statuses()
+			if _dev_combo:
+				var by: CombatUnit = sim.unit("imma") if sim.unit("imma") != null else sim.heroes[0]
+				for en in sim.enemies:
+					sim._add_aura(by, en, "blind")
+				if _dev_order:
+					_set_auto_mode(0)
+					_offer_order(sim.unit("paladin"), "ability", sim.enemies[0].id, "holy_smite")
+				# Paladinens makro slår Rättfärdigt slag, så att kombinationen syns (bara skärmdumpar, sparas inte).
+				var pal: Dictionary = {} if _dev_order else run.macro_for("paladin")
+				pal.lines = [{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "holy_smite",
+						"target": "that"}]
 			if _dev_inspect != "":
 				_show_inspect.call_deferred(_dev_inspect)
 			_play_events()
@@ -611,8 +642,70 @@ func _do(action: String, target_id: String) -> void:
 	_choosing = ""
 	_choosing_ability = ""
 	_targets.clear()
+	_offer_order(sim.current, action, target_id, ability_id)
 	if sim.act(action, target_id, ability_id) == "":
 		_play_events()
+
+
+## 0.30 "Spara som order" (förslaget ur makroresearchen, docs/ideer/chat-makron-research.md): när spelaren själv väljer
+## något som makrot inte hade valt erbjuds en makrorad som gör samma sak nästa gång. Prototyp för två fall: en helning på
+## en skadad allierad ("hela den som har under N % liv") och en förmåga mot en status den slår hårdare mot
+## (Rättfärdigt slag mot en Förblindad fiende). Raden läggs överst i hjältens makro.
+func _offer_order(u: CombatUnit, action: String, target_id: String, ability_id: String) -> void:
+	if action != "ability" or u == null or u.team != 0:
+		return
+	var ab: Dictionary = data.abilities.get(ability_id, {})
+	var tgt := sim.unit(target_id)
+	if tgt == null:
+		return
+	var line := {}
+	var heals: bool = ab.get("effects", []).any(func(x: Dictionary) -> bool: return x.get("type", "") == "heal")
+	if heals and tgt.team == 0 and tgt.hp_pct() < 0.8:
+		var v := clampi(int(ceil((tgt.hp_pct() * 100.0 + 1.0) / 10.0)) * 10, 30, 80)
+		line = {"subject": "any_ally", "cond": "hp_below", "value": v, "action": "ability", "ability": ability_id,
+				"target": "that"}
+	elif ab.has("bonus_vs") and tgt.team != 0 and tgt.auras.has(ab.bonus_vs.aura):
+		line = {"subject": "any_enemy", "cond": "has_status", "value": ab.bonus_vs.aura, "action": "ability",
+				"ability": ability_id, "target": "that"}
+	if line.is_empty():
+		return
+	var key := "%s:%s:%s" % [u.id, ability_id, line.cond]
+	if _orders_offered.has(key):
+		return
+	var macro: Dictionary = run.macro_for(u.id)
+	for l in macro.get("lines", []):
+		if l.get("ability", "") == ability_id and l.get("cond", "") == line.cond:
+			return  # makrot har redan en sådan rad
+	var d := MacroRunner.decide(sim, u, macro)
+	if d.ok and d.action == action and d.ability == ability_id and d.target == target_id:
+		return  # makrot hade gjort samma sak
+	_orders_offered[key] = true
+	_order = {"hero": u.id, "line": line, "until_ms": Time.get_ticks_msec() + 9000}
+	var what: String = ab.name + (" när någon har under %d %% liv" % line.value if line.cond == "hp_below"
+			else " mot %s fiende" % sim.status_name(tgt, line.value))
+	order_chip.label = "SPARA SOM ORDER: " + what
+	order_chip.size.x = minf(740.0, 40 + 9.5 * order_chip.label.length())
+	order_chip.on = true  # guld, som ALLA AUTO: något att trycka på
+	order_chip.visible = true
+	_layout()
+
+
+## Lägger raden överst i hjältens makro (ett nytt makro om hen inte har något) och sparar.
+func _save_order() -> void:
+	if _order.is_empty():
+		return
+	var id: String = run.assignment.get(_order.hero, "")
+	if id == "" or not run.macros.has(id):
+		id = run.new_macro_id()
+		run.macros[id] = {"name": sim.unit(_order.hero).name, "lines": []}
+		run.assignment[_order.hero] = id
+	run.macros[id].lines.insert(0, _order.line)
+	run.save_macros()
+	run.ui("ui_confirm", -8.0)
+	macro_log.add({"text": "Sparad överst i %ss makro: %s" % [sim.unit(_order.hero).name,
+			MacroRunner.describe_line(sim, _order.line)], "ok": true, "skipped": []})
+	_order = {}
+	order_chip.visible = false
 
 
 ## Kör makrot för hjälten som har turen och skriver beslutet i loggen. Passar inget stannar Auto
@@ -886,6 +979,8 @@ func _on_damage(e: Dictionary) -> void:
 	if e.amount > 0.0 or absorbed <= 0.0:
 		_float(e.target, str(int(e.amount)) + ("!" if crit else ""), color, size, crit or heavy)
 	_remember_number(e)
+	if e.get("calc", {}).has("combo"):
+		_on_combo(e)
 	if on_hero:
 		frames[e.target].on_damage(e.amount)
 	if is_dot:
@@ -898,6 +993,25 @@ func _on_damage(e: Dictionary) -> void:
 	if crit or heavy:
 		_hitstop(60 if crit else 45)
 		world.add_shake(5.0 if crit else 3.0)
+
+
+## 0.30: en förmåga slog hårdare tack vare en status som en annan satte (introts kombination: Rökpil gör fienden
+## Förblindad, Rättfärdigt slag +50 %). Ett guldord ovanför målet, och första gången en ruta med orsak och verkan.
+func _on_combo(e: Dictionary) -> void:
+	var c: Dictionary = e.calc.combo
+	_float(e.target, "KOMBINATION!", UiStyle.GOLD, 22, true)
+	sfx.play("ui_page", -8.0, 0.0)
+	if not _help_ok:
+		return
+	var applier := sim.unit(c.applier) if c.applier != "" else null
+	var who: String = applier.name if applier != null and c.applier != e.source else "Någon"
+	var aura := sim.status_name(sim.unit(e.target), c.aura)
+	var without := int(roundf(float(e.amount) / float(c.mult)))
+	HelpBox.offer_custom(self, "combo", {"title": "Kombination!", "text": [
+		"%s gjorde %s %s." % [who, sim.unit(e.target).name, aura],
+		"%s slår %d %% hårdare mot en %s fiende: %d blev %d." % [data.abilities[c.ability].name,
+				roundi((float(c.mult) - 1.0) * 100.0), aura, without, int(e.amount)],
+		"Så fungerar hela spelet: förmågor, egenskaper och troféer som sätter igång varandra. Leta efter ord som går igen."]}, true)
 
 
 func _on_heal(e: Dictionary) -> void:

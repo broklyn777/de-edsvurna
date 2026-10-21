@@ -257,6 +257,13 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   ALLA AUTO, ett tryck på en hjältes ram byter den hjälten (`battle.gd` `_auto_heroes`); passar ingen rad väntar hjälten.
   Knappen MAKRON i striden öppnar redigeraren ovanpå den pausade striden (`macro_screen` `embedded`; ändringarna gäller
   direkt; `--battle-macros`).
+  **Spara som order** (0.30, prototyp): väljer spelaren själv något som makrot inte hade valt (en helning på en skadad,
+  eller en förmåga mot en status den slår hårdare mot) visar striden en guldknapp i 9 sekunder som lägger en sådan rad
+  överst i hjältens makro (`battle.gd` `_offer_order`, `_save_order`; `--offer-order`).
+  **Introts kombination** (0.30): Rättfärdigt slag slår 50 % hårdare mot en Förblindad fiende (förmågans `bonus_vs`,
+  `CombatSim._bonus_vs`, `calc.combo`), och Immas Rökpil förblindar alla fiender. Första gången visas rutan
+  "Kombination!" med orsak och siffror (`HelpBox.offer_custom`, hjälpen "combo"), sedan ordet KOMBINATION! över målet;
+  Imma tipsar om det när hon ansluter. `--combo` förblindar fienderna och kör ALLA AUTO för skärmdumpar.
   Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.

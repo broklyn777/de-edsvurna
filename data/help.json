@@ -1,6 +1,6 @@
 {
 	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
-	"order": ["timeline", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "forfeit"],
+	"order": ["timeline", "combo", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "forfeit"],
 	"entries": {
 		"timeline": {
 			"title": "Tidslinjen",
@@ -32,6 +32,13 @@
 				"Besegrade monster lämnar ibland en trofé. Den som bär den får monstrets egenskap.",
 				"Vanliga troféer är pålitliga byggdelar, elitfiendernas är specialiserade, och en bosstrofé ändrar en regel – med en kostnad.",
 				"Hjältarna behåller sina troféer tills du byter, vid en lägereld i grottan eller hemma i Förberedelser. Alla troféer du har sett finns i Biblioteket."
+			]
+		},
+		"combo": {
+			"title": "Kombinationer",
+			"text": [
+				"En hjältes förmåga kan göra en annans starkare. Immas Rökpil gör fienderna Förblindade, och Rättfärdigt slag slår 50 % hårdare mot en Förblindad fiende.",
+				"Hela spelet bygger på sådant: egenskaper, troféer och artefakter som sätter igång varandra. Leta efter ord som går igen, som Förblindad, Blöder eller Helig."
 			]
 		},
 		"macros": {

@@ -1158,6 +1158,14 @@ func flag_aura(u: CombatUnit, flag: String) -> String:
 
 
 ## Statusens namn med staplarna ("Gift ×3").
+## 0.30: förmågans bonus mot en status ("bonus_vs": {"aura", "mult"}) om målet har den, annars {}.
+func _bonus_vs(ability_id: String, tgt: CombatUnit) -> Dictionary:
+	var vs: Dictionary = data.abilities.get(ability_id, {}).get("bonus_vs", {})
+	if vs.is_empty() or not tgt.auras.has(vs.aura):
+		return {}
+	return vs
+
+
 func status_name(u: CombatUnit, aura_id: String) -> String:
 	var n: String = data.auras.get(aura_id, {}).get("name", aura_id)
 	var stacks := int(u.auras.get(aura_id, {}).get("stacks", 1))
@@ -1201,6 +1209,9 @@ func expected_damage(src: CombatUnit, tgt: CombatUnit, ability_id: String) -> fl
 	factors.append_array(tgt.damage_taken_factors())
 	if tgt.damage_taken_mult != 1.0:
 		factors.append(tgt.damage_taken_mult)
+	var vs := _bonus_vs(ability_id, tgt)
+	if not vs.is_empty():
+		factors.append(float(vs.mult))
 	var dmg := raw * combine_mods(factors)
 	if kind == "indirect":
 		dmg = indirect_damage(dmg, tgt.defense_now())
@@ -1340,6 +1351,12 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		fx.append({"f": tgt.damage_taken_mult, "name": "%s tar" % tgt.name})
 	if _release_bonus.get("unit", "") == src.id and _release_bonus.ability == ability_id:
 		fx.append({"f": float(_release_bonus.mult), "name": "laddning"})
+	# 0.30: förmågor som slår hårdare mot en status (Rättfärdigt slag mot Förblindad, introts kombination).
+	var vs := _bonus_vs(ability_id, tgt)
+	if direct and not vs.is_empty():
+		fx.append({"f": float(vs.mult), "name": "%s mot %s" % [data.abilities[ability_id].name, status_name(tgt, vs.aura)]})
+		calc.combo = {"ability": ability_id, "aura": vs.aura, "mult": float(vs.mult),
+				"applier": String(tgt.auras[vs.aura].get("source", ""))}
 	var factors: Array = fx.map(func(x: Dictionary) -> float: return x.f)
 	var mods := combine_mods(factors)
 	var cb := crit_bonus(ratio) if crit else 0.0
