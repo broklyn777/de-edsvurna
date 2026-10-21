@@ -11,18 +11,18 @@
 			]
 		},
 		"room_map": {
-			"title": "Rumskartan",
+			"title": "Grottan",
 			"text": [
-				"Varje våning är några steg med två eller tre rum i taget. Tryck på ett rum som lyser för att gå dit.",
-				"Strid och Elit ger erfarenhet och troféer, Skattkammaren silver, Helgedomen en gåva och Lägerelden fler Charges.",
-				"Våningens slut ligger längst till höger. Klara den, så går ni ned till nästa."
+				"Varje våning är en grotta på 8 × 8 rutor. Tryck på en ruta bredvid för att gå ett steg; en ruta ni redan har besökt går pjäsen till själv. Ni ser bara rutorna ni har varit på.",
+				"Kliver ni på en fiendegrupp ser ni vilka den har. Anfall, eller backa – men då spärrar gruppen rutorna intill sig tills den är besegrad. Lägerelden ger Charges, och där byter ni troféer.",
+				"Trappan (eller bossen) syns från början men är låst tills våningens quest är klar. Två våningar, sedan hem."
 			]
 		},
 		"realm_quest": {
 			"title": "Realm Quest",
 			"text": [
-				"Varje nedstigning har ett uppdrag. Det står på rumskartan: jaga en nemesis, rensa elitstrider eller rena helgedomar.",
-				"Klarar du det får du silver. Första gången du klarar uppdraget i en Realm på ett nytt djup får du också en perk-poäng till ditt kall.",
+				"Varje våning har ett uppdrag, och det låser trappan eller bossen: jaga en nemesis, besegra två elitgrupper eller ta bevakade föremål.",
+				"Klarar du den sista våningens uppdrag får du silver. Första gången du klarar det i en Realm på ett nytt djup får du också en perk-poäng till ditt kall.",
 				"Uppdraget går förlorat om du ger upp eller faller."
 			]
 		},
@@ -31,7 +31,7 @@
 			"text": [
 				"Besegrade monster lämnar ibland en trofé. Den som bär den får monstrets egenskap.",
 				"Vanliga troféer är pålitliga byggdelar, elitfiendernas är specialiserade, och en bosstrofé ändrar en regel – med en kostnad.",
-				"Hjältarna behåller sina troféer tills du byter, i lägret eller i Förberedelser. Alla troféer du har sett finns i Biblioteket."
+				"Hjältarna behåller sina troféer tills du byter, vid en lägereld i grottan eller hemma i Förberedelser. Alla troféer du har sett finns i Biblioteket."
 			]
 		},
 		"macros": {
@@ -77,7 +77,7 @@
 		"disciples": {
 			"title": "Lärjungar och Värdshuset",
 			"text": [
-				"Ondskan håller folk fångna i kryptorna. Befria dem i fångrummen på rumskartan, så ansluter de till dig.",
+				"Ondskan håller folk fångna i kryptorna. Befria dem på fångrutorna i grottan, så ansluter de till dig.",
 				"Paladinen och tre till får plats i sällskapet. Den som inte följer med bor i Värdshuset och behåller sin nivå.",
 				"Den som ligger efter får mer erfarenhet tills hen har kommit ikapp."
 			]
@@ -110,7 +110,7 @@
 			"title": "Charges",
 			"text": [
 				"Varje förmåga har ett antal användningar, Charges. De räcker hela nedstigningen och fylls inte på mellan striderna.",
-				"Hur många som är kvar står på förmågans knapp i striden och överst på rumskartan.",
+				"Hur många som är kvar står på förmågans knapp i striden och överst i grottan.",
 				"Lägerelden fyller på tre per förmåga. När du kommer hem till borgen är alla fulla igen."
 			]
 		}

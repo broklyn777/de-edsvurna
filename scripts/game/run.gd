@@ -338,6 +338,12 @@ func _dev_args() -> void:
 					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE,
 					"--handbook": HANDBOOK_SCENE}[arg]
 			get_tree().change_scene_to_file.call_deferred(scene)
+		elif arg == "--campfire-camp":
+			# 0.27: trofébytet vid en lägereld (lägret utan erbjudande)
+			state.take_trophy("bone_finger")
+			state.take_trophy("quick_shot")
+			camp_mode = "campfire"
+			get_tree().change_scene_to_file.call_deferred(CAMP_SCENE)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)
 			last_receipt = ["Domens kall (Paladinen): slog till 7 gånger – 31 skada"]
@@ -425,15 +431,57 @@ func _resume_run() -> void:
 		get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
 
 
-## Spelaren går in i ett rum på rumskartan. Strider går till striden; andra rum avgörs på kartan.
-func enter_room(room_id: String) -> Dictionary:
-	var r := state.enter(room_id)
-	room_result = ""
-	pending_bark = {}  # högst en replik per rum
-	if RunState.is_battle(r):
+## 0.27: spelaren går till en ruta i grottan. Returnerar rutorna pjäsen passerar ([] om det inte går).
+func step_to(i: int) -> Array[int]:
+	var was_new := not state.visited.has(i)
+	var walk := state.step(i)
+	if walk.is_empty():
+		return walk
+	if was_new:
+		room_result = ""
+		pending_bark = {}  # högst en replik per ny ruta
+	save_run()
+	return walk
+
+
+## Backar från en grupp (den står kvar och spärrar rutorna intill).
+func back_off() -> void:
+	if state.back():
+		ui("ui_back", -12.0)
 		save_run()
-		get_tree().change_scene_to_file(BATTLE_SCENE)
-	return r
+
+
+## Striden mot gruppen på rutan (efter knappen ANFALL på gruppens kort).
+func fight_here() -> void:
+	state.fight()
+	if not state.battle_pending:
+		return
+	room_result = ""
+	pending_bark = {}
+	save_run()
+	get_tree().change_scene_to_file(BATTLE_SCENE)
+
+
+## Trappan ned till nästa våning (när questen är klar).
+func descend() -> void:
+	if not state.floor_cleared() or state.is_last_floor():
+		return
+	ui("room_door", -6.0)
+	state.next_floor(data)
+	room_result = "Ni går ned till våning %d." % (state.floor + 1)
+	save_run()
+
+
+## Lägereldens trofébyte (0.27, VAL: troféer byts bara vid en lägereld): lägret öppnas utan nytt erbjudande.
+var camp_mode := "victory"
+
+
+func open_campfire_camp() -> void:
+	camp_mode = "campfire"
+	offer = []
+	last_receipt = []
+	quest_reward = {}
+	get_tree().change_scene_to_file(CAMP_SCENE)
 
 
 ## Fynd (0.20, Forge): slår fram rummets fynd och lägger dem i förrådet. Bara det djupaste djupet man nått
@@ -490,9 +538,13 @@ func show_rare_finds(finds: Array, delay := 0.0) -> void:
 
 ## Lägereld, skattkammare och helgedom (anropas av rumskartan). Returnerar texten om vad som hände.
 func campfire() -> String:
+	var fresh: bool = not state.current_room().get("done", false)
 	var gained := state.campfire(data)
-	bark("campfire")
-	room_result = "Lägerelden: +%d Charges" % gained
+	if fresh:
+		bark("campfire")
+		room_result = "Lägerelden: +%d Charges. Här kan ni byta troféer." % gained
+	else:
+		room_result = "Elden brinner fortfarande. Här kan ni byta troféer."
 	save_run()
 	return room_result
 
@@ -589,7 +641,7 @@ func treasure() -> String:
 		state.take_trophy(t.trophy)
 		room_result += " och trofén %s!" % data.traits[t.trophy].name
 		_trophy_sound_for([t.trophy])
-	var finds := roll_finds("treasure" if state.side_index < 0 else "portal_treasure")
+	var finds := roll_finds("treasure" if not state.current_room().get("guarded", false) else "portal_battle")
 	if not finds.is_empty():
 		room_result += "\nFynd: " + ", ".join(finds.map(func(f: Dictionary) -> String: return Forge.find_text(data, f)))
 		play_find_sound(finds, 0.4)
@@ -629,8 +681,8 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 	last_finds = []
 	if victory and not state.practice:
 		var r := state.current_room()
-		last_finds = roll_finds("boss" if r.get("boss", false) else String(r.get("kind", "end")))
-		var xp := HeroStats.battle_xp(r.get("kind", "end"), state.depth, r.get("boss", false))
+		last_finds = roll_finds("boss" if r.get("boss", false) else RunState.fight_kind(r))
+		var xp := HeroStats.battle_xp(RunState.fight_kind(r), state.depth, r.get("boss", false))
 		last_xp = xp
 		var ups := profile.grant_xp(data, state.party, xp)
 		_bark_after_battle(sim)
@@ -665,10 +717,11 @@ func bark(kind: String) -> void:
 	pending_bark = Dialog.bark(data, kind, state.party, state.barks_used, rng)
 
 
-## Efter lägret: tillbaka till rumskartan, nästa våning, eller hem när körningen är klar.
+## Efter lägret: tillbaka till grottan, eller hem när bossen är besegrad.
 func after_camp() -> void:
 	ui("ui_confirm", -8.0)
-	profile.keep_worn(state.equipped, state.party)  # 0.26.3: bytena i lägret varar
+	profile.keep_worn(state.equipped, state.party)  # 0.26.3: bytena vid lägerelden varar
+	camp_mode = "victory"
 	_save()
 	if state.floor_cleared():
 		if state.is_last_floor():
@@ -678,7 +731,6 @@ func after_camp() -> void:
 			_save()
 			get_tree().change_scene_to_file(BASE_SCENE)
 			return
-		state.next_floor(data)
 	save_run()
 	get_tree().change_scene_to_file(ROOM_MAP_SCENE)
 
@@ -687,6 +739,12 @@ func after_camp() -> void:
 func _after_quest_check(just_done: bool) -> void:
 	if just_done or (state.quest.get("done", false) and not state.quest.get("rewarded", false)):
 		state.quest.rewarded = true
+		# 0.27: en quest per våning låser trappan eller bossen; belöningen ges en gång per körning, för den sista
+		# våningens quest (som i dag, en Realm Quest per körning).
+		if not state.is_last_floor():
+			room_result += " Questen är klar: trappan är öppen!"
+			_save()
+			return
 		quest_reward = profile.complete_quest(state.realm, state.depth)
 		room_result += " Questen är klar: +%d silver%s" % [quest_reward.silver, " och en perk-poäng!" if quest_reward.point else "!"]
 		_save()
@@ -732,10 +790,19 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
 	quest_reward = {}
 	room_result = ""
-	if state.current_room().get("kind", "") == "prisoner":
-		room_result = rescue_prisoner()  # 0.23: vakterna är besegrade, fången befrias
-		pending_rescue = room_result
-	_after_quest_check(state.battle_won())
+	var done_now := state.battle_won()
+	# 0.27: det gruppen vaktade (en fånge, en skatt, ett quest-föremål) tas när den är besegrad.
+	match state.current_room().get("kind", ""):
+		"prisoner":
+			room_result = rescue_prisoner()  # 0.23: vakterna är besegrade, fången befrias
+			pending_rescue = room_result
+		"treasure":
+			treasure()
+		"item":
+			done_now = state.collect_item() or done_now
+			room_result = "Föremålet är ert. " + RunState.quest_text(state.quest)
+	_after_quest_check(done_now)
+	camp_mode = "victory"
 	_trophy_sound()
 	camp_chosen = ""
 	for t in offer:

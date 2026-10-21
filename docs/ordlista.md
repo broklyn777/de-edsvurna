@@ -68,7 +68,7 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Dispel, Rening | dispel, purge | Dispel, Cleanse | Dispel tar bort alla statusar på målet; Rening bara debuffar. |
 | Överst / sist på tidslinjen | to_top, to_bottom | Top / Bottom of Timeline | Den som stod överst skickas ned; bossar flyttas ett steg. |
 | Lärjunge | disciple (`realms.json` "disciples") | Creature (rekrytering) | Följeslagare som befrias ur ett fånge-rum och ansluter på låg nivå. |
-| Fånge-rum | prisoner | – (vårt tema för rekrytering) | Rum på rumskartan med en lärjunge; den första är tidig. |
+| Fånge-ruta | prisoner | – (vårt tema för rekrytering) | Ruta i grottan med en lärjunge; den första är tidig och oftast obevakad. |
 | Värdshuset | inn (`inn_screen`) | Menagerie | Där följeslagarna bor; välj sällskap, de som stannar behåller nivån. |
 | Borgen | keep (`base_screen`, `KeepArt`, `data/keep.json`) | Castle | Basen som en planritning i tusch att gå runt i (0.24; 3D-gård i 0.23). |
 | Paladinens namn | `Profile.hero_name`, `{namn}` (`Dialog.fill`), `NameEntry` | player name | Väljs när en ny profil börjar, skrivs om hos Broder Alrik; "Paladinen" om det lämnas tomt (0.24.2). |
@@ -124,7 +124,12 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Basen | base (`base_screen`) | Castle | Mellan körningarna. Förlust och klarad krypta leder hit. |
 | Kampanjkartan | `campaign_screen`, `realms.json` "map" | Teleportation Shrine (och Siralims karta över Realms) | Landet med Realms som områden; ersätter Kryptporten (0.18). Fördärvets front viker för varje klarat djup. |
 | Förberedelser | `start_screen` | – | Sällskap och trofé att ta med (förr Kryptporten). |
-| Rumskartan | `room_map_screen`, `RoomMap` | Realm-kartan | Våningen som steg med vägval på pergament. |
+| Grottan | `room_map_screen`, `Grotto` | Realm (utforskningen) | Våningen som ett rutnät 8×8 med dimma (0.27); ersätter rumskartan. |
+| Dimma | `RunState.visited` | – (VAL, strängare än originalets synvidd) | Bara besökta rutor syns; målet syns alltid. |
+| Fiendegrupp | `kind` battle/elite, `encounter` | Enemy group | Synlig grupp på en ruta; kliver man på den syns ett kort (ANFALL/BACKA). |
+| Spärr | `Grotto.blocked`, `RunState.seen` | – (Dungelot) | En sedd grupp spärrar de obesökta rutorna intill sig tills den är besegrad. |
+| Trappa | `kind` stairs | – | Första våningens mål; låst tills questen är klar. |
+| Quest-föremål | `kind` item, Samla | Quest item | Bevakat föremål som questen Samla kräver. |
 | Strid, Elit, Skattkammare, Helgedom, Lägereld, Portal, Våningens slut | battle, elite, treasure, shrine, campfire, portal, end | strider, Nemesis, kistor, Pandemonium Shrine, (liv efter strid), Otherworld Portal, boss | Rumstyperna. Lägereld fyller 1 Charge per förmåga. |
 | Realm Quest | `RunState.quest`, `roll_quest()`, `Profile.quests_done` | Realm Quest | Jakt (Nemesis), Rensa (2 elitstrider), Rening (3 helgedomar). Silver och en perk-poäng per ny Realm och djup. |
 | Nemesis | `nemesis` i rummet, `CombatUnit.nemesis` | Nemesis | En namngiven elit på ett rum (questen Jakt). |

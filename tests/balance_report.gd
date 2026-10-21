@@ -36,6 +36,10 @@ func _init() -> void:
 		_first_descent(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "grotta":
+		_grotto(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "artefakter":
 		_artifacts(data)
 		quit()
@@ -351,3 +355,39 @@ func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, arti
 		quests += 1 if r.quest_done else 0
 	print("  %-62s klarade %3d/%d  strider %4.1f  quest %3d %%" % [label, cleared, RUNS, float(fights) / RUNS,
 			roundi(100.0 * quests / RUNS)])
+
+
+## 0.27 grottan (BALANS=grotta): vinst, strider per körning (alla och klarade) och steg, för startmakrona (MACRO) och
+## TUNED, i kryptan och kapellet på väntad nivå, och den första nedstigningen (ensam, Imma efter strid 1).
+func _grotto(data: Dictionary) -> void:
+	var fresh := Bot.new_profile_macros(data)
+	print("=== Grottan (0.27), djup 1, %d körningar per rad ===" % RUNS)
+	for realm_id in ["crypt", "chapel"]:
+		_grotto_line(data, realm_id, "4 hjältar, startmakron, nivå 3", ["paladin", "brokk", "alva", "eira"], 3, {})
+		_grotto_line(data, realm_id, "Paladinen + Imma, nivå 3", ["paladin", "imma"], 3, {"bot_macros": fresh})
+		_grotto_line(data, realm_id, "första: ensam, Imma efter strid 1", ["paladin"], 1,
+				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"})
+
+
+func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Array, lv: int, extra: Dictionary) -> void:
+	var line := "  %-8s %-34s" % [data.realms[realm_id].short, label]
+	for run in [[Bot.Skill.MACRO, "simple"], [Bot.Skill.TUNED, "simple"], [Bot.Skill.MACRO, "careful"]]:
+		var skill: Bot.Skill = run[0]
+		var policy: String = run[1]
+		var cleared := 0
+		var fights := 0
+		var fights_cleared := 0
+		var steps := 0
+		for seed_value in range(1, RUNS + 1):
+			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
+			opts.merge(extra.duplicate(true))
+			var r := Bot.run_expedition(data, seed_value, skill, {}, {}, 1, realm_id, opts, policy)
+			cleared += 1 if r.cleared else 0
+			fights += int(r.fights)
+			steps += int(r.rooms)
+			if r.cleared:
+				fights_cleared += int(r.fights)
+		line += "  %s%s %3d %% (strider %.1f, klarade %.1f, steg %d)" % [_skill_name(skill), "-försiktig" if policy == "careful" else "",
+				roundi(100.0 * cleared / RUNS),
+				float(fights) / RUNS, float(fights_cleared) / maxi(cleared, 1), roundi(float(steps) / RUNS)]
+	print(line)
