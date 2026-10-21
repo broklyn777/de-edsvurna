@@ -147,3 +147,19 @@ func test_macro_drives_a_whole_fight() -> void:
 func test_line_descriptions_read_like_siralim() -> void:
 	var text := MacroRunner.describe_line(_data, _line("any_ally", "hp_below", 40, "ability", "healing_light"))
 	assert_eq(text, "Om någon allierad har liv < 40 % → Förmåga: Helande ljus på den som matchade")
+
+
+## 0.29.5: "lägst liv (%)" vid lika andel (alla fulla) väljer den med minst liv kvar, inte den som står först.
+func test_lowest_hp_breaks_ties_by_hp_left() -> void:
+	var sim := _sim()
+	var foes := sim.enemies.filter(func(e: CombatUnit) -> bool: return e.alive)
+	foes.sort_custom(func(a: CombatUnit, b: CombatUnit) -> bool: return a.max_hp > b.max_hp)
+	var big: CombatUnit = foes[0]
+	var small: CombatUnit = foes[-1]
+	assert_true(big.max_hp > small.max_hp, "mötet har fiender med olika mycket liv")
+	var m := MacroRunner.match_line(sim, sim.unit("eira"), _line("any_enemy", "lowest_hp", 0, "attack"))
+	assert_eq(m.id, small.id, "alla på 100 %: den med minst liv")
+	small.hp = small.max_hp * 0.9
+	big.hp = big.max_hp * 0.5
+	m = MacroRunner.match_line(sim, sim.unit("eira"), _line("any_enemy", "lowest_hp", 0, "attack"))
+	assert_eq(m.id, big.id, "andelen avgör först")
