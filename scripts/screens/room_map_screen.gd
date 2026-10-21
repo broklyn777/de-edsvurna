@@ -192,8 +192,9 @@ func _arrive() -> void:
 		return
 	if not kind in ["treasure", "shrine", "campfire", "prisoner"] or (kind != "campfire" and not fresh):
 		return
-	if run.profile.room_moments and MOMENT_KINDS.has(kind) and fresh:
+	if run.profile.room_moments and MOMENT_KINDS.has(kind) and fresh and not r.get("seen", false):
 		await _play_moment(kind)
+	r.seen = true  # 0.27.0: en lägereld man sparar spelar inte ögonblicket igen
 	_show_room(r)
 
 
@@ -212,8 +213,13 @@ func _play_moment(kind: String) -> void:
 func _show_room(r: Dictionary) -> void:
 	match r.kind:
 		"campfire":
-			_dialog = {"title": "Lägereld", "text": run.campfire(),
-					"options": [{"label": "BYT TROFÉER", "action": "camp"}, {"label": "VIDARE"}]}
+			# 0.27.0 (VD): man väljer själv när man vilar, så att lägerelden kan sparas till när den behövs.
+			if not r.get("done", false):
+				_dialog = {"title": "Lägereld", "text": "Elden sprakar. Att vila ger +%d Charges på varje förmåga, en gång. Troféerna kan ni byta här när som helst." % RunState.CAMPFIRE_CHARGES,
+						"options": [{"label": "VILA", "action": "rest"}, {"label": "BYT TROFÉER", "action": "camp"}, {"label": "SENARE"}]}
+			else:
+				_dialog = {"title": "Lägereld", "text": run.campfire(),
+						"options": [{"label": "BYT TROFÉER", "action": "camp"}, {"label": "VIDARE"}]}
 			HelpBox.offer(self, ["charges"])  # 0.26.2: om den inte redan visats i en strid
 		"treasure":
 			_dialog = {"title": "Skatt", "text": run.treasure(), "options": [{"label": "VIDARE"}]}
@@ -259,6 +265,10 @@ func _tap_dialog(p: Vector2) -> void:
 			var action: String = options[i].get("action", "")
 			if options[i].has("shrine"):
 				_dialog = {"title": "Helgedom", "text": run.shrine(options[i].shrine), "options": [{"label": "VIDARE"}]}
+				return
+			if action == "rest":
+				_dialog = {"title": "Lägereld", "text": run.campfire(),
+						"options": [{"label": "BYT TROFÉER", "action": "camp"}, {"label": "VIDARE"}]}
 				return
 			_dialog = {}
 			if action == "camp":
@@ -559,7 +569,7 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	if not trophies.is_empty():
 		lines.append("Kan lämna: " + ", ".join(trophies))
 	if r.get("elite", false) or r.get("nemesis", false):
-		lines.append("Varning: en elitfiende är starkare än vanligt och har en egen regelbrytande egenskap. Byt makro eller trofé innan, om det behövs.")
+		lines.append("Varning: en elitfiende är starkare än vanligt och har en egen regelbrytande egenskap. Backa och byt makro, eller troféer vid en lägereld, om det behövs.")
 	y += 22
 	for l in lines:
 		y += UiStyle.para(self, Vector2(x, y), l, 16, Parchment.INK, w, 4) + 6
