@@ -139,6 +139,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (t.ex. `imma_elite_1`, för eventuella röster senare), `Dialog.line_text`. Ragnhild Ljusdom (0.29.1) är sträng, konservativ och
   älskvärd och citerar bibelord **endast ur 1917 års kyrkobibel**, ordagrant och kontrollerade (`ref`,
   `docs/ideer/ragnhild-bibelord.md`); aldrig för att förlöjliga tron.
+  Hennes Sanningens ljus har nåd (0.29.4): den svagaste i sällskapet helas med 12 % av hennes Intelligence när ljuset bränner (kapellet
+  MACRO/TUNED 53/66 → 66/74 %, Eira 45/51 %; kryptan 10/24 %, Eira 34/42 %: en specialist mot fiender som helar sig).
   **Värdshuset** (0.29.3, Siralims samtal med skapelserna, ChatGPT:s jobb E, `docs/ideer/chat-vardshuset-och-sok.md`): tryck på en
   följeslagare som bor i värdshuset så säger hen något (`dialog.json` "inn": inn, bored, welcome med id:n; `Dialog.inn_line`),
   valet Visa hjältebladet. Välkomstrepliken en gång efter en nedstigning hen stannade hemma under (`Profile.home_runs`,

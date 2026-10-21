@@ -189,15 +189,19 @@ func _party_sizes(data: Dictionary) -> void:
 		realms = [OS.get_environment("NIVA_REALM")]
 	var lv := HeroStats.expected_level(1)
 	print("=== Sällskapets storlek, djup 1, väntad nivå %d (fienderna ×%s) ===" % [lv, str(CombatSim.PARTY_SCALE)])
-	for realm_id in realms:
+	for realm_id in realms if OS.get_environment("NIVA_BARA_NYA") != "1" else []:
 		for party in PARTIES:
 			_party_line(data, realm_id, party, lv, ", ".join(party.slice(1).map(func(id: String) -> String: return data.heroes[id].short)))
 		_party_line(data, realm_id, ["paladin", "imma"], 1, "ny profil, befriar fångar", ["imma"])
 	if OS.get_environment("NIVA_NYA") == "0":
 		return
-	print("=== De nya följeslagarna i stället för Eira (Kryptan, väntad nivå) ===")
-	for id in ["imma", "ronja", "lirien", "tove", "hulda", "ragnhild", "sefir"]:
-		_party_line(data, "crypt", ["paladin", "brokk", "alva", id], lv, data.heroes[id].short)
+	# NIVA_BARA_NYA=1 hoppar över storlekarna; NIVA_HJALTE=<id> mäter bara den (0.29.4: båda Realms).
+	var only := OS.get_environment("NIVA_HJALTE")
+	for realm_id in realms:
+		print("=== De nya följeslagarna i stället för Eira (%s, väntad nivå) ===" % realm_id)
+		for id in ["eira", "imma", "ronja", "lirien", "tove", "hulda", "ragnhild", "sefir"]:
+			if only == "" or only == id:
+				_party_line(data, realm_id, ["paladin", "brokk", "alva", id], lv, data.heroes[id].short)
 
 
 ## Första nedstigningen (0.23.3): små sällskap med en ny profils makron (MACRO) mot fyra hjältar med startmakrona,
