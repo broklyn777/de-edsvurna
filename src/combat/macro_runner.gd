@@ -146,7 +146,8 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 		"highest_speed":
 			return _extreme(group, x, func(a: CombatUnit) -> float: return a.speed, true)
 		"lowest_hp":
-			return _extreme(group, x, func(a: CombatUnit) -> float: return a.hp_pct(), false)
+			# 0.29.5: lika andel liv (t.ex. alla på 100 %) avgörs av minst liv kvar i antal, inte av ordningen i listan.
+			return _extreme(group, x, func(a: CombatUnit) -> float: return snappedf(a.hp_pct(), 0.0001) * 1e6 + a.hp, false)
 		# Siralim 3 hade "has the lowest Defense"; Defense räknas med Försvara/Provocera just nu.
 		"lowest_defense":
 			return _extreme(group, x, func(a: CombatUnit) -> float: return a.defense_now(), false)
@@ -302,7 +303,7 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 		"highest_speed":
 			return "har högst Speed"
 		"lowest_hp":
-			return "har lägst liv"
+			return "har lägst liv (%)"
 		"lowest_defense":
 			return "har lägst Defense"
 		"highest_defense":
