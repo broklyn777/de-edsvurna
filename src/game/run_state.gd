@@ -321,6 +321,9 @@ func take_trophy(trophy_id: String) -> void:
 
 ## Sätter trofén på hjälten (tar bort den från den som bar den förut). Tom sträng tar av.
 func equip(hero_id: String, trophy_id: String) -> void:
+	# trofeplats: en trofé som sitter i en artefakt bärs inte samtidigt (byts hos Smeden).
+	if trophy_id != "" and artifacts.values().any(func(a: Dictionary) -> bool: return String(a.get("trophy", "")) == trophy_id):
+		return
 	for other in equipped.keys():
 		if equipped[other] == trophy_id:
 			equipped.erase(other)

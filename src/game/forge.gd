@@ -12,6 +12,9 @@ const LEVEL_MAX := 10
 const STAT_SLOT_LEVELS := [2, 5, 9]
 const TRICK_SLOT_LEVELS := [3, 7]
 const NETHER_LEVEL := 10
+## Troféplatsen (trofeplats, Siralims Artifact Trait Slot på Tier 15; vårt val nivå 6 av 10): en andra trofé från samlingen
+## ger hjälten dess egenskap. Den förstörs inte när den tas ut, och samma trofé sitter bara på ett ställe åt gången.
+const TROPHY_LEVEL := 6
 ## Bärnsten per Stat-plats, som i originalet.
 const AMBER_PER_SLOT := 5
 ## Silver för att gå från nivå n till n + 1 (index n). Brant som originalet, men i vår valuta.
@@ -53,6 +56,7 @@ static func normalize(art: Dictionary) -> Dictionary:
 	out["trick_slots"] = tricks.map(func(x: Variant) -> String: return "" if x == null else String(x))
 	out["nether"] = out.get("nether", {})
 	out["ability"] = out.get("ability", "")
+	out["trophy"] = String(out.get("trophy", ""))
 	return out
 
 
@@ -68,6 +72,10 @@ static func nether_open(level: int) -> bool:
 	return level >= NETHER_LEVEL
 
 
+static func trophy_open(level: int) -> bool:
+	return level >= TROPHY_LEVEL
+
+
 ## Vad nivån öppnar ("Stat-plats 2"), eller "" om den bara stärker.
 static func unlock_text(level: int) -> String:
 	var i := STAT_SLOT_LEVELS.find(level)
@@ -78,6 +86,8 @@ static func unlock_text(level: int) -> String:
 		return "Trick-plats %d" % (i + 1)
 	if level == NETHER_LEVEL:
 		return "Nether-plats"
+	if level == TROPHY_LEVEL:
+		return "Troféplats"
 	return ""
 
 
@@ -140,7 +150,7 @@ static func trick_text(data: Dictionary, trick_id: String, level: int, quality :
 
 
 ## Egenskaperna som artefaktens trick och Nether Stone ger: trait_id -> egenskap (genereras per strid).
-## Nether-affix med en trofés egenskap ger dess id direkt i "trait_ids".
+## Nether-affix med en trofés egenskap och trofén i troféplatsen ger sina id direkt i "trait_ids".
 static func effect_traits(data: Dictionary, art: Dictionary, hero_id: String) -> Dictionary:
 	var a := normalize(art)
 	var out := {"traits": {}, "trait_ids": []}
@@ -158,6 +168,8 @@ static func effect_traits(data: Dictionary, art: Dictionary, hero_id: String) ->
 			"trait":
 				if data.traits.has(affix.trait):
 					out.trait_ids.append(affix.trait)
+	if trophy_open(int(a.level)) and a.trophy != "" and data.traits.has(a.trophy) and not out.trait_ids.has(a.trophy):
+		out.trait_ids.append(a.trophy)
 	return out
 
 
