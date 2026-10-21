@@ -1685,6 +1685,68 @@ körning. VD:s regel: "vi tar det som funkar bäst från Siralim." Inget är bes
 tomt tryckande. Kandidater ur originalet: kistor, materialkistor, Realmens egna föremål, en skattkarta som pekar ut en ruta,
 en person som questen söker, en Nether-dörr (överraskning).
 
+## 21. Fiendernas raser, traits och motdrag (VD:ns källa, 2026-10-21)
+
+Underlag till `docs/plan/0.27-fiender.md`. Märkning från källan: SÄKERT, TROLIGT, VET INTE.
+
+### 21.1 Familjer: ingen gemensam familjeegenskap
+
+- Siralim har **ingen automatisk familjeegenskap per ras** (TROLIGT, wiki). Varje varelse har sin egen innate trait;
+  familjesynergin kommer från vad de enskilda traitsen gör, ofta "per medlem av ras X i ditt lag".
+- Exempel: Diabolic Observer (Horde tar 5 % mindre skada per Horde), Light Hunter (följdanfall 35 % per Hunter), Arcane
+  Familiar (+0,5 kast per Familiar), Elemental Familiar (+15 % spellskada, −15 % helning per Familiar), Uralos (olika medlemmar
+  stärker familjen på olika sätt: Knight +5 % Defense efter träff, Savage +10 % Attack efter ett Uralos-anfall), Waspid
+  Infiltrator (+20 % Speed per Waspid), Waspid Guardian (döda Waspids 50 % chans att komma tillbaka), Eft Climber (−10 % Defense
+  på målet per Eft), Assault Griffon (7 % chans till extra tur per Griffon), Beacons (överlappande stödroller), Iron Golem
+  (Golems delar innate traits), Tainted Imling (2.0: kopierar intilliggande Imlers traits).
+- "Enemies Belong To Same Race" gör bara fienderna till en ras; den ger inga traits. "Does not stack" hindrar dubbletter,
+  men en uttrycklig per-medlem-bonus växer ändå.
+
+### 21.2 Tjugo fiende-traits som motverkar strategier (TROLIGT för 2.0)
+
+| Trait | Motverkar |
+|---|---|
+| Exiled Satyr / Spry Satyr | Spelaren kan bara anfalla / kasta en gång åt gången (extra anfall och kast) |
+| Satyr Dominator / Satyr Guardian | Hela varandra bara en gång per tur / väcka bara en gång per strid |
+| Dragon Queen | När en spelarvarelse får en buff eller minion tar laget 30 % av Queens Speed i skada |
+| Dragon Revenant | Efter spelarens kast sjunker lagets Intelligence 35 % |
+| Dragon Soldier | När en spelarvarelse undviker tar laget skada (35 % av Soldiers Int) |
+| Nix Informer / Nix Scoundrel | Tystar / gör laget Hånat 1 tur vid stridens början |
+| Sparktail Officer | Reflekterar 100 % av skadan den tar |
+| Bloodstone / Jewel / Possessed Cruncher | Förseglar anfallarens gem och provocerar / förseglar och kopierar spellen / −10 % skada per förseglad gem |
+| Unicorn Vivifier / Phase Champion | Väcker en slumpad allierad efter sitt anfall / när en spelarvarelse dör återvänder Champions döda |
+| Laughing Wisp | Immun mot debuffar, tar 50 % mindre skada, men skickas längst ned på tidslinjen när den träffas |
+| Aaxer Apocalypse | Fienderna +15 % alla stats per avslutad tur (en klocka) |
+| Sandstone Imler | Tar all skada som riktas mot allierade Imlings (livvakt) |
+| Trepidation Wight | Gör 5 anfall mot slumpade fiender när den dör |
+| Mimic | Börjar överst på tidslinjen |
+
+### 21.3 Möten som tvingar fram ett nytt bygge
+
+- Misery Nemesis: inga buffar eller stat-ökningar (utom vid stridsstart och "always have"); en spelare svarade med Mind Control.
+- Agile + farliga traits: fienderna går först; reflektion och väckning hjälpte, men indirekt skada på alla dödade laget ändå.
+- Champion Nemesis: ledaren immun så länge de allierade lever.
+- Dragon Revenant: svar med Delusion Occultist (hindrar sänkt Intelligence).
+- Gonfurian: inga kast, och bossens sida kan bara skadas med minst 5 debuffar.
+- Aeolian: immun mot indirekt skada; bara en klass i taget kan skada den.
+- The Ancestor: dödar varelser som inte Försvarar.
+- 2.0: False Gods runor stärktes; Timewalk fungerar inte längre mot Lister och Jotun. (SÄKERT)
+
+### 21.4 Pussel från andra spel (reglerna SÄKERT, analysen TROLIGT)
+
+- Darkest Dungeon, Swine Prince + Wilbur: träffar på Wilbur ger motanfall, och dödar man honom blir bossen rasande.
+- Slay the Spire: tre Sentries (målvalet styr framtida skada); tre Darklings (återuppstår om inte alla dör samtidigt).
+- Into the Breach, Shell Psion: ger de andra Vek rustning. Monster Train, Purifier: kräver att bakre raden rensas.
+- Pokémon, Dondozo + Tatsugiri: bryt kombomotorn. FFX, Crawler + Negator: döda stödet så låses bossens värre anfall upp.
+
+### 21.5 Läsbara avsikter på telefon
+
+- Visa hotet före beslutet (Into the Breach: deterministiskt, ingen träffchans). (SÄKERT)
+- Skilj på att välja och att utföra (Desktop Dungeons mobil). Statusar alltid synliga. (SÄKERT)
+- Visa nästa handling skilt från passiva regler (reflektion, livvakt, familjebonus). (TROLIGT)
+- Inte bara färg (W3C): ikon och text eller tal. Tryckytor minst 44×44 pt (Apple), vilket stöder VD:s beslut att hela
+  figuren öppnar Inspect. (SÄKERT)
+
 ---
 
 ## Källor
