@@ -442,11 +442,14 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 		var fights := 0
 		var fights_cleared := 0
 		var steps := 0
+		var lost := {}
 		for seed_value in range(1, RUNS + 1):
 			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
 			opts.merge(extra.duplicate(true))
 			var r := Bot.run_expedition(data, seed_value, skill, {}, {}, 1, realm_id, opts, policy)
 			cleared += 1 if r.cleared else 0
+			if r.has("lost_at"):
+				lost[r.lost_at] = int(lost.get(r.lost_at, 0)) + 1
 			fights += int(r.fights)
 			steps += int(r.rooms)
 			if r.cleared:
@@ -454,6 +457,11 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 		line += "  %s%s %3d %% (strider %.1f, klarade %.1f, steg %d)" % [_skill_name(skill), "-försiktig" if policy == "careful" else "",
 				roundi(100.0 * cleared / RUNS),
 				float(fights) / RUNS, float(fights_cleared) / maxi(cleared, 1), roundi(float(steps) / RUNS)]
+		# GROTTA_FORLUST=1: var körningarna förloras (våning och rumstyp, f1_end = bossen).
+		if OS.get_environment("GROTTA_FORLUST") != "":
+			var keys := lost.keys()
+			keys.sort()
+			line += " [" + ", ".join(keys.map(func(k: String) -> String: return "%s %d" % [k, lost[k]])) + "]"
 	print(line)
 
 
@@ -470,14 +478,21 @@ func _elite_attrition(data: Dictionary) -> void:
 		depths = [int(OS.get_environment("ELIT_DJUP"))]
 	var n := int(OS.get_environment("ELIT_N")) if OS.get_environment("ELIT_N") != "" else RUNS
 	var fresh := Bot.new_profile_macros(data)
+	# ELIT_SALLSKAP="paladin,imma;paladin,imma,brokk" mäter de sällskapen i stället för fyra hjältar (och hoppar över
+	# första nedstigningen).
+	var parties := [["paladin", "brokk", "alva", "eira"]]
+	if OS.get_environment("ELIT_SALLSKAP") != "":
+		parties = Array(OS.get_environment("ELIT_SALLSKAP").split(";")).map(func(p: String) -> Array: return Array(p.split(",")))
 	print("=== Elitgrupper under nötning, upp till %d lägen per grupp ===" % n)
 	for realm_id in realms:
 		for depth in depths:
 			var lv: int = 5 * (depth - 1) + 3
-			for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
-				var snaps := _collect_snaps(data, realm_id, depth, skill, ["paladin", "brokk", "alva", "eira"], lv, {}, n)
-				_print_attrition(data, realm_id, depth, skill, snaps, n, "4 hjältar")
-			if depth == 1:
+			for party in parties:
+				var label := "4 hjältar" if party.size() == 4 and parties.size() == 1 else "+".join(party)
+				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+					var snaps := _collect_snaps(data, realm_id, depth, skill, party, lv, {}, n)
+					_print_attrition(data, realm_id, depth, skill, snaps, n, label)
+			if depth == 1 and OS.get_environment("ELIT_SALLSKAP") == "":
 				var snaps := _collect_snaps(data, realm_id, 1, Bot.Skill.MACRO, ["paladin"], 1,
 						{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"}, n, true)
 				_print_attrition(data, realm_id, 1, Bot.Skill.MACRO, snaps, n, "första nedstigningen", {"bot_macros": fresh})
@@ -663,12 +678,19 @@ func _elite_scale(data: Dictionary) -> void:
 	for realm_id in realms:
 		var pools: Array = data.realms[realm_id].get("elite_pools", [])
 		var sets := []
-		for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
-			sets.append([skill, "4 hjältar", _collect_snaps(data, realm_id, 1, skill, ["paladin", "brokk", "alva", "eira"], 3, {}, n), {}])
-		var first := _collect_snaps(data, realm_id, 1, Bot.Skill.MACRO, ["paladin"], 1,
-				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"}, n, true)
-		sets.append([Bot.Skill.MACRO, "första", first, {"bot_macros": fresh}])
-		sets.append([Bot.Skill.TUNED, "första", first, {}])
+		if OS.get_environment("ELIT_SALLSKAP") != "":
+			# Bara de sällskapen (ELIT_SALLSKAP="paladin,imma;…"), som i BALANS=elitnotning.
+			for p in OS.get_environment("ELIT_SALLSKAP").split(";"):
+				var party := Array(p.split(","))
+				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+					sets.append([skill, "+".join(party), _collect_snaps(data, realm_id, 1, skill, party, 3, {}, n), {}])
+		else:
+			for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+				sets.append([skill, "4 hjältar", _collect_snaps(data, realm_id, 1, skill, ["paladin", "brokk", "alva", "eira"], 3, {}, n), {}])
+			var first := _collect_snaps(data, realm_id, 1, Bot.Skill.MACRO, ["paladin"], 1,
+					{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"}, n, true)
+			sets.append([Bot.Skill.MACRO, "första", first, {"bot_macros": fresh}])
+			sets.append([Bot.Skill.TUNED, "första", first, {}])
 		for set in sets:
 			print("  %s %s %s" % [data.realms[realm_id].short, _skill_name(set[0]), set[1]])
 			for floor_i in pools.size():
@@ -723,6 +745,8 @@ func _elite_diag(data: Dictionary) -> void:
 				key += ":" + str(e.get("aura", ""))
 			if key == "trait":
 				key += ":" + str(e.get("trait", ""))
+			if key == "status_skip" or key == "aura_removed":
+				key += ":" + str(e.get("aura", "")) + ":" + str(e.get("reason", ""))
 			if key == "action":
 				key += ":" + str(e.get("unit", "")) + ":" + str(e.get("action", "")) + ":" + str(e.get("ability", ""))
 			counts[key] = counts.get(key, 0) + 1
@@ -738,6 +762,9 @@ func _elite_diag(data: Dictionary) -> void:
 	ck.sort_custom(func(a, b) -> bool: return counts[a] > counts[b])
 	for k in ck.slice(0, 45):
 		print("  %-60s %5.2f" % [k, float(counts[k]) / count])
+	for k in ck.slice(45):
+		if "sleep" in k or "status_skip" in k:
+			print("  %-60s %5.2f" % [k, float(counts[k]) / count])
 
 
 static func _probed(snap: Dictionary, f: float) -> Dictionary:

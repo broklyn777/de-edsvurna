@@ -44,7 +44,7 @@
 			"skeleton_warrior",
 			"grave_priest"
 		],
-		"stat_mult": 1.06
+		"stat_mult": 1.02
 	},
 	"chapel_1": {
 		"name": "Kapellets förgård",
@@ -92,7 +92,7 @@
 			"cultist",
 			"witch"
 		],
-		"stat_mult": 1.08
+		"stat_mult": 1.06
 	},
 	"crypt_1a": {
 		"name": "Benkryptans gång",

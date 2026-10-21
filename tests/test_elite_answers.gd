@@ -90,3 +90,17 @@ func test_first_descent_elite_uses_the_encounters_own_strength() -> void:
 		var p := plain.enemies[0]
 		assert_near(e.attack, CombatSim.snap_stat(p.attack / float(enc.stat_mult) * float(enc.first_descent_stat_mult)), 0.15,
 				"%s: first_descent_stat_mult ersätter stat_mult" % enc_id)
+
+
+## Dimsömn räknas ned i början av den egna turen, så varaktighet 2 kostar exakt en tur; skada väcker inte.
+func test_deep_sleep_costs_one_turn_and_damage_does_not_wake() -> void:
+	var sim := _sim("crypt_e3")
+	var mist := _enemy(sim, "grave_mist")
+	var paladin := _hero(sim, "paladin")
+	sim._add_aura(mist, paladin, "deep_sleep")
+	sim._deal_damage(mist, paladin, 1.0, "physical", "strike", false, true, "attack", true)
+	assert_true(paladin.auras.has("deep_sleep"), "skada väcker inte ur Dimsömn")
+	sim._tick_turn_start(paladin)
+	assert_eq(sim.cannot_act(paladin), "deep_sleep", "första turen går förlorad")
+	sim._tick_turn_start(paladin)
+	assert_eq(sim.cannot_act(paladin), "", "nästa tur kan paladinen agera")

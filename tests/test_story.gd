@@ -59,7 +59,8 @@ func test_the_lone_paladin_almost_always_wins_the_first_fight() -> void:
 		var opts := {"levels": Bot.party_levels(_data, 1, ["paladin"]), "party": ["paladin"], "bot_macros": fresh,
 				"recruited": _data.heroes.keys(), "first_descent": true, "max_fights": 1}
 		won += 1 if Bot.run_expedition(_data, s, Bot.Skill.MACRO, {}, {}, 1, "crypt", opts).get("won", false) else 0
-	assert_true(won >= 39, "lika lätt som övningen: %d/40" % won)
+	# Mätt över 200 frön (main och elit-balans, 2026-10-21): 92 %. Gränsen 39/40 höll bara på fröna.
+	assert_true(won >= 35, "nästan alltid: %d/40" % won)
 
 
 func test_the_narrator_speaks_in_parentheses() -> void:

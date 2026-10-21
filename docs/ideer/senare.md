@@ -75,3 +75,8 @@ Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom va
 ## Provspel
 
 - 2026-10-21, 0.27.0: VD spelade hela våning 1 med boss. "Det funkar bra, mycket att putsa, men grunden kändes bra."
+
+## Makrona (2026-10-21)
+VD spelar manuellt fast makrosystemet är avancerat – makrona ger inte tillbaka vad de kräver än. Inget bestämt; VD letar
+efter vad som saknas. Riktningar: makrorader som belöning (FF12:s gambits), makrot som pussel i Övningsgården, ta över en
+tur medan AUTO kör, AUTO pausar vid elit/boss. ChatGPT-jobb G (research) i ~/Downloads/rpg007-till-chat/CHAT-JOBB-G-makron.md.

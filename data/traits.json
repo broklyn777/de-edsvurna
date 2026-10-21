@@ -1356,7 +1356,7 @@
 	"mist_shroud": {
 		"name": "Dimslöja",
 		"enemy": true,
-		"text": "Var tredje egen tur söver Gravdimman hela sällskapet i 1 tur (den som tar skada vaknar).",
+		"text": "Var tredje egen tur lägger Gravdimman hela sällskapet i Dimsömn i 1 tur (skada väcker inte).",
 		"trigger": "passive"
 	},
 	"noted": {
@@ -1639,7 +1639,7 @@
 	"mist_veil": {
 		"name": "Dimmans slöja",
 		"trophy": true,
-		"text": "Bäraren kan inte sövas. Bärarens första besvärjelse i striden söver målet i 1 tur.",
+		"text": "Bäraren kan inte sövas (inte heller Dimsömn). Bärarens första besvärjelse i striden söver målet i 1 tur.",
 		"answers": "Elitfiender som slår först eller växer",
 		"rarity": "elite",
 		"trigger": "damage",
@@ -1658,7 +1658,8 @@
 			}
 		],
 		"immune_auras": [
-			"sleeping"
+			"sleeping",
+			"deep_sleep"
 		]
 	},
 	"scribe_quill": {
@@ -1998,7 +1999,7 @@
 	"wisp_flame": {
 		"name": "Irrblossets låga",
 		"trophy": true,
-		"text": "Bäraren undviker 30 % av attacker tills hen har agerat första gången.",
+		"text": "Bäraren undviker attacker så ofta det går (taket för undvikande, 75 %) tills hen har agerat första gången.",
 		"answers": "Grupper som slår först",
 		"rarity": "common",
 		"trigger": "modify_damage_taken",
@@ -2007,7 +2008,7 @@
 			"self_not_acted": true
 		},
 		"modify": {
-			"dodge_add": 0.3
+			"dodge_add": 1.0
 		}
 	},
 	"lantern_light": {

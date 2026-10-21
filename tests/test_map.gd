@@ -139,11 +139,12 @@ func test_quests_lead_to_fights() -> void:
 				assert_true(s.quest.done, "Nemesis besegrad")
 			"clear":
 				var elites := s.map.indices("elite")
-				assert_true(elites.size() >= 2)
-				for e in elites.slice(0, 2):
+				assert_eq(int(q.goal), 1, "Rensa på våning 1 kräver en elitgrupp")
+				assert_true(elites.size() >= int(q.goal))
+				for e in elites.slice(0, int(q.goal)):
 					s.pos = e
 					s.battle_won()
-				assert_true(s.quest.done, "två elitgrupper")
+				assert_true(s.quest.done, "elitgrupperna besegrade")
 			"collect":
 				var items := s.map.indices("item")
 				assert_eq(items.size(), int(q.goal))

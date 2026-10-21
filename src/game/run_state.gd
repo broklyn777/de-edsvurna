@@ -356,8 +356,9 @@ const TREASURE_TROPHY_CHANCE := 0.2
 const PORTAL_STATS := 1.15
 ## 0.24.1: den allra första nedstigningen gör Paladinen och Imma ensamma, med en mjuk trappa i fiendernas stats per
 ## våning (vårt val; följer aldrig hjältarnas nivå): första våningen nästan alltid vunnen, den andra lite svårare och
-## Benfursten en riktig utmaning. Mätt med botarna (BALANS=forsta), docs/formler.md §9.
-const FIRST_DESCENT_RAMP := [0.70, 0.88, 0.81]
+## Benfursten en riktig utmaning. Mätt med botarna (BALANS=forsta), docs/formler.md §9. elit-balans: 0,81 → 0,83 när
+## bossmötena blev mildare (BALANS=grotta: första nedstigningen 71–79 %).
+const FIRST_DESCENT_RAMP := [0.70, 0.88, 0.83]
 ## 0.28 (vårt val): elitgruppen på våning 1 är mildare på profilens första nedstigning, eftersom en Jakt på Nemesis kan
 ## tvinga en ny spelare att möta den. Mötet kan ha en egen styrka, "first_descent_stat_mult" (ersätter stat_mult,
 ## CombatSim), annars gäller den här faktorn.
@@ -384,14 +385,16 @@ func start_expedition(data: Dictionary, seed_value: int) -> void:
 
 ## Slumpar våningens quest (Siralim, plan "Questen"): Jakt (besegra Nemesis), Rensa (2 elitgrupper) eller Samla (2–3
 ## föremål, alltid bevakade av en grupp). Varje quest leder till strider.
-static func roll_quest(rng: RandomNumberGenerator) -> Dictionary:
+## Rensa kräver en elitgrupp på den första våningen och två på den andra (elit-balans, vårt val: våning 1 ska inte
+## tvinga fram två elitstrider innan sällskapet hunnit växa).
+static func roll_quest(rng: RandomNumberGenerator, floor_i := 1) -> Dictionary:
 	var type: String = QUEST_TYPES[rng.randi() % QUEST_TYPES.size()]
 	var q := {"type": type, "progress": 0, "done": false}
 	match type:
 		"hunt":
 			q.goal = 1
 		"clear":
-			q.goal = 2
+			q.goal = 1 if floor_i == 0 else 2
 		"collect":
 			q.goal = rng.randi_range(2, 3)
 	return q
@@ -412,7 +415,7 @@ static func quest_text(q: Dictionary) -> String:
 func start_floor(data: Dictionary) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = run_seed * 977 + floor * 31 + 13
-	quest = roll_quest(rng)
+	quest = roll_quest(rng, floor)
 	var pools: Array = data.realms[realm].get("pools", [])
 	if pools.is_empty():
 		pools = [floor_ids]
