@@ -22,6 +22,8 @@ var tab := 0
 var slot := {}
 ## Valt alternativ i panelen (första trycket); det andra trycket sätter i det.
 var pending := ""
+## 0.29.5: förrådet uppslaget (tryck på FÖRRÅD nere till vänster): varje färg, trick och Nether Stone med antal.
+var _store_open := false
 var _flash := 0.0
 ## Platser som just öppnats eller fyllts: "kind:i" -> tid kvar av skenet.
 var _glow := {}
@@ -37,6 +39,8 @@ func _ready() -> void:
 	HelpBox.offer(self, ["artifacts", "materials"] if later else ["artifacts"])
 	_pick_hero(hero)
 	for arg in OS.get_cmdline_user_args():
+		if arg == "--smith-store":
+			_store_open = true  # 0.29.5: förrådet uppslaget (skärmdumpar)
 		if arg.begins_with("--smith-hero="):
 			_pick_hero(arg.get_slice("=", 1))
 		elif arg.begins_with("--smith-slot="):
@@ -94,6 +98,14 @@ func _say(text: String) -> void:
 # --- Inmatning --------------------------------------------------------------
 
 func _tap(p: Vector2) -> void:
+	if _store_open:
+		_store_open = false  # ett tryck var som helst stänger förrådet
+		run.ui_tap()
+		return
+	if _store_rect().has_point(p):
+		_store_open = true
+		run.ui("ui_page", -10.0)
+		return
 	if back_rect().has_point(p):
 		run.go(run.BASE_SCENE)
 		return
@@ -368,6 +380,8 @@ func _draw() -> void:
 		_draw_forge(data, profile)
 	else:
 		_draw_artifact(data, profile, art)
+	if _store_open:
+		_draw_store_panel(data, profile)
 	if _message_t > 0.0:
 		UiStyle.text(self, Vector2(_x0(), 160), _message, 22, Color(UiStyle.GOLD, minf(1.0, _message_t)),
 				HORIZONTAL_ALIGNMENT_RIGHT, _w(), 5)
@@ -381,10 +395,79 @@ func _draw_store(data: Dictionary, profile: Profile, at: Vector2) -> void:
 			amber += int(profile.materials[id])
 		else:
 			tricks += int(profile.materials[id])
-	UiStyle.text(self, at - Vector2(0, 8), "FÖRRÅD", 15, Color(1, 1, 1, 0.55))
+	UiStyle.text(self, at - Vector2(0, 8), "FÖRRÅD · TRYCK FÖR ALLT", 15, Color(1, 1, 1, 0.55))
 	UiStyle.text(self, at + Vector2(0, 18), "%d bärnsten · %d trick\n" % [amber, tricks], 17, Color(1, 1, 1, 0.85),
 			HORIZONTAL_ALIGNMENT_LEFT, 290, 3)
 	UiStyle.text(self, at + Vector2(0, 40), "%d Nether Stones" % profile.stones.size(), 17, Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_LEFT, 290, 3)
+
+
+func _store_rect() -> Rect2:
+	return Rect2(MARGIN - 6, size.y - 100, 320, 96)
+
+
+## 0.29.5: förrådet i sin helhet: bärnsten per färg (och hur många platser de räcker till), trick och Nether Stones.
+func _draw_store_panel(data: Dictionary, profile: Profile) -> void:
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.6))
+	var r := Rect2(MARGIN + 330, 112, size.x - MARGIN * 2 - 330, size.y - 130)
+	draw_rect(r, Color(0.05, 0.045, 0.07, 0.98))
+	draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
+	var x := r.position.x + 20
+	var y := r.position.y + 34
+	var slots := 0
+	var total := 0
+	for id in data.materials.amber:
+		var n := int(profile.materials.get(id, 0))
+		total += n
+		slots += n / Forge.AMBER_PER_SLOT
+	UiStyle.text(self, Vector2(x, y), "FÖRRÅDET", 20, UiStyle.GOLD)
+	UiStyle.text(self, Vector2(x + 140, y), "%d bärnsten räcker till %d %s – en stat-plats tar %d av samma färg." % [total, slots,
+			"plats" if slots == 1 else "platser", Forge.AMBER_PER_SLOT], 16, Color(1, 1, 1, 0.8), HORIZONTAL_ALIGNMENT_LEFT,
+			r.size.x - 180, 2)
+	y += 30
+	var col_w := (r.size.x - 60) / 2.0
+	var lv := maxi(int(profile.artifact(hero).get("level", 1)), 1)  # värdena på den valda hjältens artefakt
+	var i := 0
+	for id in data.materials.amber:
+		var n := int(profile.materials.get(id, 0))
+		if n == 0:
+			continue
+		var p := Vector2(x + (i % 2) * (col_w + 20), y + (i / 2) * 34)
+		GemArt.draw_find(self, data, {"kind": "amber", "id": id, "count": 1}, p + Vector2(10, -6), 10.0, _t)
+		var ok := n >= Forge.AMBER_PER_SLOT
+		UiStyle.text(self, p + Vector2(28, 0), "%s ×%d" % [_short(ArtifactText.material_name(data, id)), n], 17,
+				Color.WHITE if ok else Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, 170, 2)
+		UiStyle.text(self, p + Vector2(200, 0), ArtifactText.material_text(data, id, lv), 15, Color(UiStyle.TRAIT_GOLD, 0.9 if ok else 0.5),
+				HORIZONTAL_ALIGNMENT_LEFT, col_w - 200, 2)
+		i += 1
+	if i == 0:
+		UiStyle.text(self, Vector2(x, y), "Ingen bärnsten än.", 16, Color(1, 1, 1, 0.5))
+		i = 1
+	y += ceili(i / 2.0) * 34 + 16
+	var tricks := []
+	for id in data.materials.tricks:
+		var n := int(profile.materials.get(id, 0))
+		if n > 0:
+			tricks.append("%s ×%d" % [ArtifactText.material_name(data, id), n])
+	UiStyle.text(self, Vector2(x, y), "TRICK", 15, Color(1, 1, 1, 0.55))
+	UiStyle.para(self, Vector2(x + 80, y), "  ·  ".join(tricks) if not tricks.is_empty() else "Inga än.", 16,
+			Color(1, 1, 1, 0.85), r.size.x - 120, 2)
+	y += 52
+	UiStyle.text(self, Vector2(x, y), "NETHER", 15, Color(1, 1, 1, 0.55))
+	var stones: Array = profile.stones
+	if stones.is_empty():
+		UiStyle.text(self, Vector2(x + 80, y), "Inga än.", 16, Color(1, 1, 1, 0.85))
+	for k in mini(stones.size(), 8):
+		var st: Dictionary = stones[k]
+		var line := ", ".join(Forge.stone_lines(data, st))
+		if line.length() > 78:
+			line = line.left(76) + " …"
+		UiStyle.text(self, Vector2(x + 80, y + k * 24), "%s (%d): %s" % [Forge.rarity_of(data, st).name, int(st.number),
+				line], 15, Color(Forge.rarity_of(data, st).color),
+				HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 120, 1)
+	if stones.size() > 8:
+		UiStyle.text(self, Vector2(x + 80, y + 8 * 24), "… och %d till" % (stones.size() - 8), 15, Color(1, 1, 1, 0.6))
+	UiStyle.text(self, Vector2(r.position.x, r.end.y - 14), "Tryck för att stänga", 15, Color(1, 1, 1, 0.55),
+			HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
 
 
 func _draw_artifact(data: Dictionary, profile: Profile, art: Dictionary) -> void:
@@ -482,7 +565,7 @@ func _draw_socket(data: Dictionary, art: Dictionary, s: Dictionary, level: int) 
 
 func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int) -> void:
 	var x0 := _x0()
-	var kind_name: String = {"stat": "BÄRNSTEN FÖR STAT-PLATS %d", "trick": "TRICK FÖR TRICK-PLATS %d",
+	var kind_name: String = {"stat": "BÄRNSTEN FÖR STAT-PLATS %d · 5 AV SAMMA FÄRG", "trick": "TRICK FÖR TRICK-PLATS %d",
 			"nether": "NETHER STONE"}[slot.kind]
 	if "%d" in kind_name:
 		kind_name = kind_name % (int(slot.i) + 1)
