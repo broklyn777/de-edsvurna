@@ -17,6 +17,12 @@ func _ready() -> void:
 	_full_log.entries = run.practice_log
 	_full_log.visible = false
 	add_child(_full_log)
+	# Utvecklarflagga för skärmdumpar: alla Realmens elitgrupper som mötta (sparas inte om profilen är påhittad).
+	if "--all-elites" in OS.get_cmdline_user_args():
+		for pool in run.data.realms[run.profile.realm].get("elite_pools", []):
+			for id in pool:
+				if not run.profile.elites_met.has(id):
+					run.profile.elites_met.append(id)
 
 
 func _process(delta: float) -> void:
@@ -30,7 +36,21 @@ func _encounters() -> Array:
 	if run.intro_practice():
 		run.practice_encounter = run.INTRO_PRACTICE
 		return [run.INTRO_PRACTICE]
+	return _floors() + _elites()
+
+
+func _floors() -> Array:
 	return run.data.realms[run.profile.realm].floors
+
+
+## 0.29.5: Realmens elitgrupper som man har slagits mot i grottan (Profile.elites_met).
+func _elites() -> Array:
+	var out := []
+	for pool in run.data.realms[run.profile.realm].get("elite_pools", []):
+		for id in pool:
+			if run.profile.elites_met.has(id) and run.data.encounters.has(id):
+				out.append(id)
+	return out
 
 
 func _tap(p: Vector2) -> void:
@@ -69,7 +89,12 @@ func _tap(p: Vector2) -> void:
 # --- Layout -----------------------------------------------------------------
 
 func _enc_rect(i: int) -> Rect2:
-	return Rect2(MARGIN, 124 + i * 104, 360, 94)
+	var n := _floors().size()
+	if _elites().is_empty():
+		return Rect2(MARGIN, 124 + i * 104, 360, 94)
+	if i < n:
+		return Rect2(MARGIN, 124 + i * 80, 360, 72)  # 0.29.5: tätare när elitgrupperna står under
+	return Rect2(MARGIN, 124 + n * 80 + 26 + (i - n) * 42, 360, 36)
 
 
 func _right_x() -> float:
@@ -113,10 +138,16 @@ func _draw() -> void:
 
 	UiStyle.text(self, Vector2(MARGIN, 114), "FIENDER", 14, Color(1, 1, 1, 0.6))
 	var encs: Array = _encounters()
+	var n := _floors().size()
 	for i in encs.size():
 		var enc: Dictionary = data.encounters[encs[i]]
-		UiStyle.card(self, _enc_rect(i), enc.name, _enemy_list(enc), run.practice_encounter == encs[i],
-				Color("#ff8a6a"), "VÅNING %d" % (i + 1))
+		if i < n:
+			UiStyle.card(self, _enc_rect(i), enc.name, _enemy_list(enc), run.practice_encounter == encs[i],
+					Color("#ff8a6a"), "VÅNING %d" % (i + 1))
+		else:
+			if i == n:
+				UiStyle.text(self, Vector2(MARGIN, _enc_rect(i).position.y - 8), "ELITGRUPPER NI HAR MÖTT", 14, Color(1, 1, 1, 0.6))
+			chip(_enc_rect(i), "★ " + String(enc.name), run.practice_encounter == encs[i], 15)
 
 	UiStyle.text(self, Vector2(_right_x(), 114), "SÄLLSKAPET – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE", 14, Color(1, 1, 1, 0.6))
 	for i in profile.party.size():

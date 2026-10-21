@@ -71,6 +71,8 @@ var inn_heard := {}
 ## 0.25: hjälprutorna som redan har visats (Help), och berättarens rutor som har lästs (första porten, första bossen).
 var help_seen: Array = []
 var narrated: Array = []
+## 0.29.5: elitgrupperna man har slagits mot (mötenas id); de går att öva mot i Övningsgården.
+var elites_met: Array = []
 ## Hur många följeslagare man hade senast man var i Värdshuset (det lyser när någon ny har kommit).
 var inn_seen := 0
 const LEGACY_COMPANIONS := ["brokk", "alva", "eira", "solveig"]
@@ -531,6 +533,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "inn_heard", inn_heard)
 	cfg.set_value("progress", "help_seen", help_seen)
 	cfg.set_value("progress", "narrated", narrated)
+	cfg.set_value("progress", "elites_met", elites_met)
 	cfg.set_value("progress", "worn", worn)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
@@ -582,6 +585,7 @@ static func load_from(path: String) -> Profile:
 	p.inn_heard = cfg.get_value("progress", "inn_heard", {})
 	p.help_seen = cfg.get_value("progress", "help_seen", [])
 	p.narrated = cfg.get_value("progress", "narrated", [])
+	p.elites_met = cfg.get_value("progress", "elites_met", [])
 	if p.intro_done and not p.recruited.has(STARTER):
 		p.recruited.append(STARTER)  # Imma bor i borgen; äldre profiler hittar henne i Värdshuset
 	var saved: Array = cfg.get_value("progress", "party", [])
