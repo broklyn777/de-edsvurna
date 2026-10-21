@@ -425,7 +425,8 @@
 			"bone_colossus",
 			"skeleton_warrior"
 		],
-		"stat_mult": 0.7,
+		"stat_mult": 1.08,
+		"first_descent_stat_mult": 0.56,
 		"elite_group": true,
 		"template": "Kräver en annan skadekälla"
 	},
@@ -442,7 +443,8 @@
 			"skeleton_warrior",
 			"skeleton_archer"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 1.04,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Väcker de döda"
 	},
@@ -456,9 +458,11 @@
 		],
 		"enemies": [
 			"grave_mist",
-			"skeleton_warrior"
+			"skeleton_warrior",
+			"skeleton_archer"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 1.12,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Straffar besvärjelser"
 	},
@@ -474,7 +478,8 @@
 			"bone_scribe",
 			"rattler"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 1.01,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Straffar upprepning"
 	},
@@ -491,7 +496,8 @@
 			"skeleton_warrior",
 			"bone_runner"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.94,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Familj med ledare"
 	},
@@ -508,7 +514,8 @@
 			"bone_runner",
 			"skeleton_archer"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.86,
+		"first_descent_stat_mult": 0.72,
 		"template": "Offret (elit)"
 	},
 	"chapel_2d": {
@@ -630,10 +637,12 @@
 		],
 		"enemies": [
 			"black_lance",
+			"mirror_warden",
 			"will_o_wisp",
 			"will_o_wisp"
 		],
-		"stat_mult": 0.7,
+		"stat_mult": 1.22,
+		"first_descent_stat_mult": 0.56,
 		"elite_group": true,
 		"template": "Slår först"
 	},
@@ -650,7 +659,8 @@
 			"cultist",
 			"corrupted_deacon"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.68,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Två som skyddar varandra"
 	},
@@ -667,7 +677,8 @@
 			"witch",
 			"cultist"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 1.04,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Straffar upprepning"
 	},
@@ -684,7 +695,8 @@
 			"fallen_knight",
 			"cultist"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.83,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Växaren"
 	},
@@ -702,7 +714,8 @@
 			"witch",
 			"cultist"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.79,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Två familjer"
 	},
@@ -719,7 +732,8 @@
 			"cultist",
 			"corrupted_deacon"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.76,
+		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Helar och renar"
 	}

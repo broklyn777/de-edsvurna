@@ -1165,8 +1165,7 @@
 	},
 	"mist_sleep": {
 		"name": "Dimslöja",
-		"target": "enemy",
-		"pick": "highest_attack",
+		"target": "all_enemies",
 		"kind": "spell",
 		"school": "shadow",
 		"cooldown": 3,

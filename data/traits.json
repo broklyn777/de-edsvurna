@@ -1356,7 +1356,7 @@
 	"mist_shroud": {
 		"name": "Dimslöja",
 		"enemy": true,
-		"text": "Var tredje egen tur söver Gravdimman den i sällskapet som har högst Attack i 1 tur.",
+		"text": "Var tredje egen tur söver Gravdimman hela sällskapet i 1 tur (den som tar skada vaknar).",
 		"trigger": "passive"
 	},
 	"noted": {
@@ -1639,7 +1639,7 @@
 	"mist_veil": {
 		"name": "Dimmans slöja",
 		"trophy": true,
-		"text": "Bärarens första besvärjelse i striden söver målet i 1 tur.",
+		"text": "Bäraren kan inte sövas. Bärarens första besvärjelse i striden söver målet i 1 tur.",
 		"answers": "Elitfiender som slår först eller växer",
 		"rarity": "elite",
 		"trigger": "damage",
@@ -1656,12 +1656,15 @@
 				"duration": 1,
 				"target": "target"
 			}
+		],
+		"immune_auras": [
+			"sleeping"
 		]
 	},
 	"scribe_quill": {
 		"name": "Skrivarens penna",
 		"trophy": true,
-		"text": "Bäraren gör 15 % mer skada med en handling hen inte gjorde förra turen.",
+		"text": "Medan bäraren lever räknas sällskapets träffar aldrig som upprepningar (Antecknat), och bäraren gör 15 % mer skada med en handling hen inte gjorde förra turen.",
 		"answers": "Fiender som straffar upprepning (Benskrivaren, Skramlaren)",
 		"rarity": "elite",
 		"trigger": "modify_damage",
@@ -1670,28 +1673,30 @@
 		},
 		"modify": {
 			"damage_mult": 1.15
-		}
+		},
+		"ignore_repeat": true
 	},
 	"bell_rope": {
 		"name": "Klockrepet",
 		"trophy": true,
-		"text": "Var tredje egen tur flyttas sällskapets svagaste överst på tidslinjen, men bäraren börjar striden längst ned.",
+		"text": "När fienderna flyttas överst på tidslinjen följer bäraren med (en gång per tur), men bäraren börjar striden längst ned.",
 		"answers": "Att överleva tills man får agera",
 		"rarity": "boss",
-		"trigger": "turn_start",
-		"every": 3,
+		"trigger": "timeline_move",
 		"when": {
-			"unit": "self"
+			"unit": "enemy",
+			"dir": "top"
 		},
 		"effects": [
 			{
 				"type": "to_top",
-				"target": "weakest_ally"
+				"target": "self"
 			}
 		],
 		"parts": [
 			"bell_rope_cost"
-		]
+		],
+		"once_per_turn": true
 	},
 	"bell_rope_cost": {
 		"name": "Klockrepet (kostnad)",
@@ -2030,7 +2035,7 @@
 	"mirror_shield": {
 		"name": "Spegelskölden",
 		"trophy": true,
-		"text": "Den som skadar bäraren med en besvärjelse tar 30 % tillbaka (indirekt).",
+		"text": "Den som skadar bäraren med en besvärjelse tar 60 % tillbaka (indirekt).",
 		"answers": "Besvärjare (Häxa, Gravpräst, Inkvisitorn)",
 		"rarity": "common",
 		"trigger": "damage",
@@ -2043,7 +2048,7 @@
 		"effects": [
 			{
 				"type": "damage",
-				"pct_of_event": 0.3,
+				"pct_of_event": 0.6,
 				"kind": "indirect",
 				"target": "source"
 			}
