@@ -65,6 +65,9 @@ var _choosing_ability := ""
 ## 0.29.5: vilka hjältar som kör sitt makro (AUTO) i den här striden; alla börjar på MANUELL. Stora knappen växlar mellan
 ## MANUELL, AUTO (följeslagarna) och ALLA AUTO (även Paladinen); ett tryck på en hjältes ram byter just den hjälten.
 var _auto_heroes := {}
+## 0.29.5: makroredigeraren ovanpå striden (striden står still medan den är öppen).
+var _macro_editor: Control = null
+var macro_chip: ChipButton
 const AUTO_LABELS := ["MANUELL", "AUTO", "ALLA AUTO"]
 var _targets: Array[String] = []
 ## Inspect (Siralim): tryck och håll på en figur för att se dess egenskaper. Kostar ingen tur.
@@ -150,6 +153,8 @@ func _ready() -> void:
 		started = true
 		_countdown = 0.0
 	_set_auto_mode(2 if demo else 0)
+	if "--battle-macros" in OS.get_cmdline_user_args():
+		_open_macro_editor.call_deferred()  # 0.29.5: redigeraren i striden (skärmdumpar)
 
 
 ## 0.25: hjälprutorna visas bara när en människa spelar (inte --demo eller --turns).
@@ -241,6 +246,10 @@ func _build_ui() -> void:
 	log_chip.setup("SKADELOGG", 140)
 	log_chip.pressed.connect(_open_damage_log)
 	ui.add_child(log_chip)
+	macro_chip = ChipButton.new()
+	macro_chip.setup("MAKRON", 140)
+	macro_chip.pressed.connect(_open_macro_editor)
+	ui.add_child(macro_chip)
 	overlay = BattleOverlay.new()
 	overlay.restart_requested.connect(_continue)
 	overlay.forfeit_answered.connect(_on_forfeit_answer)
@@ -265,14 +274,15 @@ func _layout() -> void:
 	speed_chip.position = Vector2(auto_chip.position.x - speed_chip.size.x - 8, 12)
 	forfeit_chip.position = Vector2(speed_chip.position.x - forfeit_chip.size.x - 8, 12)
 	log_chip.position = Vector2(vs.x - log_chip.size.x - 12, 64)
+	macro_chip.position = Vector2(vs.x - macro_chip.size.x - 12, 116)
 	overlay.size = vs
 
 
 # --- Bildruta ---------------------------------------------------------------
 
 func _process(delta: float) -> void:
-	if damage_log.open:
-		Engine.time_scale = 0.0  # striden står still medan loggen är öppen
+	if damage_log.open or _macro_editor != null:
+		Engine.time_scale = 0.0  # striden står still medan loggen eller makroredigeraren är öppen
 		return
 	if overlay.mode == "confirm":
 		Engine.time_scale = 0.0  # striden står still medan frågan visas
@@ -432,6 +442,27 @@ func _give_dev_statuses() -> void:
 	sim._add_aura(p, sim.enemies[0], "vulnerable")
 	sim._add_aura(p, sim.enemies[1 % sim.enemies.size()], "snared")
 	sim._add_aura(p, sim.enemies[2 % sim.enemies.size()], "frozen")
+
+
+## 0.29.5: ändra makrona mitt i striden. Den som har turen (eller Paladinen) väljs först; ändringarna gäller direkt.
+func _open_macro_editor() -> void:
+	if _macro_editor != null or overlay.mode in ["confirm", "victory", "defeat"] or damage_log.open:
+		return
+	var ed: Control = load(run.MACRO_SCENE).instantiate()
+	ed.embedded = true
+	ed.focus_hero = sim.current.id if sim.current != null and sim.current.team == 0 else "paladin"
+	ed.closed.connect(_macro_editor_closed)
+	_macro_editor = ed
+	macro_chip.get_parent().add_child(ed)
+	run.ui("ui_page", -10.0)
+
+
+func _macro_editor_closed() -> void:
+	_macro_editor = null
+	Engine.time_scale = _speed
+	# Väntade hjälten på AUTO för att inget passade: pröva det nya makrot direkt.
+	if sim.current != null and _auto_heroes.get(sim.current.id, false) and _choosing == "":
+		action_bar.visible = false
 
 
 func _open_damage_log() -> void:
@@ -930,6 +961,7 @@ func _on_revive(unit_id: String) -> void:
 func _on_outcome(result: String) -> void:
 	action_bar.visible = false
 	forfeit_chip.visible = false
+	macro_chip.visible = false
 	# 0.29.5: skadeloggen går att öppna på resultatskärmen (det är då man vill läsa den): knappen och loggen ovanpå rutan.
 	log_chip.get_parent().move_child(log_chip, -1)
 	damage_log.get_parent().move_child(damage_log, -1)

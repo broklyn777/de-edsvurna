@@ -255,6 +255,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   uppifrån och ned, första raden som passar och går att utföra vinner. Tilldelas per hjälte, med
   AUTO eller MANUELL per hjälte i striden (0.29.5): striden börjar på MANUELL; knappen växlar MANUELL → AUTO (följeslagarna) →
   ALLA AUTO, ett tryck på en hjältes ram byter den hjälten (`battle.gd` `_auto_heroes`); passar ingen rad väntar hjälten.
+  Knappen MAKRON i striden öppnar redigeraren ovanpå den pausade striden (`macro_screen` `embedded`; ändringarna gäller
+  direkt; `--battle-macros`).
   Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
