@@ -19,6 +19,9 @@ const ELITE_MIN_DIST := 4
 const CAMPFIRE_NEAR_ELITE := 3
 ## Grupper så här långt från start (och längre) kommer ur nästa, svårare pool (VAL).
 const FAR_TIER_DIST := 7
+## Grupper per våning utöver eliten, vakterna inräknade (0.27.0: 5–6, så att en körning blir ~8–10 strider; först 6–8).
+const GROUPS_MIN := 5
+const GROUPS_MAX := 6
 
 var cells: Array = []
 var floor := 0
@@ -167,7 +170,7 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 			g.cells[at].tier = tier_for.call(at)
 			guards += 1
 	# Skatter: 1–2 bevakade (en med ett starkare möte, en bit bort) och 3–4 obevakade, spridda.
-	var n_guarded := rng.randi_range(1, 2)
+	var n_guarded := 1 if guards >= 2 else rng.randi_range(1, 2)
 	for n in n_guarded:
 		var at := g._free_cell(rng, func(i: int) -> bool: return dist(i, g.start) >= 4)
 		if at < 0:
@@ -191,8 +194,8 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 	if shrine < 0:
 		return null
 	g.cells[shrine] = {"kind": "shrine"}
-	# Vanliga grupper tills det finns 6–8 grupper utöver eliten (vakterna räknas).
-	var want := rng.randi_range(6, 8)
+	# Vanliga grupper tills det finns GROUPS_MIN–GROUPS_MAX grupper utöver eliten (vakterna räknas).
+	var want := rng.randi_range(GROUPS_MIN, GROUPS_MAX)
 	for n in maxi(want - guards, 0):
 		var at := g._free_cell(rng, func(i: int) -> bool: return dist(i, g.start) >= 2)
 		if at < 0:
@@ -242,8 +245,8 @@ func problems(quest := {}) -> Array[String]:
 		out.append("målet för nära start")
 	var groups := group_cells().filter(func(i: int) -> bool: return i != goal)
 	var plain := groups.filter(func(i: int) -> bool: return cells[i].kind != "elite")
-	if plain.size() < 6 or plain.size() > 8:
-		out.append("%d grupper (6–8)" % plain.size())
+	if plain.size() < GROUPS_MIN or plain.size() > GROUPS_MAX:
+		out.append("%d grupper (%d–%d)" % [plain.size(), GROUPS_MIN, GROUPS_MAX])
 	var elites := indices("elite")
 	if elites.is_empty():
 		out.append("ingen elit")

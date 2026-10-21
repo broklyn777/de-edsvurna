@@ -739,10 +739,10 @@ func after_camp() -> void:
 func _after_quest_check(just_done: bool) -> void:
 	if just_done or (state.quest.get("done", false) and not state.quest.get("rewarded", false)):
 		state.quest.rewarded = true
-		# 0.27: en quest per våning låser trappan eller bossen; belöningen ges en gång per körning, för den sista
-		# våningens quest (som i dag, en Realm Quest per körning).
+		# 0.27: en quest per våning låser trappan eller bossen. Den första ger halva silvret (0.27.0); perk-poängen
+		# och hela belöningen kommer med den sista våningens quest (en Realm Quest per körning, som förut).
 		if not state.is_last_floor():
-			room_result += " Questen är klar: trappan är öppen!"
+			room_result += " Questen är klar: +%d silver, och trappan är öppen!" % profile.floor_quest_silver(state.depth)
 			_save()
 			return
 		quest_reward = profile.complete_quest(state.realm, state.depth)

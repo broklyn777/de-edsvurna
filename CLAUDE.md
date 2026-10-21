@@ -75,7 +75,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   0.18:s rumskarta med steg och rum): två våningar per körning (`RunState.FLOORS_PER_RUN`), var och en ett rutnät 8×8
   (`src/game/grotto.gd`, `Grotto`, öppen plan utan klippor), genererat ur ett frö efter regler (`Grotto.problems()`):
   start vid en kant, trappan (första våningen) eller bossen minst 5 steg bort, synlig från start men låst tills våningens
-  quest är klar; 6–8 fiendegrupper ur Realmens pooler (tier 0–2 efter våning och avstånd, `FAR_TIER_DIST`), 1 elitgrupp
+  quest är klar; 5–6 fiendegrupper (0.27.0, först 6–8) ur Realmens pooler (tier 0–2 efter våning och avstånd, `FAR_TIER_DIST`), 1 elitgrupp
   (2 om questen är Rensa) minst 4 steg bort med en lägereld inom 3, 1–2 bevakade och 3–4 obevakade skatter, 1 helgedom,
   1–2 lägereldar, quest-föremål och kanske en fånge; inga grupper bredvid start och högst två grupper intill varandra.
   **Dimma:** bara besökta rutor (och målet) syns. Ett tryck går ett steg till en granne; ett tryck på en besökt ruta får

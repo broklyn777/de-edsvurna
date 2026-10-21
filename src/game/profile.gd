@@ -275,6 +275,13 @@ func perk_points() -> int:
 
 ## En Realm Quest är klarad. Ger silver, och en perk-poäng om kombinationen av Realm och djup är ny.
 ## Returnerar {silver, point}.
+## 0.27.0: den första våningens quest ger halva silvret och ingen perk-poäng; perk-poängen kommer med den sista.
+func floor_quest_silver(at_depth: int) -> int:
+	var amount := roundi(0.5 * QUEST_SILVER * (1.0 + SILVER_PER_DEPTH * (maxi(at_depth, 1) - 1)))
+	silver += amount
+	return amount
+
+
 func complete_quest(realm_id: String, at_depth: int) -> Dictionary:
 	var key := "%s:%d" % [realm_id, at_depth]
 	var point := not quests_done.has(key)
