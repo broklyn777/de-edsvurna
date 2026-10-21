@@ -20,7 +20,7 @@ Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom va
 
 - Repliker i grottan (`docs/ideer/chat-repliker-grottan.md`, version 2 beställd av ChatGPT) och första omgången
   Realm-föremål (`docs/ideer/chat-foremal-grottan.md`: sarkofag, gravklocka, gravregister; glasfönster, klockrep, kyrkbänk).
-- **Röster senare (VD):** varje replik får ett fast id (t.ex. `imma_elite_1`) och ska fungera utan `{namn}`, eftersom
+- **Röster kanske senare (VD):** varje replik får ett fast id (t.ex. `imma_elite_1`). `{namn}` och ordlekar får vara kvar (VD 2026-10-21); röstlösning oavgjord (ElevenLabs på svenska, pratljud som Animal Crossing, korta rop). Tidigare tanke:
   inspelade röster inte kan säga spelarens namn. Kort och lätt att säga högt.
 
 ## Putsa
