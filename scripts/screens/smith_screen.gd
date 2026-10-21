@@ -641,8 +641,12 @@ func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int
 			var holder := _trophy_holder(id)
 			UiStyle.text(self, r.position + Vector2(44, 26), String(data.traits[id].name), 18, UiStyle.TRAIT_GOLD,
 					HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 50, 2)
-			var sub: String = data.traits[id].text if holder == "" else "Hos %s nu. %s" % [_hero_name(holder), data.traits[id].text]
-			UiStyle.para(self, r.position + Vector2(44, 48), sub, 15, Color(1, 1, 1, 0.75), r.size.x - 52, 2)
+			# Kortet rymmer två rader; hela texten står i rutan till höger när man trycker.
+			if holder == "":
+				UiStyle.para(self, r.position + Vector2(44, 48), data.traits[id].text, 15, Color(1, 1, 1, 0.75), r.size.x - 52, 2)
+			else:
+				UiStyle.para(self, r.position + Vector2(44, 48), "Hos %s nu. Tryck för att läsa." % _hero_name(holder), 15,
+						Color("#ffb070"), r.size.x - 52, 2)
 		elif slot.kind == "nether":
 			var st := _stone(id)
 			var col := Color(Forge.rarity_of(data, st).color)
@@ -703,7 +707,7 @@ func _draw_compare(data: Dictionary, art: Dictionary, level: int, cur: String) -
 		if pending != "":
 			new_text = "%s: %s" % [ArtifactText.material_name(data, pending), ArtifactText.material_text(data, pending, level)]
 	UiStyle.text(self, Vector2(x, y), "NU", 15, Color(1, 1, 1, 0.5))
-	y += 6 + UiStyle.para(self, Vector2(x + 40, y), now_text, 16, Color(1, 1, 1, 0.85), w - 40, 2)
+	y += 6 + UiStyle.para(self, Vector2(x + 40, y), now_text, 16, Color(1, 1, 1, 0.85), w - 40, 3 if slot.kind == "trophy" else 2)
 	UiStyle.text(self, Vector2(x, y + 4), "VALT", 15, Color(1, 1, 1, 0.5))
 	if new_text == "":
 		UiStyle.text(self, Vector2(x + 52, y + 4), "Tryck på ett alternativ", 16, Color(1, 1, 1, 0.55))
