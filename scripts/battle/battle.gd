@@ -708,6 +708,11 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e), _remember_number.bind(e))
 		"immune":
 			_after(_effect_delay(e), _float.bind(e.target, "IMMUN", Color("#ffe48a"), 22, false))
+		# 0.28: livvakten tar en del av skadan; Ordensregeln stoppar en helning.
+		"guarded":
+			_after(_effect_delay(e), _float.bind(e.unit, "VAKT %d" % int(e.amount), Color("#ffc86a"), 20, false))
+		"heal_blocked":
+			_after(_effect_delay(e), _float.bind(e.unit, "INGEN HELNING", StatusIcons.DEBUFF, 18, false))
 		"charge_restored":
 			_after(_effect_delay(e), _float.bind(e.unit, "+%d CHARGE" % e.amount, UiStyle.GOLD, 18, false))
 		"heal":

@@ -1191,5 +1191,175 @@
 				"type": "family_to_top"
 			}
 		]
+	},
+	"deacon_censer": {
+		"name": "Rökelsekar",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"deacon_heal": {
+		"name": "Grumlad välsignelse",
+		"target": "ally",
+		"pick": "lowest",
+		"kind": "spell",
+		"school": "shadow",
+		"cooldown": 3,
+		"cue": "heal",
+		"sound": "heal_light",
+		"effects": [
+			{
+				"type": "heal",
+				"power": 1.6
+			}
+		]
+	},
+	"banner_jab": {
+		"name": "Fanstången",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"wisp_spark": {
+		"name": "Irrblossets gnista",
+		"target": "enemy",
+		"pick": "random",
+		"kind": "spell",
+		"school": "fire",
+		"tier": "small",
+		"travel": 0.3,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"overseer_mace": {
+		"name": "Förmannens klubba",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"inquisitor_bolt": {
+		"name": "Förhörets blixt",
+		"target": "enemy",
+		"pick": "random",
+		"kind": "spell",
+		"school": "shadow",
+		"tier": "small",
+		"travel": 0.35,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"inquisitor_silence": {
+		"name": "Tyst förhör",
+		"target": "enemy",
+		"pick": "healer",
+		"ignore_taunt": true,
+		"kind": "spell",
+		"school": "shadow",
+		"tier": "small",
+		"travel": 0.35,
+		"cooldown": 3,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "silenced",
+				"duration": 1
+			},
+			{
+				"type": "damage",
+				"power": 0.5
+			}
+		]
+	},
+	"lance_thrust": {
+		"name": "Lansstöt",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"lance_brace": {
+		"name": "Lansens vakt",
+		"cue": "defend",
+		"target": "self",
+		"sound": "k_shield_wall",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defend"
+			}
+		]
+	},
+	"abbess_bolt": {
+		"name": "Mörk bön",
+		"target": "enemy",
+		"pick": "random",
+		"kind": "spell",
+		"school": "shadow",
+		"tier": "moderate",
+		"travel": 0.35,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"abbess_mass": {
+		"name": "Mässan",
+		"target": "all_allies",
+		"kind": "spell",
+		"school": "shadow",
+		"cooldown": 3,
+		"cue": "heal",
+		"sound": "heal_light",
+		"effects": [
+			{
+				"type": "purge",
+				"count": 99
+			},
+			{
+				"type": "heal",
+				"pct_max_hp": 0.3
+			}
+		]
 	}
 }

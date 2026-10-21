@@ -81,6 +81,9 @@ static func lines(data: Dictionary, e: Dictionary) -> Array[String]:
 		out.append("%s avrundas till %s" % [num(exact), num(whole)])
 	if float(c.get("additional", 0.0)) > 0.0:
 		out.append("+ %s extra (%s)" % [num(c.additional), c.get("additional_name", "egenskap")])
+	# 0.28: en livvakt (Kultens förman) tog en del.
+	if float(c.get("guarded", 0.0)) > 0.0:
+		out.append("%s tog %s som livvakt" % [c.get("guard_name", "Livvakten"), num(c.guarded)])
 	if float(c.get("absorbed", 0.0)) > 0.0:
 		out.append("Barriären tog %s av %s" % [num(c.absorbed), num(c.total)])
 	out.append("= %s skada" % num(c.get("lost", 0.0)))
@@ -131,6 +134,8 @@ static func _defense_line(c: Dictionary, ignore: float) -> String:
 		line += " (%s, %s)" % [num(c.defense_base), ", ".join(bits)]
 	if ignore > 0.0:
 		line += ", nivån bortser från %s → %s" % [pct(ignore), num(float(c.defense) * (1.0 - ignore))]
+	if c.get("ignore_defense", false):
+		line += " (träffen struntar i Defense)"
 	return line
 
 

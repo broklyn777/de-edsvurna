@@ -73,12 +73,24 @@
 			[
 				"chapel_2a",
 				"chapel_2b",
-				"chapel_2c"
+				"chapel_2c",
+				"chapel_2d",
+				"chapel_2e",
+				"chapel_2f",
+				"chapel_2g"
 			],
 			[
 				"chapel_3a",
-				"chapel_3b"
+				"chapel_3b",
+				"chapel_3c",
+				"chapel_3d",
+				"chapel_3e",
+				"chapel_2f"
 			]
+		],
+		"elite_pools": [
+			["chapel_e1"],
+			["chapel_e2", "chapel_e3", "chapel_e4", "chapel_e5", "chapel_e6"]
 		],
 		"map": {
 			"rect": [

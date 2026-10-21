@@ -46,8 +46,9 @@ func _fail(key: String, text: String) -> void:
 
 ## En strid: realm (crypt/chapel), våning (0–2), djup, sällskap, artefakter, statusar och regler.
 func run_battle(encounter: String, floor_i: int, depth: int, seed_value: int, party: Array, artifacts := {},
-		statuses := false, rules: Array = [], level := 0, traits := {}, bonus := 1.0) -> void:
+		statuses := false, rules: Array = [], level := 0, traits := {}, bonus := 1.0, extra := {}) -> void:
 	var opts := {"rules": rules, "floor": floor_i}
+	opts.merge(extra)
 	if bonus != 1.0:
 		opts.stat_bonus = bonus
 	if level > 0:
@@ -346,6 +347,13 @@ func _when(units: Dictionary, owner: String, when: Dictionary, probe: Dictionary
 				var s: Dictionary = units.get(probe.get("source", ""), {})
 				if s.is_empty() or int(s.attacks_done) >= int(want):
 					return false
+			# 0.28
+			"self_family":
+				if String(units[owner].get("family", "")) != want:
+					return false
+			"self_not_acted":
+				if String(units[owner].get("last_ability", "")) != "":
+					return false
 			"source_new_ability":
 				var s: Dictionary = units.get(probe.get("source", ""), {})
 				if s.is_empty() or probe.get("from_trait", false) or String(s.get("last_ability", "")) == "" \
@@ -405,8 +413,11 @@ func check_damage(sim: CombatSim, r: Dictionary) -> void:
 		_fail("kind", "%s: typen blev %s, väntat %s" % [label, kind, expected_kind])
 	var probe := {"source": src.id, "target": tgt.id, "ability": r.ability, "direct": r.direct, "kind": kind,
 			"from_trait": from_trait, "origin_target": r.origin.get("target", "")}
-	# Grundskadan.
+	# Grundskadan. 0.28: Lansspetsen struntar i Defense.
 	var def := _defense(tgt)
+	if kind == "attack" and r.scaled and _modify_list(units, src.id, "modify_damage", probe).any(
+			func(d: Dictionary) -> bool: return d.modify.get("ignore_defense", false)):
+		def = 0.0
 	var raw := 0.0
 	var roll := float(c.get("roll", 1.0))
 	if r.scaled:
@@ -546,8 +557,22 @@ func check_damage(sim: CombatSim, r: Dictionary) -> void:
 		dmg = Ref.indirect_after(dmg, def)
 	var total := roundf(dmg) + roundf(additional)  # 0.26: inget golv på 1
 	# Exakt på ,5 kan flyttalen landa på vilken sida som helst (18,4999… eller 18,5): båda räknas som rätt.
-	if absf(dmg - floorf(dmg) - 0.5) < 1e-6 and absf(float(e.amount) + float(e.absorbed) - total + 1.0) < EPS:
+	var guarded := float(c.get("guarded", 0.0))
+	if absf(dmg - floorf(dmg) - 0.5) < 1e-6 and absf(float(e.amount) + float(e.absorbed) + guarded - total + 1.0) < EPS:
 		total -= 1.0
+	# 0.28: livvakten (en levande ur målets familj med guard_family) tar sin andel av den färdiga skadan.
+	var guard_pct := 0.0
+	if src.team != tgt.team:
+		for id in units:
+			var x: Dictionary = units[id]
+			if id != tgt.id and x.alive and x.team == tgt.team and String(tgt.get("family", "")) != "" \
+					and x.get("family", "") == tgt.family and guard_pct == 0.0:
+				for t in x.traits:
+					guard_pct = maxf(guard_pct, float(_tdef(t).get("guard_family", 0.0)))
+	var want_guard := roundf(total * guard_pct) if total > 0.0 else 0.0
+	if absf(want_guard - guarded) > EPS:
+		_fail("guarded", "%s: livvakten tog %s, väntat %s" % [label, guarded, want_guard])
+	total -= want_guard
 	var absorbed := minf(float(tgt.barrier), total)
 	var lost := total - absorbed
 	if absf(float(e.amount) - lost) > EPS or absf(float(e.absorbed) - absorbed) > EPS:
@@ -624,7 +649,8 @@ func _check_fixed(sim: CombatSim, r: Dictionary, label: String) -> void:
 			if eff.type != "damage":
 				continue
 			if eff.has("pct_of_event"):
-				options.append(float(r.origin.get(eff.get("event_field", "amount"), 0.0)) * float(eff.pct_of_event))
+				var pct := float(eff.pct_of_event) + float(eff.get("pct_per_family", 0.0)) * _kin(r.units, src)
+				options.append(float(r.origin.get(eff.get("event_field", "amount"), 0.0)) * pct)
 			elif eff.has("stat"):
 				options.append(_stat(src, eff.stat) * float(eff.get("pct", 1.0)))
 		if not options.is_empty():
@@ -716,6 +742,8 @@ func check_heal(sim: CombatSim, r: Dictionary) -> void:
 			for id in p.units[p.source].auras:
 				pct += float(data.auras.get(id, {}).get("leech", 0.0))
 			base = lost * pct
+	elif ctx.has("pct_max_hp"):
+		base = float(tgt.max_hp) * float(ctx.pct_max_hp)
 	elif aura.has("hot_max_hp_pct"):
 		base = float(tgt.max_hp) * float(aura.hot_max_hp_pct)
 	elif aura.has("hot_stat") and tgt.auras.has(r.ability):

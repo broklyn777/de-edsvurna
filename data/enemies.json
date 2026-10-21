@@ -939,7 +939,8 @@
 			"trait": "phantasm",
 			"tint": "#ff9ad0",
 			"glow": "#a0207a"
-		}
+		},
+		"family": "cult_kin"
 	},
 	"wraith": {
 		"name": "Gast",
@@ -1026,7 +1027,8 @@
 			"trait": "heart_of_chaos",
 			"tint": "#ffb0a0",
 			"glow": "#b02010"
-		}
+		},
+		"family": "fallen_kin"
 	},
 	"witch": {
 		"name": "Häxa",
@@ -1070,7 +1072,8 @@
 			"trait": "miracle",
 			"tint": "#e8ffa0",
 			"glow": "#6aa000"
-		}
+		},
+		"family": "cult_kin"
 	},
 	"penitent": {
 		"name": "Botgörare",
@@ -1130,7 +1133,8 @@
 			"trait": "sareas_plot",
 			"tint": "#ffc8a0",
 			"glow": "#b04a10"
-		}
+		},
+		"family": "cult_kin"
 	},
 	"fallen_bishop": {
 		"name": "Den fallne biskopen",
@@ -1174,5 +1178,493 @@
 			}
 		},
 		"trophy": "bishop_mitre"
+	},
+	"corrupted_deacon": {
+		"name": "Fördärvad diakon",
+		"family": "cult_kin",
+		"color": "#d8d0c0",
+		"stats": {
+			"health": 44,
+			"attack": 9,
+			"intelligence": 14,
+			"defense": 1,
+			"speed": 8
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "deacon_censer",
+		"traits": [
+			"clouded_blessing"
+		],
+		"rules": [
+			{
+				"ability": "deacon_heal",
+				"if": {
+					"ally_hp_below": 0.7
+				}
+			}
+		],
+		"visual": {
+			"model": "kultist",
+			"scale": 1.0,
+			"light": "#e0d8b0",
+			"light_energy": 0.5,
+			"anims": {
+				"idle": "Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"colors": {
+				"Kult_Robe": "#d8d2c4",
+				"Kult_DarkBrown": "#9a9080",
+				"Kult_Black": "#4a463e",
+				"Kult_LightBrown": "#bab2a0",
+				"Kult_Metal": "#8a8270",
+				"Kult_White": "#ece6d8",
+				"Kult_Gold": "#b89a50"
+			},
+			"emit": {
+				"Kult_Glow": "#e0d090"
+			}
+		},
+		"trophy": "deacon_stole",
+		"elite": {
+			"name": "Ärkediakon",
+			"trophy": "clean_spring",
+			"trait": "clean_spring",
+			"tint": "#fff4d0",
+			"glow": "#a08a40"
+		}
+	},
+	"banner_bearer": {
+		"name": "Fanbäraren",
+		"family": "cult_kin",
+		"color": "#c04a3a",
+		"stats": {
+			"health": 55,
+			"attack": 9,
+			"intelligence": 10,
+			"defense": 1.5,
+			"speed": 10
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "banner_jab",
+		"traits": [
+			"cult_banner"
+		],
+		"rules": [
+			{
+				"ability": "defend",
+				"if": {
+					"self_hp_below": 0.5
+				}
+			}
+		],
+		"visual": {
+			"model": "kultist",
+			"scale": 1.05,
+			"light": "#ff4a2a",
+			"light_energy": 0.5,
+			"weapons": {
+				"grip_r": "Spear"
+			},
+			"anims": {
+				"idle": "Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"colors": {
+				"Kult_Robe": "#6a3a10",
+				"Kult_DarkBrown": "#c08a2a",
+				"Kult_Black": "#2a1806",
+				"Kult_LightBrown": "#8a5a1e",
+				"Kult_Metal": "#d0a040",
+				"Kult_White": "#e8c060",
+				"Kult_Gold": "#e8b840"
+			},
+			"emit": {
+				"Kult_Glow": "#ffb030"
+			}
+		},
+		"trophy": "torn_banner",
+		"elite": {
+			"name": "Härolden",
+			"trophy": "herald_horn",
+			"trait": "herald_horn",
+			"tint": "#ffd0a0",
+			"glow": "#b03010"
+		}
+	},
+	"will_o_wisp": {
+		"name": "Irrbloss",
+		"color": "#ffe46a",
+		"stats": {
+			"health": 21,
+			"attack": 8,
+			"intelligence": 13,
+			"defense": 0.5,
+			"speed": 19
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "wisp_spark",
+		"traits": [
+			"wisp_flicker"
+		],
+		"visual": {
+			"model": "gast",
+			"scale": 0.6,
+			"tint": "#fff0a0",
+			"light": "#ffd040",
+			"light_energy": 1.6,
+			"anims": {
+				"idle": "Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			}
+		},
+		"trophy": "wisp_flame",
+		"elite": {
+			"name": "Lyktgubbe",
+			"trophy": "lantern_light",
+			"trait": "lantern_light",
+			"tint": "#ffd0a0",
+			"glow": "#c08000"
+		},
+		"counter": {
+			"trait": "laughing_wisp",
+			"min_depth": 3
+		}
+	},
+	"mirror_warden": {
+		"name": "Spegelvakten",
+		"family": "fallen_kin",
+		"color": "#c8d0e0",
+		"stats": {
+			"health": 90,
+			"attack": 14,
+			"intelligence": 10,
+			"defense": 4.5,
+			"speed": 6
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "knight_cleave",
+		"traits": [
+			"mirror_ward"
+		],
+		"visual": {
+			"model": "fallen_riddare",
+			"scale": 1.1,
+			"tint": "#d0d8e8",
+			"glow": "#5a6a8a",
+			"weapons": {
+				"grip_r": "Longsword",
+				"grip_l": "Shield"
+			},
+			"anims": {
+				"idle": "Shield_Idle",
+				"attack": [
+					"Shield_Attack",
+					"Shield_Attack_B"
+				],
+				"block": "Shield_Block",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			}
+		},
+		"trophy": "mirror_shield",
+		"elite": {
+			"name": "Silverspegeln",
+			"trophy": "silver_glass",
+			"trait": "silver_glass",
+			"tint": "#f0f4ff",
+			"glow": "#8090c0"
+		}
+	},
+	"cult_overseer": {
+		"name": "Kultens förman",
+		"rank": "elite",
+		"family": "cult_kin",
+		"color": "#e0b040",
+		"stats": {
+			"health": 80,
+			"attack": 13,
+			"intelligence": 13,
+			"defense": 3,
+			"speed": 10
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "overseer_mace",
+		"traits": [
+			"overseer_guard"
+		],
+		"visual": {
+			"model": "kultist",
+			"scale": 1.2,
+			"glow": "#806020",
+			"light": "#ffc040",
+			"light_energy": 0.6,
+			"weapons": {
+				"grip_r": "Mace"
+			},
+			"anims": {
+				"idle": "Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"colors": {
+				"Kult_Robe": "#2a1236",
+				"Kult_DarkBrown": "#5a2a70",
+				"Kult_Black": "#140818",
+				"Kult_LightBrown": "#3a1a4a",
+				"Kult_Metal": "#c8a040",
+				"Kult_White": "#d8b050",
+				"Kult_Gold": "#f0c050"
+			},
+			"emit": {
+				"Kult_Glow": "#c080ff"
+			}
+		},
+		"trophy": "overseer_keys"
+	},
+	"inquisitor": {
+		"name": "Inkvisitorn",
+		"rank": "elite",
+		"family": "cult_kin",
+		"color": "#6a8ac8",
+		"stats": {
+			"health": 58,
+			"attack": 10,
+			"intelligence": 16,
+			"defense": 2,
+			"speed": 11
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "inquisitor_bolt",
+		"traits": [
+			"interrogation"
+		],
+		"rules": [
+			{
+				"ability": "inquisitor_silence"
+			}
+		],
+		"visual": {
+			"model": "kultist",
+			"scale": 1.05,
+			"light": "#6a9aff",
+			"light_energy": 0.8,
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"anims": {
+				"idle": "Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"colors": {
+				"Kult_Robe": "#141a26",
+				"Kult_DarkBrown": "#3a4a6a",
+				"Kult_Black": "#0a0c12",
+				"Kult_LightBrown": "#1e2638",
+				"Kult_Metal": "#7a8aaa",
+				"Kult_White": "#a0b0d0",
+				"Kult_Gold": "#8090b0"
+			},
+			"emit": {
+				"Kult_Glow": "#6a9aff"
+			}
+		},
+		"trophy": "inquisitor_seal"
+	},
+	"ascetic": {
+		"name": "Asketen",
+		"rank": "elite",
+		"family": "fallen_kin",
+		"color": "#a8a49c",
+		"stats": {
+			"health": 100,
+			"attack": 14,
+			"intelligence": 8,
+			"defense": 3.5,
+			"speed": 6
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "penitent_flail",
+		"traits": [
+			"fasting"
+		],
+		"rules": [
+			{
+				"ability": "defend",
+				"if": {
+					"self_hp_below": 0.3
+				}
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.1,
+			"anims": {
+				"idle": "TwoHand_Idle",
+				"attack": [
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"tint": "#a8a49c",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"rustning/Tom_Fauld",
+				"rustning/Tom_Tassets",
+				"rustning/Tom_Vambrace_L",
+				"rustning/Tom_Vambrace_R"
+			],
+			"colors": {
+				"Tom_Steel": "#5a5a5a",
+				"Tom_Edge": "#3a3a3a",
+				"Tom_Guard": "#4a4a4a"
+			},
+			"weapons": {
+				"grip_r": "Maul"
+			}
+		},
+		"trophy": "ascetic_strap"
+	},
+	"black_lance": {
+		"name": "Den svarta lansen",
+		"rank": "elite",
+		"family": "fallen_kin",
+		"color": "#4a4050",
+		"stats": {
+			"health": 62,
+			"attack": 19,
+			"intelligence": 8,
+			"defense": 2.5,
+			"speed": 18
+		},
+		"crit_chance": 0.08,
+		"attack_ability": "lance_thrust",
+		"traits": [
+			"lance_charge",
+			"broken_oath"
+		],
+		"rules": [
+			{
+				"ability": "lance_brace",
+				"if": {
+					"self_last_attacked": true
+				}
+			}
+		],
+		"visual": {
+			"model": "fallen_riddare",
+			"scale": 1.1,
+			"tint": "#50485a",
+			"glow": "#2a1a3a",
+			"weapons": {
+				"grip_r": "Spear",
+				"grip_l": "Shield"
+			},
+			"anims": {
+				"idle": "Shield_Idle",
+				"attack": [
+					"Shield_Attack",
+					"Shield_Attack_B"
+				],
+				"block": "Shield_Block",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			}
+		},
+		"trophy": "lance_tip"
+	},
+	"corrupted_abbess": {
+		"name": "Den fördärvade abbedissan",
+		"rank": "miniboss",
+		"family": "cult_kin",
+		"color": "#f0ece0",
+		"stats": {
+			"health": 145,
+			"attack": 11,
+			"intelligence": 16,
+			"defense": 3,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "abbess_bolt",
+		"traits": [
+			"resistant",
+			"abbess_mass_trait"
+		],
+		"rules": [
+			{
+				"ability": "abbess_mass",
+				"if": {
+					"ally_hp_below": 0.85
+				}
+			}
+		],
+		"visual": {
+			"model": "haxa",
+			"scale": 1.25,
+			"light": "#fff0c0",
+			"light_energy": 1.2,
+			"anims": {
+				"idle": "Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"glow": "#8a7a50",
+			"colors": {
+				"Sva_Coat": "#e8e2d2",
+				"Sva_Black": "#5a5448",
+				"Sva_LightBrown": "#d0c8b4",
+				"Sva_DarkBrown": "#a89e88",
+				"Hax_Hat": "#f0eadc",
+				"Hax_Band": "#8a1a1a",
+				"Sva_Trim": "#8a1a1a",
+				"Sva_White": "#f4f0e6",
+				"Sva_Gold": "#c8a050"
+			}
+		},
+		"trophy": "abbess_key",
+		"counter": {
+			"trait": "order_rule",
+			"min_depth": 1
+		}
 	}
 }
