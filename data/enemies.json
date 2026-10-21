@@ -1206,7 +1206,6 @@
 		"visual": {
 			"model": "kultist",
 			"scale": 1.0,
-			"tint": "#d8d4c8",
 			"light": "#e0d8b0",
 			"light_energy": 0.5,
 			"anims": {
@@ -1217,6 +1216,18 @@
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"walk": "Walk"
+			},
+			"colors": {
+				"Kult_Robe": "#d8d2c4",
+				"Kult_DarkBrown": "#9a9080",
+				"Kult_Black": "#4a463e",
+				"Kult_LightBrown": "#bab2a0",
+				"Kult_Metal": "#8a8270",
+				"Kult_White": "#ece6d8",
+				"Kult_Gold": "#b89a50"
+			},
+			"emit": {
+				"Kult_Glow": "#e0d090"
 			}
 		},
 		"trophy": "deacon_stole",
@@ -1255,7 +1266,6 @@
 		"visual": {
 			"model": "kultist",
 			"scale": 1.05,
-			"tint": "#c86a5a",
 			"light": "#ff4a2a",
 			"light_energy": 0.5,
 			"weapons": {
@@ -1269,6 +1279,18 @@
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"walk": "Walk"
+			},
+			"colors": {
+				"Kult_Robe": "#6a3a10",
+				"Kult_DarkBrown": "#c08a2a",
+				"Kult_Black": "#2a1806",
+				"Kult_LightBrown": "#8a5a1e",
+				"Kult_Metal": "#d0a040",
+				"Kult_White": "#e8c060",
+				"Kult_Gold": "#e8b840"
+			},
+			"emit": {
+				"Kult_Glow": "#ffb030"
 			}
 		},
 		"trophy": "torn_banner",
@@ -1390,7 +1412,6 @@
 		"visual": {
 			"model": "kultist",
 			"scale": 1.2,
-			"tint": "#b08a50",
 			"glow": "#806020",
 			"light": "#ffc040",
 			"light_energy": 0.6,
@@ -1405,6 +1426,18 @@
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"walk": "Walk"
+			},
+			"colors": {
+				"Kult_Robe": "#2a1236",
+				"Kult_DarkBrown": "#5a2a70",
+				"Kult_Black": "#140818",
+				"Kult_LightBrown": "#3a1a4a",
+				"Kult_Metal": "#c8a040",
+				"Kult_White": "#d8b050",
+				"Kult_Gold": "#f0c050"
+			},
+			"emit": {
+				"Kult_Glow": "#c080ff"
 			}
 		},
 		"trophy": "overseer_keys"
@@ -1434,7 +1467,6 @@
 		"visual": {
 			"model": "kultist",
 			"scale": 1.05,
-			"tint": "#40465a",
 			"light": "#6a9aff",
 			"light_energy": 0.8,
 			"weapons": {
@@ -1448,6 +1480,18 @@
 				"hit": "Hit_Chest",
 				"death": "Death01",
 				"walk": "Walk"
+			},
+			"colors": {
+				"Kult_Robe": "#141a26",
+				"Kult_DarkBrown": "#3a4a6a",
+				"Kult_Black": "#0a0c12",
+				"Kult_LightBrown": "#1e2638",
+				"Kult_Metal": "#7a8aaa",
+				"Kult_White": "#a0b0d0",
+				"Kult_Gold": "#8090b0"
+			},
+			"emit": {
+				"Kult_Glow": "#6a9aff"
 			}
 		},
 		"trophy": "inquisitor_seal"
@@ -1567,6 +1611,7 @@
 	"corrupted_abbess": {
 		"name": "Den fördärvade abbedissan",
 		"rank": "miniboss",
+		"family": "cult_kin",
 		"color": "#f0ece0",
 		"stats": {
 			"health": 145,
@@ -1603,8 +1648,18 @@
 				"death": "Death01",
 				"walk": "Walk"
 			},
-			"tint": "#f0ece0",
-			"glow": "#8a7a50"
+			"glow": "#8a7a50",
+			"colors": {
+				"Sva_Coat": "#e8e2d2",
+				"Sva_Black": "#5a5448",
+				"Sva_LightBrown": "#d0c8b4",
+				"Sva_DarkBrown": "#a89e88",
+				"Hax_Hat": "#f0eadc",
+				"Hax_Band": "#8a1a1a",
+				"Sva_Trim": "#8a1a1a",
+				"Sva_White": "#f4f0e6",
+				"Sva_Gold": "#c8a050"
+			}
 		},
 		"trophy": "abbess_key",
 		"counter": {

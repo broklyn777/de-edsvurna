@@ -40,6 +40,10 @@ func _init() -> void:
 		_grotto(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "elitgrupper":
+		_elite_groups(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "artefakter":
 		_artifacts(data)
 		quit()
@@ -355,6 +359,43 @@ func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, arti
 		quests += 1 if r.quest_done else 0
 	print("  %-62s klarade %3d/%d  strider %4.1f  quest %3d %%" % [label, cleared, RUNS, float(fights) / RUNS,
 			roundi(100.0 * quests / RUNS)])
+
+
+## 0.28 (BALANS=elitgrupper): varje elitgrupp för sig, en strid med fulla Charges och motdragen på, fyra hjältar på
+## väntad nivå för djupet och elitpoolens våning. NIVA_REALM begränsar till en Realm.
+func _elite_groups(data: Dictionary) -> void:
+	var realms := ["crypt", "chapel"]
+	if OS.get_environment("NIVA_REALM") != "":
+		realms = [OS.get_environment("NIVA_REALM")]
+	print("=== Elitgrupper (0.28), 4 hjältar, en strid, motdrag på, %d strider per rad ===" % RUNS)
+	var party := ["paladin", "brokk", "alva", "eira"]
+	for realm_id in realms:
+		var pools: Array = data.realms[realm_id].get("elite_pools", [])
+		for floor_i in pools.size():
+			for enc_id in pools[floor_i]:
+				var line := "  %-24s v%d" % [data.encounters[enc_id].name, floor_i + 1]
+				for depth in [1, 3]:
+					var lv := roundi(HeroStats.enemy_level(depth, floor_i))
+					for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+						var won := 0
+						var hp_left := 0.0
+						var fallen := 0
+						for seed_value in range(1, RUNS + 1):
+							var opts := {"levels": Bot.party_levels(data, lv, party), "floor": floor_i, "counter": true}
+							var r := Bot.run_fight(data, seed_value, skill, enc_id, party, {}, {}, {}, depth, opts)
+							won += 1 if r.outcome == "victory" else 0
+							var sim: CombatSim = r.sim
+							var hp := 0.0
+							var max_hp := 0.0
+							for h in sim.heroes:
+								hp += h.hp if h.alive else 0.0
+								max_hp += h.max_hp
+							hp_left += hp / max_hp
+							fallen += party.size() - int(r.alive)
+						# Vinst, liv kvar i sällskapet och stupade per strid: en grupp som alltid vinns kan ändå vara dyr.
+						line += "  d%d %s %3d %% liv %2d %% stup %.1f" % [depth, _skill_name(skill), roundi(100.0 * won / RUNS),
+								roundi(100.0 * hp_left / RUNS), float(fallen) / RUNS]
+				print(line)
 
 
 ## 0.27 grottan (BALANS=grotta): vinst, strider per körning (alla och klarade) och steg, för startmakrona (MACRO) och
