@@ -37,4 +37,10 @@ Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom va
 ## Väntar på annat
 
 - Tors porträtt (prompt i `docs/illustrationer.md`, B1).
-- Skärmgranskningen i ChatGPT när filerna går att öppna (`~/Downloads/rpg007-till-chat/PROMPTER.md`).
+- Skärmgranskningen i ChatGPT när filerna går att öppna (`~/Downloads/rpg007-till-chat/PROMPTER.md`, chatt 2). Ta nya
+  skärmdumpar med grottan först (de gamla är från före 0.27).
+- **Påminn VD om ChatGPT-jobben** (porträttet och skärmgranskningen) när ChatGPT fungerar igen.
+
+## Provspel
+
+- 2026-10-21, 0.27.0: VD spelade hela våning 1 med boss. "Det funkar bra, mycket att putsa, men grunden kändes bra."
