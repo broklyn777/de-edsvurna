@@ -1987,7 +1987,7 @@
 	"wisp_flame": {
 		"name": "Irrblossets låga",
 		"trophy": true,
-		"text": "Bäraren undviker alla attacker tills hen har agerat första gången.",
+		"text": "Bäraren undviker attacker så ofta det går (taket för undvikande, 75 %) tills hen har agerat första gången.",
 		"answers": "Grupper som slår först",
 		"rarity": "common",
 		"trigger": "modify_damage_taken",
