@@ -334,5 +334,181 @@
 			"skeleton_warrior"
 		],
 		"stat_mult": 0.7
+	},
+	"crypt_2d": {
+		"name": "Springarnas flock",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bone_runner",
+			"bone_runner",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.7,
+		"template": "Första slaget"
+	},
+	"crypt_2e": {
+		"name": "Kistbärarnas gång",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"coffin_bearer",
+			"bone_runner"
+		],
+		"stat_mult": 0.7,
+		"template": "Offret"
+	},
+	"crypt_2f": {
+		"name": "Mögelkällaren",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"mold_skeleton",
+			"ember_skeleton",
+			"grave_priest"
+		],
+		"stat_mult": 0.7,
+		"template": "Nötning"
+	},
+	"crypt_3c": {
+		"name": "Skramlarnas vakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"skeleton_warrior",
+			"skeleton_warrior",
+			"rattler"
+		],
+		"stat_mult": 0.72,
+		"template": "Straffar anfall"
+	},
+	"crypt_3d": {
+		"name": "Gravens skyddare",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_warden",
+			"coffin_bearer"
+		],
+		"stat_mult": 0.72,
+		"template": "Två som skyddar varandra"
+	},
+	"crypt_e1": {
+		"name": "Kolossens vakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bone_colossus",
+			"skeleton_warrior"
+		],
+		"stat_mult": 0.7,
+		"elite_group": true,
+		"template": "Kräver en annan skadekälla"
+	},
+	"crypt_e2": {
+		"name": "Väckarens krets",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_caller",
+			"skeleton_warrior",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Väcker de döda"
+	},
+	"crypt_e3": {
+		"name": "Dimmans valv",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_mist",
+			"skeleton_warrior"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Straffar besvärjelser"
+	},
+	"crypt_e4": {
+		"name": "Skrivarens kammare",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bone_scribe",
+			"rattler"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Straffar upprepning"
+	},
+	"crypt_e5": {
+		"name": "Klockstapeln",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bell_ringer",
+			"skeleton_warrior",
+			"bone_runner"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Familj med ledare"
+	},
+	"crypt_e6": {
+		"name": "Likfärden",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"coffin_bearer",
+			"bone_runner",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.72,
+		"template": "Offret (elit)"
 	}
 }

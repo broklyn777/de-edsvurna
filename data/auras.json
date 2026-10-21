@@ -317,5 +317,13 @@
 		"root_thorns": 0.15,
 		"text": "Rotskott: när bäraren tar en direkt träff slår rötterna angriparen för 15 % av källans Intelligence per stapel.",
 		"glyph": "drop"
+	},
+	"dulled": {
+		"name": "Dimmig",
+		"duration": 2,
+		"debuff": true,
+		"int_mult": 0.8,
+		"text": "Dimmig: 20 % lägre Intelligence.",
+		"glyph": "diamond"
 	}
 }

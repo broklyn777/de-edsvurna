@@ -1217,5 +1217,480 @@
 				"target": "target"
 			}
 		]
+	},
+	"flock_bite": {
+		"name": "Flockbett",
+		"enemy": true,
+		"text": "Första anfallet i striden gör 25 % mer skada för varje annan ur Benfolket.",
+		"trigger": "modify_damage",
+		"when": {
+			"source_attacks_below": 1,
+			"kind": "attack",
+			"direct": true
+		},
+		"modify": {
+			"damage_mult_per_family": 0.25
+		}
+	},
+	"last_service": {
+		"name": "Sista tjänsten",
+		"enemy": true,
+		"text": "När Kistbäraren faller får alla ur Benfolket en Barriär för 50 % av dess Defense per levande ur Benfolket.",
+		"trigger": "death",
+		"on_own_death": true,
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "defense",
+				"pct": 0.5,
+				"per_family": true,
+				"target": "family"
+			}
+		]
+	},
+	"spores": {
+		"name": "Sporer",
+		"enemy": true,
+		"text": "Mögelskelettets direkta träffar har 40 % chans att förgifta målet i 3 turer.",
+		"trigger": "damage",
+		"chance": 0.4,
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"target": "target"
+			}
+		]
+	},
+	"rattle": {
+		"name": "Skrammel",
+		"enemy": true,
+		"text": "Efter en direkt attack mot Skramlaren blir den och en annan ur Benfolket Defensiva i 1 tur (en gång per tur).",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "attack"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defensive",
+				"duration": 1,
+				"target": "self"
+			},
+			{
+				"type": "aura",
+				"aura": "defensive",
+				"duration": 1,
+				"target": "random_family"
+			}
+		]
+	},
+	"growing_wrath": {
+		"name": "Växande vrede",
+		"enemy": true,
+		"text": "I början av varje egen tur får Benkolossen +10 % Attack (högst 5 gånger). Efter tre gånger sveper den med Benstorm.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "raise_stat",
+				"stat": "attack",
+				"pct": 0.1,
+				"additive": true,
+				"max_times": 5,
+				"target": "self"
+			}
+		]
+	},
+	"bone_wall": {
+		"name": "Benmur",
+		"enemy": true,
+		"text": "Tar 5 % mindre skada för varje annan ur Benfolket som lever.",
+		"trigger": "modify_damage_taken",
+		"modify": {
+			"damage_taken_mult_per_family": 0.05
+		}
+	},
+	"calling": {
+		"name": "Kallelse",
+		"enemy": true,
+		"text": "Väckta allierade får en Barriär för 100 % av Gravväckarens Intelligence.",
+		"trigger": "revive",
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "intelligence",
+				"pct": 1.0,
+				"target": "unit"
+			}
+		]
+	},
+	"mist_shroud": {
+		"name": "Dimslöja",
+		"enemy": true,
+		"text": "Var tredje egen tur söver Gravdimman den i sällskapet som har högst Attack i 1 tur.",
+		"trigger": "passive"
+	},
+	"noted": {
+		"name": "Antecknat",
+		"enemy": true,
+		"text": "Tar 25 % mindre skada från en förmåga eller attack för varje gång just den redan har träffat Benskrivaren i striden (högst 75 %).",
+		"trigger": "modify_damage_taken",
+		"modify": {
+			"damage_taken_less_per_repeat": 0.25,
+			"repeat_max": 0.75
+		}
+	},
+	"bell_toll_trait": {
+		"name": "Klockslaget",
+		"enemy": true,
+		"text": "Var tredje egen tur flyttas alla ur Benfolket överst på tidslinjen.",
+		"trigger": "passive"
+	},
+	"last_chime": {
+		"name": "Sista klangen",
+		"enemy": true,
+		"counter": true,
+		"original": "Satyr Guardian",
+		"text": "Motdrag: sällskapet kan bara väcka döda en gång per strid.",
+		"card": "ni får bara väcka döda en gång per strid",
+		"trigger": "passive",
+		"limit_enemy_revives": 1
+	},
+	"mist_weight": {
+		"name": "Dimmans tyngd",
+		"enemy": true,
+		"counter": true,
+		"original": "Dragon Revenant",
+		"text": "Motdrag: efter en hjältes besvärjelse sjunker sällskapets Intelligence 20 % i 2 turer.",
+		"card": "era besvärjelser sänker sällskapets Intelligence 20 % i 2 turer",
+		"trigger": "acted",
+		"when": {
+			"unit": "enemy",
+			"ability_kind": "spell"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "dulled",
+				"target": "enemies"
+			}
+		]
+	},
+	"pallbearer_wrath": {
+		"name": "Sista vaktens ilska",
+		"enemy": true,
+		"counter": true,
+		"original": "Trepidation Wight",
+		"text": "Motdrag: när Likbäraren faller gör den 3 anfall mot slumpade hjältar.",
+		"card": "när den faller gör den 3 anfall mot slumpade hjältar",
+		"trigger": "death",
+		"on_own_death": true,
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0,
+				"kind": "attack",
+				"target": "random_enemy"
+			},
+			{
+				"type": "damage",
+				"power": 1.0,
+				"kind": "attack",
+				"target": "random_enemy"
+			},
+			{
+				"type": "damage",
+				"power": 1.0,
+				"kind": "attack",
+				"target": "random_enemy"
+			}
+		]
+	},
+	"runner_sinew": {
+		"name": "Springarens senor",
+		"trophy": true,
+		"text": "Bäraren börjar striden Smidig i 2 turer.",
+		"answers": "Grupper som slår först",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "agile",
+				"duration": 2,
+				"target": "self"
+			}
+		]
+	},
+	"wolf_leap": {
+		"name": "Vargens språng",
+		"trophy": true,
+		"text": "Bäraren börjar striden överst på tidslinjen.",
+		"answers": "Grupper som slår först",
+		"rarity": "elite",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "to_top",
+				"target": "self"
+			}
+		]
+	},
+	"coffin_nail": {
+		"name": "Kistspik",
+		"trophy": true,
+		"text": "När en allierad faller får sällskapet en Barriär för 8 % av bärarens max liv.",
+		"answers": "Grupper som fäller en hjälte tidigt",
+		"trigger": "death",
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "health",
+				"pct": 0.08,
+				"target": "allies"
+			}
+		]
+	},
+	"last_watch": {
+		"name": "Sista vaktens sköld",
+		"trophy": true,
+		"text": "Första gången en allierad faller blir bäraren Provocerande i 2 turer.",
+		"answers": "Fiender som slår den svagaste",
+		"rarity": "elite",
+		"trigger": "death",
+		"once_per_battle": true,
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "provoke",
+				"duration": 2,
+				"target": "self"
+			}
+		]
+	},
+	"mold_jaw": {
+		"name": "Mögelkäken",
+		"trophy": true,
+		"text": "Bärarens direkta attacker har 30 % chans att förgifta målet i 3 turer.",
+		"answers": "Benrustning och Taggig utmaning (indirekt skada biter)",
+		"trigger": "damage",
+		"chance": 0.3,
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"target": "target"
+			}
+		]
+	},
+	"spore_burst": {
+		"name": "Sporfallet",
+		"trophy": true,
+		"text": "När en förgiftad fiende faller förgiftas en annan fiende.",
+		"answers": "Stora grupper",
+		"rarity": "elite",
+		"trigger": "death",
+		"when": {
+			"unit": "enemy",
+			"unit_had_aura": "poisoned"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"target": "random_enemy"
+			}
+		]
+	},
+	"rattler_bone": {
+		"name": "Skramlarens ben",
+		"trophy": true,
+		"text": "Efter en direkt attack mot bäraren blir hen Defensiv i 1 tur (en gång per tur).",
+		"answers": "Många små träffar (Bågskytt, Benspringare)",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "attack"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defensive",
+				"duration": 1,
+				"target": "self"
+			}
+		]
+	},
+	"clatter_stone": {
+		"name": "Klapperstenen",
+		"trophy": true,
+		"text": "Efter en direkt attack mot bäraren blir hen Defensiv i 1 tur och anfallaren tar 20 % av skadan tillbaka (en gång per tur).",
+		"answers": "Många små träffar",
+		"rarity": "elite",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "attack"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defensive",
+				"duration": 1,
+				"target": "self"
+			},
+			{
+				"type": "damage",
+				"pct_of_event": 0.2,
+				"kind": "indirect",
+				"no_crit": true,
+				"target": "source"
+			}
+		]
+	},
+	"colossus_spine": {
+		"name": "Kolossens ryggrad",
+		"trophy": true,
+		"text": "Bäraren får +8 % Attack i början av varje egen tur (högst 5 gånger).",
+		"answers": "Långa strider och mycket liv (Benfursten)",
+		"rarity": "elite",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "raise_stat",
+				"stat": "attack",
+				"pct": 0.08,
+				"additive": true,
+				"max_times": 5,
+				"target": "self"
+			}
+		]
+	},
+	"caller_lantern": {
+		"name": "Väckarens lykta",
+		"trophy": true,
+		"text": "En gång per strid: när någon i sällskapet faller väcks hen med 30 % liv.",
+		"answers": "Fiender som slår först och bossens stora slag",
+		"rarity": "elite",
+		"trigger": "death",
+		"once_per_battle": true,
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "revive",
+				"pct": 0.3,
+				"target": "unit"
+			}
+		]
+	},
+	"mist_veil": {
+		"name": "Dimmans slöja",
+		"trophy": true,
+		"text": "Bärarens första besvärjelse i striden söver målet i 1 tur.",
+		"answers": "Elitfiender som slår först eller växer",
+		"rarity": "elite",
+		"trigger": "damage",
+		"once_per_battle": true,
+		"when": {
+			"source": "self",
+			"kind": "spell",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sleeping",
+				"duration": 1,
+				"target": "target"
+			}
+		]
+	},
+	"scribe_quill": {
+		"name": "Skrivarens penna",
+		"trophy": true,
+		"text": "Bäraren gör 15 % mer skada med en handling hen inte gjorde förra turen.",
+		"answers": "Fiender som straffar upprepning (Benskrivaren, Skramlaren)",
+		"rarity": "elite",
+		"trigger": "modify_damage",
+		"when": {
+			"source_new_ability": true
+		},
+		"modify": {
+			"damage_mult": 1.15
+		}
+	},
+	"bell_rope": {
+		"name": "Klockrepet",
+		"trophy": true,
+		"text": "Var tredje egen tur flyttas sällskapets svagaste överst på tidslinjen, men bäraren börjar striden längst ned.",
+		"answers": "Att överleva tills man får agera",
+		"rarity": "boss",
+		"trigger": "turn_start",
+		"every": 3,
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "to_top",
+				"target": "weakest_ally"
+			}
+		],
+		"parts": [
+			"bell_rope_cost"
+		]
+	},
+	"bell_rope_cost": {
+		"name": "Klockrepet (kostnad)",
+		"hidden": true,
+		"text": "Bäraren börjar striden längst ned.",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "to_bottom",
+				"target": "self"
+			}
+		]
 	}
 }

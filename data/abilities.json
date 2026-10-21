@@ -1136,5 +1136,60 @@
 				"power": 1.0
 			}
 		]
+	},
+	"runner_bite": {
+		"name": "Flockbett",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"coffin_maul": {
+		"name": "Kistslag",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"mist_sleep": {
+		"name": "Dimslöja",
+		"target": "enemy",
+		"pick": "highest_attack",
+		"kind": "spell",
+		"school": "shadow",
+		"cooldown": 3,
+		"travel": 0.35,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sleeping",
+				"duration": 1
+			}
+		]
+	},
+	"bell_toll": {
+		"name": "Klockslaget",
+		"target": "self",
+		"cooldown": 3,
+		"cue": "provoke",
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "family_to_top"
+			}
+		]
 	}
 }

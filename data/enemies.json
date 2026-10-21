@@ -34,7 +34,8 @@
 			"trait": "first_strike",
 			"tint": "#ffd36a",
 			"glow": "#a06a00"
-		}
+		},
+		"family": "bone_kin"
 	},
 	"skeleton_archer": {
 		"name": "Skelettbågskytt",
@@ -100,7 +101,8 @@
 			"trait": "quick_shot",
 			"tint": "#c8ff9a",
 			"glow": "#3a8a20"
-		}
+		},
+		"family": "bone_kin"
 	},
 	"grave_priest": {
 		"name": "Gravpräst",
@@ -254,7 +256,8 @@
 			"trait": "salted_earth",
 			"tint": "#e0f0ff",
 			"glow": "#3a6aa0"
-		}
+		},
+		"family": "bone_kin"
 	},
 	"ember_skeleton": {
 		"name": "Glödskelett",
@@ -321,6 +324,495 @@
 			"trait": "scatter_shot",
 			"tint": "#ffe0a0",
 			"glow": "#ff5a00"
+		},
+		"family": "bone_kin"
+	},
+	"bone_runner": {
+		"name": "Benspringare",
+		"family": "bone_kin",
+		"color": "#f0e6c0",
+		"stats": {
+			"health": 35,
+			"attack": 19,
+			"intelligence": 10,
+			"defense": 1,
+			"speed": 17
+		},
+		"crit_chance": 0.08,
+		"attack_ability": "runner_bite",
+		"traits": [
+			"flock_bite"
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 0.8,
+			"tint": "#f4ecc8",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"weapons": {
+				"grip_r": "Shortsword",
+				"grip_l": "Shortsword"
+			},
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "runner_sinew",
+		"elite": {
+			"name": "Benvarg",
+			"trophy": "wolf_leap",
+			"trait": "wolf_leap",
+			"tint": "#e0e8ff",
+			"glow": "#4a6aa0"
+		}
+	},
+	"coffin_bearer": {
+		"name": "Kistbärare",
+		"family": "bone_kin",
+		"color": "#a8865a",
+		"stats": {
+			"health": 75,
+			"attack": 13,
+			"intelligence": 10,
+			"defense": 4,
+			"speed": 7
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "coffin_maul",
+		"traits": [
+			"last_service"
+		],
+		"rules": [
+			{
+				"ability": "defend",
+				"if": {
+					"self_hp_below": 0.6
+				}
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.15,
+			"tint": "#c8a878",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"weapons": {
+				"grip_r": "Maul",
+				"grip_l": "Shield"
+			},
+			"anims": {
+				"idle": "Shield_Idle",
+				"attack": [
+					"Shield_Attack",
+					"Shield_Attack_B"
+				],
+				"block": "Shield_Block",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "coffin_nail",
+		"elite": {
+			"name": "Likbärare",
+			"trophy": "last_watch",
+			"trait": "last_watch",
+			"tint": "#ffd0a0",
+			"glow": "#8a4a10",
+			"counter": {
+				"trait": "pallbearer_wrath",
+				"min_depth": 3
+			}
+		}
+	},
+	"mold_skeleton": {
+		"name": "Mögelskelett",
+		"family": "bone_kin",
+		"color": "#8ac070",
+		"stats": {
+			"health": 55,
+			"attack": 13,
+			"intelligence": 16,
+			"defense": 1.5,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "bone_slash",
+		"traits": [
+			"spores"
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.0,
+			"tint": "#a8d890",
+			"glow": "#2a5a10",
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "mold_jaw",
+		"elite": {
+			"name": "Sporfursten",
+			"trophy": "spore_burst",
+			"trait": "spore_burst",
+			"tint": "#e0ff90",
+			"glow": "#5a8a00"
+		}
+	},
+	"rattler": {
+		"name": "Skramlaren",
+		"family": "bone_kin",
+		"color": "#b0b0b0",
+		"stats": {
+			"health": 58,
+			"attack": 16,
+			"intelligence": 10,
+			"defense": 2.5,
+			"speed": 10
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "bone_slash",
+		"traits": [
+			"rattle"
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.05,
+			"tint": "#b8b8b8",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"weapons": {
+				"grip_r": "Flail"
+			},
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "rattler_bone",
+		"elite": {
+			"name": "Benklappret",
+			"trophy": "clatter_stone",
+			"trait": "clatter_stone",
+			"tint": "#f0f0ff",
+			"glow": "#6a6a8a"
+		}
+	},
+	"bone_colossus": {
+		"name": "Benkolossen",
+		"rank": "elite",
+		"family": "bone_kin",
+		"color": "#c8b890",
+		"stats": {
+			"health": 150,
+			"attack": 21,
+			"intelligence": 12,
+			"defense": 3.5,
+			"speed": 7
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "bone_slash",
+		"traits": [
+			"bone_armor",
+			"growing_wrath",
+			"bone_wall"
+		],
+		"rules": [
+			{
+				"ability": "bone_storm",
+				"if": {
+					"self_stacks_at_least": {
+						"stack": "raise_attack",
+						"n": 3
+					}
+				}
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.5,
+			"tint": "#a89868",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"weapons": {
+				"grip_r": "Greataxe"
+			},
+			"anims": {
+				"idle": "TwoHand_Idle",
+				"attack": [
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "colossus_spine"
+	},
+	"grave_caller": {
+		"name": "Gravväckaren",
+		"rank": "elite",
+		"color": "#8ab0ff",
+		"stats": {
+			"health": 70,
+			"attack": 12,
+			"intelligence": 18,
+			"defense": 2.5,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "shadow_bolt",
+		"traits": [
+			"calling"
+		],
+		"rules": [
+			{
+				"ability": "raise_dead",
+				"if": {
+					"dead_ally": true
+				}
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.0,
+			"tint": "#a8c8ff",
+			"anims_from": [
+				"solveig"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"kapa/Kult_Robe",
+				"kapa/Kult_Pendant"
+			],
+			"colors": {
+				"Kult_Robe": "#18284a",
+				"Kult_DarkBrown": "#5a3a9a",
+				"Kult_Black": "#140c22",
+				"Kult_LightBrown": "#24163c",
+				"Kult_Metal": "#3c2a66"
+			},
+			"emit": {
+				"Kult_Glow": "#6aa0ff"
+			},
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"light": "#5a8aff",
+			"light_energy": 0.7,
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"cast": "Staff_Cast",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "caller_lantern"
+	},
+	"grave_mist": {
+		"name": "Gravdimman",
+		"rank": "elite",
+		"color": "#c0c0d0",
+		"stats": {
+			"health": 55,
+			"attack": 10,
+			"intelligence": 20,
+			"defense": 1,
+			"speed": 12
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "shadow_bolt",
+		"traits": [
+			"mist_shroud"
+		],
+		"rules": [
+			{
+				"ability": "mist_sleep"
+			}
+		],
+		"visual": {
+			"model": "gast",
+			"scale": 1.0,
+			"light": "#b0b0c0",
+			"light_energy": 0.8,
+			"anims": {
+				"idle": "Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk"
+			},
+			"tint": "#c8c8d0"
+		},
+		"trophy": "mist_veil",
+		"counter": {
+			"trait": "mist_weight",
+			"min_depth": 2
+		}
+	},
+	"bone_scribe": {
+		"name": "Benskrivaren",
+		"rank": "elite",
+		"family": "bone_kin",
+		"color": "#7a90c8",
+		"stats": {
+			"health": 85,
+			"attack": 14,
+			"intelligence": 16,
+			"defense": 3,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "shadow_bolt",
+		"traits": [
+			"noted"
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.0,
+			"tint": "#9ab0e0",
+			"anims_from": [
+				"solveig"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"kapa/Kult_Robe",
+				"kapa/Kult_Pendant"
+			],
+			"colors": {
+				"Kult_Robe": "#1a2240",
+				"Kult_DarkBrown": "#5a3a9a",
+				"Kult_Black": "#140c22",
+				"Kult_LightBrown": "#24163c",
+				"Kult_Metal": "#3c2a66"
+			},
+			"emit": {
+				"Kult_Glow": "#3a5aa0"
+			},
+			"weapons": {
+				"grip_r": "Staff"
+			},
+			"light": "#3a5ac0",
+			"light_energy": 0.7,
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"Spell_Simple_Shoot"
+				],
+				"cast": "Staff_Cast",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "scribe_quill"
+	},
+	"bell_ringer": {
+		"name": "Klockaren",
+		"rank": "miniboss",
+		"family": "bone_kin",
+		"color": "#d8c8a0",
+		"stats": {
+			"health": 140,
+			"attack": 17,
+			"intelligence": 15,
+			"defense": 4,
+			"speed": 7
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "bone_slash",
+		"traits": [
+			"resistant",
+			"bell_toll_trait"
+		],
+		"rules": [
+			{
+				"ability": "bell_toll",
+				"if": {
+					"family_at_least": 1
+				}
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 1.3,
+			"tint": "#e0d0a8",
+			"glow": "#6a5a20",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"weapons": {
+				"grip_r": "Maul"
+			},
+			"anims": {
+				"idle": "TwoHand_Idle",
+				"attack": [
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"trophy": "bell_rope",
+		"counter": {
+			"trait": "last_chime",
+			"min_depth": 1
 		}
 	},
 	"bone_lich": {

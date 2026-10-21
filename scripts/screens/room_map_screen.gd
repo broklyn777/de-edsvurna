@@ -570,6 +570,17 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		lines.append("Kan lämna: " + ", ".join(trophies))
 	if r.get("elite", false) or r.get("nemesis", false):
 		lines.append("Varning: en elitfiende är starkare än vanligt och har en egen regelbrytande egenskap. Backa och byt makro, eller troféer vid en lägereld, om det behövs.")
+	# 0.27: elitens motdrag (Siralims counters) på en rad, t.ex. "Klockaren: ni får bara väcka döda en gång per strid".
+	var c_opts := {"counter": r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false),
+			"force_elites": 1 if r.get("elite", false) or r.get("nemesis", false) else 0}
+	var counter := CombatSim.counter_for(data, r.encounter, state.depth, c_opts, state.party.size())
+	if not counter.is_empty():
+		var who: Dictionary = data.enemies[counter.kind]
+		var who_name: String = who.name
+		if who.get("elite", {}).get("counter", {}).get("trait", "") == counter.trait:
+			who_name = who.elite.name
+		var td: Dictionary = data.traits[counter.trait]
+		lines.append("%s: %s." % [who_name, td.get("card", td.get("text", ""))])
 	y += 22
 	for l in lines:
 		y += UiStyle.para(self, Vector2(x, y), l, 16, Parchment.INK, w, 4) + 6

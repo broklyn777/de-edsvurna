@@ -17,12 +17,22 @@
 			[
 				"crypt_2a",
 				"crypt_2b",
-				"crypt_2c"
+				"crypt_2c",
+				"crypt_2d",
+				"crypt_2e",
+				"crypt_2f"
 			],
 			[
 				"crypt_3a",
-				"crypt_3b"
+				"crypt_3b",
+				"crypt_3c",
+				"crypt_3d",
+				"crypt_2d"
 			]
+		],
+		"elite_pools": [
+			["crypt_e1"],
+			["crypt_e2", "crypt_e3", "crypt_e4", "crypt_e5", "crypt_e6"]
 		],
 		"map": {
 			"rect": [
