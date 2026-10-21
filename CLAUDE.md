@@ -179,6 +179,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   förlust: körningen och questens belöning går förlorade och Realmen börjar om från våning 1 (`run.cfg`
   tas bort, `RunState.delete_saved`); erfarenhet, troféer, silver och material som redan är vunna finns kvar.
   `CombatSim.forfeit()`. `-- --ask-forfeit` visar frågan i en strid.
+- **Grottans utseende** (0.28.3, efter skärmgranskningen): dimman är en sammanhängande tuschlavering med skraffering
+  och svagt rutnät; besökta rutor ljust pergament med stenprickar; bergssidor i tusch där det kända möter dimman; ett
+  varmt sken där man står; hörnmarkeringar på hela gränsen mot dimman (varje ruta man når med ett tryck). `--explore=<n>`
+  markerar n rutor som besökta för skärmdumpar.
 - **Realmens föremål i grottan** (0.28.2, `data/objects.json`, `realms.json` "objects", Siralims föremål per Realm):
   2–3 per våning (`Grotto._place_objects`, eget frö). Kryptan: Rasslande sarkofag (knacka: starkare benvakt, dubbel
   skatt), Gravklocka (ring: strid; efter segern ring igen, svårare och större belöning), Gravregister (visa 2 skatter

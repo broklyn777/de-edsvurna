@@ -62,6 +62,21 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--enter="):
 			_dev_enter(arg.get_slice("=", 1))
+		elif arg.begins_with("--explore="):
+			_dev_explore(int(arg.get_slice("=", 1)))
+
+
+## --explore=<n> (0.28.3, för skärmdumpar): markerar n rutor som besökta, i bredd från start, utan att gå på grupper.
+func _dev_explore(n: int) -> void:
+	var state: RunState = run.state
+	var queue: Array = [state.map.start]
+	while not queue.is_empty() and state.visited.size() < n:
+		var i: int = queue.pop_front()
+		for nb in Grotto.neighbors(i):
+			if not state.visited.has(nb) and not state.map.has_group(nb) and nb != state.map.goal and state.visited.size() < n:
+				state.visited.append(nb)
+				queue.append(nb)
+	queue_redraw()
 
 
 ## --enter=<sort>[:möte] (0.27: t.ex. elite:crypt_e5 visar Klockarens kort; striden: --encounter=crypt_e5).
@@ -463,35 +478,96 @@ func _draw_decor(state: RunState) -> void:
 	InkArt.icon(self, "sword_in_stone", Vector2(262, size.y - 62), 112, 0.7)
 
 
-## Rutnätet: dimman över det okända, de besökta rutorna i bläck, målet alltid synligt, spärrade rutor streckade och
-## rutorna man kan gå till med en pulserande guldkant.
+## Rutnätet (0.28.3, efter skärmgranskningen): dimman är en sammanhängande tuschlavering med skraffering och ett svagt
+## rutnät; besökta rutor är ljust pergament med lite sten; bergssidor i tusch tecknas där det kända möter dimman, så att
+## grottan växer fram. Var man står får ett varmt sken, rutorna man kan gå till hörnmarkeringar, spärrade rutor streck.
 func _draw_grid(m: Grotto, state: RunState) -> void:
 	var g := _grid_rect()
 	var cs := _cell_size()
-	draw_rect(g.grow(6), Color(InkArt.INK, 0.10))
+	var known := func(i: int) -> bool: return state.visited.has(i) or i == m.goal or state.revealed.has(i)
+	# Dimman: lavering och tät diagonal skraffering över hela grottan.
+	draw_rect(g.grow(8), Color(0.30, 0.23, 0.15, 0.30))
+	var hatch := 9.0
+	var w := g.size.x
+	var h := g.size.y
+	var k := 1
+	while k * hatch < w + h:
+		var o := k * hatch
+		var a := Vector2(o, 0.0) if o <= w else Vector2(w, o - w)
+		var b := Vector2(0.0, o) if o <= h else Vector2(o - h, h)
+		draw_line(g.position + a, g.position + b, Color(InkArt.INK, 0.10), 1.0)
+		k += 1
+	for n in Grotto.SIZE + 1:  # ett svagt rutnät så att stegen går att räkna
+		draw_line(g.position + Vector2(n * cs, 0), g.position + Vector2(n * cs, h), Color(InkArt.INK, 0.07), 1.0)
+		draw_line(g.position + Vector2(0, n * cs), g.position + Vector2(w, n * cs), Color(InkArt.INK, 0.07), 1.0)
+	# Spärrade rutor (en sedd grupp intill): röda streck i dimman.
 	for i in Grotto.SIZE * Grotto.SIZE:
-		var r := _cell_rect(i).grow(-2)
-		var known: bool = state.visited.has(i) or i == m.goal or state.revealed.has(i)
-		if known:
-			draw_rect(r, Color(0.96, 0.9, 0.74, 0.85))
-		else:
-			draw_rect(r, Color(0.42, 0.33, 0.22, 0.22))  # dimma
-		draw_rect(r, Color(InkArt.INK, 0.28 if known else 0.12), false, 1.5)
-		if not known and m.blocked(i, state.visited, state.seen):
-			for k in 4:
-				var o := cs * (0.2 + 0.2 * k)
-				draw_line(r.position + Vector2(o, 0), r.position + Vector2(0, o), Color(Parchment.SEAL, 0.35), 1.5)
-				draw_line(r.end - Vector2(o, 0), r.end - Vector2(0, o), Color(Parchment.SEAL, 0.35), 1.5)
-	# Var man kan gå härnäst.
+		if not known.call(i) and m.blocked(i, state.visited, state.seen):
+			var r := _cell_rect(i).grow(-3)
+			for q in 4:
+				var o := cs * (0.2 + 0.2 * q)
+				draw_line(r.position + Vector2(o, 0), r.position + Vector2(0, o), Color(Parchment.SEAL, 0.45), 1.6)
+				draw_line(r.end - Vector2(o, 0), r.end - Vector2(0, o), Color(Parchment.SEAL, 0.45), 1.6)
+	# Det kända: ljust pergament med några stenprickar (avslöjade men obesökta rutor lite blekare).
+	for i in Grotto.SIZE * Grotto.SIZE:
+		if not known.call(i):
+			continue
+		var r := _cell_rect(i)
+		var walked: bool = state.visited.has(i)
+		draw_rect(r, Color(0.97, 0.92, 0.78, 0.95 if walked else 0.62))
+		for q in 3:
+			var p := r.position + Vector2((0.5 + 0.4 * InkArt.jitter(i * 3.1 + q)) * cs, (0.5 + 0.4 * InkArt.jitter(i * 1.7 + q * 2.3)) * cs)
+			draw_circle(p, 1.3, Color(InkArt.INK, 0.22))
+		var c0 := r.position + Vector2((0.3 + 0.2 * InkArt.jitter(i * 5.3)) * cs, 0.72 * cs)
+		draw_line(c0, c0 + Vector2(cs * 0.16, -cs * 0.05), Color(InkArt.INK, 0.15), 1.0)  # en spricka
+	# Bergssidor: där det kända möter dimman eller grottans kant, en ojämn tuschlinje och korta streck utåt.
+	for i in Grotto.SIZE * Grotto.SIZE:
+		if not known.call(i):
+			continue
+		var r := _cell_rect(i)
+		var p := Grotto.xy(i)
+		var sides := [[Vector2i(0, -1), r.position, r.position + Vector2(cs, 0), Vector2(0, -1)],
+				[Vector2i(0, 1), r.position + Vector2(0, cs), r.end, Vector2(0, 1)],
+				[Vector2i(-1, 0), r.position, r.position + Vector2(0, cs), Vector2(-1, 0)],
+				[Vector2i(1, 0), r.position + Vector2(cs, 0), r.end, Vector2(1, 0)]]
+		for side in sides:
+			var q: Vector2i = p + side[0]
+			var inside := q.x >= 0 and q.y >= 0 and q.x < Grotto.SIZE and q.y < Grotto.SIZE
+			if inside and known.call(Grotto.idx(q)):
+				continue
+			var a: Vector2 = side[1]
+			var b: Vector2 = side[2]
+			var out: Vector2 = side[3]
+			var mid := (a + b) / 2.0 + out * cs * 0.05 * InkArt.jitter(i * 7.7 + a.x * 0.01)
+			draw_polyline(PackedVector2Array([a, mid, b]), Color(InkArt.INK, 0.78), 2.4)
+			for t in [0.2, 0.5, 0.8]:
+				var at := a.lerp(b, t)
+				var ln := cs * (0.10 + 0.05 * InkArt.jitter(i * 2.9 + t * 10.0))
+				draw_line(at, at + out * ln + (b - a).normalized() * ln * 0.4, Color(InkArt.INK, 0.42), 1.4)
+	# Var man står: ett varmt sken under pjäsen.
+	var here := _cell_rect(state.pos)
+	draw_rect(here.grow(-3), Color(1.0, 0.82, 0.42, 0.28 + 0.06 * sin(_t * 2.0)))
+	# Var man kan gå härnäst: hörnmarkeringar i guld (inte en hel ram, så de inte förväxlas med var man står).
 	var pulse := 0.5 + 0.5 * sin(_t * 4.0)
 	if _walk_t < 0.0 and _dialog.is_empty():
-		for n in Grotto.neighbors(state.pos):
-			if state.can_step(n) == "" and (not state.visited.has(n) or n == state.came_from):
-				var r := _cell_rect(n).grow(-5)
-				draw_rect(r, Color(UiStyle.GOLD.darkened(0.2), 0.45 + 0.4 * pulse), false, 3.0)
+		# Hela gränsen mot dimman: varje obesökt ruta man kan nå med ett tryck (pjäsen går dit genom kända rutor).
+		for n in Grotto.SIZE * Grotto.SIZE:
+			if (not state.visited.has(n) or n == state.came_from) and n != state.pos and state.can_step(n) == "":
+				var near: bool = Grotto.neighbors(state.pos).has(n)
+				_draw_corners(_cell_rect(n).grow(-4), cs * 0.28,
+						Color(UiStyle.GOLD.darkened(0.25), 0.7 + 0.3 * pulse) if near else Color(0.55, 0.36, 0.08, 0.85))
 	for i in Grotto.SIZE * Grotto.SIZE:
-		if state.visited.has(i) or i == m.goal or state.revealed.has(i):
+		if known.call(i):
 			_draw_cell(m, state, i)
+
+
+## Fyra hörn som markerar en ruta (len = hörnens längd).
+func _draw_corners(r: Rect2, len: float, color: Color) -> void:
+	var w := 4.0
+	for c in [[r.position, Vector2(1, 0), Vector2(0, 1)], [Vector2(r.end.x, r.position.y), Vector2(-1, 0), Vector2(0, 1)],
+			[Vector2(r.position.x, r.end.y), Vector2(1, 0), Vector2(0, -1)], [r.end, Vector2(-1, 0), Vector2(0, -1)]]:
+		draw_line(c[0], c[0] + c[1] * len, color, w)
+		draw_line(c[0], c[0] + c[2] * len, color, w)
 
 
 func _draw_cell(m: Grotto, state: RunState, i: int) -> void:
