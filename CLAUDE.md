@@ -71,12 +71,23 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `tools/gen_forge_sfx.py` (find_*, forge_level, slot_open, socket).
 - **Kartorna** (0.18): Kampanjkartan (ersätter Kryptporten) visar landet på pergament med Realms som
   områden; fördärvet viker för varje klarat djup. Där väljs Realm, djup och instabilitet; Förberedelser
-  väljer sällskap och trofé. Kameran glider in i området till **rumskartan**: varje våning har 3–4 steg
-  med 2–3 rum (Strid, Elit, Skattkammare, Helgedom, Lägereld, Portal) och sedan våningens slut/bossen.
-  Lägereld = +3 Charges per förmåga (livet fylls redan efter varje strid). Helgedom = välj en gåva eller
-  Pandemonium. Portal = svårare strid och sedan skatt. En körning blir 8–10 strider. Charges är Siralims
-  (4–8 per förmåga, som 0.13): striderna på kartan är svagare (mötena i `realms.json` "pools" har
-  `stat_mult` ~0,65–0,72) och lägerelden före våningens slut fyller på.
+  väljer sällskap och trofé. Kameran glider in i området till **grottan** (0.27, `docs/plan/0.27-grottan.md`, ersätter
+  0.18:s rumskarta med steg och rum): två våningar per körning (`RunState.FLOORS_PER_RUN`), var och en ett rutnät 8×8
+  (`src/game/grotto.gd`, `Grotto`, öppen plan utan klippor), genererat ur ett frö efter regler (`Grotto.problems()`):
+  start vid en kant, trappan (första våningen) eller bossen minst 5 steg bort, synlig från start men låst tills våningens
+  quest är klar; 6–8 fiendegrupper ur Realmens pooler (tier 0–2 efter våning och avstånd, `FAR_TIER_DIST`), 1 elitgrupp
+  (2 om questen är Rensa) minst 4 steg bort med en lägereld inom 3, 1–2 bevakade och 3–4 obevakade skatter, 1 helgedom,
+  1–2 lägereldar, quest-föremål och kanske en fånge; inga grupper bredvid start och högst två grupper intill varandra.
+  **Dimma:** bara besökta rutor (och målet) syns. Ett tryck går ett steg till en granne; ett tryck på en besökt ruta får
+  pjäsen att gå dit själv (`RunState.can_step`, `step`, `Grotto.path`). En grupp visas som ett kort i panelen (fiender,
+  storlek, egenskaper, möjliga troféer, varning för elit): ANFALL (`Run.fight_here`) eller BACKA (`back`); en sedd grupp
+  spärrar de obesökta rutorna intill sig tills den är besegrad (Dungelot, `Grotto.blocked`, `RunState.seen`).
+  **Questen** (en per våning, `RunState.roll_quest`): Jakt på Nemesis, Rensa (2 elitgrupper) eller Samla (2–3 föremål,
+  alltid bevakade). Belöningen (silver, perk-poäng) ges för den sista våningens quest, en gång per körning som förut.
+  Lägereld = +3 Charges per förmåga en gång, och **troféer byts bara vid en lägereld** (VAL; lägret i läget "campfire",
+  `Run.open_campfire_camp`; efter en strid väljer man bara en ny trofé). Helgedom = välj en gåva eller Pandemonium.
+  Charges är Siralims (4–8 per förmåga) och räcker hela körningen. Botarna (`BALANS=grotta`): ca 12 strider per körning
+  om man slåss mot allt man kliver på, 6–9 om man backar från vanliga grupper.
   **Rumsögonblick** (0.18, `scripts/rooms/`, `docs/rum3d.md`): skattkammare, helgedom, lägereld och portal
   spelar ett kort 3D-ögonblick (`RoomMoment`) i Realmens stil innan rummets ruta; stridsrum har inget. Ett
   tryck hoppar över; RUMSÖGONBLICK PÅ/AV på rumskartan (`Profile.room_moments`). Ljud: room_door,
@@ -237,9 +248,10 @@ uppdaterad när nya begrepp tillkommer.
   den visas vid start, `Run.choose_slot()` laddar platsen och fortsätter en sparad körning; borgen har ‹ PROFILER.
   `src/game/hero_stats.gd` – `HeroStats`: nivåer, tillväxt, personlighet, `breakdown()` per källa, erfarenhet,
   väntad nivå och fiendernas nivå. `data/personalities.json` – de 20 personligheterna (namn, up, down, text).
-  `src/game/room_map.gd` – `RoomMap`: en våning ur ett frö (`generate()`, `choices()`, `problems()` för kraven).
-  RunState håller kartan: `start_expedition()`, `enter()`, `battle_opts()`, `battle_won()`, `campfire()`,
-  `treasure()`, `shrine_options()`/`apply_shrine()`, `next_floor()`, questen och `save()`/`load_from()`.
+  `src/game/grotto.gd` – `Grotto` (0.27): en våning ur ett frö (`generate()`, `problems()` för reglerna, `blocked()`,
+  `path()`). RunState håller grottan: `start_expedition()`, `start_floor()`, `can_step()`, `step()`, `back()`, `fight()`,
+  `battle_opts()`, `battle_won()`, `collect_item()`, `campfire()`, `treasure()`, `shrine_options()`/`apply_shrine()`,
+  `floor_cleared()`, `next_floor()`, questen och `save()`/`load_from()` (en körning sparad med 0.18:s rumskarta fortsätter inte).
   `scripts/game/run.gd` är autoloaden `Run` som byter scen (bas → kampanjkarta → rumskarta → rum/strid →
   läger → rumskarta … → bas;
   bas → Övningsgården → strid → Övningsgården) och sparar makrona i `user://macros.json`
@@ -370,8 +382,14 @@ godot --path . -- --camp
 godot --path . -- --hero=brokk --tab=0
 godot --path . -- --xp-bar=85 --floor=0 --demo --turns=300
 
-# Rumskartan med en ny körning (efter --realm, --depth, --instability)
+# Grottan med en ny körning (efter --realm, --depth, --instability); --enter=<sort> lägger en sådan ruta bredvid start
+# och går dit (elite, campfire, treasure …); --campfire-camp visar trofébytet vid en lägereld
 godot --path . -- --realm=chapel --map
+godot --path . -- --all-companions --map --enter=elite
+godot --path . -- --all-companions --map --campfire-camp
+
+# Grottan i botarna: vinst, strider och steg per körning
+BALANS=grotta godot --headless --path . --script res://tests/balance_report.gd
 
 # Profilskärmen med raderingsbekräftelsen öppen (för skärmdumpar)
 godot --path . -- --confirm-delete=1

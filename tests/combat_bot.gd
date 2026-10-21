@@ -241,7 +241,12 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 
 ## Slåss boten mot gruppen den står på? Elitgrupper bara om questen kräver dem (eller med "greedy").
 static func _bot_wants_fight(state: RunState, r: Dictionary, policy: String) -> bool:
-	if policy == "greedy" or r.get("boss", false) or not r.get("elite", false) or r.get("bot_must", false):
+	if policy == "greedy" or r.get("boss", false) or r.get("bot_must", false):
+		return true
+	# "careful": backar från vanliga grupper och bevakade skatter så länge det finns en annan väg (färre strider).
+	if policy == "careful" and (r.kind == "battle" or (r.kind == "treasure" and not r.get("elite", false))):
+		return false
+	if not r.get("elite", false):
 		return true
 	if state.party.size() == 1:
 		return false  # en ensam paladin väntar med elitgruppen tills någon har anslutit (kortets varning)

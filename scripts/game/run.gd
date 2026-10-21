@@ -338,6 +338,12 @@ func _dev_args() -> void:
 					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE,
 					"--handbook": HANDBOOK_SCENE}[arg]
 			get_tree().change_scene_to_file.call_deferred(scene)
+		elif arg == "--campfire-camp":
+			# 0.27: trofébytet vid en lägereld (lägret utan erbjudande)
+			state.take_trophy("bone_finger")
+			state.take_trophy("quick_shot")
+			camp_mode = "campfire"
+			get_tree().change_scene_to_file.call_deferred(CAMP_SCENE)
 		elif arg == "--camp":
 			offer = state.trophy_offer(data, rng)
 			last_receipt = ["Domens kall (Paladinen): slog till 7 gånger – 31 skada"]
