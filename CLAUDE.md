@@ -177,6 +177,14 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   förlust: körningen och questens belöning går förlorade och Realmen börjar om från våning 1 (`run.cfg`
   tas bort, `RunState.delete_saved`); erfarenhet, troféer, silver och material som redan är vunna finns kvar.
   `CombatSim.forfeit()`. `-- --ask-forfeit` visar frågan i en strid.
+- **Kryptans fiender** (0.28, `docs/plan/0.27-fiender.md`, Siralims raser): familjen Benfolket (`family` i enemies.json,
+  `CombatSim.family_count`; ingen delad aura, medlemmarnas egna egenskaper räknar familjen, t.ex. Flockbett, Benmur),
+  elitfiender (`rank`: elite) och Klockaren som miniboss (`rank`: miniboss, inte boss). Elitgrupper ligger i
+  `realms.json` "elite_pools" (våning 1 bara Kolossens vakt, mildare på första nedstigningen: `FIRST_DESCENT_ELITE`).
+  Motdrag (`counter`, `CombatSim.counter_for`): högst ett per grupp, bara elit, Nemesis och boss, från ett visst djup
+  (Sista klangen djup 1, Dimmans tyngd 2, Sista vaktens ilska 3); elitkortet visar det. Nya AI-val: `pick` healer,
+  highest_attack, caster; `ignore_taunt`; villkor `family_at_least`, `alone`, `self_stacks_at_least`.
+  Flaggor: `--encounter=<möte>` (övningsstrid mot gruppen), `--enter=elite:<möte>` (gruppens kort i grottan).
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens kall, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
