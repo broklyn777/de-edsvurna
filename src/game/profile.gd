@@ -64,6 +64,10 @@ const NAME_MAX := 16
 ## (vardagsrepliken växlar).
 var descents := {}
 var talks := {}
+## 0.29.3 (Värdshuset): hur många nedstigningar i rad varje följeslagare har stannat hemma, och hur många nedstigningar
+## som var gjorda senast man pratade med den i värdshuset (välkomstrepliken sägs en gång efter varje hemkomst).
+var home_runs := {}
+var inn_heard := {}
 ## 0.25: hjälprutorna som redan har visats (Help), och berättarens rutor som har lästs (första porten, första bossen).
 var help_seen: Array = []
 var narrated: Array = []
@@ -360,6 +364,12 @@ func set_party(companions: Array) -> void:
 	party = p
 
 
+## 0.29.3: räknar vilka som stannar hemma när en nedstigning börjar (de som är med börjar om från 0).
+func count_home_runs() -> void:
+	for id in recruited:
+		home_runs[id] = 0 if party.has(id) else int(home_runs.get(id, 0)) + 1
+
+
 ## Byter personlighet mot silver; nivåerna räknas om bakåt (statsen räknas alltid ur nivå och personlighet).
 func set_personality(data: Dictionary, hero_id: String, personality: String) -> bool:
 	var h := hero(data, hero_id)
@@ -517,6 +527,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "hero_name", hero_name)
 	cfg.set_value("progress", "descents", descents)
 	cfg.set_value("progress", "talks", talks)
+	cfg.set_value("progress", "home_runs", home_runs)
+	cfg.set_value("progress", "inn_heard", inn_heard)
 	cfg.set_value("progress", "help_seen", help_seen)
 	cfg.set_value("progress", "narrated", narrated)
 	cfg.set_value("progress", "worn", worn)
@@ -566,6 +578,8 @@ static func load_from(path: String) -> Profile:
 	p.intro_talked = bool(cfg.get_value("progress", "intro_talked", false))
 	p.set_hero_name(String(cfg.get_value("progress", "hero_name", DEFAULT_NAME)))
 	p.talks = cfg.get_value("progress", "talks", {})
+	p.home_runs = cfg.get_value("progress", "home_runs", {})
+	p.inn_heard = cfg.get_value("progress", "inn_heard", {})
 	p.help_seen = cfg.get_value("progress", "help_seen", [])
 	p.narrated = cfg.get_value("progress", "narrated", [])
 	if p.intro_done and not p.recruited.has(STARTER):

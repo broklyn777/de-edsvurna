@@ -19,6 +19,13 @@
 					}
 				},
 				{
+					"id": "gorm_crown_2",
+					"text": "Samma stämpel igen. Då leder spåren längre än till den fiende vi just besegrat.",
+					"when": {
+						"min_bosses": 2
+					}
+				},
+				{
 					"text": "Det går ett rykte om en helare som sitter fången i kryptan. Syster Alva. Hon lappade ihop halva byn en gång – nu är det vår tur.",
 					"when": {
 						"min_descents": 1,
@@ -117,6 +124,13 @@
 					"text": "En krona med en tom mitt? Den stämpeln har jag sett förut. Ge mig några år, så minns jag var.",
 					"when": {
 						"boss": "bone_lich"
+					}
+				},
+				{
+					"id": "alrik_crown_2",
+					"text": "Jag fann kronan bland gamla fraktmärken. Avsändartecken, inte kungavapen. Boken ligger här. Någonstans.",
+					"when": {
+						"min_bosses": 2
 					}
 				},
 				{
@@ -352,6 +366,14 @@
 				{
 					"label": "Till kampanjkartan",
 					"open": "gate"
+				}
+			]
+		},
+		"lodger": {
+			"options": [
+				{
+					"label": "Visa hjältebladet",
+					"open": "sheet"
 				}
 			]
 		}
@@ -1850,5 +1872,405 @@
 			"(Bland benen ligger ett mässingsbeslag. På det sitter en liten stämpel: en krona med en tom mitt.)"
 		]
 	},
-	"refs_note": "Bibelord ur 1917 års kyrkobibel, kontrollerade ordagrant mot Wikisource (Bibeln 1917) 2026-10-21."
+	"refs_note": "Bibelord ur 1917 års kyrkobibel, kontrollerade ordagrant mot Wikisource (Bibeln 1917) 2026-10-21.",
+	"inn": {
+		"imma": {
+			"inn": [
+				{
+					"id": "imma_inn_1",
+					"text": "Jag övar prickskytte med ärtor. Mor Elin kallar det något annat."
+				},
+				{
+					"id": "imma_inn_2",
+					"text": "Minns du när vi gömde Gorms stövlar? Han tittar fortfarande under bänken."
+				},
+				{
+					"id": "imma_inn_3",
+					"text": "Jag har gjort läxan. Den låg under den här bullen hela tiden."
+				}
+			],
+			"bored": [
+				{
+					"id": "imma_bored_1",
+					"text": "Ta med mig nästa gång. Jag har snart slut på oskyldiga förklaringar."
+				},
+				{
+					"id": "imma_bored_2",
+					"text": "Om jag måste tälja en pil till får borgen snart slut på stolar."
+				}
+			],
+			"welcome": [
+				{
+					"id": "imma_welcome_1",
+					"text": "Där är du! Jag sparade en bulle. Den blev lite mindre medan jag väntade."
+				},
+				{
+					"id": "imma_welcome_2",
+					"text": "Du har det där ansiktet igen. Sätt dig. Berätta när du vill."
+				}
+			]
+		},
+		"alva": {
+			"inn": [
+				{
+					"id": "alva_inn_1",
+					"text": "Lägg inte hjälmen på bordet. Folk äter där. Ja, även Brokk."
+				},
+				{
+					"id": "alva_inn_2",
+					"text": "Jag räknar förband. Någon använder dem till att putsa stövlarna."
+				},
+				{
+					"id": "alva_inn_3",
+					"text": "Vatten först, sedan mat. Det är märkligt hur ofta ordningen behöver förklaras."
+				}
+			],
+			"bored": [
+				{
+					"id": "alva_bored_1",
+					"text": "Väskan är packad. Förbanden hjälper bättre där ni faktiskt blir skadade."
+				},
+				{
+					"id": "alva_bored_2",
+					"text": "Jag följer gärna med. Här har jag redan behandlat samma skärsår tre gånger."
+				}
+			],
+			"welcome": [
+				{
+					"id": "alva_welcome_1",
+					"text": "Bra, ni är hemma. Den som säger ”bara en skråma” sätter sig först."
+				},
+				{
+					"id": "alva_welcome_2",
+					"text": "Ställ packningen här. Du får vara tapper igen när du har ätit."
+				}
+			]
+		},
+		"brokk": {
+			"inn": [
+				{
+					"id": "brokk_inn_1",
+					"text": "Bänken knarrar. Jag har erbjudit mig att laga den. Tydligen räknas hammarslag som oväsen."
+				},
+				{
+					"id": "brokk_inn_2",
+					"text": "Grytan är god. Det har jag sagt till Elin. En gång räcker."
+				},
+				{
+					"id": "brokk_inn_3",
+					"text": "Den där bucklan? Räddade mitt knä. Jag låter den sitta kvar."
+				}
+			],
+			"bored": [
+				{
+					"id": "brokk_bored_1",
+					"text": "Yxan är slipad, remmarna hela. Vad mer väntar vi på?"
+				},
+				{
+					"id": "brokk_bored_2",
+					"text": "Jag har lagat tre pallar. Ta med mig innan jag börjar på taket."
+				}
+			],
+			"welcome": [
+				{
+					"id": "brokk_welcome_1",
+					"text": "Hemma igen. Bra. Visa skölden. Jag ser på håll att den behöver mig."
+				},
+				{
+					"id": "brokk_welcome_2",
+					"text": "Jag höll platsen varm. Ingen annan fick sitta där."
+				}
+			]
+		},
+		"eira": {
+			"inn": [
+				{
+					"id": "eira_inn_1",
+					"text": "Rådjuren är tillbaka vid muren. Ingen skrämde dem i morse."
+				},
+				{
+					"id": "eira_inn_2",
+					"text": "Fönstret får gärna stå öppet. Jag tycker om att höra regnet."
+				},
+				{
+					"id": "eira_inn_3",
+					"text": "Jag har torkat svamp. Det räcker till grytan, om Brokk frågar."
+				}
+			],
+			"bored": [
+				{
+					"id": "eira_bored_1",
+					"text": "Nästa gång följer jag gärna med. Jag kan gå först."
+				},
+				{
+					"id": "eira_bored_2",
+					"text": "Mina stövlar är torra nu. Jag saknar stigen."
+				}
+			],
+			"welcome": [
+				{
+					"id": "eira_welcome_1",
+					"text": "Jag hörde stegen vid porten. Skönt att det var ni."
+				},
+				{
+					"id": "eira_welcome_2",
+					"text": "Du behöver inte berätta än. Här finns te."
+				}
+			]
+		},
+		"solveig": {
+			"inn": [
+				{
+					"id": "solveig_inn_1",
+					"text": "Jag värmde teet. Koppen håller fortfarande. Det är framsteg."
+				},
+				{
+					"id": "solveig_inn_2",
+					"text": "Hur lång tid kan ett bröd behöva? Jag har förslag. Mor Elin har invändningar."
+				},
+				{
+					"id": "solveig_inn_3",
+					"text": "Sven vid porten såg frusen ut. Nu ser han mest misstänksam ut."
+				}
+			],
+			"bored": [
+				{
+					"id": "solveig_bored_1",
+					"text": "När går vi? Jag har varit färdig sedan innan du frågade någon annan."
+				},
+				{
+					"id": "solveig_bored_2",
+					"text": "Ta med mig. Mor Elin har förbjudit fler förbättringar av spisen."
+				}
+			],
+			"welcome": [
+				{
+					"id": "solveig_welcome_1",
+					"text": "Äntligen! Sätt er här. Jag värmde filtarna. Försiktigt, den här gången."
+				},
+				{
+					"id": "solveig_welcome_2",
+					"text": "Ni ser genomfrusna ut. Kom närmare. Nej, inte riktigt så nära."
+				}
+			]
+		},
+		"tove": {
+			"inn": [
+				{
+					"id": "tove_inn_1",
+					"text": "Jag övar tålamod. Brokk hjälper till genom att tugga så där."
+				},
+				{
+					"id": "tove_inn_2",
+					"text": "Stillhet gör gott. Det säger jag varje gång någon ber mig diska."
+				},
+				{
+					"id": "tove_inn_3",
+					"text": "Jag satt här före katten. Den har framfört en annan uppfattning."
+				}
+			],
+			"bored": [
+				{
+					"id": "tove_bored_1",
+					"text": "Jag väntar gärna. Men jag kan också vänta medan vi går någonstans."
+				},
+				{
+					"id": "tove_bored_2",
+					"text": "Mitt tålamod är vältränat nu. Resten av mig vill följa med."
+				}
+			],
+			"welcome": [
+				{
+					"id": "tove_welcome_1",
+					"text": "Välkomna hem. Jag har lyssnat efter er. Bänken har varit ovanligt ointressant."
+				},
+				{
+					"id": "tove_welcome_2",
+					"text": "Sitt en stund. Världen klarar sig utan våra bekymrade pannor tills teet svalnat."
+				}
+			]
+		},
+		"sefir": {
+			"inn": [
+				{
+					"id": "sefir_inn_1",
+					"text": "Jag övar fotarbete. Mor Elin säger att golvet redan är tillräckligt nött."
+				},
+				{
+					"id": "sefir_inn_2",
+					"text": "Ljuset här gör manteln rättvisa. Jag har flyttat ljusstaken tre gånger."
+				},
+				{
+					"id": "sefir_inn_3",
+					"text": "Brokk kallar min svärdsdans krångel. Hans stövlar har aldrig förstått musik."
+				}
+			],
+			"bored": [
+				{
+					"id": "sefir_bored_1",
+					"text": "Mitt svärd längtar efter arbete. Jag längtar efter en mer uppskattande publik."
+				},
+				{
+					"id": "sefir_bored_2",
+					"text": "Nästa gång följer jag med. Manteln är alldeles för ren för trovärdiga hjältehistorier."
+				}
+			],
+			"welcome": [
+				{
+					"id": "sefir_welcome_1",
+					"text": "Du kom tillbaka. Utmärkt. Jag hann bli orolig. Det klär mig förfärligt."
+				},
+				{
+					"id": "sefir_welcome_2",
+					"text": "Ni har gjort gott arbete. Ja, även med den hållningen. Kom, sätt er."
+				}
+			]
+		},
+		"ronja": {
+			"inn": [
+				{
+					"id": "ronja_inn_1",
+					"text": "Falken tog min handske igen. Han tränar tydligen mig i återhämtning."
+				},
+				{
+					"id": "ronja_inn_2",
+					"text": "Fönsterplatsen är ledig. Balken ovanför är upptagen. Titta upp innan du sätter dig."
+				},
+				{
+					"id": "ronja_inn_3",
+					"text": "Brokk påstår att hans yxa hinner först. Vi behöver ett större mål och en domare."
+				}
+			],
+			"bored": [
+				{
+					"id": "ronja_bored_1",
+					"text": "Han har spanat färdigt på borggården. Jag också. Nästa gång följer vi med."
+				},
+				{
+					"id": "ronja_bored_2",
+					"text": "Remmarna håller. Knutarna håller. Jag skulle gärna få annat att tänka på."
+				}
+			],
+			"welcome": [
+				{
+					"id": "ronja_welcome_1",
+					"text": "Han såg er före portvakten. Jag säger inget om hur mycket före."
+				},
+				{
+					"id": "ronja_welcome_2",
+					"text": "Där är ni. Jag behöver bara räkna er en gång till."
+				}
+			]
+		},
+		"lirien": {
+			"inn": [
+				{
+					"id": "lirien_inn_1",
+					"text": "Jag skrev en visa om Brokk. Han bad om en kortare. Nu återstår ett ord."
+				},
+				{
+					"id": "lirien_inn_2",
+					"text": "Berätta något litet. Alla berättar om hjältedåd. Ingen nämner vem som bar matsäcken."
+				},
+				{
+					"id": "lirien_inn_3",
+					"text": "Imma kan hela omkvädet. Hon vägrar erkänna att det finns verser."
+				}
+			],
+			"bored": [
+				{
+					"id": "lirien_bored_1",
+					"text": "Ta med mig nästa gång. Jag vill gärna skriva något som faktiskt har hänt."
+				},
+				{
+					"id": "lirien_bored_2",
+					"text": "Värdshusvisan har fått nio verser. Mor Elin föreslår att jag söker inspiration utanför huset."
+				}
+			],
+			"welcome": [
+				{
+					"id": "lirien_welcome_1",
+					"text": "Välkomna hem. Jag stämmer strängarna senare. Nu vill jag höra hur ni mår."
+				},
+				{
+					"id": "lirien_welcome_2",
+					"text": "Jag sparade era platser. Brokk hjälpte till genom att se ut som vanligt."
+				}
+			]
+		},
+		"hulda": {
+			"inn": [
+				{
+					"id": "hulda_inn_1",
+					"text": "Den där löken skulle kastas. Nu växer den. Folk har så bråttom med saker."
+				},
+				{
+					"id": "hulda_inn_2",
+					"text": "Jag gav köksträdgården lite omsorg. Mor Elin kallar det ett övertagande."
+				},
+				{
+					"id": "hulda_inn_3",
+					"text": "Torka inte leran på mattan. Jag kan använda den i krukorna."
+				}
+			],
+			"bored": [
+				{
+					"id": "hulda_bored_1",
+					"text": "Ta med mig nästa gång. Örterna är packade och kålen kan klara sig själv."
+				},
+				{
+					"id": "hulda_bored_2",
+					"text": "Jag har pysslat om alla här. Någon därute behöver säkert också en stadig hand."
+				}
+			],
+			"welcome": [
+				{
+					"id": "hulda_welcome_1",
+					"text": "Kom in, små vänner. Ja, Brokk, du också. Du ser alldeles vissen ut."
+				},
+				{
+					"id": "hulda_welcome_2",
+					"text": "Här finns soppa. Historien kan vänta tills skedarna har gjort sitt."
+				}
+			]
+		},
+		"ragnhild": {
+			"inn": [
+				{
+					"id": "ragnhild_inn_1",
+					"text": "Jag har medlat om sista bullen. Parterna åt upp bevisningen."
+				},
+				{
+					"id": "ragnhild_inn_2",
+					"text": "Sitt ordentligt. Du behöver inte vara i tjänst för att förtjäna en hel stol."
+				},
+				{
+					"id": "ragnhild_inn_3",
+					"text": "Rätt ska vara rätt. Den som lagar maten slipper disken. Även i kväll."
+				}
+			],
+			"bored": [
+				{
+					"id": "ragnhild_bored_1",
+					"text": "”Allting har sin tid.” Min tid på bänken är slut.",
+					"ref": "Pred. 3:1"
+				},
+				{
+					"id": "ragnhild_bored_2",
+					"text": "Här sitter jag och dömer brödet. Det är oskyldigt. Ta med mig."
+				}
+			],
+			"welcome": [
+				{
+					"id": "ragnhild_welcome_1",
+					"text": "”HERREN skall bevara din utgång och din ingång, från nu och till evig tid.”",
+					"ref": "Ps. 121:8"
+				},
+				{
+					"id": "ragnhild_welcome_2",
+					"text": "Ni kom hem till oss. Det gläder mig mer än en välförd rättegång."
+				}
+			]
+		}
+	}
 }

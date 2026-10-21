@@ -69,6 +69,9 @@ static func applies(data: Dictionary, profile: Profile, when: Dictionary) -> boo
 			"boss":
 				if not profile.bosses_defeated.has(v):
 					return false
+			"min_bosses":
+				if profile.bosses_defeated.size() < int(v):
+					return false
 			"intro_done":
 				if profile.intro_done != bool(v):
 					return false
@@ -103,6 +106,26 @@ static func greeting(data: Dictionary, id: String, turn: int) -> String:
 	if turn <= 0 or g.size() == 1:
 		return String(g[0])
 	return String(g[1 + posmod(turn - 1, g.size() - 1)])
+
+
+## 0.29.3: vad en följeslagare i värdshuset säger (dialog.json "inn", ChatGPT:s jobb E). Välkomstrepliken först, en gång
+## efter varje nedstigning hen stannade hemma under; efter två nedstigningar hemma vill hen följa med (varannan gång);
+## annars turas vardagsreplikerna om. turn = hur många gånger man har pratat med personen. Ger {id, text} eller {}.
+static func inn_line(data: Dictionary, profile: Profile, id: String, turn: int) -> Dictionary:
+	var d: Dictionary = data.get("dialog", {}).get("inn", {}).get(id, {})
+	if d.is_empty():
+		return {}
+	var home := int(profile.home_runs.get(id, 0))
+	var kind := "inn"
+	if home >= 1 and int(profile.inn_heard.get(id, -1)) < profile.total_descents():
+		kind = "welcome"
+	elif home >= 2 and turn % 2 == 0:
+		kind = "bored"
+	var lines: Array = d.get(kind, d.get("inn", []))
+	if lines.is_empty():
+		return {}
+	var e: Variant = lines[posmod(turn, lines.size())]
+	return e if e is Dictionary else {"text": String(e)}
 
 
 ## Svaret från en stängd station under introt (personen vid stationen säger det).

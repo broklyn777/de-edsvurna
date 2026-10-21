@@ -391,6 +391,7 @@ func start_run(party: Array[String]) -> void:
 	state.first_descent = profile.total_descents() == 0
 	var seen := int(profile.descents.get(state.realm, 0))
 	profile.descents[state.realm] = seen + 1
+	profile.count_home_runs()
 	pending_bark = {}
 	narrate("first_gate")
 	if seen == 0:

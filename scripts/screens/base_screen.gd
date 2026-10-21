@@ -98,6 +98,8 @@ var _last_tap_station := ""
 ## Samtalet: {lines: [{who, text}], i, station, menu (visa valen på sista raden), after (Callable)}. 0.25: en rad med
 ## talaren "narrator" är berättarens ruta på svart (StoryBox.narrator).
 var _conv := {}
+## Följeslagaren man pratar med i värdshuset (0.29.3).
+var _lodger := ""
 var _option_rects: Array[Rect2] = []
 ## En kort text mitt på skärmen (en plats utan person som är stängd), och hur länge den syns.
 var _toast_text := ""
@@ -131,6 +133,9 @@ func _ready() -> void:
 			_trail.append(pal)
 			if keep.scene.people.has(st):
 				_talk_scene(st)  # en av dem på gården under introts scen (0.25)
+			elif _lodgers().has(st):
+				pal = _v(keep.rooms.inn.stand)
+				_talk_lodger(st)  # 0.29.3: en följeslagare i värdshuset
 			else:
 				_arrive(st)
 		elif arg.begins_with("--line=") and not _conv.is_empty():
@@ -442,6 +447,8 @@ func _open(station: String) -> void:
 			_rename()
 		"handbook":
 			run.go(run.HANDBOOK_SCENE)
+		"sheet":
+			run.open_sheet(_lodger, run.profile.recruited, run.BASE_SCENE)
 		"talk_trophies":
 			_talk("alrik", Dialog.person(run.data, "alrik").get("trophies", []), "library", true)
 
@@ -497,7 +504,7 @@ func _tap(p: Vector2) -> void:
 	var lodgers := _lodgers()
 	for i in mini(lodgers.size(), keep.inn_seats.size()):
 		if _v(keep.inn_seats[i]).distance_to(q) < 50.0:
-			run.open_sheet(lodgers[i], run.profile.recruited, run.BASE_SCENE)
+			_talk_lodger(lodgers[i])
 			return
 	if pal.distance_to(q) < 50.0 and _path.is_empty():
 		run.open_sheet("paladin", run.profile.party, run.BASE_SCENE)
@@ -521,6 +528,18 @@ func _go(station: String) -> void:
 		return
 	_walk_to(station, _v(keep.rooms[station].stand), station)
 	run.ui_tap()
+
+
+## 0.29.3: en följeslagare i värdshuset säger något (dialog.json "inn"); valet visar hjältebladet som förut.
+func _talk_lodger(who: String) -> void:
+	_lodger = who
+	var turn := _met(who)
+	var line := Dialog.inn_line(run.data, run.profile, who, turn)
+	run.profile.inn_heard[who] = run.profile.total_descents()
+	if line.is_empty():
+		run.open_sheet(who, run.profile.recruited, run.BASE_SCENE)
+		return
+	_talk(who, [String(line.text)], "lodger", true)
 
 
 ## 0.25: någon på gården under introts scen säger sin replik för steget (eller en vardagsreplik).

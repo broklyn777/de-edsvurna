@@ -135,6 +135,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Imma (och andra) säger en rad efter en svår strid, vid lägerelden, vid ett sällsynt fynd, en befrielse, i en ny
   Realm eller när paladinen står ensam kvar; högst en per rum, aldrig i striden, inget upprepas samma körning
   (`RunState.barks_used`); ibland ett kort samtal mellan två (`pairs`). Visas på rumskartan. 0.28.1: tillfällen i grottan (cave, elite, back, treasure, stairs, boss, fallen; home i datan men visas inte än) för
+  **Värdshuset** (0.29.3, Siralims samtal med skapelserna, ChatGPT:s jobb E, `docs/ideer/chat-vardshuset-och-sok.md`): tryck på en
+  följeslagare som bor i värdshuset så säger hen något (`dialog.json` "inn": inn, bored, welcome med id:n; `Dialog.inn_line`),
+  valet Visa hjältebladet. Välkomstrepliken en gång efter en nedstigning hen stannade hemma under (`Profile.home_runs`,
+  `inn_heard`), efter två nedstigningar hemma vill hen följa med. Kronan steg 2 (Gorm, Alrik) när två bossar är besegrade
+  (`min_bosses`). `--talk=<följeslagare>` med `--all-companions --keep`.
   sju följeslagare ur ChatGPT:s version 2 (`docs/ideer/repliker-v2.tsv`); nya repliker är `{id, text}` med fasta id:n
   (t.ex. `imma_elite_1`, för eventuella röster senare), `Dialog.line_text`. Ragnhild Ljusdom (0.29.1) är sträng, konservativ och
   älskvärd och citerar bibelord **endast ur 1917 års kyrkobibel**, ordagrant och kontrollerade (`ref`,
