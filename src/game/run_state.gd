@@ -163,6 +163,18 @@ static func new_practice(profile: Profile, data: Dictionary, encounter_id: Strin
 	return s
 
 
+## 0.29.5: Övningsgårdens strid. En elitgrupp (realms.json "elite_pools") får samma nivå och motdrag som i grottan
+## (våning 1: tier 1, våning 2: tier 2); Realmens vanliga möten som förut.
+func practice_opts(data: Dictionary) -> Dictionary:
+	var opts := {"rules": active_rules(), "instability": instability, "floor": floor}
+	var pools: Array = data.get("realms", {}).get(realm, {}).get("elite_pools", [])
+	for i in pools.size():
+		if (pools[i] as Array).has(practice_encounter):
+			opts.floor = mini(i + 1, 2)
+			opts.counter = true
+	return opts
+
+
 ## Fulla Charges för en hjälte som ansluter mitt i körningen (0.23).
 func add_charges_for(data: Dictionary, hero_id: String) -> void:
 	var c := {}

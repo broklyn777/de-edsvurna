@@ -463,6 +463,10 @@ func fight_here() -> void:
 	state.fight()
 	if not state.battle_pending:
 		return
+	# 0.29.5: en mött elitgrupp går sedan att öva mot i Övningsgården.
+	if state.current_room().get("elite", false) and not profile.elites_met.has(state.encounter()):
+		profile.elites_met.append(state.encounter())
+		_save()
 	room_result = ""
 	pending_bark = {}
 	save_run()

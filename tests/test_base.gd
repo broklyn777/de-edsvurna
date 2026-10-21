@@ -267,3 +267,21 @@ func test_worn_trophies_follow_into_every_run() -> void:
 	p.keep_worn(s.equipped, s.party)
 	assert_eq(p.worn, {"paladin": "bone_rage"})
 	assert_eq(RunState.new_run(p, _data).equipped, {"paladin": "bone_rage"}, "nästa körning")
+
+
+## 0.29.5: mötta elitgrupper sparas och går att öva mot i Övningsgården med samma nivå och motdrag som i grottan.
+func test_met_elites_can_be_practised() -> void:
+	var p := Profile.new()
+	p.elites_met = ["crypt_e3"]
+	assert_eq(p.save(TMP_PROFILE), OK)
+	var q := Profile.load_from(TMP_PROFILE)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TMP_PROFILE))
+	assert_eq(q.elites_met, ["crypt_e3"])
+	var s := RunState.new_practice(q, _data, "crypt_e3")
+	var opts := s.practice_opts(_data)
+	assert_eq(int(opts.floor), 2, "våning 2:s elit på tier 2")
+	assert_true(opts.get("counter", false), "med motdrag")
+	s = RunState.new_practice(q, _data, "crypt_e1")
+	assert_eq(int(s.practice_opts(_data).floor), 1, "våning 1:s elit på tier 1")
+	s = RunState.new_practice(q, _data, "crypt_1")
+	assert_true(not s.practice_opts(_data).has("counter"), "vanliga möten utan motdrag")
