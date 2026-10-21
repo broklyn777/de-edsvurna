@@ -1,7 +1,7 @@
 extends Control
 ## Makroredigeraren, som Siralims Macro Editor men för touch.
 ##
-## Vänster: hjältarna (vilket makro de kör och om standardhandlingen är Makro eller Manuell) och
+## Vänster: hjältarna (vilket makro de kör; AUTO eller MANUELL väljs i striden, 0.29.5) och
 ## listan med makron. Höger: det valda makrots rader (upp till 20), som flyttas, ändras och tas bort.
 ## En rad redigeras i fyra kolumner: subjekt | villkor | handling | mål.
 
@@ -217,8 +217,6 @@ func _refresh_heroes() -> void:
 		var macro_name: String = run.macros[assigned].name if run.macros.has(assigned) else "– inget –"
 		var pick := _button(macro_name, _cycle_macro.bind(hero_id), 150)
 		row.add_child(pick)
-		var mode := _button("Makro" if run.uses_macro(hero_id) else "Manuell", _toggle_mode.bind(hero_id), 100)
-		row.add_child(mode)
 
 
 func _refresh_macros() -> void:
