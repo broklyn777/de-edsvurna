@@ -294,7 +294,7 @@
 	},
 	"deep_sleep": {
 		"name": "Dimsömn",
-		"duration": 1,
+		"duration": 2,
 		"debuff": true,
 		"text": "Dimsömn: kan inte agera. Skada väcker inte; sömnen släpper när tiden är ute eller när den renas.",
 		"glyph": "skull",

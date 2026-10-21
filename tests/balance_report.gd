@@ -723,6 +723,8 @@ func _elite_diag(data: Dictionary) -> void:
 				key += ":" + str(e.get("aura", ""))
 			if key == "trait":
 				key += ":" + str(e.get("trait", ""))
+			if key == "status_skip" or key == "aura_removed":
+				key += ":" + str(e.get("aura", "")) + ":" + str(e.get("reason", ""))
 			if key == "action":
 				key += ":" + str(e.get("unit", "")) + ":" + str(e.get("action", "")) + ":" + str(e.get("ability", ""))
 			counts[key] = counts.get(key, 0) + 1
@@ -738,6 +740,9 @@ func _elite_diag(data: Dictionary) -> void:
 	ck.sort_custom(func(a, b) -> bool: return counts[a] > counts[b])
 	for k in ck.slice(0, 45):
 		print("  %-60s %5.2f" % [k, float(counts[k]) / count])
+	for k in ck.slice(45):
+		if "sleep" in k or "status_skip" in k:
+			print("  %-60s %5.2f" % [k, float(counts[k]) / count])
 
 
 static func _probed(snap: Dictionary, f: float) -> Dictionary:
