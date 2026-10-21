@@ -285,3 +285,27 @@ func test_met_elites_can_be_practised() -> void:
 	assert_eq(int(s.practice_opts(_data).floor), 1, "våning 1:s elit på tier 1")
 	s = RunState.new_practice(q, _data, "crypt_1")
 	assert_true(not s.practice_opts(_data).has("counter"), "vanliga möten utan motdrag")
+
+
+## 0.29.5: det första fyndet ger uppdraget "Visa fyndet för Hedda" (inte i introt, inte om något redan sitter i en
+## artefakt), och fynden säger vad de gör.
+func test_first_find_starts_the_smith_quest() -> void:
+	var p := Profile.new()
+	var amber := [{"kind": "amber", "id": "amber_red", "count": 2}]
+	assert_eq(p.start_find_quest(amber), "", "inte under introt")
+	p.intro_done = true
+	assert_eq(p.start_find_quest([]), "", "inget fynd")
+	assert_eq(p.start_find_quest(amber), "amber")
+	assert_eq(p.find_quest, 1)
+	assert_eq(p.start_find_quest(amber), "", "bara en gång")
+	var q := Profile.new()
+	q.intro_done = true
+	q.artifacts = {"paladin": Forge.normalize({"type": "sword", "ability": "", "level": 2})}
+	q.artifacts.paladin.stat_slots[0] = "amber_red"
+	assert_eq(q.start_find_quest(amber), "", "kan det redan")
+	assert_eq(q.find_quest, 2)
+	var d: Dictionary = _data.dialog.find_quest
+	for k in ["amber", "trick", "nether"]:
+		assert_true(String(d.found.get(k, "")) != "", "%s har en replik" % k)
+	assert_eq(Forge.find_effect(_data, amber[0]), "+Attack")
+	assert_true(Forge.find_effect(_data, {"kind": "trick", "id": "whetstone"}).begins_with("Trick: Anfall gör"))

@@ -312,6 +312,8 @@ func _dev_args() -> void:
 			profile.silver = int(arg.get_slice("=", 1))  # för skärmdumpar (sparas inte om profilen är påhittad)
 		elif arg == "--keep":
 			get_tree().change_scene_to_file.call_deferred(BASE_SCENE)  # borgen direkt (0.24)
+		elif arg == "--find-quest":
+			profile.find_quest = 1  # 0.29.5: uppdraget "Visa fyndet för Hedda" pågår (skärmdumpar)
 		elif arg.begins_with("--intro-step="):
 			# --intro-step=<id>: en ny profil (sparas inte) på introts steg, t.ex. imma; med --talked är uppdraget givet
 			dev_profile = true
@@ -510,7 +512,23 @@ func roll_finds(kind: String) -> Array:
 			profile.next_stone_id += 1
 		state.found[f.kind] = int(state.found.get(f.kind, 0)) + int(f.get("count", 1))
 	profile.add_finds(finds)
+	_start_find_quest(finds)
 	return finds
+
+
+## 0.29.5: det första fyndet ger uppdraget "Visa fyndet för Hedda": någon i sällskapet säger det, och berättaren skriver
+## uppdraget (dialog.json "find_quest"). Visas på rumskartan.
+func _start_find_quest(finds: Array) -> void:
+	if state.practice:
+		return
+	var kind := profile.start_find_quest(finds)
+	if kind == "":
+		return
+	var q: Dictionary = data.dialog.get("find_quest", {})
+	var who := "imma" if state.party.has("imma") else (state.party[1] if state.party.size() > 1 else "")
+	if who != "":
+		pending_story.append({"who": who, "text": String(q.get("found", {}).get(kind, ""))})
+	pending_story.append({"who": StoryBox.NARRATOR, "text": String(q.get("quest", ""))})
 
 
 ## Ljudet för det finaste fyndet, efter delay sekunder.
