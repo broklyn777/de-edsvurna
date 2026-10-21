@@ -295,3 +295,24 @@ func test_realm_objects() -> void:
 	s.seen.append(g[0])
 	s.use_object(data, "barricade", rng)
 	assert_true(not s.map.has_group(g[0]) and s.map.cells[g[0]].barricaded)
+
+
+## 0.29.2: Väktarens timglas – en Charge visar närmaste elitgrupp.
+func test_hourglass_scouts_an_elite() -> void:
+	var data := GameData.load_all()
+	var s := RunState.new_run(Profile.new(), data)
+	s.start_expedition(data, 5)
+	var t := s.scout_target()
+	assert_true(t >= 0, "det finns en elitgrupp att visa")
+	s.map.cells[s.pos] = {"kind": "object", "obj": "hourglass"}
+	var before := 0
+	for h in s.charges:
+		for a in s.charges[h]:
+			before += int(s.charges[h][a])
+	var res := s.use_object(data, "scout", RandomNumberGenerator.new())
+	var after := 0
+	for h in s.charges:
+		for a in s.charges[h]:
+			after += int(s.charges[h][a])
+	assert_eq(after, before - 1, "en Charge")
+	assert_true(s.revealed.has(t) and String(res.text).contains("elitgrupp"))

@@ -129,11 +129,14 @@ func _draw_finds(w: float, h: float, a: float) -> void:
 		var t := clampf((_big_t - 1.6 - i * 0.3) / 0.4, 0.0, 1.0)
 		if t <= 0.0:
 			continue
-		var c := Vector2(x + 16, y + 34 + i * 38)
+		var c := Vector2(x + 16, y + 34 + i * 50)
 		var pop := 1.0 + 0.5 * maxf(0.0, 1.0 - t * 3.0)
 		GemArt.draw_find(self, data, f, c, 12.0 * pop, _t)
 		var col := Forge.find_color(data, f)
-		UiStyle.text(self, c + Vector2(24, 6), Forge.find_text(data, f), 17, Color(col.lightened(0.2), a * t),
+		UiStyle.text(self, c + Vector2(24, 2), Forge.find_text(data, f), 17, Color(col.lightened(0.2), a * t),
+				HORIZONTAL_ALIGNMENT_LEFT, 290, 4)
+		# 0.29.5: vad fyndet gör, på en rad under namnet.
+		UiStyle.text(self, c + Vector2(24, 22), Forge.find_effect(data, f), 15, Color(1, 1, 1, 0.7 * a * t),
 				HORIZONTAL_ALIGNMENT_LEFT, 290, 4)
 
 

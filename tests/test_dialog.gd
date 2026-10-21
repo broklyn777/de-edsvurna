@@ -3,7 +3,7 @@ extends "res://tests/test_case.gd"
 ## nedstigningen och den första nedstigningen med Paladinen och Imma.
 
 var _data := GameData.load_all()
-const WHEN_KEYS := ["recruited", "not_recruited", "min_recruited", "min_descents", "min_best_depth", "boss", "intro_done"]
+const WHEN_KEYS := ["recruited", "not_recruited", "min_recruited", "min_descents", "min_best_depth", "boss", "min_bosses", "seen_realm", "intro_done"]
 
 
 func test_every_station_has_a_person_and_a_conversation() -> void:
@@ -258,3 +258,48 @@ func test_grotto_barks_have_unique_ids() -> void:
 	var b := Dialog.bark(_data, "elite", ["paladin", "brokk"], used, rng)
 	assert_eq(b.lines[0].who, "brokk")
 	assert_true(String(b.lines[0].text).length() > 0)
+
+
+## 0.29.3: följeslagarna i värdshuset (ChatGPT:s jobb E). Alla har repliker med fasta id:n; välkomstrepliken kommer en gång
+## efter en nedstigning de stannade hemma under, och efter två nedstigningar hemma vill de följa med.
+func test_companions_talk_in_the_inn() -> void:
+	var ids := {}
+	for hid in _data.heroes:
+		if hid == "paladin":
+			continue
+		var d: Dictionary = _data.dialog.inn.get(hid, {})
+		assert_eq([d.get("inn", []).size(), d.get("bored", []).size(), d.get("welcome", []).size()], [3, 2, 2], hid)
+		for kind in d:
+			for e in d[kind]:
+				assert_true(String(e.id).begins_with(hid + "_") and not ids.has(e.id), "%s har ett eget id" % e.id)
+				ids[e.id] = true
+	for e in _data.dialog.inn.ragnhild.bored + _data.dialog.inn.ragnhild.welcome:
+		if String(e.text).begins_with("”"):
+			assert_true(e.has("ref"), "Ragnhilds bibelord har en referens (1917)")
+	var p := Profile.new()
+	p.recruited.assign(["imma", "brokk"])
+	p.party.assign(["paladin", "imma"])
+	assert_eq(String(Dialog.inn_line(_data, p, "brokk", 0).id), "brokk_inn_1", "innan någon nedstigning: vardagsrepliken")
+	p.descents = {"crypt": 1}
+	p.count_home_runs()
+	assert_eq(String(Dialog.inn_line(_data, p, "brokk", 0).id), "brokk_welcome_1", "hemma igen: välkommen")
+	p.inn_heard["brokk"] = p.total_descents()
+	assert_eq(String(Dialog.inn_line(_data, p, "brokk", 1).id), "brokk_inn_2", "välkomsten sägs bara en gång")
+	p.descents = {"crypt": 2}
+	p.count_home_runs()
+	p.inn_heard["brokk"] = p.total_descents()
+	assert_eq(String(Dialog.inn_line(_data, p, "brokk", 2).id), "brokk_bored_1", "två gånger hemma: vill följa med")
+	assert_eq(int(p.home_runs.imma), 0, "den som är med räknas inte")
+
+
+## 0.29.5: Gorm tipsar om Abbedissan (anfall diakonen först) när man har varit i kapellet.
+func test_gorm_hints_at_the_abbess_after_the_chapel() -> void:
+	var p := Profile.new()
+	p.intro_done = true
+	var hint := func() -> bool:
+		return Dialog.person(_data, "gorm").idle.any(func(l: Dictionary) -> bool:
+			return l.get("id", "") == "gorm_abbess_hint" and Dialog.applies(_data, p, l.get("when", {})))
+	assert_true(not hint.call(), "inte innan kapellet")
+	p.descents = {"chapel": 1}
+	assert_true(hint.call(), "efter en nedstigning i kapellet")
+	assert_eq(Dialog.idle_line(_data, p, "gorm", 0), Dialog.person(_data, "gorm").idle[0].text, "nyheten sägs först")

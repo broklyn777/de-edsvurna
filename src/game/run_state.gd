@@ -163,6 +163,18 @@ static func new_practice(profile: Profile, data: Dictionary, encounter_id: Strin
 	return s
 
 
+## 0.29.5: Övningsgårdens strid. En elitgrupp (realms.json "elite_pools") får samma nivå och motdrag som i grottan
+## (våning 1: tier 1, våning 2: tier 2); Realmens vanliga möten som förut.
+func practice_opts(data: Dictionary) -> Dictionary:
+	var opts := {"rules": active_rules(), "instability": instability, "floor": floor}
+	var pools: Array = data.get("realms", {}).get(realm, {}).get("elite_pools", [])
+	for i in pools.size():
+		if (pools[i] as Array).has(practice_encounter):
+			opts.floor = mini(i + 1, 2)
+			opts.counter = true
+	return opts
+
+
 ## Fulla Charges för en hjälte som ansluter mitt i körningen (0.23).
 func add_charges_for(data: Dictionary, hero_id: String) -> void:
 	var c := {}
@@ -699,11 +711,39 @@ func object_options(data: Dictionary) -> Array:
 	var r := current_room()
 	var def: Dictionary = data.get("objects", {}).get(r.get("obj", ""), {})
 	var opts: Array = (def.get("again_options", []) if r.get("again", false) else def.get("options", [])).duplicate(true)
+	if r.get("obj", "") == "hourglass" and (_richest_charge().is_empty() or scout_target() < 0):
+		for o in opts:
+			if o.id == "scout":
+				o.disabled = true
 	if r.get("obj", "") == "pew" and barricade_target() < 0:
 		for o in opts:
 			if o.id == "barricade":
 				o.disabled = true
 	return opts
+
+
+## Timglaset: närmaste obesökta elitgrupp som inte redan syns, eller −1.
+func scout_target() -> int:
+	var best := -1
+	for i in map.group_cells():
+		var c := map.cell(i)
+		if map.has_group(i) and (c.get("elite", false) or c.get("nemesis", false) or c.get("kind", "") == "elite") \
+				and not visited.has(i) and not revealed.has(i):
+			if best < 0 or Grotto.dist(i, pos) < Grotto.dist(best, pos):
+				best = i
+	return best
+
+
+## Förmågan med flest Charges kvar i sällskapet: {hero, ability} eller {}.
+func _richest_charge() -> Dictionary:
+	var out := {}
+	var most := 0
+	for hero_id in charges:
+		for ability_id in charges[hero_id]:
+			if int(charges[hero_id][ability_id]) > most:
+				most = int(charges[hero_id][ability_id])
+				out = {"hero": hero_id, "ability": ability_id}
+	return out
 
 
 ## Kyrkbänken: närmaste vanliga grupp man har sett (inte elit, Nemesis, boss eller en vakt), eller −1.
@@ -763,6 +803,17 @@ func use_object(data: Dictionary, choice: String, rng: RandomNumberGenerator) ->
 			next_stat_mult = 1.15
 			r.done = true
 			out.text = "Ljuset faller över hela raden. Nästa grupp ni möter är beredd (+15 % styrka)."
+		"scout":
+			var t := scout_target()
+			var paid := _richest_charge()
+			if t < 0 or paid.is_empty():
+				return out
+			charges[paid.hero][paid.ability] = int(charges[paid.hero][paid.ability]) - 1
+			revealed.append(t)
+			var names: Array = data.encounters[map.cells[t].encounter].enemies.map(func(k: String) -> String: return data.enemies[k].name)
+			r.done = true
+			out.text = "Sanden visar en elitgrupp: %s. (%s gav en Charge av %s.)" % [", ".join(names),
+					data.heroes[paid.hero].name, data.abilities[paid.ability].name]
 		"barricade":
 			var t := barricade_target()
 			if t < 0:

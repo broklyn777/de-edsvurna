@@ -66,8 +66,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (slumpad, 1–4 egenskaper efter sällsynthet: stat, trick eller en troféegenskap, sällsynthetstal) går
   tillbaka till förrådet. Fynd i rummen (`Forge.FINDS`, `Run.roll_finds`): bärnsten överallt, trick och
   Nether Stones bara på det djupaste djupet man nått (originalets bonus), mer med instabilitet. Typen kan
-  bytas utan att nivån och materialen går förlorade (vårt val). Fynden syns på segerskärmen, i
-  skattkammaren och på rumskartan; sällsynta stenar får en egen scen (`find_reveal.gd`). Ljud:
+  bytas utan att nivån och materialen går förlorade (vårt val). Fynden syns på segerskärmen (0.29.5: med vad de gör, `Forge.find_effect`), i
+  skattkammaren och på rumskartan; det första fyndet efter introt ger uppdraget "Visa fyndet för Hedda" (`Profile.find_quest`,
+  `dialog.json` "find_quest"; Hedda förklarar materialen och platserna och ger 20 silver; `--find-quest`); sällsynta stenar får en egen scen (`find_reveal.gd`). Ljud:
   `tools/gen_forge_sfx.py` (find_*, forge_level, slot_open, socket).
 - **Kartorna** (0.18): Kampanjkartan (ersätter Kryptporten) visar landet på pergament med Realms som
   områden; fördärvet viker för varje klarat djup. Där väljs Realm, djup och instabilitet; Förberedelser
@@ -139,6 +140,13 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (t.ex. `imma_elite_1`, för eventuella röster senare), `Dialog.line_text`. Ragnhild Ljusdom (0.29.1) är sträng, konservativ och
   älskvärd och citerar bibelord **endast ur 1917 års kyrkobibel**, ordagrant och kontrollerade (`ref`,
   `docs/ideer/ragnhild-bibelord.md`); aldrig för att förlöjliga tron.
+  Hennes Sanningens ljus har nåd (0.29.4): den svagaste i sällskapet helas med 12 % av hennes Intelligence när ljuset bränner (kapellet
+  MACRO/TUNED 53/66 → 66/74 %, Eira 45/51 %; kryptan 10/24 %, Eira 34/42 %: en specialist mot fiender som helar sig).
+  **Värdshuset** (0.29.3, Siralims samtal med skapelserna, ChatGPT:s jobb E, `docs/ideer/chat-vardshuset-och-sok.md`): tryck på en
+  följeslagare som bor i värdshuset så säger hen något (`dialog.json` "inn": inn, bored, welcome med id:n; `Dialog.inn_line`),
+  valet Visa hjältebladet. Välkomstrepliken en gång efter en nedstigning hen stannade hemma under (`Profile.home_runs`,
+  `inn_heard`), efter två nedstigningar hemma vill hen följa med. Kronan steg 2 (Gorm, Alrik) när två bossar är besegrade
+  (`min_bosses`). `--talk=<följeslagare>` med `--all-companions --keep`.
   **Introduktionen** för en ny profil (`data/intro.json`, `src/game/intro.gd`): eden vid altaret, en övningsstrid
   ensam, svärdet hos Smeden (bara svärdet går att välja), första makroraden, Biblioteket, och (0.25 "Berättelsen",
   `docs/plan/0.25-berattelsen.md`) natten: berättarens rutor, sedan arbetarna från kryptan på gården (de skadade på
@@ -189,7 +197,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   2–3 per våning (`Grotto._place_objects`, eget frö). Kryptan: Rasslande sarkofag (knacka: starkare benvakt, dubbel
   skatt), Gravklocka (ring: strid; efter segern ring igen, svårare och större belöning), Gravregister (visa 2 skatter
   eller 2 grupper). Kapellet: Övertäckt glasfönster (hela raden syns, nästa grupp +15 %), Klockrep (beredd grupp, sedan
-  syns alla grupper), Lös kyrkbänk (barrikadera bort en sedd vanlig grupp utan belöning, eller virke för silver).
+  syns alla grupper), Lös kyrkbänk (barrikadera bort en sedd vanlig grupp utan belöning, eller virke för silver). Båda
+  (0.29.2): Väktarens timglas (offra en Charge, se närmaste elitgrupp). Berättelsen (0.29.2): efter den första bossen
+  hittas ett beslag med en krona med en tom mitt – samma avsändare bakom allt (`docs/ideer/chat-realm3-kallornas-tradgard.md`).
   `RunState.use_object`, `object_won`, `revealed` (avslöjade rutor), `next_stat_mult`; `--enter=object:<id>`.
   Förslag på fler: `docs/ideer/chat-foremal-grottan.md`.
 - **Kryptans fiender** (0.28, `docs/plan/0.27-fiender.md`, Siralims raser): familjen Benfolket (`family` i enemies.json,
@@ -243,7 +253,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Försvara, Provocera eller Makro. Fiender visar sin avsikt och väljer nästa i slutet av sin tur.
 - **Makron** (kärnsystem, som i Siralim): upp till 20 rader per makro, subjekt + villkor + handling (+ mål),
   uppifrån och ned, första raden som passar och går att utföra vinner. Tilldelas per hjälte, med
-  standardhandling Makro/Manuell. Auto kör makrona och stannar när inget passar. Förklaringsloggen
+  AUTO eller MANUELL per hjälte i striden (0.29.5): striden börjar på MANUELL; knappen växlar MANUELL → AUTO (följeslagarna) →
+  ALLA AUTO, ett tryck på en hjältes ram byter den hjälten (`battle.gd` `_auto_heroes`); passar ingen rad väntar hjälten.
+  Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
 - Nästa steg: artefaktnivåer och fler platser, fler kall (Warden, Inquisitor …), perk-ranks, Realm-traits

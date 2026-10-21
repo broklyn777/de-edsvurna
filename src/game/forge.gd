@@ -296,6 +296,21 @@ static func find_text(data: Dictionary, find: Dictionary) -> String:
 	return ""
 
 
+## 0.29.5: vad fyndet gör, kort ("+Health", "Anfall gör 12 % mer skada.", "+8 % Attack, Jägarblick").
+static func find_effect(data: Dictionary, find: Dictionary) -> String:
+	match find.kind:
+		"amber":
+			var stats: Dictionary = data.materials.amber[find.id].get("stats", {})
+			return " / ".join(stats.keys().map(func(st: String) -> String: return "+" + HeroStats.STAT_NAMES.get(st, st)))
+		"trick":
+			return "Trick: " + trick_text(data, find.id, 1)
+		"nether":
+			var lines := stone_lines(data, find.stone)
+			return ", ".join(lines.slice(0, 2).map(func(l: String) -> String: return l.get_slice(":", 0))) \
+					+ (" …" if lines.size() > 2 else "")
+	return ""
+
+
 ## Färgen för ett fynd (bärnstenens, trickets eller sällsynthetens).
 static func find_color(data: Dictionary, find: Dictionary) -> Color:
 	match find.kind:

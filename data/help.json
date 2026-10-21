@@ -39,7 +39,7 @@
 			"text": [
 				"Ett makro är en lista med rader: vem, när och vad. Raderna prövas uppifrån och ned, och den första som passar vinner.",
 				"Till exempel: anfall fienden med lägst liv. Eller: hela en allierad som har mindre än hälften av sitt liv kvar.",
-				"Tryck på Auto i striden så spelar makrona åt dig. Loggen visar vilken rad som matchade och varför. Passar ingen rad stannar Auto och väntar på dig."
+				"Striden börjar på MANUELL. Knappen uppe till höger ger AUTO (följeslagarna kör makron) eller ALLA AUTO. Tryck på en hjältes ruta för att byta just den. Passar ingen rad väntar hjälten."
 			]
 		},
 		"artifacts": {

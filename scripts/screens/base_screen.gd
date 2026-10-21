@@ -98,6 +98,8 @@ var _last_tap_station := ""
 ## Samtalet: {lines: [{who, text}], i, station, menu (visa valen på sista raden), after (Callable)}. 0.25: en rad med
 ## talaren "narrator" är berättarens ruta på svart (StoryBox.narrator).
 var _conv := {}
+## Följeslagaren man pratar med i värdshuset (0.29.3).
+var _lodger := ""
 var _option_rects: Array[Rect2] = []
 ## En kort text mitt på skärmen (en plats utan person som är stängd), och hur länge den syns.
 var _toast_text := ""
@@ -131,6 +133,9 @@ func _ready() -> void:
 			_trail.append(pal)
 			if keep.scene.people.has(st):
 				_talk_scene(st)  # en av dem på gården under introts scen (0.25)
+			elif _lodgers().has(st):
+				pal = _v(keep.rooms.inn.stand)
+				_talk_lodger(st)  # 0.29.3: en följeslagare i värdshuset
 			else:
 				_arrive(st)
 		elif arg.begins_with("--line=") and not _conv.is_empty():
@@ -364,6 +369,10 @@ func _arrive(station: String) -> void:
 		_talk(who, [Dialog.reply(data, station)], station, false)
 		run.ui("ui_error", -14.0)
 		return
+	# 0.29.5: uppdraget "Visa fyndet för Hedda" – hon förklarar materialen och platserna, och ger lite silver.
+	if station == "smith" and run.profile.intro_done and run.profile.find_quest == 1:
+		_find_quest_talk(who, station)
+		return
 	var turn := _met(who)
 	var greeting := Dialog.greeting(data, who, turn)
 	# Under introt säger personen sin egen replik för steget (uppdraget står bara överst, aldrig i någons mun);
@@ -377,6 +386,22 @@ func _arrive(station: String) -> void:
 		return
 	var extra := Dialog.idle_line(data, run.profile, who, turn) if turn % 3 != 2 else ""
 	_talk(who, [(greeting + " " + extra).strip_edges()], station, true)
+
+
+const FIND_QUEST_SILVER := 20
+
+
+func _find_quest_talk(who: String, station: String) -> void:
+	var q: Dictionary = run.data.dialog.get("find_quest", {})
+	var lines: Array = (q.get("hedda", []) as Array).duplicate()
+	var sword := int(run.profile.artifact("paladin").get("level", 1))
+	lines.append(q.get("hedda_slot", "") if Forge.stat_slot_open(sword, 0) else q.get("hedda_no_slot", ""))
+	lines.append(String(q.get("hedda_reward", "")).replace("{belöning}", str(FIND_QUEST_SILVER)))
+	_met(who)
+	run.profile.find_quest = 2
+	run.profile.silver += FIND_QUEST_SILVER
+	run._save()
+	_talk(who, lines, station, true)
 
 
 ## Räknar ett möte med personen; returnerar hur många gånger man har pratat förut (0 = första mötet).
@@ -442,6 +467,8 @@ func _open(station: String) -> void:
 			_rename()
 		"handbook":
 			run.go(run.HANDBOOK_SCENE)
+		"sheet":
+			run.open_sheet(_lodger, run.profile.recruited, run.BASE_SCENE)
 		"talk_trophies":
 			_talk("alrik", Dialog.person(run.data, "alrik").get("trophies", []), "library", true)
 
@@ -497,7 +524,7 @@ func _tap(p: Vector2) -> void:
 	var lodgers := _lodgers()
 	for i in mini(lodgers.size(), keep.inn_seats.size()):
 		if _v(keep.inn_seats[i]).distance_to(q) < 50.0:
-			run.open_sheet(lodgers[i], run.profile.recruited, run.BASE_SCENE)
+			_talk_lodger(lodgers[i])
 			return
 	if pal.distance_to(q) < 50.0 and _path.is_empty():
 		run.open_sheet("paladin", run.profile.party, run.BASE_SCENE)
@@ -521,6 +548,18 @@ func _go(station: String) -> void:
 		return
 	_walk_to(station, _v(keep.rooms[station].stand), station)
 	run.ui_tap()
+
+
+## 0.29.3: en följeslagare i värdshuset säger något (dialog.json "inn"); valet visar hjältebladet som förut.
+func _talk_lodger(who: String) -> void:
+	_lodger = who
+	var turn := _met(who)
+	var line := Dialog.inn_line(run.data, run.profile, who, turn)
+	run.profile.inn_heard[who] = run.profile.total_descents()
+	if line.is_empty():
+		run.open_sheet(who, run.profile.recruited, run.BASE_SCENE)
+		return
+	_talk(who, [String(line.text)], "lodger", true)
 
 
 ## 0.25: någon på gården under introts scen säger sin replik för steget (eller en vardagsreplik).
@@ -547,7 +586,7 @@ func _glows(station: String) -> bool:
 		"inn":
 			return run.profile.recruited.size() > run.profile.inn_seen
 		"smith":
-			return _smith_has_news()
+			return run.profile.find_quest == 1 or _smith_has_news()
 	return false
 
 
@@ -715,6 +754,8 @@ func _quest_line(data: Dictionary) -> String:
 	if not run.profile.intro_done:
 		var q := Intro.quest_text(data, run.profile)
 		return "" if q == "" else "UPPDRAG: " + q
+	if run.profile.find_quest == 1:
+		return "UPPDRAG: " + String(data.dialog.get("find_quest", {}).get("quest_line", ""))
 	for realm_id in data.realms:
 		for d in data.realms[realm_id].get("disciples", []):
 			if not run.profile.recruited.has(d.hero) and run.profile.total_descents() >= int(d.get("after_descents", 0)):

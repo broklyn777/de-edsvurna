@@ -302,3 +302,18 @@ func test_numbers_audit_in_the_chapel_elite_groups() -> void:
 			i += 1
 	assert_eq(audit.mismatches, [], "inga avvikelser")
 	assert_true(audit.counts.damage > 100)
+
+
+## 0.29.4: Ragnhilds Sanningens ljus med nåd – när en fiende helas bränns den, och den svagaste i sällskapet helas.
+func test_ragnhild_grace() -> void:
+	var sim := CombatSim.create(_data, "chapel_1a", 3, ["paladin", "brokk", "ragnhild", "eira"])
+	var brokk := sim.unit("brokk")
+	brokk.hp = 5.0
+	var foe: CombatUnit = sim.enemies[0]
+	foe.hp = foe.max_hp * 0.5
+	var before := foe.hp
+	sim._heal(foe, foe, 5.0, "x")
+	assert_true(foe.hp < before + 5.0, "ljuset brände fienden")
+	var grace := sim.unit("ragnhild").stat("intelligence") * 0.12
+	assert_true(brokk.hp > 5.0, "den svagaste helades")
+	assert_near(brokk.hp, 5.0 + roundf(grace), 1.0, "med 12 % av Ragnhilds Intelligence")

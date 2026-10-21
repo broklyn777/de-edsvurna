@@ -62,7 +62,10 @@ var _speed := 1.0
 var _choosing := ""
 var _choosing_ability := ""
 ## Auto: hjältar med standardhandling Makro kör sitt makro varje tur.
-var _auto := false
+## 0.29.5: vilka hjältar som kör sitt makro (AUTO) i den här striden; alla börjar på MANUELL. Stora knappen växlar mellan
+## MANUELL, AUTO (följeslagarna) och ALLA AUTO (även Paladinen); ett tryck på en hjältes ram byter just den hjälten.
+var _auto_heroes := {}
+const AUTO_LABELS := ["MANUELL", "AUTO", "ALLA AUTO"]
 var _targets: Array[String] = []
 ## Inspect (Siralim): tryck och håll på en figur för att se dess egenskaper. Kostar ingen tur.
 const INSPECT_HOLD_MS := 450
@@ -107,12 +110,11 @@ func _ready() -> void:
 	if state.charges.is_empty():
 		state.fill_charges(data)
 	var opts: Dictionary = state.battle_opts() if state.map != null and not state.practice \
-			else {"rules": state.active_rules(), "instability": state.instability, "floor": state.floor}
+			else state.practice_opts(data)
 	opts.levels = run.profile.levels_for(data, state.party)  # 0.19: hjältarnas nivåer
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
 			state.artifacts, state.depth, opts)
 	data = sim.data  # med artefakternas egenskaper
-	_auto = demo
 	_build_scene()
 	_build_ui()
 	_update_rules_text()
@@ -147,7 +149,7 @@ func _ready() -> void:
 			_on_outcome.call_deferred(sim.outcome)  # spolat till slutet: visa resultatet direkt
 		started = true
 		_countdown = 0.0
-	auto_chip.on = _auto
+	_set_auto_mode(2 if demo else 0)
 
 
 ## 0.25: hjälprutorna visas bara när en människa spelar (inte --demo eller --turns).
@@ -221,7 +223,7 @@ func _build_ui() -> void:
 	action_bar.chosen.connect(_on_action_chosen)
 	ui.add_child(action_bar)
 	auto_chip = ChipButton.new()
-	auto_chip.setup("AUTO")
+	auto_chip.setup("MANUELL", 124)
 	auto_chip.pressed.connect(_toggle_auto)
 	ui.add_child(auto_chip)
 	macro_log = MacroLog.new()
@@ -312,7 +314,7 @@ func _process(delta: float) -> void:
 		_wait -= delta
 		return
 	if sim.needs_input():
-		if _auto and run.uses_macro(sim.current.id) and not action_bar.visible:
+		if _auto_heroes.get(sim.current.id, false) and not action_bar.visible:
 			_run_macro()
 			return
 		if not action_bar.visible or action_bar.unit != sim.current:
@@ -433,7 +435,7 @@ func _give_dev_statuses() -> void:
 
 
 func _open_damage_log() -> void:
-	if overlay.mode == "confirm":
+	if overlay.mode == "confirm" or damage_log.open:
 		return
 	run.ui("ui_page", -10.0)
 	damage_log.show_log()
@@ -564,6 +566,12 @@ func _on_action_chosen(action: String, ability_id: String) -> void:
 func _on_frame_tapped(unit_id: String) -> void:
 	if _choosing != "" and _targets.has(unit_id):
 		_do(_choosing, unit_id)
+		return
+	# 0.29.5: ett tryck på ramen växlar hjälten mellan AUTO och MANUELL för resten av striden.
+	if sim.outcome == "" and sim.unit(unit_id).alive:
+		_auto_heroes[unit_id] = not _auto_heroes.get(unit_id, false)
+		run.ui("ui_tap", -10.0)
+		_auto_changed()
 
 
 func _do(action: String, target_id: String) -> void:
@@ -583,8 +591,6 @@ func _run_macro() -> void:
 	var d := MacroRunner.decide(sim, u, run.macro_for(u.id))
 	macro_log.add({"text": d.text, "ok": d.ok, "skipped": d.skipped})
 	if not d.ok:
-		if _auto:
-			_toggle_auto()
 		sfx.play("macro_nomatch", -4.0, 0.0)
 		overlay.message("Inget makro passade – välj själv")
 		action_bar.show_for(u)
@@ -596,13 +602,33 @@ func _run_macro() -> void:
 		_play_events()
 
 
+## Stora knappen: MANUELL → AUTO → ALLA AUTO → MANUELL (efter läget som syns nu).
 func _toggle_auto() -> void:
-	_auto = not _auto
-	auto_chip.on = _auto
-	if _auto:
+	_set_auto_mode((_auto_mode() + 1) % AUTO_LABELS.size())
+	run.ui("ui_tap", -10.0)
+
+
+## 0: ingen kör makro, 2: alla, 1: annars (följeslagarna eller en blandning).
+func _auto_mode() -> int:
+	var on := sim.heroes.filter(func(h: CombatUnit) -> bool: return _auto_heroes.get(h.id, false)).size()
+	return 0 if on == 0 else (2 if on == sim.heroes.size() else 1)
+
+
+func _set_auto_mode(mode: int) -> void:
+	for h in sim.heroes:
+		_auto_heroes[h.id] = mode == 2 or (mode == 1 and h.id != "paladin")
+	_auto_changed()
+
+
+func _auto_changed() -> void:
+	var mode := _auto_mode()
+	auto_chip.label = AUTO_LABELS[mode]
+	auto_chip.on = mode > 0
+	for h in sim.heroes:
+		frames[h.id].auto = _auto_heroes.get(h.id, false)
+	# Den som har turen och nu kör auto: makrot tar över direkt.
+	if sim.current != null and _auto_heroes.get(sim.current.id, false) and _choosing == "":
 		action_bar.visible = false
-		_choosing = ""
-		_targets.clear()
 
 
 func _ask_forfeit() -> void:
@@ -904,6 +930,9 @@ func _on_revive(unit_id: String) -> void:
 func _on_outcome(result: String) -> void:
 	action_bar.visible = false
 	forfeit_chip.visible = false
+	# 0.29.5: skadeloggen går att öppna på resultatskärmen (det är då man vill läsa den): knappen och loggen ovanpå rutan.
+	log_chip.get_parent().move_child(log_chip, -1)
+	damage_log.get_parent().move_child(damage_log, -1)
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
 	if result == "victory":
 		_slowmo_until = Time.get_ticks_msec() + 1200

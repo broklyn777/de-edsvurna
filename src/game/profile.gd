@@ -64,9 +64,17 @@ const NAME_MAX := 16
 ## (vardagsrepliken växlar).
 var descents := {}
 var talks := {}
+## 0.29.3 (Värdshuset): hur många nedstigningar i rad varje följeslagare har stannat hemma, och hur många nedstigningar
+## som var gjorda senast man pratade med den i värdshuset (välkomstrepliken sägs en gång efter varje hemkomst).
+var home_runs := {}
+var inn_heard := {}
 ## 0.25: hjälprutorna som redan har visats (Help), och berättarens rutor som har lästs (första porten, första bossen).
 var help_seen: Array = []
 var narrated: Array = []
+## 0.29.5: elitgrupperna man har slagits mot (mötenas id); de går att öva mot i Övningsgården.
+var elites_met: Array = []
+## 0.29.5: uppdraget "Visa fyndet för Hedda" (0 inte börjat, 1 pågår, 2 klart) efter det första fyndet.
+var find_quest := 0
 ## Hur många följeslagare man hade senast man var i Värdshuset (det lyser när någon ny har kommit).
 var inn_seen := 0
 const LEGACY_COMPANIONS := ["brokk", "alva", "eira", "solveig"]
@@ -248,6 +256,20 @@ func socket_stone(hero_id: String, stone_id: String) -> bool:
 
 
 ## Lägger fynd i förrådet (Forge.roll_finds). Stenarna får sina id här.
+## 0.29.5: startar uppdraget vid det första fyndet (efter introt), om inget redan sitter i någon artefakt. Ger fyndets sort
+## ("amber", "trick", "nether") när uppdraget startar nu, annars "".
+func start_find_quest(finds: Array) -> String:
+	if find_quest != 0 or not intro_done or finds.is_empty():
+		return ""
+	for a in artifacts.values():
+		for slot in a.get("stat_slots", []) + a.get("trick_slots", []):
+			if slot != "":
+				find_quest = 2  # har redan satt in något: kan det redan
+				return ""
+	find_quest = 1
+	return String(finds[0].kind)
+
+
 func add_finds(finds: Array) -> void:
 	for f in finds:
 		match f.kind:
@@ -358,6 +380,12 @@ func set_party(companions: Array) -> void:
 	if p.size() == 1 and not recruited.is_empty():
 		p.append(recruited[0])  # minst en följeslagare när man har någon (introt: Paladinen ensam tills Imma)
 	party = p
+
+
+## 0.29.3: räknar vilka som stannar hemma när en nedstigning börjar (de som är med börjar om från 0).
+func count_home_runs() -> void:
+	for id in recruited:
+		home_runs[id] = 0 if party.has(id) else int(home_runs.get(id, 0)) + 1
 
 
 ## Byter personlighet mot silver; nivåerna räknas om bakåt (statsen räknas alltid ur nivå och personlighet).
@@ -517,8 +545,12 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "hero_name", hero_name)
 	cfg.set_value("progress", "descents", descents)
 	cfg.set_value("progress", "talks", talks)
+	cfg.set_value("progress", "home_runs", home_runs)
+	cfg.set_value("progress", "inn_heard", inn_heard)
 	cfg.set_value("progress", "help_seen", help_seen)
 	cfg.set_value("progress", "narrated", narrated)
+	cfg.set_value("progress", "elites_met", elites_met)
+	cfg.set_value("progress", "find_quest", find_quest)
 	cfg.set_value("progress", "worn", worn)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
@@ -566,8 +598,12 @@ static func load_from(path: String) -> Profile:
 	p.intro_talked = bool(cfg.get_value("progress", "intro_talked", false))
 	p.set_hero_name(String(cfg.get_value("progress", "hero_name", DEFAULT_NAME)))
 	p.talks = cfg.get_value("progress", "talks", {})
+	p.home_runs = cfg.get_value("progress", "home_runs", {})
+	p.inn_heard = cfg.get_value("progress", "inn_heard", {})
 	p.help_seen = cfg.get_value("progress", "help_seen", [])
 	p.narrated = cfg.get_value("progress", "narrated", [])
+	p.elites_met = cfg.get_value("progress", "elites_met", [])
+	p.find_quest = int(cfg.get_value("progress", "find_quest", 0))
 	if p.intro_done and not p.recruited.has(STARTER):
 		p.recruited.append(STARTER)  # Imma bor i borgen; äldre profiler hittar henne i Värdshuset
 	var saved: Array = cfg.get_value("progress", "party", [])

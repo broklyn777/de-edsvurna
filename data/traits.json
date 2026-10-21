@@ -1145,7 +1145,7 @@
 	},
 	"ragnhild_truth_light": {
 		"name": "Sanningens ljus",
-		"text": "När en fiende helas eller får en buff bränner ljuset den: Helig skada lika med 50 % av Ragnhilds Intelligence.",
+		"text": "När en fiende helas eller får en buff bränner ljuset den (Helig skada, 50 % av Ragnhilds Intelligence), och med nåd helas den svagaste i sällskapet med en fjärdedel av det (12 %).",
 		"trigger": "heal",
 		"when": {
 			"target": "enemy"
@@ -1161,6 +1161,12 @@
 				"school": "holy",
 				"kind": "indirect",
 				"target": "target"
+			},
+			{
+				"type": "heal",
+				"stat": "intelligence",
+				"pct": 0.12,
+				"target": "weakest_ally"
 			}
 		]
 	},
@@ -1180,6 +1186,12 @@
 				"school": "holy",
 				"kind": "indirect",
 				"target": "unit"
+			},
+			{
+				"type": "heal",
+				"stat": "intelligence",
+				"pct": 0.12,
+				"target": "weakest_ally"
 			}
 		]
 	},

@@ -8,7 +8,12 @@
 			"crypt_3"
 		],
 		"short": "Kryptan",
-		"objects": ["sarcophagus", "grave_bell", "grave_register"],
+		"objects": [
+			"sarcophagus",
+			"grave_bell",
+			"grave_register",
+			"hourglass"
+		],
 		"pools": [
 			[
 				"crypt_1a",
@@ -32,8 +37,16 @@
 			]
 		],
 		"elite_pools": [
-			["crypt_e1"],
-			["crypt_e2", "crypt_e3", "crypt_e4", "crypt_e5", "crypt_e6"]
+			[
+				"crypt_e1"
+			],
+			[
+				"crypt_e2",
+				"crypt_e3",
+				"crypt_e4",
+				"crypt_e5",
+				"crypt_e6"
+			]
 		],
 		"map": {
 			"rect": [
@@ -46,12 +59,41 @@
 			"zoom_image": "under-tornet"
 		},
 		"disciples": [
-			{"hero": "alva", "depth": 1, "floor": 0, "after_descents": 1, "first": true},
-			{"hero": "brokk", "depth": 1, "floor": 0, "after_descents": 1, "guarded": true},
-			{"hero": "eira", "depth": 1, "floor": 1, "after_descents": 1},
-			{"hero": "tove", "depth": 2, "floor": 0},
-			{"hero": "solveig", "depth": 2, "floor": 1},
-			{"hero": "sefir", "depth": 3, "floor": 1}
+			{
+				"hero": "alva",
+				"depth": 1,
+				"floor": 0,
+				"after_descents": 1,
+				"first": true
+			},
+			{
+				"hero": "brokk",
+				"depth": 1,
+				"floor": 0,
+				"after_descents": 1,
+				"guarded": true
+			},
+			{
+				"hero": "eira",
+				"depth": 1,
+				"floor": 1,
+				"after_descents": 1
+			},
+			{
+				"hero": "tove",
+				"depth": 2,
+				"floor": 0
+			},
+			{
+				"hero": "solveig",
+				"depth": 2,
+				"floor": 1
+			},
+			{
+				"hero": "sefir",
+				"depth": 3,
+				"floor": 1
+			}
 		]
 	},
 	"chapel": {
@@ -63,7 +105,12 @@
 			"chapel_3"
 		],
 		"short": "Kapellet",
-		"objects": ["stained_window", "bell_rope", "pew"],
+		"objects": [
+			"stained_window",
+			"bell_rope",
+			"pew",
+			"hourglass"
+		],
 		"pools": [
 			[
 				"chapel_1a",
@@ -89,8 +136,16 @@
 			]
 		],
 		"elite_pools": [
-			["chapel_e1"],
-			["chapel_e2", "chapel_e3", "chapel_e4", "chapel_e5", "chapel_e6"]
+			[
+				"chapel_e1"
+			],
+			[
+				"chapel_e2",
+				"chapel_e3",
+				"chapel_e4",
+				"chapel_e5",
+				"chapel_e6"
+			]
 		],
 		"map": {
 			"rect": [
