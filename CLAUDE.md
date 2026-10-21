@@ -198,6 +198,14 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (Sista klangen djup 1, Dimmans tyngd 2, Sista vaktens ilska 3); elitkortet visar det. Nya AI-val: `pick` healer,
   highest_attack, caster; `ignore_taunt`; villkor `family_at_least`, `alone`, `self_stacks_at_least`.
   Flaggor: `--encounter=<möte>` (övningsstrid mot gruppen), `--enter=elite:<möte>` (gruppens kort i grottan).
+- **Kapellets fiender** (0.29, `docs/plan/0.27-fiender.md` §2): två familjer, Kultens folk (`cult_kin`, även Abbedissan)
+  och De fallna (`fallen_kin`), med egna egenskaper som räknar familjen (Kultens fana, Spegelsköld, Fastan, Bruten ed,
+  Grumlad välsignelse). Elitfiender Kultens förman (livvakt, `guard_family`, händelsen `guarded`), Inkvisitorn, Asketen
+  och Den svarta lansen; Den fördärvade abbedissan som miniboss. Motdrag: Ordensregeln (`limit_enemy_heals`, djup 1) och
+  Skrattande låga (djup 3). Våning 1:s elit är Lansens anstormning. Nya villkor: `target_in_family`, `self_family`,
+  `self_not_acted`, `unit_repeated_ability`, regeln `self_last_attacked`; modifieraren `ignore_defense`. Tester:
+  `tests/test_enemies_chapel.gd`. `NIVA_REALM=chapel` begränsar `BALANS=grotta`; `BALANS=elitgrupper` kör en strid per
+  elitgrupp (alla vinns med fulla Charges – svårigheten kommer av nötningen över körningen).
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens kall, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
