@@ -13,6 +13,13 @@
 			],
 			"idle": [
 				{
+					"id": "gorm_abbess_hint",
+					"text": "Abbedissan i kapellet sjunger inte ensam. Tysta diakonen först, så tappar mässan takten. Skriv en makrorad om det.",
+					"when": {
+						"seen_realm": "chapel"
+					}
+				},
+				{
 					"text": "Ett beslag med en stämpel. Benfursten fick hjälp av någon, och den någon är inte färdig.",
 					"when": {
 						"boss": "bone_lich"

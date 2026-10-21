@@ -69,6 +69,9 @@ static func applies(data: Dictionary, profile: Profile, when: Dictionary) -> boo
 			"boss":
 				if not profile.bosses_defeated.has(v):
 					return false
+			"seen_realm":
+				if int(profile.descents.get(v, 0)) < 1:
+					return false
 			"min_bosses":
 				if profile.bosses_defeated.size() < int(v):
 					return false
