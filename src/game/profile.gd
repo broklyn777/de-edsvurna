@@ -73,6 +73,8 @@ var help_seen: Array = []
 var narrated: Array = []
 ## 0.29.5: elitgrupperna man har slagits mot (mötenas id); de går att öva mot i Övningsgården.
 var elites_met: Array = []
+## 0.29.5: uppdraget "Visa fyndet för Hedda" (0 inte börjat, 1 pågår, 2 klart) efter det första fyndet.
+var find_quest := 0
 ## Hur många följeslagare man hade senast man var i Värdshuset (det lyser när någon ny har kommit).
 var inn_seen := 0
 const LEGACY_COMPANIONS := ["brokk", "alva", "eira", "solveig"]
@@ -254,6 +256,20 @@ func socket_stone(hero_id: String, stone_id: String) -> bool:
 
 
 ## Lägger fynd i förrådet (Forge.roll_finds). Stenarna får sina id här.
+## 0.29.5: startar uppdraget vid det första fyndet (efter introt), om inget redan sitter i någon artefakt. Ger fyndets sort
+## ("amber", "trick", "nether") när uppdraget startar nu, annars "".
+func start_find_quest(finds: Array) -> String:
+	if find_quest != 0 or not intro_done or finds.is_empty():
+		return ""
+	for a in artifacts.values():
+		for slot in a.get("stat_slots", []) + a.get("trick_slots", []):
+			if slot != "":
+				find_quest = 2  # har redan satt in något: kan det redan
+				return ""
+	find_quest = 1
+	return String(finds[0].kind)
+
+
 func add_finds(finds: Array) -> void:
 	for f in finds:
 		match f.kind:
@@ -534,6 +550,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "help_seen", help_seen)
 	cfg.set_value("progress", "narrated", narrated)
 	cfg.set_value("progress", "elites_met", elites_met)
+	cfg.set_value("progress", "find_quest", find_quest)
 	cfg.set_value("progress", "worn", worn)
 	cfg.set_value("progress", "depth", depth)
 	cfg.set_value("progress", "best_depth", best_depth)
@@ -586,6 +603,7 @@ static func load_from(path: String) -> Profile:
 	p.help_seen = cfg.get_value("progress", "help_seen", [])
 	p.narrated = cfg.get_value("progress", "narrated", [])
 	p.elites_met = cfg.get_value("progress", "elites_met", [])
+	p.find_quest = int(cfg.get_value("progress", "find_quest", 0))
 	if p.intro_done and not p.recruited.has(STARTER):
 		p.recruited.append(STARTER)  # Imma bor i borgen; äldre profiler hittar henne i Värdshuset
 	var saved: Array = cfg.get_value("progress", "party", [])

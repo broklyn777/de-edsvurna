@@ -66,8 +66,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (slumpad, 1–4 egenskaper efter sällsynthet: stat, trick eller en troféegenskap, sällsynthetstal) går
   tillbaka till förrådet. Fynd i rummen (`Forge.FINDS`, `Run.roll_finds`): bärnsten överallt, trick och
   Nether Stones bara på det djupaste djupet man nått (originalets bonus), mer med instabilitet. Typen kan
-  bytas utan att nivån och materialen går förlorade (vårt val). Fynden syns på segerskärmen, i
-  skattkammaren och på rumskartan; sällsynta stenar får en egen scen (`find_reveal.gd`). Ljud:
+  bytas utan att nivån och materialen går förlorade (vårt val). Fynden syns på segerskärmen (0.29.5: med vad de gör, `Forge.find_effect`), i
+  skattkammaren och på rumskartan; det första fyndet efter introt ger uppdraget "Visa fyndet för Hedda" (`Profile.find_quest`,
+  `dialog.json` "find_quest"; Hedda förklarar materialen och platserna och ger 20 silver; `--find-quest`); sällsynta stenar får en egen scen (`find_reveal.gd`). Ljud:
   `tools/gen_forge_sfx.py` (find_*, forge_level, slot_open, socket).
 - **Kartorna** (0.18): Kampanjkartan (ersätter Kryptporten) visar landet på pergament med Realms som
   områden; fördärvet viker för varje klarat djup. Där väljs Realm, djup och instabilitet; Förberedelser

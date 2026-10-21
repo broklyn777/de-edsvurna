@@ -369,6 +369,10 @@ func _arrive(station: String) -> void:
 		_talk(who, [Dialog.reply(data, station)], station, false)
 		run.ui("ui_error", -14.0)
 		return
+	# 0.29.5: uppdraget "Visa fyndet för Hedda" – hon förklarar materialen och platserna, och ger lite silver.
+	if station == "smith" and run.profile.intro_done and run.profile.find_quest == 1:
+		_find_quest_talk(who, station)
+		return
 	var turn := _met(who)
 	var greeting := Dialog.greeting(data, who, turn)
 	# Under introt säger personen sin egen replik för steget (uppdraget står bara överst, aldrig i någons mun);
@@ -382,6 +386,22 @@ func _arrive(station: String) -> void:
 		return
 	var extra := Dialog.idle_line(data, run.profile, who, turn) if turn % 3 != 2 else ""
 	_talk(who, [(greeting + " " + extra).strip_edges()], station, true)
+
+
+const FIND_QUEST_SILVER := 20
+
+
+func _find_quest_talk(who: String, station: String) -> void:
+	var q: Dictionary = run.data.dialog.get("find_quest", {})
+	var lines: Array = (q.get("hedda", []) as Array).duplicate()
+	var sword := int(run.profile.artifact("paladin").get("level", 1))
+	lines.append(q.get("hedda_slot", "") if Forge.stat_slot_open(sword, 0) else q.get("hedda_no_slot", ""))
+	lines.append(String(q.get("hedda_reward", "")).replace("{belöning}", str(FIND_QUEST_SILVER)))
+	_met(who)
+	run.profile.find_quest = 2
+	run.profile.silver += FIND_QUEST_SILVER
+	run._save()
+	_talk(who, lines, station, true)
 
 
 ## Räknar ett möte med personen; returnerar hur många gånger man har pratat förut (0 = första mötet).
@@ -566,7 +586,7 @@ func _glows(station: String) -> bool:
 		"inn":
 			return run.profile.recruited.size() > run.profile.inn_seen
 		"smith":
-			return _smith_has_news()
+			return run.profile.find_quest == 1 or _smith_has_news()
 	return false
 
 
@@ -734,6 +754,8 @@ func _quest_line(data: Dictionary) -> String:
 	if not run.profile.intro_done:
 		var q := Intro.quest_text(data, run.profile)
 		return "" if q == "" else "UPPDRAG: " + q
+	if run.profile.find_quest == 1:
+		return "UPPDRAG: " + String(data.dialog.get("find_quest", {}).get("quest_line", ""))
 	for realm_id in data.realms:
 		for d in data.realms[realm_id].get("disciples", []):
 			if not run.profile.recruited.has(d.hero) and run.profile.total_descents() >= int(d.get("after_descents", 0)):

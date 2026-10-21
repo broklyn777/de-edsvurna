@@ -2279,5 +2279,22 @@
 				}
 			]
 		}
+	},
+	"find_quest": {
+		"found": {
+			"amber": "Bärnsten! Hedda brukar vilja ha sånt till svärdet. Vi tar med den hem.",
+			"trick": "Vad är det här, en sten med ett knep i? Hedda vet var sånt ska sitta.",
+			"nether": "En Nether Stone! Den måste Hedda få se. Hon kommer att låtsas att hon inte blir glad."
+		},
+		"quest": "(Nytt uppdrag: visa fyndet för Hedda i smedjan när ni kommer hem.)",
+		"quest_line": "Visa fyndet för Hedda i smedjan.",
+		"hedda": [
+			"Visa. … Hm. Det där är inte skräp.",
+			"Bärnsten höjer en stat i artefakten den sitter i. Ett trick ger den ett knep. En Nether Stone kan bära flera egenskaper på en gång.",
+			"Allt sätts in i artefaktens platser. Högre nivå på artefakten, fler platser."
+		],
+		"hedda_no_slot": "Ditt svärd har ingen plats än. Höj det till nivå 2, så öppnar jag den första. Det kostar silver, som allt annat här.",
+		"hedda_slot": "Ditt svärd har en ledig plats. Välj \"Sätt in bärnsten och trick\", så visar jag.",
+		"hedda_reward": "Här. {belöning} silver för att du tog hem det i stället för att sälja det på vägen."
 	}
 }
