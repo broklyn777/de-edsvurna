@@ -36,6 +36,10 @@ func _init() -> void:
 		_first_descent(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "trofeplats":
+		_trophy_slot(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "grotta":
 		_grotto(data)
 		quit()
@@ -433,7 +437,8 @@ func _grotto(data: Dictionary) -> void:
 				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"})
 
 
-func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Array, lv: int, extra: Dictionary) -> void:
+func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Array, lv: int, extra: Dictionary,
+		traits := {}, artifacts := {}) -> void:
 	var line := "  %-8s %-34s" % [data.realms[realm_id].short, label]
 	for run in [[Bot.Skill.MACRO, "simple"], [Bot.Skill.TUNED, "simple"], [Bot.Skill.MACRO, "careful"]]:
 		var skill: Bot.Skill = run[0]
@@ -446,7 +451,7 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 		for seed_value in range(1, RUNS + 1):
 			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
 			opts.merge(extra.duplicate(true))
-			var r := Bot.run_expedition(data, seed_value, skill, {}, {}, 1, realm_id, opts, policy)
+			var r := Bot.run_expedition(data, seed_value, skill, traits, artifacts, 1, realm_id, opts, policy)
 			cleared += 1 if r.cleared else 0
 			if r.has("lost_at"):
 				lost[r.lost_at] = int(lost.get(r.lost_at, 0)) + 1
@@ -463,6 +468,44 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 			keys.sort()
 			line += " [" + ", ".join(keys.map(func(k: String) -> String: return "%s %d" % [k, lost[k]])) + "]"
 	print(line)
+
+
+## Troféplatsen (BALANS=trofeplats): hela körningar på djup 1 utan troféer, med en buren trofé och en artefakt på nivå 6
+## (Forge.TROPHY_LEVEL, tom plats, ingen förmåga), och med en andra trofé i artefakten. Skillnaden mellan de två sista
+## raderna är den andra trofén. Troféerna är rimliga val per hjälte ur båda Realms (TROFE_PAR ändrar dem:
+## "hjälte:buren:artefakt;…").
+const TROPHY_PAIRS := {"paladin": ["rosary", "bone_finger"], "brokk": ["rattler_bone", "warden_helm"],
+		"alva": ["prayer_beads", "deacon_stole"], "eira": ["bow_sinew", "quick_shot"], "imma": ["mold_jaw", "scatter_shot"]}
+const TROPHY_ART_TYPES := {"paladin": "sword", "brokk": "shield", "alva": "staff", "eira": "sword", "imma": "boots"}
+
+
+func _trophy_slot(data: Dictionary) -> void:
+	var pairs := TROPHY_PAIRS.duplicate(true)
+	if OS.get_environment("TROFE_PAR") != "":
+		for part in OS.get_environment("TROFE_PAR").split(";"):
+			var bits := part.split(":")
+			pairs[bits[0]] = [bits[1], bits[2]]
+	var fresh := Bot.new_profile_macros(data)
+	print("=== Troféplatsen, grottan djup 1, %d körningar per rad (artefakt nivå %d) ===" % [RUNS, Forge.TROPHY_LEVEL])
+	var realms := ["crypt", "chapel"]
+	if OS.get_environment("NIVA_REALM") != "":
+		realms = [OS.get_environment("NIVA_REALM")]
+	for realm_id in realms:
+		for setup in [[["paladin", "brokk", "alva", "eira"], {}, "4 hjältar"], [["paladin", "imma"], {"bot_macros": fresh}, "P+I"]]:
+			var party: Array = setup[0]
+			var one := {}
+			var two := {}
+			var arts := {}
+			for h in party:
+				var own: Array = data.heroes[h].get("traits", []).duplicate()
+				one[h] = own + [pairs[h][0]]
+				arts[h] = Forge.normalize({"type": TROPHY_ART_TYPES[h], "ability": "", "level": Forge.TROPHY_LEVEL})
+			var arts2 := arts.duplicate(true)
+			for h in party:
+				arts2[h].trophy = pairs[h][1]
+			_grotto_line(data, realm_id, "%s, inga troféer" % setup[2], party, 3, setup[1])
+			_grotto_line(data, realm_id, "%s, 1 trofé + artefakt 6" % setup[2], party, 3, setup[1], one, arts)
+			_grotto_line(data, realm_id, "%s, 2 troféer + artefakt 6" % setup[2], party, 3, setup[1], one, arts2)
 
 
 ## Elitgrupperna under nötning (BALANS=elitnotning): grottkörningar spelas och läget sparas när boten kliver på en

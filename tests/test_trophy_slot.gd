@@ -70,3 +70,15 @@ func test_run_does_not_let_the_artifact_trophy_be_worn_too() -> void:
 	s.take_trophy("rosary")
 	s.equip("paladin", "rosary")
 	assert_true(not s.equipped.has("paladin"), "trofén sitter redan i Brokks artefakt")
+
+
+## trofeplats: varje trofé säger vilken händelse den behöver, vad den skapar och vem den gäller (docs/plan/trofeplats.md).
+func test_every_trophy_has_a_combo_entry() -> void:
+	for id in _data.traits:
+		var t: Dictionary = _data.traits[id]
+		if not t.get("trophy", false):
+			continue
+		var c: Dictionary = t.get("combo", {})
+		for key in ["needs", "creates", "scope"]:
+			assert_true(String(c.get(key, "")) != "", "%s saknar combo.%s" % [id, key])
+		assert_true(["self", "party", "enemy", "enemies"].has(c.get("scope", "")), "%s: okänd scope" % id)
