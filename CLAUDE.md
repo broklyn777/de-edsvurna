@@ -189,7 +189,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   2–3 per våning (`Grotto._place_objects`, eget frö). Kryptan: Rasslande sarkofag (knacka: starkare benvakt, dubbel
   skatt), Gravklocka (ring: strid; efter segern ring igen, svårare och större belöning), Gravregister (visa 2 skatter
   eller 2 grupper). Kapellet: Övertäckt glasfönster (hela raden syns, nästa grupp +15 %), Klockrep (beredd grupp, sedan
-  syns alla grupper), Lös kyrkbänk (barrikadera bort en sedd vanlig grupp utan belöning, eller virke för silver).
+  syns alla grupper), Lös kyrkbänk (barrikadera bort en sedd vanlig grupp utan belöning, eller virke för silver). Båda
+  (0.29.2): Väktarens timglas (offra en Charge, se närmaste elitgrupp). Berättelsen (0.29.2): efter den första bossen
+  hittas ett beslag med en krona med en tom mitt – samma avsändare bakom allt (`docs/ideer/chat-realm3-kallornas-tradgard.md`).
   `RunState.use_object`, `object_won`, `revealed` (avslöjade rutor), `next_stat_mult`; `--enter=object:<id>`.
   Förslag på fler: `docs/ideer/chat-foremal-grottan.md`.
 - **Kryptans fiender** (0.28, `docs/plan/0.27-fiender.md`, Siralims raser): familjen Benfolket (`family` i enemies.json,

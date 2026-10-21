@@ -13,6 +13,12 @@
 			],
 			"idle": [
 				{
+					"text": "Ett beslag med en stämpel. Benfursten fick hjälp av någon, och den någon är inte färdig.",
+					"when": {
+						"boss": "bone_lich"
+					}
+				},
+				{
 					"text": "Det går ett rykte om en helare som sitter fången i kryptan. Syster Alva. Hon lappade ihop halva byn en gång – nu är det vår tur.",
 					"when": {
 						"min_descents": 1,
@@ -103,6 +109,12 @@
 			"idle": [
 				{
 					"text": "Jag har skrivit en hel sida om Benfursten. Två ord är felstavade, men ändå.",
+					"when": {
+						"boss": "bone_lich"
+					}
+				},
+				{
+					"text": "En krona med en tom mitt? Den stämpeln har jag sett förut. Ge mig några år, så minns jag var.",
 					"when": {
 						"boss": "bone_lich"
 					}
@@ -1834,7 +1846,8 @@
 		],
 		"first_boss": [
 			"(Det sista benet slutar skramla. För en stund är det alldeles tyst där nere.)",
-			"(Långt ovanför, i borgens torn, slår klockan en gång. Ingen har dragit i repet.)"
+			"(Långt ovanför, i borgens torn, slår klockan en gång. Ingen har dragit i repet.)",
+			"(Bland benen ligger ett mässingsbeslag. På det sitter en liten stämpel: en krona med en tom mitt.)"
 		]
 	},
 	"refs_note": "Bibelord ur 1917 års kyrkobibel, kontrollerade ordagrant mot Wikisource (Bibeln 1917) 2026-10-21."

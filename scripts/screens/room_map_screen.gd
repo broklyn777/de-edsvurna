@@ -639,6 +639,10 @@ func _draw_object(obj: String, c: Vector2, s: float, color: Color) -> void:
 			draw_line(c + Vector2(-s, s * 0.2), c + Vector2(s, s * 0.2), color, 3.0)
 			draw_line(c + Vector2(-s * 0.8, -s * 0.2), c + Vector2(-s * 0.8, s * 0.8), color, 2.5)
 			draw_line(c + Vector2(s * 0.8, -s * 0.2), c + Vector2(s * 0.8, s * 0.8), color, 2.5)
+		"hourglass":
+			draw_polyline(PackedVector2Array([c + Vector2(-s * 0.6, -s), c + Vector2(s * 0.6, -s), c + Vector2(-s * 0.6, s),
+					c + Vector2(s * 0.6, s), c + Vector2(-s * 0.6, -s)]), color, 2.5)
+			draw_circle(c + Vector2(0, s * 0.6), s * 0.18, color)
 		_:
 			InkArt.ring(self, c, s * 0.6, color, 2.0)
 

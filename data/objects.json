@@ -3,33 +3,110 @@
 	"sarcophagus": {
 		"name": "Rasslande sarkofag",
 		"text": "Någon där inne har synpunkter på besökstiden. Knackar ni vaknar en benvakt (lite starkare än vanligt) – men den vaktar något: dubbel skatt.",
-		"options": [{"id": "knock", "label": "KNACKA"}, {"id": "leave", "label": "LÅT DEN VARA"}]
+		"options": [
+			{
+				"id": "knock",
+				"label": "KNACKA"
+			},
+			{
+				"id": "leave",
+				"label": "LÅT DEN VARA"
+			}
+		]
 	},
 	"grave_bell": {
 		"name": "Gravklocka",
 		"text": "Ring en gång för tjänst. Två för klagomål. Den kallar på en benvakt; efter segern kan ni ringa igen för en svårare och större belöning. Charges fylls inte emellan.",
 		"again": "Klockan dallrar fortfarande. Ringer ni igen kommer en svårare benvakt – men belöningen blir större.",
-		"options": [{"id": "ring", "label": "RING"}, {"id": "leave", "label": "LÅT BLI"}],
-		"again_options": [{"id": "ring_again", "label": "RING IGEN"}, {"id": "stop", "label": "NÖJ ER"}]
+		"options": [
+			{
+				"id": "ring",
+				"label": "RING"
+			},
+			{
+				"id": "leave",
+				"label": "LÅT BLI"
+			}
+		],
+		"again_options": [
+			{
+				"id": "ring_again",
+				"label": "RING IGEN"
+			},
+			{
+				"id": "stop",
+				"label": "NÖJ ER"
+			}
+		]
 	},
 	"grave_register": {
 		"name": "Gravregister",
 		"text": "Alla finns med. Några har flyttat utan att meddela. Den fuktskadade boken räcker till en uppslagning.",
-		"options": [{"id": "valuables", "label": "VÄRDESAKER"}, {"id": "neighbours", "label": "BESVÄRLIGA GRANNAR"}]
+		"options": [
+			{
+				"id": "valuables",
+				"label": "VÄRDESAKER"
+			},
+			{
+				"id": "neighbours",
+				"label": "BESVÄRLIGA GRANNAR"
+			}
+		]
 	},
 	"stained_window": {
 		"name": "Övertäckt glasfönster",
 		"text": "De har hängt en mycket ful gardin över solen. Drar ni undan den ser ni hela raden – men ljuset avslöjar er också: nästa grupp är beredd.",
-		"options": [{"id": "pull", "label": "DRA UNDAN"}, {"id": "leave", "label": "LÅT DEN HÄNGA"}]
+		"options": [
+			{
+				"id": "pull",
+				"label": "DRA UNDAN"
+			},
+			{
+				"id": "leave",
+				"label": "LÅT DEN HÄNGA"
+			}
+		]
 	},
 	"bell_rope": {
 		"name": "Klockrep",
 		"text": "Det står \"ring endast vid fara\". Det verkar passa. Ringer ni kommer en beredd kultgrupp – och efter segern vet ni var alla andra grupper står.",
-		"options": [{"id": "ring", "label": "RING"}, {"id": "leave", "label": "LÅT BLI"}]
+		"options": [
+			{
+				"id": "ring",
+				"label": "RING"
+			},
+			{
+				"id": "leave",
+				"label": "LÅT BLI"
+			}
+		]
 	},
 	"pew": {
 		"name": "Lös kyrkbänk",
 		"text": "Gedigen ek. Fortfarande användbar till ordning och reda. Barrikadera bort en grupp ni har sett (den ger då ingenting), eller ta virket.",
-		"options": [{"id": "barricade", "label": "BARRIKADERA"}, {"id": "wood", "label": "TA VIRKET"}]
+		"options": [
+			{
+				"id": "barricade",
+				"label": "BARRIKADERA"
+			},
+			{
+				"id": "wood",
+				"label": "TA VIRKET"
+			}
+		]
+	},
+	"hourglass": {
+		"name": "Väktarens timglas",
+		"text": "Sanden rinner baklänges om den får lite kraft. Offra en Charge, så visar timglaset var närmaste elitgrupp står.",
+		"options": [
+			{
+				"id": "scout",
+				"label": "OFFRA EN CHARGE"
+			},
+			{
+				"id": "leave",
+				"label": "LÅT DET VARA"
+			}
+		]
 	}
 }
