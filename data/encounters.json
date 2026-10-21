@@ -425,7 +425,7 @@
 			"bone_colossus",
 			"skeleton_warrior"
 		],
-		"stat_mult": 0.7,
+		"stat_mult": 1.08,
 		"elite_group": true,
 		"template": "Kräver en annan skadekälla"
 	},
@@ -442,7 +442,7 @@
 			"skeleton_warrior",
 			"skeleton_archer"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 1.08,
 		"elite_group": true,
 		"template": "Väcker de döda"
 	},
@@ -458,7 +458,7 @@
 			"grave_mist",
 			"skeleton_warrior"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 1.66,
 		"elite_group": true,
 		"template": "Straffar besvärjelser"
 	},
@@ -474,7 +474,7 @@
 			"bone_scribe",
 			"rattler"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 1.08,
 		"elite_group": true,
 		"template": "Straffar upprepning"
 	},
@@ -491,7 +491,7 @@
 			"skeleton_warrior",
 			"bone_runner"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.97,
 		"elite_group": true,
 		"template": "Familj med ledare"
 	},
@@ -508,7 +508,7 @@
 			"bone_runner",
 			"skeleton_archer"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.9,
 		"template": "Offret (elit)"
 	},
 	"chapel_2d": {
@@ -633,7 +633,7 @@
 			"will_o_wisp",
 			"will_o_wisp"
 		],
-		"stat_mult": 0.7,
+		"stat_mult": 1.54,
 		"elite_group": true,
 		"template": "Slår först"
 	},
@@ -667,7 +667,7 @@
 			"witch",
 			"cultist"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 1.15,
 		"elite_group": true,
 		"template": "Straffar upprepning"
 	},
@@ -684,7 +684,7 @@
 			"fallen_knight",
 			"cultist"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.9,
 		"elite_group": true,
 		"template": "Växaren"
 	},
@@ -702,7 +702,7 @@
 			"witch",
 			"cultist"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.83,
 		"elite_group": true,
 		"template": "Två familjer"
 	},
@@ -719,7 +719,7 @@
 			"cultist",
 			"corrupted_deacon"
 		],
-		"stat_mult": 0.72,
+		"stat_mult": 0.76,
 		"elite_group": true,
 		"template": "Helar och renar"
 	}

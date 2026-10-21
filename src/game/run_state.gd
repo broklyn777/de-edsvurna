@@ -348,7 +348,7 @@ const PORTAL_STATS := 1.15
 const FIRST_DESCENT_RAMP := [0.70, 0.88, 0.81]
 ## 0.28 (vårt val): elitgruppen på våning 1 (Kolossens vakt) är mildare på profilens första nedstigning, eftersom en
 ## Jakt på Nemesis kan tvinga en ny spelare att möta den.
-const FIRST_DESCENT_ELITE := 0.8
+const FIRST_DESCENT_ELITE := 0.7
 ## 0.25: den första striden gör paladinen ensam (Imma smiter efter först efteråt). Den ska vara lika lätt som övningen:
 ## fienderna ×0,80 till (vårt val, mätt med botarna: tests/test_story.gd och BALANS=forsta).
 const FIRST_FIGHT_ALONE := 0.80

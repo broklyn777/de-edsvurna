@@ -92,6 +92,17 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 			macros = opts.bot_macros  # 0.23.3: t.ex. en ny profils få rader (new_profile_macros)
 		# 0.23: följeslagare utan förbättrade makron kör sina startmakron även för TUNED.
 		var macro: Dictionary = macros.get(sim.current.id, data.macros.get(sim.current.id, {"lines": []}))
+		# Ett "svar" i balansrapporten (BALANS=elitsvar): en fokusrad före hjältens första Anfall-rad, så att helningar
+		# och skydd högre upp går först.
+		if opts.has("focus_line"):
+			var lines: Array = macro.get("lines", []).duplicate()
+			var at := lines.size()
+			for i in lines.size():
+				if lines[i].get("action", "") == "attack":
+					at = i
+					break
+			lines.insert(at, opts.focus_line)
+			macro = {"lines": lines}
 		var decision := MacroRunner.decide(sim, sim.current, macro)
 		if decision.ok:
 			sim.act(decision.action, decision.target, decision.ability)
@@ -163,6 +174,11 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	while not state.finished and rooms < 900:
 		var r := state.current_room()
 		if state.at_group():
+			# Läget när boten kliver på en elitruta (BALANS=elitnotning): Charges, nivåer och sällskap just då.
+			if opts.has("elite_snaps") and r.get("elite", false) and not r.get("snapped", false):
+				r.snapped = true
+				opts.elite_snaps.append({"charges": state.charges.duplicate(true), "levels": levels.duplicate(true),
+						"party": state.party.duplicate(), "floor": state.floor, "opts": state.battle_opts()})
 			if not _bot_wants_fight(state, r, policy):
 				state.back()
 				rooms += 1
@@ -170,7 +186,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
@@ -322,6 +338,17 @@ static func _charges_share(data: Dictionary, state: RunState) -> float:
 	for hero_id in state.charges:
 		for ability_id in state.charges[hero_id]:
 			left += int(state.charges[hero_id][ability_id])
+			full += int(data.abilities[ability_id].get("charges", 0))
+	return float(left) / maxf(full, 1)
+
+
+## Andel Charges kvar (0–1) i ett sparat läge.
+static func charges_share_of(data: Dictionary, charges: Dictionary) -> float:
+	var left := 0
+	var full := 0
+	for hero_id in charges:
+		for ability_id in charges[hero_id]:
+			left += int(charges[hero_id][ability_id])
 			full += int(data.abilities[ability_id].get("charges", 0))
 	return float(left) / maxf(full, 1)
 
