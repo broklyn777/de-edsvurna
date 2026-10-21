@@ -163,3 +163,17 @@ func test_lowest_hp_breaks_ties_by_hp_left() -> void:
 	big.hp = big.max_hp * 0.5
 	m = MacroRunner.match_line(sim, sim.unit("eira"), _line("any_enemy", "lowest_hp", 0, "attack"))
 	assert_eq(m.id, big.id, "andelen avgör först")
+
+
+## 0.30: raden som "Spara som order" gör av introts kombination väljer den Förblindade fienden.
+func test_saved_order_line_picks_the_blinded_enemy() -> void:
+	var sim := CombatSim.create(_data, "crypt_1", 42, ["paladin", "imma"])
+	var p := sim.unit("paladin")
+	var e := sim.enemies[sim.enemies.size() - 1]
+	sim._add_aura(sim.unit("imma"), e, "blind")
+	var line := {"subject": "any_enemy", "cond": "has_status", "value": "blind", "action": "ability",
+			"ability": "holy_smite", "target": "that"}
+	var d := MacroRunner.decide(sim, p, {"lines": [line]})
+	assert_true(d.ok)
+	assert_eq(d.target, e.id)
+	assert_eq(d.ability, "holy_smite")

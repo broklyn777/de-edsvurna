@@ -19,13 +19,17 @@
 		"icon": "cross",
 		"button_color": "#f2c85b",
 		"sound": "k_shield_wall",
-		"text": "Helig attack (160 %).",
+		"text": "Helig attack (160 %). Slår 50 % hårdare mot en Förblindad fiende.",
 		"effects": [
 			{
 				"type": "damage",
 				"power": 1.6
 			}
 		],
+		"bonus_vs": {
+			"aura": "blind",
+			"mult": 1.5
+		},
 		"charges": 8
 	},
 	"axe_chop": {

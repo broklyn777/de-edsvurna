@@ -11,6 +11,7 @@ const W := 780.0
 
 var ids: Array = []
 var data: Dictionary
+var custom := {}  # 0.30: en ruta med egen text (kombinationen i striden), annars Help.entry
 var pause_tree := false
 var _i := 0
 var _t := 0.0
@@ -29,6 +30,21 @@ static func offer(host: Node, wanted: Array, pause := false) -> HelpBox:
 	run._save()
 	var box := HelpBox.new()
 	box.ids = fresh
+	box.data = run.data
+	box.pause_tree = pause
+	host.add_child(box)
+	return box
+
+
+## 0.30: rutan id första gången, med en egen text i stället för handbokens (t.ex. siffrorna i en kombination).
+static func offer_custom(host: Node, id: String, e: Dictionary, pause := false) -> HelpBox:
+	var run := host.get_node("/root/Run")
+	if "--no-help" in OS.get_cmdline_user_args() or Help.take(run.data, run.profile, [id]).is_empty():
+		return null
+	run._save()
+	var box := HelpBox.new()
+	box.ids = [id]
+	box.custom = e
 	box.data = run.data
 	box.pause_tree = pause
 	host.add_child(box)
@@ -77,7 +93,7 @@ func _next() -> void:
 func _paint() -> void:
 	var area := _view.size
 	_view.draw_rect(Rect2(Vector2.ZERO, area), Color(0, 0, 0, 0.6))
-	var e := Help.entry(data, ids[_i])
+	var e := custom if not custom.is_empty() else Help.entry(data, ids[_i])
 	var r := panel_rect(area, e)
 	draw_entry(_view, r, e)
 	var foot := "Tryck för att fortsätta" + ("   (%d/%d)" % [_i + 1, ids.size()] if ids.size() > 1 else "")
