@@ -136,6 +136,8 @@ var trait_stats := {}
 ## 0.27: senaste figuren per lag som kastade en besvärjelse (pick "caster"), och väckningar per lag (Sista klangen).
 var _last_caster := {}
 var _team_revives := {}
+## 0.28: helningar per lag under den pågående turen (Ordensregeln).
+var _team_heals := {}
 
 
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
@@ -640,6 +642,7 @@ func _next_turn() -> void:
 		turn_no += 1
 		u.turns_taken += 1
 		_turn_counts.clear()
+		_team_heals.clear()
 		_turn_procs = 0
 		_emit({"type": "turn_start", "unit": u.id})
 		_break_snares()
@@ -850,6 +853,9 @@ func _rule_matches(u: CombatUnit, rule: Dictionary) -> bool:
 		return false
 	if condition.has("alone") and (_allies(u).size() == 1) != bool(condition.alone):
 		return false
+	# 0.28: förra handlingen var grundanfallet (Lansen försvarar sig varannan tur).
+	if condition.get("self_last_attacked", false) and (u.last_ability == "" or u.last_ability != u.attack_ability):
+		return false
 	if condition.has("self_stacks_at_least"):
 		var want: Dictionary = condition.self_stacks_at_least
 		if u.stacks.get(want.stack, 0.0) < float(want.n):
@@ -964,7 +970,12 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 				"raise_stat":
 					_raise_stat(t, effect)
 				"heal":
-					_heal(caster, t, _heal_amount(caster, effect), ability_id)
+					if effect.has("pct_max_hp"):
+						# 0.28 (Abbedissans Mässan): en andel av målets eget liv.
+						_heal_ctx = {"base": t.max_hp * float(effect.pct_max_hp), "pct_max_hp": float(effect.pct_max_hp)}
+						_heal(caster, t, t.max_hp * float(effect.pct_max_hp), ability_id)
+					else:
+						_heal(caster, t, _heal_amount(caster, effect), ability_id)
 				"aura":
 					_add_aura(caster, t, effect.aura, float(effect.get("duration", 0.0)))
 				"revive":
@@ -1010,6 +1021,8 @@ func _heal_amount(u: CombatUnit, effect: Dictionary) -> float:
 var _heal_ctx := {}
 ## Uträkningen bakom senaste grundskadan (0.21), läses av _deal_damage.
 var _formula_ctx := {}
+## 0.28: nästa grundskada struntar i Defense (Lansspetsen).
+var _ignore_defense := false
 ## Namnen på auror som förbrukades av _consume_empower (0.21).
 var _empower_names: Array[String] = []
 
@@ -1086,6 +1099,11 @@ func _formula(src: CombatUnit, tgt: CombatUnit, kind: String, power: float, abil
 			_formula_ctx.merge({"stat": "attack", "stat_value": src.stat("attack")})
 			return src.stat("attack") * roll * power
 	_formula_ctx.merge({"stat": "attack", "stat_value": src.stat("attack")})
+	# 0.28 (Lansspetsen): träffen struntar i Defense.
+	if _ignore_defense:
+		_formula_ctx.defense = 0.0
+		_formula_ctx.ignore_defense = true
+		return attack_damage(src.stat("attack") * roll, 0.0, power)
 	return attack_damage(src.stat("attack") * roll, def_now, power)
 
 
@@ -1248,7 +1266,9 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	calc.crit_chance = crit_chance
 	calc.crit_extra = crit_extra
 	_formula_ctx = {}
+	_ignore_defense = kind == "attack" and _modify(src, "modify_damage", probe, "ignore_defense", false)
 	var raw := _formula(src, tgt, kind, amount, ability_id) if scaled else amount
+	_ignore_defense = false
 	calc.merge(_formula_ctx)
 	calc.raw = raw
 	var additional := 0.0
@@ -1314,6 +1334,14 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	# mot en som försvarar sig) upp till dubbelt så starka, och den första nedstigningen blev 5 procentenheter svårare.
 	var total := roundf(dmg) + roundf(additional)
 	calc.additional = roundf(additional)
+	# 0.28 (Förmannens vakt, Siralims livvakt): en ur målets familj tar en del av den färdiga skadan.
+	var guard := _guard_for(src, tgt)
+	var guarded := 0.0
+	if guard != null and total > 0.0:
+		guarded = roundf(total * _guard_pct(guard))
+		total -= guarded
+		calc.guarded = guarded
+		calc.guard_name = guard.name
 	var absorbed := minf(tgt.barrier, total)
 	if absorbed > 0.0:
 		tgt.barrier -= absorbed
@@ -1343,6 +1371,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			"landed": landed})
 	if tgt.hp <= 0.0:
 		_kill(tgt)
+	if guarded > 0.0:
+		_guard_takes(src, guard, tgt, guarded, ability_id)
 	# Leeching (0.22): en andel av skadan helar anfallaren; helningens uträkning pekar på träffen.
 	if leech > 0.0 and life_lost > 0.0 and src.alive and src != tgt:
 		_heal_ctx = {"base": life_lost * leech, "leech": true, "from_damage": life_lost, "leech_pct": leech,
@@ -1363,6 +1393,42 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	if direct and landed and src.team == 0 and tgt.team == 1 and src.alive and _rule("mirror_bones"):
 		_rule_hit("mirror_bones")
 		_deal_damage(tgt, src, lost * 0.2, school, "mirror_bones", false, false, "indirect")
+
+
+## 0.28: livvakten som tar en del av skadan mot målet: en levande ur målets familj (inte målet) med "guard_family",
+## bara mot motståndarnas skada.
+func _guard_for(src: CombatUnit, tgt: CombatUnit) -> CombatUnit:
+	if src.team == tgt.team:
+		return null
+	for x in _family(tgt):
+		if _guard_pct(x) > 0.0:
+			return x
+	return null
+
+
+func _guard_pct(u: CombatUnit) -> float:
+	for trait_id in u.traits:
+		var pct := float(data.traits[trait_id].get("guard_family", 0.0))
+		if pct > 0.0:
+			return pct
+	return 0.0
+
+
+## Livvaktens andel: tas av Barriären och livet utan nya modifierare (skadan är redan färdigräknad).
+func _guard_takes(src: CombatUnit, guard: CombatUnit, protected: CombatUnit, amount: float, ability_id: String) -> void:
+	if not guard.alive:
+		return
+	var absorbed := minf(guard.barrier, amount)
+	if absorbed > 0.0:
+		guard.barrier -= absorbed
+		if guard.barrier <= 0.0 and guard.auras.has("barrier"):
+			_remove_aura(guard, "barrier", "broken")
+	var lost := amount - absorbed
+	guard.hp = maxf(0.0, guard.hp - lost)
+	_emit({"type": "guarded", "source": src.id, "unit": guard.id, "protected": protected.id, "amount": lost,
+			"absorbed": absorbed, "ability": ability_id})
+	if guard.hp <= 0.0:
+		_kill(guard)
 
 
 ## Undvikande: från fartkvoten plus egenskaper med "dodge_add" (t.ex. Gastens Eterisk), högst 75 %.
@@ -1446,6 +1512,15 @@ func _revive(u: CombatUnit, pct: float) -> void:
 func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) -> void:
 	if not tgt.alive:
 		return
+	# 0.28, Ordensregeln (Abbedissans motdrag, Satyr Dominator): motståndarnas lag kan bara helas n gånger per tur.
+	for x in units:
+		if x.alive and x.team != tgt.team:
+			for trait_id in x.traits:
+				var cap := int(data.traits[trait_id].get("limit_enemy_heals", -1))
+				if cap >= 0 and int(_team_heals.get(tgt.team, 0)) >= cap:
+					_emit({"type": "heal_blocked", "unit": tgt.id, "by": x.id, "trait": trait_id})
+					return
+	_team_heals[tgt.team] = int(_team_heals.get(tgt.team, 0)) + 1
 	# Fördärvad (0.22): kan inte helas; helningen gör i stället skada (50 %).
 	var blight := flag_aura(tgt, "blight")
 	if blight != "":
@@ -1954,7 +2029,9 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 	# 0.26.3: en andel av en träff (pct_of_event) blir aldrig kritisk igen; träffen den räknas på kan redan ha varit det.
 	var amount := 0.0
 	if effect.has("pct_of_event"):
-		amount = float(e.get(effect.get("event_field", "amount"), 0.0)) * float(effect.pct_of_event)
+		# 0.28 (Spegelsköld): andelen växer med familjen.
+		var pct := float(effect.pct_of_event) + float(effect.get("pct_per_family", 0.0)) * family_count(owner)
+		amount = float(e.get(effect.get("event_field", "amount"), 0.0)) * pct
 	elif effect.has("pct_max_hp"):
 		amount = tgt.max_hp * float(effect.pct_max_hp)
 	elif effect.type == "heal":
@@ -1993,6 +2070,10 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 		"dispel", "purge", "to_top", "to_bottom", "step_down":
 			_status_effect(effect, tgt)
 		"raise_stat":
+			if effect.has("pct_per_family"):
+				# 0.28 (Fastan): mer för varje annan ur familjen.
+				effect = effect.duplicate()
+				effect.pct = float(effect.get("pct", 0.1)) + float(effect.pct_per_family) * family_count(owner)
 			_raise_stat(tgt, effect)
 		"steal_buff":
 			_steal_buff(owner, tgt)
@@ -2141,6 +2222,20 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 				var t := unit(e.get("unit", ""))
 				if t == null or t == owner or owner.family == "" or t.family != owner.family or t.team != owner.team:
 					return false
+			# 0.28
+			"target_in_family":
+				var t := unit(e.get("target", ""))
+				if t == null or t == owner or owner.family == "" or t.family != owner.family or t.team != owner.team:
+					return false
+			"self_family":
+				if owner.family != want:
+					return false
+			"self_not_acted":
+				if owner.last_ability != "":
+					return false
+			"unit_repeated_ability":
+				if not repeated_ability(unit(e.get("unit", "")), e):
+					return false
 			"source_new_ability":
 				var src := unit(e.get("source", ""))
 				if src == null or e.get("from_trait", false) or src.last_ability == "" \
@@ -2229,6 +2324,14 @@ func _run_release(caster: CombatUnit, r: Dictionary, ability_targets: Array) -> 
 # --- Hjälpfunktioner --------------------------------------------------------
 
 ## 0.27: en hjälte med en förmåga som helar (pick "healer").
+## 0.28 (Förhör, Inkvisitorns sigill): figuren använde samma förmåga två gånger i rad. Grundanfallet, Försvara och
+## Provocera räknas inte.
+func repeated_ability(u: CombatUnit, e: Dictionary) -> bool:
+	var ability_id: String = e.get("ability", "")
+	return u != null and e.get("action", "") in ["ability", "intent"] and ability_id != u.attack_ability \
+			and not ability_id in ["defend", "provoke", "skip"] and u.prev_ability == ability_id
+
+
 func is_healer(u: CombatUnit) -> bool:
 	for ability_id in u.abilities:
 		if ability(ability_id).get("effects", []).any(func(f: Dictionary) -> bool: return f.get("type", "") == "heal"):

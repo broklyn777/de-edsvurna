@@ -510,5 +510,217 @@
 		],
 		"stat_mult": 0.72,
 		"template": "Offret (elit)"
+	},
+	"chapel_2d": {
+		"name": "Den skyddade diakonen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cultist",
+			"corrupted_deacon"
+		],
+		"stat_mult": 0.69,
+		"template": "Skyddad präst"
+	},
+	"chapel_2e": {
+		"name": "Irrblossens dans",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"will_o_wisp",
+			"will_o_wisp",
+			"penitent"
+		],
+		"stat_mult": 0.69,
+		"template": "Första slaget"
+	},
+	"chapel_2f": {
+		"name": "Fanans procession",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"banner_bearer",
+			"cultist",
+			"witch"
+		],
+		"stat_mult": 0.69,
+		"template": "Familj med ledare"
+	},
+	"chapel_2g": {
+		"name": "Spegelkoret",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"mirror_warden",
+			"witch"
+		],
+		"stat_mult": 0.69,
+		"template": "Straffar besvärjelser"
+	},
+	"chapel_3c": {
+		"name": "Den fallnes front",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"fallen_knight",
+			"corrupted_deacon"
+		],
+		"stat_mult": 0.7,
+		"template": "Front och stöd"
+	},
+	"chapel_3d": {
+		"name": "Häxornas nötning",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"witch",
+			"corrupted_deacon",
+			"cultist"
+		],
+		"stat_mult": 0.7,
+		"template": "Nötning"
+	},
+	"chapel_3e": {
+		"name": "Offerprocessionen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"banner_bearer",
+			"penitent",
+			"cultist"
+		],
+		"stat_mult": 0.7,
+		"template": "Offret"
+	},
+	"chapel_e1": {
+		"name": "Lansens anstormning",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"black_lance",
+			"will_o_wisp",
+			"will_o_wisp"
+		],
+		"stat_mult": 0.7,
+		"elite_group": true,
+		"template": "Slår först"
+	},
+	"chapel_e2": {
+		"name": "Förmannens vakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cult_overseer",
+			"cultist",
+			"corrupted_deacon"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Två som skyddar varandra"
+	},
+	"chapel_e3": {
+		"name": "Förhöret",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"inquisitor",
+			"witch",
+			"cultist"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Straffar upprepning"
+	},
+	"chapel_e4": {
+		"name": "Asketens fasta",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"ascetic",
+			"fallen_knight",
+			"cultist"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Växaren"
+	},
+	"chapel_e5": {
+		"name": "Två familjer",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"black_lance",
+			"fallen_knight",
+			"witch",
+			"cultist"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Två familjer"
+	},
+	"chapel_e6": {
+		"name": "Abbedissans mässa",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"corrupted_abbess",
+			"cultist",
+			"corrupted_deacon"
+		],
+		"stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Helar och renar"
 	}
 }

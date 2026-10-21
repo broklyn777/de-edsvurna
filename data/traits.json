@@ -1692,5 +1692,488 @@
 				"target": "self"
 			}
 		]
+	},
+	"clouded_blessing": {
+		"name": "Grumlad välsignelse",
+		"enemy": true,
+		"text": "Diakonens helningar på Kultens folk ger Läkning i 2 turer.",
+		"trigger": "heal",
+		"when": {
+			"source": "self",
+			"target_in_family": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "mending",
+				"duration": 2,
+				"target": "target"
+			}
+		]
+	},
+	"cult_banner": {
+		"name": "Kultens fana",
+		"enemy": true,
+		"scope": "party",
+		"text": "Medan Fanbäraren lever gör Kultens folk 5 % mer skada för varje annan levande ur kulten.",
+		"trigger": "modify_damage",
+		"when": {
+			"self_family": "cult_kin",
+			"source": "self"
+		},
+		"modify": {
+			"damage_mult_per_family": 0.05
+		}
+	},
+	"wisp_flicker": {
+		"name": "Flimmer",
+		"enemy": true,
+		"text": "Börjar striden överst på tidslinjen. Första träffen förblindar målet i 1 tur.",
+		"trigger": "passive",
+		"start_first": true,
+		"parts": [
+			"wisp_flicker_blind"
+		]
+	},
+	"wisp_flicker_blind": {
+		"name": "Flimmer",
+		"hidden": true,
+		"enemy": true,
+		"text": "Första träffen förblindar målet i 1 tur.",
+		"trigger": "damage",
+		"once_per_battle": true,
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "blind",
+				"duration": 1,
+				"target": "target"
+			}
+		]
+	},
+	"mirror_ward": {
+		"name": "Spegelsköld",
+		"enemy": true,
+		"text": "Den som skadar Spegelvakten med en besvärjelse tar 40 % av skadan tillbaka (indirekt), +10 % för varje annan ur De fallna.",
+		"trigger": "damage",
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "spell"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"pct_of_event": 0.4,
+				"pct_per_family": 0.1,
+				"kind": "indirect",
+				"target": "source"
+			}
+		]
+	},
+	"overseer_guard": {
+		"name": "Förmannens vakt",
+		"enemy": true,
+		"text": "Tar 50 % av den skada som riktas mot andra ur Kultens folk.",
+		"trigger": "passive",
+		"guard_family": 0.5
+	},
+	"interrogation": {
+		"name": "Förhör",
+		"enemy": true,
+		"text": "Den hjälte som använder samma förmåga två gånger i rad blir Tystad i 1 tur.",
+		"trigger": "acted",
+		"when": {
+			"unit": "enemy",
+			"unit_repeated_ability": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "silenced",
+				"duration": 1,
+				"target": "unit"
+			}
+		]
+	},
+	"fasting": {
+		"name": "Fastan",
+		"enemy": true,
+		"text": "I början av varje egen tur +8 % Defense (högst 5 gånger), och +4 % för varje annan ur De fallna.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "raise_stat",
+				"stat": "defense",
+				"pct": 0.08,
+				"pct_per_family": 0.04,
+				"additive": true,
+				"max_times": 5,
+				"target": "self"
+			}
+		]
+	},
+	"lance_charge": {
+		"name": "Anstormning",
+		"enemy": true,
+		"text": "Första anfallet i striden gör 200 % mer skada; sedan försvarar sig Lansen varannan tur.",
+		"trigger": "modify_damage",
+		"when": {
+			"source_attacks_below": 1,
+			"kind": "attack",
+			"direct": true
+		},
+		"modify": {
+			"damage_mult": 3.0
+		}
+	},
+	"broken_oath": {
+		"name": "Bruten ed",
+		"enemy": true,
+		"text": "När en annan ur De fallna faller blir Lansen Bärsärk i 2 turer.",
+		"trigger": "death",
+		"when": {
+			"unit_in_family": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "berserk",
+				"duration": 2,
+				"target": "self"
+			}
+		]
+	},
+	"abbess_mass_trait": {
+		"name": "Mässan",
+		"enemy": true,
+		"text": "Var tredje egen tur helas alla hennes allierade för 30 % av sitt liv och renas från debuffar.",
+		"trigger": "passive"
+	},
+	"order_rule": {
+		"name": "Ordensregeln",
+		"enemy": true,
+		"counter": true,
+		"original": "Satyr Dominator",
+		"text": "Motdrag: sällskapet kan bara helas en gång per tur.",
+		"card": "ni kan bara helas en gång per tur",
+		"trigger": "passive",
+		"limit_enemy_heals": 1
+	},
+	"laughing_wisp": {
+		"name": "Skrattande låga",
+		"enemy": true,
+		"counter": true,
+		"original": "Laughing Wisp",
+		"text": "Motdrag: kan inte få debuffar, men skickas längst ned på tidslinjen när den träffas.",
+		"card": "kan inte få debuffar; skickas längst ned när den träffas",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "laughing_flame",
+				"target": "self"
+			}
+		],
+		"parts": [
+			"laughing_wisp_drop"
+		]
+	},
+	"laughing_wisp_drop": {
+		"name": "Skrattande låga",
+		"hidden": true,
+		"enemy": true,
+		"text": "Skickas längst ned på tidslinjen när den träffas.",
+		"trigger": "damage",
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "to_bottom",
+				"target": "self"
+			}
+		]
+	},
+	"deacon_stole": {
+		"name": "Diakonens stola",
+		"trophy": true,
+		"text": "När bäraren helar någon får målet Läkning i 2 turer.",
+		"answers": "Debuffar och nötning (Häxa, Mögelskelett)",
+		"rarity": "common",
+		"trigger": "heal",
+		"when": {
+			"source": "self",
+			"not_from_trait": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "mending",
+				"duration": 2,
+				"target": "target"
+			}
+		]
+	},
+	"clean_spring": {
+		"name": "Den rena källan",
+		"trophy": true,
+		"text": "Bärarens helningar tar bort en debuff från målet.",
+		"answers": "Grupper som debuffar",
+		"rarity": "elite",
+		"trigger": "heal",
+		"when": {
+			"source": "self"
+		},
+		"effects": [
+			{
+				"type": "purge",
+				"count": 1,
+				"target": "target"
+			}
+		]
+	},
+	"torn_banner": {
+		"name": "Den trasiga fanan",
+		"trophy": true,
+		"text": "Sällskapet gör 8 % mer skada medan bäraren lever.",
+		"answers": "Barriärer och skyddare (Kultist, Kultens förman)",
+		"rarity": "common",
+		"scope": "party",
+		"trigger": "modify_damage",
+		"when": {
+			"source": "self"
+		},
+		"modify": {
+			"damage_mult": 1.08
+		}
+	},
+	"herald_horn": {
+		"name": "Härolds horn",
+		"trophy": true,
+		"text": "När bäraren Provocerar blir sällskapet Vildsint i 1 tur.",
+		"answers": "Skyddare",
+		"rarity": "elite",
+		"trigger": "acted",
+		"when": {
+			"unit": "self",
+			"action": "provoke"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "savage",
+				"duration": 1,
+				"target": "allies"
+			}
+		]
+	},
+	"wisp_flame": {
+		"name": "Irrblossets låga",
+		"trophy": true,
+		"text": "Bäraren undviker 30 % av attacker tills hen har agerat första gången.",
+		"answers": "Grupper som slår först",
+		"rarity": "common",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"kind": "attack",
+			"self_not_acted": true
+		},
+		"modify": {
+			"dodge_add": 0.3
+		}
+	},
+	"lantern_light": {
+		"name": "Lyktans ljus",
+		"trophy": true,
+		"text": "Bärarens första träff i striden förblindar målet i 1 tur.",
+		"answers": "Grupper som slår först, starka anfallare",
+		"rarity": "elite",
+		"trigger": "damage",
+		"once_per_battle": true,
+		"when": {
+			"source": "self",
+			"direct": true,
+			"target": "enemy"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "blind",
+				"duration": 1,
+				"target": "target"
+			}
+		]
+	},
+	"mirror_shield": {
+		"name": "Spegelskölden",
+		"trophy": true,
+		"text": "Den som skadar bäraren med en besvärjelse tar 30 % tillbaka (indirekt).",
+		"answers": "Besvärjare (Häxa, Gravpräst, Inkvisitorn)",
+		"rarity": "common",
+		"trigger": "damage",
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "spell"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"pct_of_event": 0.3,
+				"kind": "indirect",
+				"target": "source"
+			}
+		]
+	},
+	"silver_glass": {
+		"name": "Silverglaset",
+		"trophy": true,
+		"text": "Första besvärjelsen som skadar bäraren i striden studsar tillbaka: bäraren får livet tillbaka och kastaren tar lika mycket (indirekt).",
+		"answers": "Besvärjare",
+		"rarity": "elite",
+		"trigger": "damage",
+		"once_per_battle": true,
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true,
+			"kind": "spell"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_of_event": 1.0,
+				"target": "self"
+			},
+			{
+				"type": "damage",
+				"pct_of_event": 1.0,
+				"kind": "indirect",
+				"target": "source"
+			}
+		]
+	},
+	"overseer_keys": {
+		"name": "Förmannens nyckelknippa",
+		"trophy": true,
+		"text": "I början av bärarens tur blir den svagaste i sällskapet Beskyddad i 1 tur.",
+		"answers": "Fiender som fokuserar en hjälte (Botgörare + Häxa)",
+		"rarity": "elite",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "protected",
+				"duration": 1,
+				"target": "weakest_ally"
+			}
+		]
+	},
+	"inquisitor_seal": {
+		"name": "Inkvisitorns sigill",
+		"trophy": true,
+		"text": "Fiender som använder samma förmåga två gånger i rad blir Tystade i 1 tur.",
+		"answers": "Bossar och elit som upprepar en stark förmåga",
+		"rarity": "elite",
+		"trigger": "acted",
+		"when": {
+			"unit": "enemy",
+			"unit_repeated_ability": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "silenced",
+				"duration": 1,
+				"target": "unit"
+			}
+		]
+	},
+	"ascetic_strap": {
+		"name": "Asketens rem",
+		"trophy": true,
+		"text": "Bäraren får +6 % Defense i början av varje egen tur (högst 5 gånger).",
+		"answers": "Långa strider",
+		"rarity": "elite",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "raise_stat",
+				"stat": "defense",
+				"pct": 0.06,
+				"additive": true,
+				"max_times": 5,
+				"target": "self"
+			}
+		]
+	},
+	"lance_tip": {
+		"name": "Lansspetsen",
+		"trophy": true,
+		"text": "Bärarens första Anfall i striden struntar i Defense.",
+		"answers": "Höga Defense (Gravväktare, Spegelvakten, Asketen)",
+		"rarity": "elite",
+		"trigger": "modify_damage",
+		"when": {
+			"source": "self",
+			"source_attacks_below": 1,
+			"kind": "attack",
+			"direct": true
+		},
+		"modify": {
+			"ignore_defense": true
+		}
+	},
+	"abbess_key": {
+		"name": "Abbedissans nyckel",
+		"trophy": true,
+		"text": "När bäraren helar någon renas målet från alla debuffar, men bärarens helningar är 20 % svagare.",
+		"answers": "Grupper som debuffar",
+		"rarity": "boss",
+		"trigger": "heal",
+		"when": {
+			"source": "self",
+			"not_from_trait": true
+		},
+		"effects": [
+			{
+				"type": "purge",
+				"count": 99,
+				"target": "target"
+			}
+		],
+		"parts": [
+			"abbess_key_cost"
+		]
+	},
+	"abbess_key_cost": {
+		"name": "Abbedissans nyckel (kostnad)",
+		"hidden": true,
+		"text": "Bärarens helningar är 20 % svagare.",
+		"trigger": "modify_heal",
+		"when": {
+			"source": "self"
+		},
+		"modify": {
+			"heal_mult": 0.8
+		}
 	}
 }

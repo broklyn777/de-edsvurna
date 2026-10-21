@@ -325,5 +325,13 @@
 		"int_mult": 0.8,
 		"text": "Dimmig: 20 % lägre Intelligence.",
 		"glyph": "diamond"
+	},
+	"laughing_flame": {
+		"name": "Skrattande låga",
+		"duration": -1,
+		"cannot_dispel": true,
+		"debuff_immune": true,
+		"text": "Skrattande låga: kan inte få debuffar; skickas längst ned på tidslinjen när den träffas.",
+		"glyph": "diamond"
 	}
 }

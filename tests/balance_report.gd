@@ -362,7 +362,10 @@ func _line(data: Dictionary, label: String, skill: int, traits: Dictionary, arti
 func _grotto(data: Dictionary) -> void:
 	var fresh := Bot.new_profile_macros(data)
 	print("=== Grottan (0.27), djup 1, %d körningar per rad ===" % RUNS)
-	for realm_id in ["crypt", "chapel"]:
+	var realms := ["crypt", "chapel"]
+	if OS.get_environment("NIVA_REALM") != "":
+		realms = [OS.get_environment("NIVA_REALM")]
+	for realm_id in realms:
 		_grotto_line(data, realm_id, "4 hjältar, startmakron, nivå 3", ["paladin", "brokk", "alva", "eira"], 3, {})
 		_grotto_line(data, realm_id, "Paladinen + Imma, nivå 3", ["paladin", "imma"], 3, {"bot_macros": fresh})
 		_grotto_line(data, realm_id, "första: ensam, Imma efter strid 1", ["paladin"], 1,
