@@ -21,7 +21,7 @@ func test_every_station_has_a_person_and_a_conversation() -> void:
 			assert_true(_data.keep.rooms[id].has("person"), "%s står på kartan" % who)
 		var opts := Dialog.options(_data, id)
 		assert_true(opts.size() >= 2, id)
-		assert_eq(opts.back().label, "Ingenting just nu", "sist kommer Ingenting just nu")
+		assert_eq(opts.back().label, "Avsluta samtalet", "sist kommer Avsluta samtalet")
 		assert_eq(opts.back().open, "")
 		for o in opts.slice(0, opts.size() - 1):
 			assert_true(_data.keep.rooms.has(o.open) or o.open in ["rename", "talk_trophies", "handbook"], "%s öppnar något som finns" % o.label)

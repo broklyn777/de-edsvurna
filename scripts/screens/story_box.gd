@@ -85,5 +85,5 @@ static func narrator(ci: CanvasItem, area: Vector2, text: String, t: float) -> v
 	var h := f.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, w, 26).y
 	ci.draw_multiline_string(f, Vector2((area.x - w) / 2.0, area.y / 2.0 - h / 2.0 + 20), text,
 			HORIZONTAL_ALIGNMENT_CENTER, w, 26, -1, Color(0.92, 0.88, 0.80, a))
-	UiStyle.text(ci, Vector2(0, area.y - 40), "Tryck för att fortsätta", 15,
-			Color(1, 1, 1, (0.3 + 0.15 * sin(t * 4.0)) * a), HORIZONTAL_ALIGNMENT_CENTER, area.x)
+	UiStyle.text(ci, Vector2(0, area.y - 40), "Tryck för att fortsätta", 17,
+			Color(1, 1, 1, (0.6 + 0.2 * sin(t * 4.0)) * a), HORIZONTAL_ALIGNMENT_CENTER, area.x)

@@ -81,7 +81,7 @@ func _paint() -> void:
 	var r := panel_rect(area, e)
 	draw_entry(_view, r, e)
 	var foot := "Tryck för att fortsätta" + ("   (%d/%d)" % [_i + 1, ids.size()] if ids.size() > 1 else "")
-	UiStyle.text(_view, Vector2(r.position.x, r.end.y - 16), foot, 15, Color(1, 1, 1, 0.45 + 0.25 * sin(_t * 4.0)),
+	UiStyle.text(_view, Vector2(r.position.x, r.end.y - 16), foot, 17, Color(UiStyle.GOLD, 0.75 + 0.25 * sin(_t * 4.0)),
 			HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 22)
 
 

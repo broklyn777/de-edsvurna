@@ -377,7 +377,7 @@ func _draw() -> void:
 	silver_label()
 	var quest := RunState.quest_text(state.quest) + ("  – KLAR!" if state.quest.get("done", false) else "")
 	var lock := "  · %s är öppen" % ("bossen" if m.last_floor else "trappan") if state.quest.get("done", false) \
-			else "  · låser %s" % ("bossen" if m.last_floor else "trappan")
+			else "  · öppnar %s" % ("bossen" if m.last_floor else "trappan")  # 0.27.2: "låser" lät som att questen låste
 	UiStyle.text(self, Vector2(MARGIN, 88), "QUEST: " + quest + lock, 17, Parchment.SEAL, HORIZONTAL_ALIGNMENT_LEFT,
 			size.x - 420, 0)
 	var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)

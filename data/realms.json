@@ -1,7 +1,7 @@
 {
 	"crypt": {
 		"name": "Kryptan",
-		"text": "Benfursten och hans skelett. Tre våningar med vägval, sedan bossen.",
+		"text": "Benfursten och hans skelett. Två våningar i en grotta med dimma, sedan bossen.",
 		"floors": [
 			"crypt_1",
 			"crypt_2",
@@ -45,7 +45,7 @@
 	},
 	"chapel": {
 		"name": "Det fördärvade kapellet",
-		"text": "Kultister, gastar och häxor kring Den fallne biskopen. Tre våningar med vägval, sedan bossen.",
+		"text": "Kultister, gastar och häxor kring Den fallne biskopen. Två våningar i en grotta med dimma, sedan bossen.",
 		"floors": [
 			"chapel_1",
 			"chapel_2",

@@ -149,15 +149,22 @@ func _draw() -> void:
 		UiStyle.card(self, _offer_rect(i), t.name, t.text, chosen == run.offer[i], UiStyle.TRAIT_GOLD,
 				"FRÅN " + _source_name(run.offer[i]).to_upper())
 
-	UiStyle.text(self, Vector2(MARGIN, 306), "DINA TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE" if _swap() \
-			else "DINA TROFÉER – DE BYTS VID EN LÄGERELD I GROTTAN", 15, Color(1, 1, 1, 0.6))
+	# 0.27.2: med en vald trofé står vad den gör i rubrikens ställe.
+	var head := "DINA TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE" if _swap() \
+			else "DINA TROFÉER – DE BYTS VID EN LÄGERELD I GROTTAN"
+	if _swap() and selected != "":
+		head = "%s: %s Tryck på en hjälte." % [data.traits[selected].name, data.traits[selected].text]
+	UiStyle.text(self, Vector2(MARGIN, 306), head, 15, Color(1, 1, 1, 0.6) if selected == "" or not _swap() else UiStyle.TRAIT_GOLD,
+			HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN * 2, 3)
 	var inv := _inventory()
 	for i in inv.size():
 		var r := _chip_rect(i)
 		var on := selected == inv[i]
 		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.6))
 		draw_rect(r, Color(UiStyle.GOLD, 0.6 + 0.4 * sin(_t * 8.0)) if on else Color(UiStyle.TRAIT_GOLD, 0.4), false, 2.0)
-		UiStyle.text(self, r.position + Vector2(10, 26), data.traits[inv[i]].name, 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 16, 3)
+		var who := state.wearer(inv[i])
+		var label: String = data.traits[inv[i]].name + (" · " + String(data.heroes[who].short) if who != "" else "")
+		UiStyle.text(self, r.position + Vector2(10, 26), label, 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 16, 3)
 
 	for i in state.party.size():
 		var hero_id := state.party[i]
@@ -191,7 +198,7 @@ func _draw() -> void:
 	if not run.quest_reward.is_empty():
 		UiStyle.text(self, Vector2(MARGIN, size.y - 64), "Questen klar: +%d silver%s" % [run.quest_reward.silver,
 				" och en perk-poäng!" if run.quest_reward.point else ""], 15, Color("#ffb347"), HORIZONTAL_ALIGNMENT_LEFT, size.x - 420)
-	UiStyle.big_button(self, _button_rect(), "TILLBAKA" if _swap() else "VIDARE", _t)
+	UiStyle.big_button(self, _button_rect(), "TILL GROTTAN" if _swap() else "VIDARE", _t)
 	var m := _macro_rect()
 	draw_rect(m, Color(0, 0, 0, 0.6))
 	draw_rect(m, Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)

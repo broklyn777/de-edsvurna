@@ -85,9 +85,12 @@ func _draw() -> void:
 		draw_rect(r, Color(0.06, 0.05, 0.08, 0.92))
 		draw_rect(r, Color(UiStyle.GOLD, 0.95) if is_last else Color(UiStyle.GOLD, 0.35), false, 3.0 if is_last else 1.5)
 		UiStyle.text(self, r.position + Vector2(0, 48), "PROFIL %d" % i, 28, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 5)
-		if is_last:
-			UiStyle.text(self, r.position + Vector2(0, 78), "SENAST – TRYCK FÖR ATT FORTSÄTTA", 15, Color(1, 1, 1, 0.7),
-					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
+		# 0.27.2: huvudhandlingen som en tydlig knapp längst ned i kortet (hela kortet går fortfarande att trycka på).
+		var act := Rect2(r.position.x + 28, r.end.y - 62, r.size.x - 56, 46)
+		draw_rect(act, Color(0.35, 0.25, 0.05, 0.92) if is_last or s.empty else Color(0, 0, 0, 0.6))
+		draw_rect(act, Color(UiStyle.GOLD, 0.9), false, 2.0)
+		UiStyle.text(self, act.position + Vector2(0, 31), "SKAPA PROFIL" if s.empty else "FORTSÄTT", 20, Color.WHITE,
+				HORIZONTAL_ALIGNMENT_CENTER, act.size.x, 4)
 		if s.empty:
 			UiStyle.text(self, r.position + Vector2(0, 190), "Ny profil", 26, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 4)
 			UiStyle.para(self, r.position + Vector2(28, 230), "Börjar från början: eden, borgen och kryptan under den.", 18,
@@ -106,8 +109,8 @@ func _draw() -> void:
 			UiStyle.text(self, Vector2(r.position.x + 28, y), rows[j][0], 18, Color(1, 1, 1, 0.65))
 			UiStyle.text(self, Vector2(r.position.x, y), rows[j][1], 20, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 28, 3)
 		var status := "Introduktionen pågår" if s.intro else ("Körning pågår" if s.run else "I borgen")
-		UiStyle.text(self, r.position + Vector2(0, r.size.y - 28), status, 18,
-				UiStyle.GOLD if s.run or s.intro else Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
+		UiStyle.text(self, r.position + Vector2(0, 80), ("SENAST · " if is_last else "") + status.to_upper(), 15,
+				UiStyle.GOLD if s.run or s.intro else Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 		var d := _delete_rect(i)
 		draw_rect(d, Color(0, 0, 0, 0.6))
 		draw_rect(d, Color("#e0412e", 0.6), false, 1.5)

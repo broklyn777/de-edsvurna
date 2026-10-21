@@ -80,8 +80,8 @@ static func box(ci: CanvasItem, data: Dictionary, area: Vector2, who: String, te
 		UiStyle.text(ci, Vector2(x + nw + 14, r.position.y + 36), title, 16, Color(1, 1, 1, 0.55))
 	UiStyle.para(ci, Vector2(x, r.position.y + 68), text, 20, Color.WHITE, r.end.x - x - 22, 3 if h > 140 else 2)
 	if hint:
-		UiStyle.text(ci, Vector2(r.position.x, r.end.y - 12), "Tryck för att fortsätta", 15,
-				Color(1, 1, 1, 0.45 + 0.25 * sin(t * 4.0)), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 18)
+		UiStyle.text(ci, Vector2(r.position.x, r.end.y - 12), "Tryck för att fortsätta", 17,
+				Color(UiStyle.GOLD, 0.75 + 0.25 * sin(t * 4.0)), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 18)
 	return r
 
 
@@ -101,7 +101,8 @@ static func options(ci: CanvasItem, box_rect: Rect2, labels: Array) -> Array[Rec
 		var r := rects[i]
 		var last := i == labels.size() - 1
 		ci.draw_rect(r, Color(0.05, 0.04, 0.07, 0.95))
-		ci.draw_rect(r, Color(UiStyle.GOLD, 0.35 if last else 0.85), false, 2.0)
+		# 0.27.2: det sista valet (avsluta) ska också se tryckbart ut, bara lite stillsammare.
+		ci.draw_rect(r, Color(UiStyle.GOLD, 0.6 if last else 0.85), false, 2.0)
 		UiStyle.text(ci, r.position + Vector2(18, r.size.y / 2 + 7), String(labels[i]), 19,
-				Color(1, 1, 1, 0.6) if last else Color.WHITE)
+				Color(1, 1, 1, 0.85) if last else Color.WHITE)
 	return rects

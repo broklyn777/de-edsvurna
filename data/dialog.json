@@ -278,11 +278,11 @@
 					"open": "smith"
 				},
 				{
-					"label": "Sätt in",
+					"label": "Sätt in bärnsten och trick",
 					"open": "smith"
 				},
 				{
-					"label": "Ta ut",
+					"label": "Ta ut bärnsten och trick",
 					"open": "smith"
 				}
 			]
@@ -344,7 +344,7 @@
 			]
 		}
 	},
-	"nothing": "Ingenting just nu",
+	"nothing": "Avsluta samtalet",
 	"barks": {
 		"imma": {
 			"hard_fight": [

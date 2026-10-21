@@ -5,8 +5,8 @@
 		"timeline": {
 			"title": "Tidslinjen",
 			"text": [
-				"Striden har inga rundor. Tidslinjen överst visar vem som står på tur; den som är snabbast börjar högst upp.",
-				"Den som har agerat läggs längst ned och får vänta på sin tur igen. Fienderna visar vad de tänker göra härnäst.",
+				"Striden har inga rundor. Tidslinjen överst visar vem som står på tur, från vänster: den som är snabbast börjar längst till vänster.",
+				"Den som har agerat läggs sist, längst till höger, och får vänta på sin tur igen. Fienderna visar vad de tänker göra härnäst.",
 				"Tryck och håll på en figur för att granska den. Det kostar ingen tur."
 			]
 		},

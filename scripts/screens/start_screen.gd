@@ -218,6 +218,8 @@ func _draw() -> void:
 		UiStyle.card(self, _companion_rect(i), "%s · nivå %d" % [h.name, lv], body, companions.has(id), Color(h.color),
 				h.title.to_upper() if roster.size() <= 10 else "", 0.0, 30.0)  # tre rader: BLAD tar rollens plats
 		_sheet_button(_sheet_rect(i))
+		if companions.has(id):
+			_check(_companion_rect(i).position + Vector2(-13, -13))
 
 	var worn: Dictionary = run.profile.worn
 	# Med en vald trofé står dess text i rubrikens ställe.
@@ -250,6 +252,12 @@ func _draw() -> void:
 
 	UiStyle.big_button(self, _button_rect(), "KLAR", _t, _can_go())
 	_small_button(_macro_rect(), "MAKRON")
+
+
+## 0.27.2: en bock i hörnet på valda följeslagare (inte bara ramen), så att ett mörkare kort inte ser otillgängligt ut.
+func _check(at: Vector2) -> void:
+	draw_circle(at + Vector2(12, 12), 13.0, UiStyle.GOLD)
+	draw_polyline(PackedVector2Array([at + Vector2(6, 12), at + Vector2(11, 17), at + Vector2(19, 7)]), Color(0.08, 0.06, 0.04), 3.0)
 
 
 func _sheet_button(r: Rect2) -> void:

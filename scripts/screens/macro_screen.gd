@@ -264,6 +264,10 @@ func _refresh_lines() -> void:
 		row.add_child(text)
 		row.add_child(_button("↑", _move_line.bind(i, -1), 52))
 		row.add_child(_button("↓", _move_line.bind(i, 1), 52))
+		# 0.27.2: luft mellan flytta och ta bort, så att ett felgrepp inte raderar raden.
+		var gap := Control.new()
+		gap.custom_minimum_size = Vector2(28, 0)
+		row.add_child(gap)
 		row.add_child(_button("✕", _delete_line.bind(i), 52))
 	_add_line.disabled = lines.size() >= MacroRunner.MAX_LINES
 	_add_line.text = "+ Lägg till rad" if not _add_line.disabled else "Max %d rader" % MacroRunner.MAX_LINES
