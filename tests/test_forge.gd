@@ -16,8 +16,9 @@ func test_slots_open_in_the_original_order() -> void:
 	for l in range(1, Forge.LEVEL_MAX + 1):
 		if Forge.unlock_text(l) != "":
 			opened.append([l, Forge.unlock_text(l)])
-	assert_eq(opened, [[2, "Stat-plats 1"], [3, "Trick-plats 1"], [5, "Stat-plats 2"], [7, "Trick-plats 2"],
-			[9, "Stat-plats 3"], [10, "Nether-plats"]])
+	# trofeplats: troféplatsen på nivå 6 (Siralims Trait Slot på Tier 15, mellan Stat 2 och Trick 2 som i originalet).
+	assert_eq(opened, [[2, "Stat-plats 1"], [3, "Trick-plats 1"], [5, "Stat-plats 2"], [6, "Troféplats"],
+			[7, "Trick-plats 2"], [9, "Stat-plats 3"], [10, "Nether-plats"]])
 	assert_eq(Forge.next_unlock(3), 5)
 	assert_eq(Forge.next_unlock(10), 0)
 	assert_true(not Forge.stat_slot_open(1, 0) and Forge.stat_slot_open(2, 0) and not Forge.stat_slot_open(4, 1))

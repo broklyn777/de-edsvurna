@@ -172,6 +172,10 @@ func _draw() -> void:
 		var trophy: String = state.equipped.get(hero_id, "")
 		var own: String = state.oath if hero_id == "paladin" else h.traits[0]
 		var body := "%s\nTrofé: %s" % [data.traits[own].name, data.traits[trophy].name if trophy != "" else "–"]
+		# trofeplats (VAL): artefaktens trofé byts bara hos Smeden; lägret visar den.
+		var art: Dictionary = Forge.normalize(state.artifacts.get(hero_id, {}))
+		if not art.is_empty() and Forge.trophy_open(int(art.level)) and data.traits.has(art.trophy):
+			body += " · Artefakt: %s" % data.traits[art.trophy].name
 		var lv := int(run.profile.hero(data, hero_id).level)
 		UiStyle.card(self, _hero_rect(i), "%s · nivå %d" % [h.name, lv], body, trophy != "", Color(h.color), h.title.to_upper(),
 				0.0, 30.0)

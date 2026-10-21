@@ -255,6 +255,40 @@ func socket_stone(hero_id: String, stone_id: String) -> bool:
 	return true
 
 
+## Sätter en trofé ur samlingen i artefaktens troféplats (Forge.TROPHY_LEVEL). Trofén förstörs inte: tom trophy_id tar
+## ut den, och den finns kvar i samlingen. Som i Siralim sitter samma trofé bara på ett ställe åt gången, så den tas av
+## den som bar den och ur en annan artefakt; därmed kan en hjälte aldrig ha samma egenskap två gånger. Falskt om det
+## inte går.
+func set_artifact_trophy(hero_id: String, trophy_id: String) -> bool:
+	var art := artifact(hero_id)
+	if art.is_empty() or not Forge.trophy_open(int(art.level)) or art.trophy == trophy_id:
+		return false
+	if trophy_id != "":
+		if not collection.has(trophy_id):
+			return false
+		_free_trophy(trophy_id)
+	art.trophy = trophy_id
+	return true
+
+
+## Hjälten som har trofén i sin artefakt ("" om ingen).
+func artifact_trophy_owner(trophy_id: String) -> String:
+	for hero_id in artifacts:
+		if String(artifacts[hero_id].get("trophy", "")) == trophy_id:
+			return hero_id
+	return ""
+
+
+## Tar trofén av den som bär den och ur alla artefakter.
+func _free_trophy(trophy_id: String) -> void:
+	for other in worn.keys():
+		if worn[other] == trophy_id:
+			worn.erase(other)
+	for other in artifacts:
+		if String(artifacts[other].get("trophy", "")) == trophy_id:
+			artifacts[other].trophy = ""
+
+
 ## Lägger fynd i förrådet (Forge.roll_finds). Stenarna får sina id här.
 ## 0.29.5: startar uppdraget vid det första fyndet (efter introt), om inget redan sitter i någon artefakt. Ger fyndets sort
 ## ("amber", "trick", "nether") när uppdraget startar nu, annars "".
@@ -506,11 +540,10 @@ func reset_perks(data: Dictionary, oath_id: String) -> int:
 	return refund
 
 
-## Sätter en trofé på hjälten (tar bort den från den som bar den). Tom sträng tar av.
+## Sätter en trofé på hjälten (tar bort den från den som bar den, och ur en artefakts troféplats). Tom sträng tar av.
 func wear(hero_id: String, trophy_id: String) -> void:
-	for other in worn.keys():
-		if worn[other] == trophy_id:
-			worn.erase(other)
+	if trophy_id != "":
+		_free_trophy(trophy_id)
 	if trophy_id == "":
 		worn.erase(hero_id)
 	else:
