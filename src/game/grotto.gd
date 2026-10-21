@@ -88,21 +88,22 @@ func group_cells() -> Array[int]:
 
 ## Slumpar en våning tills reglerna håller. pools: [pool för tier 0, 1, 2] (möten ur realms.json "pools"); boss: bossens
 ## möte (sista våningen); guard: ett starkare möte för den bevakade skatten; quest: våningens quest ({type, goal});
-## prisoner: {hero, first, guarded} eller {}.
+## prisoner: {hero, first, guarded} eller {}. elite_pools (0.27, realms.json "elite_pools"): elitgrupperna per våning;
+## tom = eliten kommer ur den vanliga poolen och får en påtvingad elitvariant som förut.
 static func generate(seed_value: int, floor_index: int, is_last: bool, pools: Array, boss: String, guard: String,
-		quest: Dictionary, prisoner := {}) -> Grotto:
+		quest: Dictionary, prisoner := {}, elite_pools := []) -> Grotto:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	for attempt in 400:
-		var g := _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner)
+		var g := _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools)
 		if g != null and g.problems(quest).is_empty():
 			return g
 	push_warning("Grotto: inget frö höll reglerna (%d), använder det sista försöket" % seed_value)
-	return _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner)
+	return _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools)
 
 
 static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, pools: Array, boss: String,
-		guard: String, quest: Dictionary, prisoner: Dictionary) -> Grotto:
+		guard: String, quest: Dictionary, prisoner: Dictionary, elite_pools := []) -> Grotto:
 	var g := Grotto.new()
 	g.floor = floor_index
 	g.last_floor = is_last
@@ -132,7 +133,13 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 		if at < 0:
 			return null
 		var tier := mini(base_tier + 1, 2)
-		g.cells[at] = {"kind": "elite", "encounter": pick.call(tier), "tier": tier, "elite": true}
+		var enc := ""
+		if elite_pools.is_empty():
+			enc = pick.call(tier)
+		else:
+			var ep: Array = elite_pools[clampi(floor_index, 0, elite_pools.size() - 1)]
+			enc = ep[rng.randi() % ep.size()]
+		g.cells[at] = {"kind": "elite", "encounter": enc, "tier": tier, "elite": true}
 		if e == 0 and quest.get("type", "") == "hunt":
 			g.cells[at].nemesis = true
 		elites.append(at)

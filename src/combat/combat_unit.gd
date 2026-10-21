@@ -59,6 +59,15 @@ var level := 1.0
 var personality := ""
 ## Questens Nemesis (Realm Quest "Jakt"): en namngiven elit.
 var nemesis := false
+## 0.27: familjen (Siralims Race, t.ex. "bone_kin"). Ingen gemensam egenskap; medlemmarnas egna räknar familjen.
+var family := ""
+## 0.27: motdraget som mötet slog på (trait-id, tomt = inget), högst ett per grupp.
+var counter := ""
+## 0.27: träffar man tagit per källa och förmåga ("källa:förmåga" -> antal), för Benskrivarens Antecknat.
+var hit_log := {}
+## 0.27: förmågan figuren använde förra turen och den senaste (Skrivarens penna).
+var last_ability := ""
+var prev_ability := ""
 var alive := true
 ## Tidslinjen (0.22): "top" om figuren ska komma först igen när turen är slut (flyttad under sin egen tur).
 var next_slot := ""
@@ -95,6 +104,7 @@ static func from_data(unit_id: String, d: Dictionary, unit_team: int) -> CombatU
 	u.rules = d.get("rules", [])
 	u.traits = d.get("traits", []).duplicate()
 	u.resistant = d.get("resistant", false) or u.traits.has("resistant")
+	u.family = d.get("family", "")
 	return u
 
 
@@ -150,7 +160,11 @@ func stat(stat_name: String) -> float:
 		"attack":
 			return attack
 		"intelligence":
-			return intelligence
+			# 0.27: Dimmans tyngd (Gravdimmans motdrag) sänker Intelligence medan den varar.
+			var m := 1.0
+			for a in auras.values():
+				m *= a.get("int_mult", 1.0)
+			return intelligence * m
 		"defense":
 			return defense_now()
 		"speed":

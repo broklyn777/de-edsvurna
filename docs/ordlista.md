@@ -116,6 +116,13 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Djup | depth, `Profile.depth`/`best_depth`, `CombatSim.depth_mult` | Realm Depth | Väljs på kampanjkartan. Fiender +8 % stats per djup (utom Speed), silver +25 %, troféchans +15 procentenheter. Nästa djup öppnas när det föregående är klarat. |
 | Fiendens egenskap | `traits` i enemies.json (`"enemy": true` i traits.json) | creature trait | Alla fiender har minst en, som makrona måste svara på. |
 | Benrustning, Jägarblick, Gravpakt, Taggig utmaning, Glödhetta | bone_armor, deadeye, grave_pact, warden_thorns, ember_heat | – (egna) | Skelettkrigare, bågskytt, Gravpräst, Gravväktare, Glödskelett. |
+| Benspringare, Kistbärare, Mögelskelett, Skramlaren | bone_runner, coffin_bearer, mold_skeleton, rattler | – (egna) | Kryptans nya vanliga fiender (0.27); egenskaper Flockbett, Sista tjänsten, Sporer, Skrammel. Elitvarianter Benvarg, Likbärare, Sporfursten, Benklappret. |
+| Benkolossen, Gravväckaren, Gravdimman, Benskrivaren | bone_colossus, grave_caller, grave_mist, bone_scribe (`"rank": "elite"`) | – (egna) | Kryptans elitfiender (0.27): Växande vrede + Benmur, Kallelse, Dimslöja, Antecknat. |
+| Klockaren | bell_ringer (`"rank": "miniboss"`) | – (egen) | Kryptans miniboss (0.27): Klockslaget flyttar hela Benfolket överst var tredje tur. |
+| Elitgrupp | `elite_group` i encounters.json, `elite_pools` i realms.json | – (vårt val) | En grupp med en elitfiende i rollen; ingen påtvingad elitvariant. Första våningens elit i kryptan är Kolossens vakt. |
+| Familj, Benfolket | `family` i enemies.json, `CombatSim.family_count()` | Race (Undead …) | Ingen gemensam egenskap, som i Siralim: medlemmarnas egna egenskaper räknar familjen. |
+| Motdrag | `counter` i enemies.json, `CombatSim.counter_for()`, `"counter": true` i traits.json | counter-trait (Satyr Guardian …) | Högst ett per grupp, bara i elitgrupper och bossmöten, från ett visst djup. Kryptan: Sista klangen, Dimmans tyngd, Sista vaktens ilska. |
+| Dimmig | dulled (`int_mult`) | – (Dragon Revenants sänkning) | −20 % Intelligence i 2 turer. |
 | Resistent | resistant, `CombatUnit.resistant` | Resistant | Bara statusarna med en Resistant-version verkar svagare på bossen (Blöder, Frusen, Tystad, Hånad, Sover, Snärjd, Förstenad); andra debuffar verkar fullt. |
 | Odödlig vrede, Dödsdom | lich_undying_wrath (`once_per_battle`), lich_wrath, lich_doom | – (bossfas) | Benfursten under 50 % liv. |
 | Brinner | burning (`dot_stat`, `dot_pct`) | Burning | 30 % av källans Intelligence per tur, som i Siralim. |

@@ -24,7 +24,8 @@ static func snap_unit(u: CombatUnit) -> Dictionary:
 			"base_stats": u.base_stats.duplicate(), "crit_chance": u.crit_chance, "barrier": u.barrier,
 			"damage_taken_mult": u.damage_taken_mult, "resistant": u.resistant, "auras": u.auras.duplicate(true),
 			"traits": u.traits.duplicate(), "attacks_done": u.attacks_done, "ability_uses": u.ability_uses.duplicate(),
-			"times_hit": u.times_hit, "attack_ability": u.attack_ability, "name": u.name}
+			"times_hit": u.times_hit, "attack_ability": u.attack_ability, "name": u.name, "family": u.family, "last_ability": u.last_ability,
+			"hit_log": u.hit_log.duplicate()}
 
 
 func _snapshot() -> Dictionary:

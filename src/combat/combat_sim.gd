@@ -133,6 +133,9 @@ var _turn_counts := {}
 var _turn_procs := 0
 ## Vad varje egenskap har gjort i striden (för kvittot): trait_id -> {unit, procs, damage, heal}.
 var trait_stats := {}
+## 0.27: senaste figuren per lag som kastade en besvärjelse (pick "caster"), och väckningar per lag (Sista klangen).
+var _last_caster := {}
+var _team_revives := {}
 
 
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
@@ -152,6 +155,12 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	sim.rules = opts.get("rules", []).duplicate()
 	sim._start_auras = opts.get("start_auras", []).duplicate()
 	var forced := int(opts.get("force_elites", 0))
+	var enc_def: Dictionary = game_data.encounters[encounter_id]
+	# 0.27: en elitgrupp (elitfiender i rollen) får ingen påtvingad elitvariant; Nemesis blir den första elitfienden.
+	if enc_def.get("elite_group", false):
+		forced = 0
+	var counter := counter_for(game_data, encounter_id, maxi(depth, 1), opts, party.size() if not party.is_empty()
+			else enc_def.party.size())
 	if not artifacts.is_empty():
 		# Artefakternas egenskaper skapas för den här striden, utan att röra den delade datan.
 		sim.data = game_data.duplicate()
@@ -226,6 +235,13 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 				e.name = "Nemesis: " + e.name
 				e.nemesis = true
 			forced -= 1
+		elif enc_def.get("elite_group", false) and opts.get("nemesis", false) and game_data.enemies[kind].get("rank", "") \
+				in ["elite", "miniboss"] and not sim.enemies.any(func(x: CombatUnit) -> bool: return x.nemesis):
+			e.name = "Nemesis: " + e.name
+			e.nemesis = true
+		if not counter.is_empty() and counter.index == i:
+			e.counter = counter.trait
+			e.traits.append(counter.trait)
 		e.traits = expand_traits(game_data, e.traits)
 		sim._add(e)
 		sim.enemies.append(e)
@@ -233,6 +249,45 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 
 
 # --- Publikt API ------------------------------------------------------------
+
+## 0.27 (Siralims motdrag, docs/plan/0.27-fiender.md §6): vilken fiende i mötet som bär ett motdrag, som
+## {index, kind, trait}, eller {} om ingen. VAL: högst ett per grupp, bara i elitgrupper och bossmöten ("counter" i
+## opts, satt av grottan för elit-, Nemesis- och bossrutor) och först från ett visst djup ("min_depth"). Fiendens eget
+## motdrag ("counter" i enemies.json) går före elitvariantens; den första i uppställningen som har ett vinner.
+static func counter_for(game_data: Dictionary, encounter_id: String, at_depth: int, opts: Dictionary,
+		party_size: int) -> Dictionary:
+	if not opts.get("counter", false):
+		return {}
+	var enc: Dictionary = game_data.encounters[encounter_id]
+	var forced := 0 if enc.get("elite_group", false) else int(opts.get("force_elites", 0))
+	var lineup := enemy_lineup(game_data, enc.enemies, party_size)
+	for i in lineup.size():
+		var d: Dictionary = game_data.enemies[lineup[i]]
+		var c: Dictionary = d.get("counter", {})
+		if forced > 0 and d.has("elite"):
+			forced -= 1
+			c = d.elite.get("counter", {})
+		if not c.is_empty() and at_depth >= int(c.get("min_depth", 1)):
+			return {"index": i, "kind": lineup[i], "trait": c.trait}
+	return {}
+
+
+## 0.27: hur många av figurens familj (Siralims Race) som lever, figuren själv oräknad.
+func family_count(u: CombatUnit) -> int:
+	if u.family == "":
+		return 0
+	return units.filter(func(x: CombatUnit) -> bool:
+		return x != u and x.alive and x.team == u.team and x.family == u.family).size()
+
+
+func _family(u: CombatUnit) -> Array[CombatUnit]:
+	var out: Array[CombatUnit] = []
+	if u.family == "":
+		return out
+	for x in units:
+		if x != u and x.alive and x.team == u.team and x.family == u.family:
+			out.append(x)
+	return out
 
 ## 0.23.3: högst så många fler fiender än hjältar (vårt val). Fyra fiender mot två hjältar fick dubbelt så många turer
 ## som sällskapet även med svagare stats.
@@ -744,7 +799,11 @@ func _choose_intent(e: CombatUnit) -> void:
 				return f.get("aura", "") in ["defend", "provoke"]):
 			_rule_hit("no_guard")
 			continue
-		e.intent = {"ability": ability_id, "targets": _pick_targets(e, ability(ability_id))}
+		var ab := ability(ability_id)
+		if rule.has("pick"):
+			ab = ab.duplicate()
+			ab.pick = rule.pick
+		e.intent = {"ability": ability_id, "targets": _pick_targets(e, ab)}
 		_intent_chosen(e)
 		return
 	e.intent = {"ability": e.attack_ability, "targets": _pick_targets(e, ability(e.attack_ability))}
@@ -786,6 +845,15 @@ func _rule_matches(u: CombatUnit, rule: Dictionary) -> bool:
 		return false
 	if condition.get("dead_ally", false) and _pick_targets(u, {"target": "dead_ally"}).is_empty():
 		return false
+	# 0.27: familjen (lever minst n andra ur den) och ensam kvar.
+	if condition.has("family_at_least") and family_count(u) < int(condition.family_at_least):
+		return false
+	if condition.has("alone") and (_allies(u).size() == 1) != bool(condition.alone):
+		return false
+	if condition.has("self_stacks_at_least"):
+		var want: Dictionary = condition.self_stacks_at_least
+		if u.stacks.get(want.stack, 0.0) < float(want.n):
+			return false
 	return true
 
 
@@ -820,8 +888,13 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 		if u.team == 0 and _rule("sealed_words"):
 			_rule_hit("sealed_words")
 			u.sealed[ability_id] = true
+	if ab.get("kind", "") == "spell" and action != "attack":
+		_last_caster[u.team] = u.id
+	u.prev_ability = u.last_ability
+	u.last_ability = ability_id
 	if u.alive:
-		_emit({"type": "acted", "unit": u.id, "action": action, "ability": ability_id, "targets": targets})
+		_emit({"type": "acted", "unit": u.id, "action": action, "ability": ability_id, "targets": targets,
+				"ability_kind": ab.get("kind", "attack")})
 
 
 ## En förmåga som kastas automatiskt (artefakt): kostar inga Charges och sätter ingen nedkylning,
@@ -856,7 +929,7 @@ func _targets_for(u: CombatUnit, ab: Dictionary, target_id: String) -> Array:
 			return [pool[rng.randi() % pool.size()].id]
 	var chosen := unit(target_id) if target_id != "" else null
 	var kind: String = ab.get("target", "self")
-	if kind == "enemy" and chosen and not _taunting_enemies(u).has(chosen):
+	if kind == "enemy" and chosen and not ab.get("ignore_taunt", false) and not _taunting_enemies(u).has(chosen):
 		chosen = null  # en provocerande fiende måste anfallas först
 	if chosen and chosen.alive and ((kind == "enemy" and chosen.team != u.team) or (kind == "ally" and chosen.team == u.team)):
 		return [chosen.id]
@@ -898,6 +971,8 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 					_revive(t, float(effect.get("pct", 0.5)))
 				"dispel", "purge", "to_top", "to_bottom", "step_down":
 					_status_effect(effect, t)
+				"family_to_top":
+					_group_to_top(_family(t))
 	_release_bonus = {}
 	for r in releases:
 		_run_release(caster, r, targets)
@@ -1189,6 +1264,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			fx.append({"f": 1.0 + float(m.damage_mult_per_use) * src.ability_uses.get(ability_id, 0), "name": x.name})
 		if m.has("damage_mult_per_hit_taken"):
 			fx.append({"f": 1.0 + float(m.damage_mult_per_hit_taken) * src.times_hit, "name": x.name})
+		if m.has("damage_mult_per_family") and family_count(src) > 0:
+			fx.append({"f": 1.0 + float(m.damage_mult_per_family) * family_count(src), "name": x.name})
 		if m.has("additional_from_stat"):
 			additional += src.stat(m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
 			calc.additional_name = x.name
@@ -1199,9 +1276,17 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		var a: Dictionary = src.auras[aura_id]
 		if a.get("damage_mult", 1.0) != 1.0:
 			fx.append({"f": float(a.damage_mult), "name": status_name(src, aura_id)})
+	var log_key := "%s:%s" % [src.id, ability_id]
 	for x in _modifiers_named(tgt, "modify_damage_taken", probe):
 		if x.modify.has("damage_taken_mult"):
 			fx.append({"f": float(x.modify.damage_taken_mult), "name": x.name})
+		# 0.27: Benmur (mindre skada per levande ur familjen) och Antecknat (mindre per tidigare träff av samma sak).
+		if x.modify.has("damage_taken_mult_per_family") and family_count(tgt) > 0:
+			fx.append({"f": 1.0 - float(x.modify.damage_taken_mult_per_family) * family_count(tgt), "name": x.name})
+		if x.modify.has("damage_taken_less_per_repeat") and int(tgt.hit_log.get(log_key, 0)) > 0:
+			var less := minf(float(x.modify.damage_taken_less_per_repeat) * int(tgt.hit_log[log_key]),
+					float(x.modify.get("repeat_max", 0.75)))
+			fx.append({"f": 1.0 - less, "name": x.name})
 	for aura_id in tgt.auras:
 		var a: Dictionary = tgt.auras[aura_id]
 		if a.damage_taken_mult != 1.0:
@@ -1245,6 +1330,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	var landed := lost > 0.0 or (absorbed <= 0.0 and dmg + additional > 0.0)
 	if direct and landed:
 		tgt.times_hit += 1
+	if landed:
+		tgt.hit_log[log_key] = int(tgt.hit_log.get(log_key, 0)) + 1
 	var leech := 0.0
 	var leech_id := ""
 	for aura_id in src.auras:
@@ -1337,6 +1424,15 @@ func _convert(src: CombatUnit, probe: Dictionary) -> void:
 func _revive(u: CombatUnit, pct: float) -> void:
 	if u.alive:
 		return
+	# 0.27, Sista klangen (Klockarens motdrag, Satyr Guardian): motståndarnas lag får bara väcka n gånger per strid.
+	for x in units:
+		if x.alive and x.team != u.team:
+			for trait_id in x.traits:
+				var cap := int(data.traits[trait_id].get("limit_enemy_revives", -1))
+				if cap >= 0 and int(_team_revives.get(u.team, 0)) >= cap:
+					_emit({"type": "revive_blocked", "unit": u.id, "by": x.id, "trait": trait_id})
+					return
+	_team_revives[u.team] = int(_team_revives.get(u.team, 0)) + 1
 	u.alive = true
 	u.hp = u.max_hp * pct
 	u.revives += 1
@@ -1386,7 +1482,7 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 ##   ger hela effekten en gång till), "removes": [statusar som den tar bort], "cannot_dispel", "snare" (kan inte
 ##   flyttas på tidslinjen), "leech" (andel av skadan som helar bäraren), "stun" (förlorar turen) m.fl.
 ## Resistant (bossar, 0.22 som originalet): bara statusarna med en Resistant-version ändras (se _add_aura).
-const FACTOR_KEYS := ["damage_taken_mult", "defense_mult", "damage_mult"]
+const FACTOR_KEYS := ["damage_taken_mult", "defense_mult", "damage_mult", "int_mult"]
 
 
 func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_override := 0.0) -> void:
@@ -1489,7 +1585,16 @@ func _raise_stat(u: CombatUnit, effect: Dictionary) -> void:
 	var stat: String = effect.get("stat", "speed")
 	var now := float(u.get(stat)) if stat != "health" else u.max_hp
 	var cap := float(u.base_stats.get(stat, now)) * 3.0
+	# 0.27 (Växande vrede): "additive" lägger till en andel av startvärdet, "max_times" gånger per strid. Räkningen står
+	# i staplarna ("raise_<stat>"), som AI-villkoret self_stacks_at_least läser.
+	if effect.has("max_times"):
+		var key := "raise_" + stat
+		if u.stacks.get(key, 0.0) >= float(effect.max_times):
+			return
+		u.stacks[key] = u.stacks.get(key, 0.0) + 1.0
 	var v := minf(now * (1.0 + float(effect.get("pct", 0.1))), cap)
+	if effect.get("additive", false):
+		v = minf(now + float(u.base_stats.get(stat, now)) * float(effect.get("pct", 0.1)), cap)
 	if stat == "health":
 		u.max_hp = snap_stat(v)
 	else:
@@ -1577,6 +1682,27 @@ func _move_on_timeline(u: CombatUnit, dir: String) -> void:
 	_emit({"type": "timeline_move", "unit": u.id, "dir": dir, "steps": absi(order.find(u.id) - i)})
 
 
+## 0.27 (Klockaren): flyttar en grupp överst på en gång i sin inbördes ordning. Ingen skickas ned, de andra
+## hamnar efter gruppen. Snärjda står kvar.
+func _group_to_top(group: Array[CombatUnit]) -> void:
+	var moving: Array[String] = []
+	if current and group.has(current) and not has_flag(current, "snare"):
+		current.next_slot = "top"  # den som står på tur kommer först igen när turen är slut
+	for id in order:
+		var x := unit(id)
+		if group.has(x) and x.alive and not has_flag(x, "snare"):
+			moving.append(id)
+	if moving.is_empty():
+		return
+	var before := order.duplicate()
+	for id in moving:
+		order.erase(id)
+	for j in moving.size():
+		order.insert(j, moving[j])
+	for id in moving:
+		_emit({"type": "timeline_move", "unit": id, "dir": "top", "steps": absi(before.find(id) - order.find(id))})
+
+
 ## Den som stod överst när någon flyttades till toppen skickas till botten (en boss bara ett steg).
 func _send_down(x: CombatUnit) -> void:
 	if x == null:
@@ -1594,13 +1720,14 @@ func _kill(u: CombatUnit) -> void:
 	if not u.alive:  # en egenskap kan ha dödat enheten mitt i en annan träff
 		return
 	var rebirth := float(data.auras.get(flag_aura(u, "rebirth"), {}).get("rebirth", 0.0))
+	var had: Array = u.auras.keys()
 	u.alive = false
 	u.hp = 0.0
 	u.deaths += 1
 	u.auras.clear()
 	u.barrier = 0.0
 	order.erase(u.id)
-	_emit({"type": "death", "unit": u.id})
+	_emit({"type": "death", "unit": u.id, "had": had})
 	if outcome != "" and u.team == 1:
 		return
 	# Pånyttfödd (0.22): återuppstår med 50 % liv; statusen förbrukas.
@@ -1645,16 +1772,27 @@ func _emit(e: Dictionary) -> void:
 	if e.type == "damage" and e.amount <= 0.0 and not e.get("landed", false):
 		return  # Siralim: bara skada på livet räknas (inte träffar som Barrier tog)
 	for owner in units:
-		if not owner.alive:
+		# 0.27: en egenskap med "on_own_death" verkar en sista gång när bäraren själv faller (Sista tjänsten).
+		var own_death: bool = e.type == "death" and e.get("unit", "") == owner.id
+		if not owner.alive and not own_death:
 			continue
-		for trait_id in traits_of(owner):
+		for trait_id in (traits_of(owner) if owner.alive else owner.traits):
 			var t: Dictionary = data.traits[trait_id]
 			if t.trigger != e.type or e.get("trait", "") == trait_id or not _trait_ready(owner, trait_id, t):
+				continue
+			if not owner.alive and not t.get("on_own_death", false):
 				continue
 			if not _when(owner, t.get("when", {}), e):
 				continue
 			if t.has("chance") and rng.randf() >= float(t.chance):
 				continue
+			# 0.27: "every": n – bara var n:e gång villkoren stämmer (Klockrepet).
+			if t.has("every"):
+				var key: String = "every:" + trait_id
+				owner.stack_progress[key] = int(owner.stack_progress.get(key, 0)) + 1
+				if owner.stack_progress[key] < int(t.every):
+					continue
+				owner.stack_progress[key] = 0
 			var last: Dictionary = owner.trait_ready.get(trait_id, {})
 			var count: int = last.count + 1 if last.get("turn", -1) == turn_no else 1
 			owner.trait_ready[trait_id] = {"turn": turn_no, "count": count,
@@ -1799,6 +1937,13 @@ func _trait_targets(owner: CombatUnit, where: String, e: Dictionary, ability_tar
 			var foes := _enemies(owner)
 			if not foes.is_empty():
 				out = [foes[0]]
+		# 0.27: familjen (levande, bäraren oräknad) och en slumpad ur den.
+		"family":
+			out = _family(owner)
+		"random_family":
+			var kin := _family(owner)
+			if not kin.is_empty():
+				out = [kin[rng.randi() % kin.size()]]
 		_:
 			if unit(e.get(where, "")) != null:
 				out = [unit(e[where])]
@@ -1818,6 +1963,8 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 		amount = _amount(owner, effect)  # en andel av en stat, t.ex. Barriär från Intelligence
 	elif effect.type == "damage":
 		amount = _amount(owner, effect)
+	if effect.get("per_family", false):
+		amount *= family_count(owner)  # 0.27: Sista tjänsten
 	match effect.type:
 		"damage":
 			var kind: String = effect.get("kind", "attack")
@@ -1986,6 +2133,19 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 			"action_in":
 				if not want.has(e.get("action", "")):
 					return false
+			# 0.27
+			"unit_had_aura":
+				if not e.get("had", []).has(want):
+					return false
+			"unit_in_family":
+				var t := unit(e.get("unit", ""))
+				if t == null or t == owner or owner.family == "" or t.family != owner.family or t.team != owner.team:
+					return false
+			"source_new_ability":
+				var src := unit(e.get("source", ""))
+				if src == null or e.get("from_trait", false) or src.last_ability == "" \
+						or e.get("ability", "") == src.last_ability:
+					return false
 			_:
 				if not e.has(key):
 					return false
@@ -2068,6 +2228,14 @@ func _run_release(caster: CombatUnit, r: Dictionary, ability_targets: Array) -> 
 
 # --- Hjälpfunktioner --------------------------------------------------------
 
+## 0.27: en hjälte med en förmåga som helar (pick "healer").
+func is_healer(u: CombatUnit) -> bool:
+	for ability_id in u.abilities:
+		if ability(ability_id).get("effects", []).any(func(f: Dictionary) -> bool: return f.get("type", "") == "heal"):
+			return true
+	return false
+
+
 func _add(u: CombatUnit) -> void:
 	units.append(u)
 	_by_id[u.id] = u
@@ -2099,8 +2267,8 @@ func _enemies(u: CombatUnit) -> Array[CombatUnit]:
 	return out
 
 
-## Väljer mål efter förmågans "target" och "pick" (lowest, random, first). Hån (taunt) styr
-## fiendernas enkelmål.
+## Väljer mål efter förmågans "target" och "pick" (lowest, random, first, healer, highest_attack, caster). Hån (taunt)
+## styr fiendernas enkelmål, utom för förmågor med "ignore_taunt" (0.27).
 func _pick_targets(caster: CombatUnit, ab: Dictionary) -> Array:
 	var kind: String = ab.get("target", "self")
 	match kind:
@@ -2118,7 +2286,7 @@ func _pick_targets(caster: CombatUnit, ab: Dictionary) -> Array:
 	var pool := _enemies(caster) if kind == "enemy" else _allies(caster)
 	if pool.is_empty():
 		return []
-	if kind == "enemy":
+	if kind == "enemy" and not ab.get("ignore_taunt", false):
 		for x in pool:
 			if x.auras.keys().any(func(a: String) -> bool: return data.auras[a].get("taunt", false)):
 				return [x.id]
@@ -2127,6 +2295,24 @@ func _pick_targets(caster: CombatUnit, ab: Dictionary) -> Array:
 			return [pool[rng.randi() % pool.size()].id]
 		"first":
 			return [pool[0].id]
+		# 0.27 (AI-tillägg 1): den som helar, den med högst Attack, den som senast kastade en besvärjelse.
+		"healer":
+			var healers: Array[CombatUnit] = []
+			for x in pool:
+				if is_healer(x):
+					healers.append(x)
+			if not healers.is_empty():
+				pool = healers
+		"highest_attack":
+			var top := pool[0]
+			for x in pool:
+				if x.stat("attack") > top.stat("attack"):
+					top = x
+			return [top.id]
+		"caster":
+			var c := unit(_last_caster.get(1 - caster.team, ""))
+			if c != null and pool.has(c):
+				return [c.id]
 	var best := pool[0]
 	for x in pool:
 		if x.hp_pct() < best.hp_pct():

@@ -399,7 +399,7 @@ func start_floor(data: Dictionary) -> void:
 	var boss: String = floor_ids[floor_ids.size() - 1]
 	var guard: String = floor_ids[mini(floor, floor_ids.size() - 2)] if floor_ids.size() > 1 else ""
 	map = Grotto.generate(run_seed * 101 + floor * 7 + 1, floor, is_last_floor(), pools, boss, guard, quest,
-			prisoners.get(str(floor), {}))
+			prisoners.get(str(floor), {}), data.realms[realm].get("elite_pools", []))
 	pos = map.start
 	visited = [map.start]
 	seen = []
@@ -492,6 +492,9 @@ func battle_opts() -> Dictionary:
 			"floor": tier}
 	if r.get("elite", false) or r.get("nemesis", false):
 		opts.force_elites = 1
+	# 0.27: motdrag bara i elitgrupper och bossmöten (CombatSim.counter_for).
+	if r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false):
+		opts.counter = true
 	if r.get("nemesis", false):
 		opts.nemesis = true
 	if first_descent:

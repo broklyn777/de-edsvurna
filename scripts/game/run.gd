@@ -287,6 +287,10 @@ func _dev_args() -> void:
 			state.set_realm(data, keep_realm)
 			state.start_expedition(data, 7)
 			get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
+		elif arg.begins_with("--encounter="):
+			# --encounter=<möte> (0.27): en övningsstrid mot det mötet, t.ex. crypt_e5 (Klockstapeln)
+			state = RunState.new_practice(profile, data, arg.get_slice("=", 1))
+			get_tree().change_scene_to_file.call_deferred(BATTLE_SCENE)
 		elif arg == "--macros":
 			get_tree().change_scene_to_file.call_deferred(MACRO_SCENE)
 		elif arg.begins_with("--oath="):

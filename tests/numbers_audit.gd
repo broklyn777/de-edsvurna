@@ -278,7 +278,25 @@ func _stat(u: Dictionary, s: String) -> float:
 			return float(u.max_hp)
 		"defense":
 			return _defense(u)
+		"intelligence":
+			# 0.27: Dimmig (Gravdimmans motdrag) sänker Intelligence.
+			var m := 1.0
+			for id in u.auras:
+				m *= float(data.auras.get(id, {}).get("int_mult", 1.0))
+			return float(u.intelligence) * m
 	return float(u[s])
+
+
+## 0.27: levande ur samma familj, figuren själv oräknad (oberoende av CombatSim.family_count).
+func _kin(units: Dictionary, u: Dictionary) -> int:
+	if String(u.get("family", "")) == "":
+		return 0
+	var n := 0
+	for id in units:
+		var x: Dictionary = units[id]
+		if id != u.id and x.alive and x.team == u.team and x.get("family", "") == u.family:
+			n += 1
+	return n
 
 
 func _has_flag(u: Dictionary, flag: String) -> bool:
@@ -327,6 +345,11 @@ func _when(units: Dictionary, owner: String, when: Dictionary, probe: Dictionary
 			"source_attacks_below":
 				var s: Dictionary = units.get(probe.get("source", ""), {})
 				if s.is_empty() or int(s.attacks_done) >= int(want):
+					return false
+			"source_new_ability":
+				var s: Dictionary = units.get(probe.get("source", ""), {})
+				if s.is_empty() or probe.get("from_trait", false) or String(s.get("last_ability", "")) == "" \
+						or probe.get("ability", "") == s.last_ability:
 					return false
 			_:
 				if not probe.has(key):
@@ -436,6 +459,8 @@ func check_damage(sim: CombatSim, r: Dictionary) -> void:
 			factors.append(1.0 + float(m.damage_mult_per_use) * int(src.ability_uses.get(r.ability, 0)))
 		if m.has("damage_mult_per_hit_taken"):
 			factors.append(1.0 + float(m.damage_mult_per_hit_taken) * int(src.times_hit))
+		if m.has("damage_mult_per_family"):
+			factors.append(1.0 + float(m.damage_mult_per_family) * _kin(units, src))
 		if m.has("additional_from_stat"):
 			additional += _stat(src, m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
 	if src.resistant and r.direct and ((kind == "attack" and _has_flag(src, "scorn"))
@@ -448,6 +473,12 @@ func check_damage(sim: CombatSim, r: Dictionary) -> void:
 	for d in _modify_list(units, tgt.id, "modify_damage_taken", probe):
 		if d.modify.has("damage_taken_mult"):
 			factors.append(float(d.modify.damage_taken_mult))
+		if d.modify.has("damage_taken_mult_per_family"):
+			factors.append(1.0 - float(d.modify.damage_taken_mult_per_family) * _kin(units, tgt))
+		if d.modify.has("damage_taken_less_per_repeat"):
+			var seen := int(tgt.get("hit_log", {}).get("%s:%s" % [src.id, r.ability], 0))
+			factors.append(1.0 - minf(float(d.modify.damage_taken_less_per_repeat) * seen,
+					float(d.modify.get("repeat_max", 0.75))))
 	for id in tgt.auras:
 		var d: Dictionary = data.auras.get(id, {})
 		if d.has("damage_taken_mult"):
