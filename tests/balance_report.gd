@@ -678,12 +678,19 @@ func _elite_scale(data: Dictionary) -> void:
 	for realm_id in realms:
 		var pools: Array = data.realms[realm_id].get("elite_pools", [])
 		var sets := []
-		for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
-			sets.append([skill, "4 hjältar", _collect_snaps(data, realm_id, 1, skill, ["paladin", "brokk", "alva", "eira"], 3, {}, n), {}])
-		var first := _collect_snaps(data, realm_id, 1, Bot.Skill.MACRO, ["paladin"], 1,
-				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"}, n, true)
-		sets.append([Bot.Skill.MACRO, "första", first, {"bot_macros": fresh}])
-		sets.append([Bot.Skill.TUNED, "första", first, {}])
+		if OS.get_environment("ELIT_SALLSKAP") != "":
+			# Bara de sällskapen (ELIT_SALLSKAP="paladin,imma;…"), som i BALANS=elitnotning.
+			for p in OS.get_environment("ELIT_SALLSKAP").split(";"):
+				var party := Array(p.split(","))
+				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+					sets.append([skill, "+".join(party), _collect_snaps(data, realm_id, 1, skill, party, 3, {}, n), {}])
+		else:
+			for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+				sets.append([skill, "4 hjältar", _collect_snaps(data, realm_id, 1, skill, ["paladin", "brokk", "alva", "eira"], 3, {}, n), {}])
+			var first := _collect_snaps(data, realm_id, 1, Bot.Skill.MACRO, ["paladin"], 1,
+					{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"}, n, true)
+			sets.append([Bot.Skill.MACRO, "första", first, {"bot_macros": fresh}])
+			sets.append([Bot.Skill.TUNED, "första", first, {}])
 		for set in sets:
 			print("  %s %s %s" % [data.realms[realm_id].short, _skill_name(set[0]), set[1]])
 			for floor_i in pools.size():
