@@ -12,6 +12,8 @@ var unit: CombatUnit
 var sim: CombatSim
 var active := false
 var targetable := false
+## 0.29.5: hjälten kör sitt makro (AUTO) eller väntar på spelaren (MANUELL). Tryck på ramen för att byta.
+var auto := false
 var _ghost := 1.0
 var _ghost_hold := 0.0
 var _hit_flash := 0.0
@@ -93,7 +95,13 @@ func _draw() -> void:
 		draw_rect(hp_rect, Color(0.5, 1, 0.5, 0.35 * _heal_flash))
 
 	# 0.22: statusikoner under livmätaren (buff ljus kant, debuff röd, turer kvar i hörnet).
-	StatusIcons.draw(self, sim.data, unit, Vector2(10, 50), 25.0, size.x - 20)
+	StatusIcons.draw(self, sim.data, unit, Vector2(10, 50), 25.0, size.x - 108)
+	if unit.alive:
+		var tag := Rect2(size.x - 94, 52, 84, 22)
+		draw_rect(tag, Color(UiStyle.GOLD, 0.22) if auto else Color(0, 0, 0, 0.45))
+		draw_rect(tag, Color(UiStyle.GOLD, 0.9) if auto else Color(1, 1, 1, 0.35), false, 1.5)
+		UiStyle.text(self, Vector2(tag.position.x, tag.position.y + 16), "AUTO" if auto else "MANUELL", 15,
+				UiStyle.GOLD if auto else Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_CENTER, tag.size.x)
 
 	if not unit.traits.is_empty():
 		var shown := unit.traits.filter(func(t: String) -> bool:

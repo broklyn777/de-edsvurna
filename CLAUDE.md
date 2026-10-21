@@ -252,7 +252,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Försvara, Provocera eller Makro. Fiender visar sin avsikt och väljer nästa i slutet av sin tur.
 - **Makron** (kärnsystem, som i Siralim): upp till 20 rader per makro, subjekt + villkor + handling (+ mål),
   uppifrån och ned, första raden som passar och går att utföra vinner. Tilldelas per hjälte, med
-  standardhandling Makro/Manuell. Auto kör makrona och stannar när inget passar. Förklaringsloggen
+  AUTO eller MANUELL per hjälte i striden (0.29.5): striden börjar på MANUELL; knappen växlar MANUELL → AUTO (följeslagarna) →
+  ALLA AUTO, ett tryck på en hjältes ram byter den hjälten (`battle.gd` `_auto_heroes`); passar ingen rad väntar hjälten.
+  Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
 - Nästa steg: artefaktnivåer och fler platser, fler kall (Warden, Inquisitor …), perk-ranks, Realm-traits
