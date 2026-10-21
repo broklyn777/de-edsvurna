@@ -341,8 +341,8 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 		if not prof.recruited.has(d.hero):
 			captives.append("%s (djup %d)" % [data.heroes[d.hero].get("short", d.hero), int(d.depth)])
 	if not captives.is_empty():
-		UiStyle.text(self, Vector2(x, y + 46), "Sägs sitta fången här: " + ", ".join(captives), 15, Color("#ffd27a"),
-				HORIZONTAL_ALIGNMENT_LEFT, w, 2)
+		# 0.29.5: radbryts (förr klipptes den av när fler än en satt fången).
+		UiStyle.para(self, Vector2(x, y + 46), "Sägs sitta fången här: " + ", ".join(captives), 15, Color("#ffd27a"), w, 3)
 
 	var companions: Array = prof.party.map(func(id: String) -> String: return data.heroes[id].name)
 	UiStyle.text(self, Vector2(x, _prep_rect().position.y - 10), "Sällskap: " + ", ".join(companions), 13,
