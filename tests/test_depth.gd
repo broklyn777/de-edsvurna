@@ -35,7 +35,8 @@ func test_depth_scales_enemy_stats_but_not_speed() -> void:
 
 func test_later_floors_are_stronger() -> void:
 	assert_true(float(_data.encounters.crypt_2.stat_mult) > 1.0)
-	assert_true(float(_data.encounters.crypt_3.stat_mult) >= float(_data.encounters.crypt_2.stat_mult))
+	# elit-balans: bossmötet är svagare än våning 2:s möte (bossen avgör körningen); bara starkare än våning 1.
+	assert_true(float(_data.encounters.crypt_3.stat_mult) > float(_data.encounters.crypt_1.stat_mult))
 	var warden := _sim("crypt_2").unit("grave_warden_1")
 	assert_eq(warden.max_hp, CombatSim.snap_stat(_data.enemies.grave_warden.stats.health * float(_data.encounters.crypt_2.stat_mult)))
 

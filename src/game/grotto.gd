@@ -148,8 +148,8 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 	var pick := func(tier: int) -> String:
 		var pool: Array = pools[clampi(tier, 0, pools.size() - 1)]
 		return pool[rng.randi() % pool.size()]
-	# Elit (två om questen är Rensa), minst ELITE_MIN_DIST från start; den första är Nemesis i en Jakt.
-	var n_elites := 2 if quest.get("type", "") == "clear" else 1
+	# Elit (så många som Rensa kräver, annars en), minst ELITE_MIN_DIST från start; den första är Nemesis i en Jakt.
+	var n_elites := maxi(1, int(quest.get("goal", 2))) if quest.get("type", "") == "clear" else 1
 	var elites: Array[int] = []
 	for e in n_elites:
 		var at := g._free_cell(rng, func(i: int) -> bool: return dist(i, g.start) >= ELITE_MIN_DIST and dist(i, g.goal) >= 2)
@@ -315,7 +315,7 @@ func problems(quest := {}) -> Array[String]:
 			out.append("föremålen i samma fjärdedel")
 	if quest.get("type", "") == "hunt" and not cells.any(func(c: Dictionary) -> bool: return c.get("nemesis", false)):
 		out.append("ingen Nemesis")
-	if quest.get("type", "") == "clear" and elites.size() < 2:
+	if quest.get("type", "") == "clear" and elites.size() < int(quest.get("goal", 2)):
 		out.append("för få elitgrupper för Rensa")
 	return out
 
