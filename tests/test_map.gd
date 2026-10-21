@@ -244,3 +244,54 @@ func test_bot_walks_a_whole_run() -> void:
 		if r.cleared:
 			assert_true(int(r.fights) >= 5, "en klarad körning har strider (%d)" % r.fights)
 	assert_true(cleared > 0, "boten klarar ibland hela grottan")
+
+
+## 0.28.2: Realmens föremål – de läggs ut, och valen gör det de lovar.
+func test_realm_objects() -> void:
+	var data := GameData.load_all()
+	var p := Profile.new()
+	var s := RunState.new_run(p, data)
+	s.start_expedition(data, 77)
+	var objs := s.map.indices("object")
+	assert_true(objs.size() >= Grotto.OBJECTS_MIN and objs.size() <= Grotto.OBJECTS_MAX, "%d föremål" % objs.size())
+	for i in objs:
+		assert_true(data.realms.crypt.objects.has(s.map.cells[i].obj))
+		assert_true(Grotto.dist(i, s.map.start) >= 2)
+	var rng := RandomNumberGenerator.new()
+	# Sarkofagen: en starkare grupp på rutan, dubbel skatt efter segern.
+	s.pos = objs[0]
+	s.map.cells[s.pos] = {"kind": "object", "obj": "sarcophagus"}
+	var res := s.use_object(data, "knock", rng)
+	assert_true(res.fight and s.at_group(), "en grupp står på rutan")
+	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), 1.15)
+	s.battle_won()
+	var won := s.object_won()
+	assert_eq(won.silver, s.treasure_value() * 2)
+	assert_true(s.current_room().done)
+	# Gravklockan: efter första segern kan man ringa igen, svårare.
+	s.map.cells[s.pos] = {"kind": "object", "obj": "grave_bell"}
+	s.use_object(data, "ring", rng)
+	s.battle_won()
+	s.object_won()
+	assert_true(s.current_room().get("again", false), "klockan frågar igen")
+	s.use_object(data, "ring_again", rng)
+	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), 1.25)
+	s.battle_won()
+	assert_eq(s.object_won().silver, s.treasure_value() * 2)
+	assert_true(s.current_room().done)
+	# Glasfönstret: hela raden syns och nästa strid är starkare.
+	s.map.cells[s.pos] = {"kind": "object", "obj": "stained_window"}
+	s.use_object(data, "pull", rng)
+	var row := Grotto.xy(s.pos).y
+	for x in Grotto.SIZE:
+		var i := Grotto.idx(Vector2i(x, row))
+		assert_true(s.visited.has(i) or s.revealed.has(i))
+	assert_near(s.next_stat_mult, 1.15)
+	# Kyrkbänken: utan sedd grupp går den inte att använda, med en sedd grupp försvinner gruppen.
+	s.map.cells[s.pos] = {"kind": "object", "obj": "pew"}
+	s.seen.clear()
+	assert_true(s.object_options(data).any(func(o: Dictionary) -> bool: return o.get("disabled", false)))
+	var g := s.map.indices("battle").filter(func(i: int) -> bool: return s.map.has_group(i))
+	s.seen.append(g[0])
+	s.use_object(data, "barricade", rng)
+	assert_true(not s.map.has_group(g[0]) and s.map.cells[g[0]].barricaded)

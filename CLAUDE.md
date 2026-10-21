@@ -179,6 +179,13 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   förlust: körningen och questens belöning går förlorade och Realmen börjar om från våning 1 (`run.cfg`
   tas bort, `RunState.delete_saved`); erfarenhet, troféer, silver och material som redan är vunna finns kvar.
   `CombatSim.forfeit()`. `-- --ask-forfeit` visar frågan i en strid.
+- **Realmens föremål i grottan** (0.28.2, `data/objects.json`, `realms.json` "objects", Siralims föremål per Realm):
+  2–3 per våning (`Grotto._place_objects`, eget frö). Kryptan: Rasslande sarkofag (knacka: starkare benvakt, dubbel
+  skatt), Gravklocka (ring: strid; efter segern ring igen, svårare och större belöning), Gravregister (visa 2 skatter
+  eller 2 grupper). Kapellet: Övertäckt glasfönster (hela raden syns, nästa grupp +15 %), Klockrep (beredd grupp, sedan
+  syns alla grupper), Lös kyrkbänk (barrikadera bort en sedd vanlig grupp utan belöning, eller virke för silver).
+  `RunState.use_object`, `object_won`, `revealed` (avslöjade rutor), `next_stat_mult`; `--enter=object:<id>`.
+  Förslag på fler: `docs/ideer/chat-foremal-grottan.md`.
 - **Kryptans fiender** (0.28, `docs/plan/0.27-fiender.md`, Siralims raser): familjen Benfolket (`family` i enemies.json,
   `CombatSim.family_count`; ingen delad aura, medlemmarnas egna egenskaper räknar familjen, t.ex. Flockbett, Benmur),
   elitfiender (`rank`: elite) och Klockaren som miniboss (`rank`: miniboss, inte boss). Elitgrupper ligger i

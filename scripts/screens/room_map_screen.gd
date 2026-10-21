@@ -54,6 +54,10 @@ func _ready() -> void:
 		await _story.finished
 		_story = null
 	HelpBox.offer(self, ["room_map", "realm_quest"])
+	# 0.28.2: efter segern vid gravklockan frågar den om ni vill ringa igen.
+	var here: Dictionary = run.state.current_room()
+	if here.get("kind", "") == "object" and here.get("again", false) and _dialog.is_empty():
+		_dialog = _object_dialog(here)
 	# Utvecklare: --enter=<sort> lägger en sådan ruta bredvid start och går dit (för att se ögonblicket eller kortet).
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--enter="):
@@ -75,6 +79,8 @@ func _dev_enter(arg: String) -> void:
 		cell.elite = want == "elite"
 		if parts.size() > 1:
 			cell.encounter = parts[1]
+	if want == "object":
+		cell.obj = parts[1] if parts.size() > 1 else "sarcophagus"  # --enter=object:grave_bell
 	m.cells[n] = cell
 	get_tree().create_timer(0.8).timeout.connect(_go.bind(n))
 
@@ -200,7 +206,7 @@ func _arrive() -> void:
 		_dialog = {"title": "Trappan", "text": "Questen är klar. Trappan leder ned till våning %d." % (state.floor + 2),
 				"options": [{"label": "GÅ NED", "action": "descend"}, {"label": "STANNA KVAR"}]}
 		return
-	if not kind in ["treasure", "shrine", "campfire", "prisoner"] or (kind != "campfire" and not fresh):
+	if not kind in ["treasure", "shrine", "campfire", "prisoner", "object"] or (kind != "campfire" and not fresh):
 		return
 	if run.profile.room_moments and MOMENT_KINDS.has(kind) and fresh and not r.get("seen", false):
 		await _play_moment(kind)
@@ -233,6 +239,8 @@ func _show_room(r: Dictionary) -> void:
 			HelpBox.offer(self, ["charges"])  # 0.26.2: om den inte redan visats i en strid
 		"treasure":
 			_dialog = {"title": "Skatt", "text": run.treasure(), "options": [{"label": "VIDARE"}]}
+		"object":
+			_dialog = _object_dialog(r)
 		"prisoner":
 			# 0.23: en lärjunge befrias och ansluter (Siralims "enhörningsögonblick").
 			_dialog = _rescue_dialog(run.rescue_prisoner())
@@ -242,6 +250,23 @@ func _show_room(r: Dictionary) -> void:
 			for o in _shrine_options:
 				options.append({"label": RunState.shrine_text(run.data, o), "shrine": o})
 			_dialog = {"title": "Helgedom", "text": "Välj en gåva – eller låt Pandemonium avgöra.", "options": options}
+
+
+func _dialog_title_for_object() -> String:
+	return String(run.data.get("objects", {}).get(run.state.current_room().get("obj", ""), {}).get("name", "Föremål"))
+
+
+## 0.28.2: Realmens föremål – namnet, vad det gör och valen (ett val som inte går visas inte, men texten säger varför).
+func _object_dialog(r: Dictionary) -> Dictionary:
+	var def: Dictionary = run.data.get("objects", {}).get(r.get("obj", ""), {})
+	var text: String = def.get("again", def.get("text", "")) if r.get("again", false) else def.get("text", "")
+	var options := []
+	for o in run.state.object_options(run.data):
+		if o.get("disabled", false):
+			text = "Gedigen ek. Ni har inte sett någon grupp att barrikadera bort än – men virket är bra."
+			continue
+		options.append({"label": o.label, "obj": o.id})
+	return {"title": def.get("name", "Föremål"), "text": text, "options": options}
 
 
 ## Befrielsen, och ett förslag på en ny makrorad för den nya sortens hjälte (0.23).
@@ -273,6 +298,14 @@ func _tap_dialog(p: Vector2) -> void:
 			if options[i].has("hint"):
 				run.add_macro_hint(options[i].hint)
 			var action: String = options[i].get("action", "")
+			if options[i].has("obj"):
+				var res: Dictionary = run.use_object(options[i].obj)
+				_dialog = {}
+				if res.fight:
+					_arrive()  # rutan har nu en grupp: kortet med ANFALL/BACKA
+				elif String(res.text) != "":
+					_dialog = {"title": _dialog_title_for_object(), "text": res.text, "options": [{"label": "VIDARE"}]}
+				return
 			if options[i].has("shrine"):
 				_dialog = {"title": "Helgedom", "text": run.shrine(options[i].shrine), "options": [{"label": "VIDARE"}]}
 				return
@@ -438,7 +471,7 @@ func _draw_grid(m: Grotto, state: RunState) -> void:
 	draw_rect(g.grow(6), Color(InkArt.INK, 0.10))
 	for i in Grotto.SIZE * Grotto.SIZE:
 		var r := _cell_rect(i).grow(-2)
-		var known: bool = state.visited.has(i) or i == m.goal
+		var known: bool = state.visited.has(i) or i == m.goal or state.revealed.has(i)
 		if known:
 			draw_rect(r, Color(0.96, 0.9, 0.74, 0.85))
 		else:
@@ -457,7 +490,7 @@ func _draw_grid(m: Grotto, state: RunState) -> void:
 				var r := _cell_rect(n).grow(-5)
 				draw_rect(r, Color(UiStyle.GOLD.darkened(0.2), 0.45 + 0.4 * pulse), false, 3.0)
 	for i in Grotto.SIZE * Grotto.SIZE:
-		if state.visited.has(i) or i == m.goal:
+		if state.visited.has(i) or i == m.goal or state.revealed.has(i):
 			_draw_cell(m, state, i)
 
 
@@ -481,7 +514,13 @@ func _draw_cell(m: Grotto, state: RunState, i: int) -> void:
 			_draw_item(at, cs * 0.36, Color(Parchment.SEAL, alpha))
 		"battle", "elite", "treasure", "shrine", "campfire", "prisoner":
 			InkArt.room_icon(self, kind, at, cs * 0.92, alpha)
-	if group and kind in ["treasure", "item", "prisoner"]:
+		"object":
+			_draw_object(String(c.get("obj", "")), at, cs * 0.34, Color(InkArt.INK, alpha))
+	if c.get("barricaded", false):
+		for k in 3:  # bänken i vägen: tre plankor
+			var y := at.y - cs * 0.18 + k * cs * 0.18
+			draw_line(Vector2(at.x - cs * 0.34, y), Vector2(at.x + cs * 0.34, y), Color(InkArt.INK, 0.8), 3.0)
+	if group and kind in ["treasure", "item", "prisoner", "object"]:
 		InkArt.room_icon(self, "battle", at + Vector2(cs * 0.24, -cs * 0.24), cs * 0.5, 1.0)  # en grupp vaktar rutan
 	if group and state.seen.has(i) and i != state.pos:
 		InkArt.ring(self, at, cs * 0.44, Color(Parchment.SEAL, 0.7), 2.2)
@@ -492,6 +531,40 @@ func _draw_cell(m: Grotto, state: RunState, i: int) -> void:
 		draw_circle(at, cs * 0.46, Color(1.0, 0.85, 0.4, 0.16 + 0.08 * sin(_t * 3.0)))
 	if i == m.goal and state.goal_locked():
 		_draw_lock(at + Vector2(cs * 0.3, cs * 0.28), cs * 0.2)
+
+
+## 0.28.2: Realmens föremål som små tuschtecken (s = halva storleken).
+func _draw_object(obj: String, c: Vector2, s: float, color: Color) -> void:
+	match obj:
+		"sarcophagus":
+			var pts := PackedVector2Array([c + Vector2(-s * 0.5, -s), c + Vector2(s * 0.5, -s), c + Vector2(s * 0.7, -s * 0.4),
+					c + Vector2(s * 0.45, s), c + Vector2(-s * 0.45, s), c + Vector2(-s * 0.7, -s * 0.4), c + Vector2(-s * 0.5, -s)])
+			draw_polyline(pts, color, 2.5)
+			draw_line(c + Vector2(0, -s * 0.6), c + Vector2(0, s * 0.5), color, 2.0)
+			draw_line(c + Vector2(-s * 0.3, -s * 0.2), c + Vector2(s * 0.3, -s * 0.2), color, 2.0)
+		"grave_bell", "bell_rope":
+			var bell := PackedVector2Array([c + Vector2(-s * 0.7, s * 0.6), c + Vector2(-s * 0.5, -s * 0.3), c + Vector2(0, -s * 0.8),
+					c + Vector2(s * 0.5, -s * 0.3), c + Vector2(s * 0.7, s * 0.6), c + Vector2(-s * 0.7, s * 0.6)])
+			draw_polyline(bell, color, 2.5)
+			draw_circle(c + Vector2(0, s * 0.8), s * 0.15, color)
+			if obj == "bell_rope":
+				draw_line(c + Vector2(0, -s * 0.8), c + Vector2(0, -s * 1.2), color, 2.0)
+		"grave_register":
+			draw_rect(Rect2(c - Vector2(s * 0.8, s * 0.6), Vector2(s * 1.6, s * 1.2)), color, false, 2.5)
+			draw_line(c + Vector2(0, -s * 0.6), c + Vector2(0, s * 0.6), color, 2.0)
+		"stained_window":
+			draw_arc(c + Vector2(0, -s * 0.2), s * 0.6, PI, TAU, 12, color, 2.5)
+			draw_line(c + Vector2(-s * 0.6, -s * 0.2), c + Vector2(-s * 0.6, s * 0.9), color, 2.5)
+			draw_line(c + Vector2(s * 0.6, -s * 0.2), c + Vector2(s * 0.6, s * 0.9), color, 2.5)
+			draw_line(c + Vector2(-s * 0.6, s * 0.9), c + Vector2(s * 0.6, s * 0.9), color, 2.5)
+			draw_line(c + Vector2(0, -s * 0.8), c + Vector2(0, s * 0.9), color, 1.5)
+		"pew":
+			draw_line(c + Vector2(-s, -s * 0.2), c + Vector2(s, -s * 0.2), color, 3.0)
+			draw_line(c + Vector2(-s, s * 0.2), c + Vector2(s, s * 0.2), color, 3.0)
+			draw_line(c + Vector2(-s * 0.8, -s * 0.2), c + Vector2(-s * 0.8, s * 0.8), color, 2.5)
+			draw_line(c + Vector2(s * 0.8, -s * 0.2), c + Vector2(s * 0.8, s * 0.8), color, 2.5)
+		_:
+			InkArt.ring(self, c, s * 0.6, color, 2.0)
 
 
 ## En trappa i tusch: steg som går ned åt höger.
@@ -536,6 +609,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		var name: String = KIND_NAMES.get(r.get("kind", "empty"), "")
 		if r.get("kind", "") == "prisoner" and r.has("hero"):
 			name = "Fånge: " + String(data.heroes[r.hero].get("short", data.heroes[r.hero].name))
+		if r.get("kind", "") == "object":
+			name = String(data.get("objects", {}).get(r.get("obj", ""), {}).get("name", "Föremål"))
 		UiStyle.text(self, Vector2(x, y), name.to_upper() if name != "" else "TOM RUTA", 18, InkArt.INK,
 				HORIZONTAL_ALIGNMENT_LEFT, w, 0)
 		var hint := "Tryck på en ruta bredvid för att gå dit. En besökt ruta går pjäsen till själv."

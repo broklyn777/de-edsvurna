@@ -638,6 +638,18 @@ func rescue_prisoner() -> String:
 	return text
 
 
+## 0.28.2: ett val vid Realmens föremål (RunState.use_object). Returnerar {text, fight, silver}.
+func use_object(choice: String) -> Dictionary:
+	var res := state.use_object(data, choice, rng)
+	if int(res.silver) > 0:
+		res.silver = roundi(res.silver * state.silver_mult(data))
+		profile.silver += res.silver
+	ui("room_chest" if choice in ["valuables", "neighbours", "pull", "wood"] else "ui_confirm", -8.0)
+	_save()
+	save_run()
+	return res
+
+
 func treasure() -> String:
 	var t := state.treasure(data, rng)
 	var amount := roundi(t.silver * state.silver_mult(data))
@@ -813,6 +825,11 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		"item":
 			done_now = state.collect_item() or done_now
 			room_result = "Föremålet är ert. " + RunState.quest_text(state.quest)
+		"object":
+			var w := state.object_won()  # 0.28.2: sarkofagen, klockorna
+			var paid := roundi(w.silver * state.silver_mult(data))
+			profile.silver += paid
+			room_result = ("+%d silver. " % paid if paid > 0 else "") + String(w.text)
 	_after_quest_check(done_now)
 	camp_mode = "victory"
 	_trophy_sound()

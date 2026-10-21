@@ -8,6 +8,7 @@
 			"crypt_3"
 		],
 		"short": "Kryptan",
+		"objects": ["sarcophagus", "grave_bell", "grave_register"],
 		"pools": [
 			[
 				"crypt_1a",
@@ -62,6 +63,7 @@
 			"chapel_3"
 		],
 		"short": "Kapellet",
+		"objects": ["stained_window", "bell_rope", "pew"],
 		"pools": [
 			[
 				"chapel_1a",

@@ -86,6 +86,10 @@ var map: Grotto
 var pos := 0
 var visited: Array = []
 var seen: Array = []
+## 0.28.2: rutor som ett föremål har avslöjat (syns som besökta men är inte gångna; gruppen spärrar först när den setts).
+var revealed: Array = []
+## 0.28.2: nästa strid är starkare (glasfönstret); 1.0 = som vanligt.
+var next_stat_mult := 1.0
 var came_from := -1
 ## Kvar från rumskartan (0.18), används inte längre; −1.
 var side_index := -1
@@ -402,10 +406,11 @@ func start_floor(data: Dictionary) -> void:
 	var boss: String = floor_ids[floor_ids.size() - 1]
 	var guard: String = floor_ids[mini(floor, floor_ids.size() - 2)] if floor_ids.size() > 1 else ""
 	map = Grotto.generate(run_seed * 101 + floor * 7 + 1, floor, is_last_floor(), pools, boss, guard, quest,
-			prisoners.get(str(floor), {}), data.realms[realm].get("elite_pools", []))
+			prisoners.get(str(floor), {}), data.realms[realm].get("elite_pools", []), data.realms[realm].get("objects", []))
 	pos = map.start
 	visited = [map.start]
 	seen = []
+	revealed = []
 	came_from = -1
 	battle_pending = false
 
@@ -500,8 +505,12 @@ func battle_opts() -> Dictionary:
 		opts.counter = true
 	if r.get("nemesis", false):
 		opts.nemesis = true
+	# 0.28.2: föremålens strider (sarkofagen, klockorna) och glasfönstrets beredda grupp.
+	var mult := float(r.get("stat_mult", 1.0)) * next_stat_mult
+	if mult != 1.0:
+		opts.stat_bonus = mult
 	if first_descent:
-		opts.stat_bonus = first_descent_mult(tier)
+		opts.stat_bonus = first_descent_mult(tier) * mult
 		if party.size() == 1:
 			opts.stat_bonus *= FIRST_FIGHT_ALONE
 		if floor == 0 and (r.get("elite", false) or r.get("nemesis", false)):
@@ -530,6 +539,7 @@ func battle_won() -> bool:
 	battle_pending = false
 	next_auras.clear()
 	next_rules.clear()
+	next_stat_mult = 1.0
 	r.beaten = true
 	var before: bool = quest.get("done", false)
 	if r.get("nemesis", false) and quest.get("type", "") == "hunt":
@@ -673,12 +683,126 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 	return text
 
 
+# --- Realmens föremål (0.28.2) ---------------------------------------------------
+
+## Silvret i en vanlig skatt på den här våningen (föremålens belöningar räknas i sådana, "S").
+func treasure_value() -> int:
+	return roundi(Profile.reward(floor, depth) * TREASURE_SILVER)
+
+
+## Valen för föremålet man står på: [{id, label, disabled?}].
+func object_options(data: Dictionary) -> Array:
+	var r := current_room()
+	var def: Dictionary = data.get("objects", {}).get(r.get("obj", ""), {})
+	var opts: Array = (def.get("again_options", []) if r.get("again", false) else def.get("options", [])).duplicate(true)
+	if r.get("obj", "") == "pew" and barricade_target() < 0:
+		for o in opts:
+			if o.id == "barricade":
+				o.disabled = true
+	return opts
+
+
+## Kyrkbänken: närmaste vanliga grupp man har sett (inte elit, Nemesis, boss eller en vakt), eller −1.
+func barricade_target() -> int:
+	var best := -1
+	for i in seen:
+		var c := map.cell(i)
+		if map.has_group(i) and c.get("kind", "") == "battle" and not c.get("elite", false) and not c.get("nemesis", false):
+			if best < 0 or Grotto.dist(i, pos) < Grotto.dist(best, pos):
+				best = i
+	return best
+
+
+## Gör ett val vid föremålet. Returnerar {text, fight (en strid börjar på rutan), silver (att betala ut)}.
+func use_object(data: Dictionary, choice: String, rng: RandomNumberGenerator) -> Dictionary:
+	var r := current_room()
+	var out := {"text": "", "fight": false, "silver": 0}
+	var tier := mini(floor + (1 if Grotto.dist(pos, map.start) >= Grotto.FAR_TIER_DIST else 0), 2)
+	var pools: Array = data.realms[realm].get("pools", [floor_ids])
+	var pool: Array = pools[clampi(tier, 0, pools.size() - 1)]
+	match choice:
+		"leave", "stop":
+			if choice == "stop":
+				r.done = true
+				r.again = false
+			return out
+		"knock", "ring", "ring_again":
+			r.encounter = pool[rng.randi() % pool.size()]
+			r.tier = tier
+			r.beaten = false
+			r.stat_mult = {"knock": 1.15, "ring": 1.15 if r.obj == "bell_rope" else 1.0, "ring_again": 1.25}[choice]
+			r.obj_reward = {"knock": 2.0, "ring": 0.0 if r.obj == "bell_rope" else 1.0, "ring_again": 2.0}[choice]
+			r.again = false
+			if not seen.has(pos):
+				seen.append(pos)
+			out.fight = true
+		"valuables", "neighbours":
+			var want := func(i: int) -> bool:
+				var c := map.cell(i)
+				if choice == "valuables":
+					return c.get("kind", "") == "treasure" and not c.get("done", false)
+				return map.has_group(i) and not c.get("boss", false)
+			var found: Array = range(map.cells.size()).filter(func(i: int) -> bool:
+				return not visited.has(i) and not revealed.has(i) and want.call(i))
+			found.sort_custom(func(a: int, b: int) -> bool: return Grotto.dist(a, pos) < Grotto.dist(b, pos))
+			for i in found.slice(0, 2):
+				revealed.append(i)
+			r.done = true
+			out.text = "Registret pekar ut %d %s." % [mini(found.size(), 2), "skatter" if choice == "valuables" else "grupper"] \
+					if not found.is_empty() else "Registret har inget nytt att berätta."
+		"pull":
+			var row := Grotto.xy(pos).y
+			for x in Grotto.SIZE:
+				var i := Grotto.idx(Vector2i(x, row))
+				if not visited.has(i) and not revealed.has(i):
+					revealed.append(i)
+			next_stat_mult = 1.15
+			r.done = true
+			out.text = "Ljuset faller över hela raden. Nästa grupp ni möter är beredd (+15 % styrka)."
+		"barricade":
+			var t := barricade_target()
+			if t < 0:
+				return out
+			map.cells[t].beaten = true
+			map.cells[t].barricaded = true
+			r.done = true
+			out.text = "Bänken spärrar vägen för gruppen. Den ger er ingenting – men den är borta."
+		"wood":
+			out.silver = treasure_value()
+			r.done = true
+			out.text = "Gedigen ek: +%d silver." % out.silver
+	return out
+
+
+## Efter en seger vid ett föremål: belöningen i silver och vad som händer sedan (klockan kan ringa igen). Returnerar
+## {silver, text}.
+func object_won() -> Dictionary:
+	var r := current_room()
+	var out := {"silver": roundi(treasure_value() * float(r.get("obj_reward", 0.0))), "text": ""}
+	match r.get("obj", ""):
+		"grave_bell":
+			if float(r.get("stat_mult", 1.0)) < 1.2:
+				r.again = true  # första gången: kan ringa igen
+			else:
+				r.done = true
+		"bell_rope":
+			for i in map.group_cells():
+				if map.has_group(i) and not visited.has(i) and not revealed.has(i):
+					revealed.append(i)
+			r.done = true
+			out.text = "Klockan har ljudit: nu vet ni var alla grupper står."
+		_:
+			r.done = true
+	r.erase("stat_mult")
+	return out
+
+
 # --- Sparning (user://run.cfg) -------------------------------------------------
 
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
-		"barks_used", "first_descent", "joins_next"]
+		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult"]
 
 
 func to_dict() -> Dictionary:

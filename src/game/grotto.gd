@@ -12,7 +12,11 @@ extends RefCounted
 ## tier (0–2) är gruppens svårighet: vilken av Realmens pooler den kommer ur, fiendernas nivå och silvret.
 
 const SIZE := 8
-const KINDS := ["empty", "start", "stairs", "end", "battle", "elite", "treasure", "shrine", "campfire", "item", "prisoner"]
+const KINDS := ["empty", "start", "stairs", "end", "battle", "elite", "treasure", "shrine", "campfire", "item", "prisoner",
+		"object"]
+## Realmens föremål per våning (0.28.2, data/objects.json): så många olika ur Realmens lista.
+const OBJECTS_MIN := 2
+const OBJECTS_MAX := 3
 ## Hur långt från start målet (trappan, bossen) och eliten minst ligger, och lägereldens avstånd till eliten.
 const GOAL_MIN_DIST := 5
 const ELITE_MIN_DIST := 4
@@ -91,15 +95,34 @@ func group_cells() -> Array[int]:
 ## prisoner: {hero, first, guarded} eller {}. elite_pools (0.27, realms.json "elite_pools"): elitgrupperna per våning;
 ## tom = eliten kommer ur den vanliga poolen och får en påtvingad elitvariant som förut.
 static func generate(seed_value: int, floor_index: int, is_last: bool, pools: Array, boss: String, guard: String,
-		quest: Dictionary, prisoner := {}, elite_pools := []) -> Grotto:
+		quest: Dictionary, prisoner := {}, elite_pools := [], objects := []) -> Grotto:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	for attempt in 400:
 		var g := _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools)
 		if g != null and g.problems(quest).is_empty():
+			g._place_objects(seed_value, objects)
 			return g
 	push_warning("Grotto: inget frö höll reglerna (%d), använder det sista försöket" % seed_value)
-	return _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools)
+	var last := _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools)
+	last._place_objects(seed_value, objects)
+	return last
+
+
+## 0.28.2: Realmens föremål läggs sist på tomma rutor (minst två steg från start), ur ett eget frö så att resten av
+## grottan blir densamma som förut.
+func _place_objects(seed_value: int, objects: Array) -> void:
+	if objects.is_empty():
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value * 31 + 7
+	var pool := objects.duplicate()
+	var n := mini(rng.randi_range(OBJECTS_MIN, OBJECTS_MAX), pool.size())
+	for k in n:
+		var id: String = pool.pop_at(rng.randi() % pool.size())
+		var at := _free_cell(rng, func(i: int) -> bool: return dist(i, start) >= 2)
+		if at >= 0:
+			cells[at] = {"kind": "object", "obj": id}
 
 
 static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, pools: Array, boss: String,
