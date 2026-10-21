@@ -433,7 +433,7 @@ func _give_dev_statuses() -> void:
 
 
 func _open_damage_log() -> void:
-	if overlay.mode == "confirm":
+	if overlay.mode == "confirm" or damage_log.open:
 		return
 	run.ui("ui_page", -10.0)
 	damage_log.show_log()
@@ -904,6 +904,9 @@ func _on_revive(unit_id: String) -> void:
 func _on_outcome(result: String) -> void:
 	action_bar.visible = false
 	forfeit_chip.visible = false
+	# 0.29.5: skadeloggen går att öppna på resultatskärmen (det är då man vill läsa den): knappen och loggen ovanpå rutan.
+	log_chip.get_parent().move_child(log_chip, -1)
+	damage_log.get_parent().move_child(damage_log, -1)
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
 	if result == "victory":
 		_slowmo_until = Time.get_ticks_msec() + 1200
