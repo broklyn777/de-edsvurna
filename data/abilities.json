@@ -1174,7 +1174,7 @@
 		"effects": [
 			{
 				"type": "aura",
-				"aura": "sleeping",
+				"aura": "deep_sleep",
 				"duration": 1
 			}
 		]

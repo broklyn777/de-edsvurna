@@ -292,6 +292,14 @@
 		"glyph": "skull",
 		"sleep": true
 	},
+	"deep_sleep": {
+		"name": "Dimsömn",
+		"duration": 1,
+		"debuff": true,
+		"text": "Dimsömn: kan inte agera. Skada väcker inte; sömnen släpper när tiden är ute eller när den renas.",
+		"glyph": "skull",
+		"sleep": true
+	},
 	"snared": {
 		"name": "Snärjd",
 		"duration": 3,
