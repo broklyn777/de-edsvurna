@@ -1606,6 +1606,18 @@ märkning (säkert/troligt) står inom parentes.
 en strid; Dungelot har avslöjade fiender som spärrar rutorna intill (välj att slåss eller leta runt); Shattered Pixel Dungeon
 går automatiskt genom känt område och stannar när en ny fiende syns.
 
+**Vilka quests spelarna gillar** (VD:ns källa, 2026-10-21; ingen belagd favoritlista för 2.0.x):
+- Bossuppdrag uppskattas mer än rutinmässiga sökuppdrag: bossarna är roliga, transportsträckan mellan dem tråkig. Äldre
+  upplevelser, ingen allmän ranking. (TROLIGT)
+- Uppdrag med en särskild stridsutmaning lockar: önskemål om sidouppdrag med svåra monsterkombinationer som kräver
+  specifika byggen. Ett önskemål, inte bevis. (TROLIGT)
+- Att springa runt och leta efter ännu en staty eller sjöstjärna får uttryckligen negativ respons. Talar emot långa
+  obligatoriska samlaruppdrag. (SÄKERT som kritik)
+- Skattjakt, gåtdvärgar, räddning och eskort: för få omdömen. (VET INTE)
+
+För grottan (GISSNING): quests som pekar mot en strid (en namngiven elit, en svår kombination) passar bättre än "samla N";
+ett samlaruppdrag bör vara kort och följa med utforskningen, inte kräva extra vandring.
+
 ## 20. Grottan: underlag för en rutnätsvåning (2026-10-20)
 
 Uppdrag från huvudtråden: VD vill byta stigkartan mot en grotta, ett rutnät på 8×8 där varje tryck flyttar ett steg.
