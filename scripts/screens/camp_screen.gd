@@ -1,6 +1,7 @@
 extends Control
-## Lägret mellan striderna: välj en trofé, fördela troféerna fritt mellan hjältarna och se vad
-## nästa strid har att bjuda på. Allt reagerar när fingret släpps.
+## Lägret efter en strid: välj en trofé och se vad som väntar. 0.27 (VAL, plan "Troféer och makron i grottan"):
+## troféerna byts bara vid en lägereld i grottan; då öppnas samma skärm utan erbjudande (Run.camp_mode "campfire") och
+## man fördelar troféerna mellan hjältarna. Allt reagerar när fingret släpps.
 
 ## Nattlägret tonat i bakgrunden.
 const NIGHT_CAMP := preload("res://assets/illustrations/nattlagret.webp")
@@ -45,6 +46,11 @@ func _gui_input(event: InputEvent) -> void:
 	run.ui_tap()
 
 
+## Vid en lägereld byter man troféer; efter en strid väljer man bara den nya.
+func _swap() -> bool:
+	return run.camp_mode == "campfire"
+
+
 func _tap(p: Vector2) -> void:
 	var state: RunState = run.state
 	for i in run.offer.size():
@@ -60,7 +66,7 @@ func _tap(p: Vector2) -> void:
 			return
 	var inv := _inventory()
 	for i in inv.size():
-		if _chip_rect(i).has_point(p):
+		if _swap() and _chip_rect(i).has_point(p):
 			selected = "" if selected == inv[i] else inv[i]
 			return
 	for i in state.party.size():
@@ -68,7 +74,7 @@ func _tap(p: Vector2) -> void:
 			run.open_sheet(state.party[i], Array(state.party), run.CAMP_SCENE)
 			return
 	for i in state.party.size():
-		if _hero_rect(i).has_point(p):
+		if _swap() and _hero_rect(i).has_point(p):
 			var hero_id := state.party[i]
 			if selected != "":
 				state.equip(hero_id, selected)
@@ -132,7 +138,8 @@ func _draw() -> void:
 	# Nattlägret (Drakvalvets illustration) svagt i bakgrunden.
 	var bg_h := size.x * NIGHT_CAMP.get_height() / NIGHT_CAMP.get_width()
 	draw_texture_rect(NIGHT_CAMP, Rect2(0, (size.y - bg_h) / 2, size.x, bg_h), false, Color(1, 1, 1, 0.13))
-	UiStyle.text(self, Vector2(0, 44), "SEGER! VÄLJ EN TROFÉ", 34, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
+	var title := "LÄGERELD – BYT TROFÉER" if _swap() else ("SEGER! VÄLJ EN TROFÉ" if not run.offer.is_empty() else "SEGER!")
+	UiStyle.text(self, Vector2(0, 44), title, 34, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 8)
 	for i in run.last_receipt.size():
 		UiStyle.text(self, Vector2(0, 76 + i * 20), run.last_receipt[i], 15, Color(1, 1, 1, 0.75),
 				HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
@@ -142,7 +149,8 @@ func _draw() -> void:
 		UiStyle.card(self, _offer_rect(i), t.name, t.text, chosen == run.offer[i], UiStyle.TRAIT_GOLD,
 				"FRÅN " + _source_name(run.offer[i]).to_upper())
 
-	UiStyle.text(self, Vector2(MARGIN, 306), "DINA TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE", 14, Color(1, 1, 1, 0.6))
+	UiStyle.text(self, Vector2(MARGIN, 306), "DINA TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE" if _swap() \
+			else "DINA TROFÉER – DE BYTS VID EN LÄGERELD I GROTTAN", 15, Color(1, 1, 1, 0.6))
 	var inv := _inventory()
 	for i in inv.size():
 		var r := _chip_rect(i)
@@ -167,10 +175,10 @@ func _draw() -> void:
 
 	# Vad som väntar: rumskartan med questen och reglerna (0.18).
 	if state.map != null:
-		InkArt.floor_markers(self, Vector2(size.x - 470, 44), state.floor, state.floor_ids.size(), UiStyle.GOLD, 18)
-	var next := "TILLBAKA TILL RUMSKARTAN – VÅNING %d AV %d" % [state.floor + 1, state.floor_ids.size()]
-	if state.floor_cleared():
-		next = "KÖRNINGEN ÄR KLAR!" if state.is_last_floor() else "VÅNINGEN ÄR KLAR – VIDARE TILL VÅNING %d" % (state.floor + 2)
+		InkArt.floor_markers(self, Vector2(size.x - 470, 44), state.floor, RunState.FLOORS_PER_RUN, UiStyle.GOLD, 18)
+	var next := "TILLBAKA TILL GROTTAN – VÅNING %d AV %d" % [state.floor + 1, RunState.FLOORS_PER_RUN]
+	if state.floor_cleared() and state.is_last_floor():
+		next = "KÖRNINGEN ÄR KLAR!"
 	UiStyle.text(self, Vector2(MARGIN, size.y - 112), next, 18, Color("#ff8a6a"))
 	var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
 	var unknown := state.active_rules().size() - known.size()
@@ -183,7 +191,7 @@ func _draw() -> void:
 	if not run.quest_reward.is_empty():
 		UiStyle.text(self, Vector2(MARGIN, size.y - 64), "Questen klar: +%d silver%s" % [run.quest_reward.silver,
 				" och en perk-poäng!" if run.quest_reward.point else ""], 15, Color("#ffb347"), HORIZONTAL_ALIGNMENT_LEFT, size.x - 420)
-	UiStyle.big_button(self, _button_rect(), "VIDARE", _t)
+	UiStyle.big_button(self, _button_rect(), "TILLBAKA" if _swap() else "VIDARE", _t)
 	var m := _macro_rect()
 	draw_rect(m, Color(0, 0, 0, 0.6))
 	draw_rect(m, Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)

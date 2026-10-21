@@ -39,7 +39,7 @@ func test_alva_waits_for_the_second_descent_then_brokk() -> void:
 	s = RunState.new_run(p, _data)
 	assert_eq(s.prisoners["0"].hero, "brokk", "sedan Brokk")
 	s.start_expedition(_data, 5)
-	var first: Array = s.map.all_rooms().filter(func(r: Dictionary) -> bool: return r.kind == "prisoner")
+	var first: Array = s.map.cells.filter(func(r: Dictionary) -> bool: return r.kind == "prisoner")
 	assert_eq(first.size(), 1, "fången finns på första våningen")
 	assert_true(first[0].guarded and RunState.is_battle(first[0]), "Brokk är bevakad av skelett")
 	p.recruited.append("brokk")

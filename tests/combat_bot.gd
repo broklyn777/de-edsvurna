@@ -157,13 +157,17 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	loot_rng.seed = seed_value * 7 + 3
 	# Nivåer (0.19): opts.levels = startnivåer per hjälte; med opts.grow växer de av erfarenheten.
 	var levels: Dictionary = opts.get("levels", {}).duplicate(true)
-	while not state.finished and rooms < 60:
-		var options := state.choices()
-		if options.is_empty():
-			break
-		var r := state.enter(_pick_room(state, options, policy, rng))
-		rooms += 1
-		if RunState.is_battle(r):
+	# 0.27: grottan. Boten går ett steg i taget mot närmaste okända ruta (mot målet), slåss mot grupperna den kliver på
+	# (elitgrupper bara om questen kräver dem), tar skatter, helgedomar, fångar och lägereldar, och går till målet när
+	# questen är klar.
+	while not state.finished and rooms < 900:
+		var r := state.current_room()
+		if state.at_group():
+			if not _bot_wants_fight(state, r, policy):
+				state.back()
+				rooms += 1
+				continue
+			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
 				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights"]:
@@ -178,19 +182,17 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				f0_won += 1 if result.outcome == "victory" else 0
 			if result.outcome != "victory":
 				return {"cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
-						"lost_at": "f%d_%s" % [state.floor, r.kind], "f0_fights": f0_fights, "f0_won": f0_won,
-						"levels": levels, "finds": finds, "silver": silver}
+						"lost_at": "f%d_%s" % [state.floor, "end" if r.get("boss", false) else r.kind], "f0_fights": f0_fights,
+						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver}
 			silver += state.battle_silver(depth)
 			if opts.has("finds"):
-				_count_finds(finds, Forge.roll_finds(data, "boss" if r.get("boss", false) else String(r.kind), depth,
+				_count_finds(finds, Forge.roll_finds(data, "boss" if r.get("boss", false) else RunState.fight_kind(r), depth,
 						opts.finds, state.instability, loot_rng))
 			state.store_charges(result.sim)
 			if opts.get("grow", false):
-				var xp := HeroStats.battle_xp(r.kind, depth, r.get("boss", false))
+				var xp := HeroStats.battle_xp(RunState.fight_kind(r), depth, r.get("boss", false))
 				for hero_id in levels:
 					HeroStats.add_xp(levels[hero_id], xp)
-			if r.kind == "prisoner":
-				_bot_recruit(data, state, levels, r)
 			# 0.25: opts.joins (t.ex. "imma") ansluter efter den första vunna striden, som Run.imma_sneaks.
 			if fights == 1 and opts.has("joins") and not state.party.has(opts.joins):
 				state.party.append(opts.joins)
@@ -202,10 +204,19 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				return {"cleared": false, "fights": fights, "won": true, "rooms": rooms, "f0_fights": f0_fights,
 						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver}
 			state.battle_won()
+			match r.kind:
+				"prisoner":
+					_bot_recruit(data, state, levels, r)
+				"treasure":
+					silver += int(state.treasure(data, rng).silver)
+				"item":
+					state.collect_item()
 			if state.floor_cleared():
 				state.next_floor(data)
-		else:
-			match r.kind:
+			continue
+		# Rutans innehåll (obevakat).
+		if not r.get("done", false):
+			match r.get("kind", ""):
 				"prisoner":
 					_bot_recruit(data, state, levels, r)
 				"campfire":
@@ -217,8 +228,97 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				"shrine":
 					var gifts := state.shrine_options(data, rng)
 					state.apply_shrine(data, rng, gifts[0] if gifts[0].kind == "charge" else gifts[1])
+		if state.floor_cleared():
+			state.next_floor(data)
+			continue
+		var target := _bot_target(data, state, policy)
+		if target < 0 or state.step(target).is_empty():
+			break
+		rooms += 1
 	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won, "finds": finds, "silver": silver}
+
+
+## Slåss boten mot gruppen den står på? Elitgrupper bara om questen kräver dem (eller med "greedy").
+static func _bot_wants_fight(state: RunState, r: Dictionary, policy: String) -> bool:
+	if policy == "greedy" or r.get("boss", false) or not r.get("elite", false) or r.get("bot_must", false):
+		return true
+	if state.party.size() == 1:
+		return false  # en ensam paladin väntar med elitgruppen tills någon har anslutit (kortets varning)
+	var q: String = state.quest.get("type", "")
+	return r.get("nemesis", false) or q == "clear"
+
+
+## Nästa ruta för boten: målet när questen är klar, en känd grupp som questen behöver, en lägereld när Charges tar slut,
+## annars närmaste okända ruta (mot målet). Saknas okända rutor går den till närmaste sedda grupp.
+static func _bot_target(data: Dictionary, state: RunState, policy: String) -> int:
+	var m := state.map
+	var reach := _bot_reach(state)
+	if not state.goal_locked() and (reach.has(m.goal) or _frontier_ok(state, m.goal)) and state.can_step(m.goal) == "":
+		return m.goal
+	# Kända grupper som questen behöver (och som går att nå).
+	for i in state.seen:
+		var c := m.cell(i)
+		if m.has_group(i) and (c.get("nemesis", false) or (c.kind == "item") \
+				or (c.get("elite", false) and state.quest.get("type", "") == "clear")) and state.can_step(i) == "" \
+				and _bot_wants_fight(state, c, policy):
+			return i
+	if _charges_share(data, state) < 0.4:
+		for i in state.visited:
+			if m.cell(i).kind == "campfire" and not m.cell(i).get("done", false) and state.can_step(i) == "":
+				return i
+	var best := -1
+	var best_cost := 1 << 30
+	for i in reach:
+		for n in Grotto.neighbors(i):
+			if state.visited.has(n) or m.blocked(n, state.visited, state.seen) or (n == m.goal and state.goal_locked()):
+				continue
+			if m.has_group(n) and state.seen.has(n) and not _bot_wants_fight(state, m.cell(n), policy):
+				continue
+			var cost: int = reach[i] * 4 + Grotto.dist(n, m.goal)
+			if cost < best_cost and state.can_step(n) == "":
+				best_cost = cost
+				best = n
+	if best >= 0:
+		return best
+	# Allt okänt är spärrat: gå till en sedd grupp och slåss (helst en som boten vill slåss mot).
+	var fallback := -1
+	for i in state.seen:
+		if m.has_group(i) and state.can_step(i) == "":
+			if _bot_wants_fight(state, m.cell(i), policy):
+				return i
+			fallback = i
+	if fallback >= 0:
+		m.cell(fallback)["bot_must"] = true
+	return fallback
+
+
+static func _frontier_ok(state: RunState, i: int) -> bool:
+	return Grotto.neighbors(i).any(func(n: int) -> bool: return state.visited.has(n) and not state.map.has_group(n))
+
+
+## Avstånd från pjäsen till alla besökta rutor man kan gå genom (utan obesegrade grupper).
+static func _bot_reach(state: RunState) -> Dictionary:
+	var out := {state.pos: 0}
+	var queue: Array[int] = [state.pos]
+	while not queue.is_empty():
+		var i: int = queue.pop_front()
+		for n in Grotto.neighbors(i):
+			if out.has(n) or not state.visited.has(n) or state.map.has_group(n):
+				continue
+			out[n] = out[i] + 1
+			queue.append(n)
+	return out
+
+
+static func _charges_share(data: Dictionary, state: RunState) -> float:
+	var left := 0
+	var full := 0
+	for hero_id in state.charges:
+		for ability_id in state.charges[hero_id]:
+			left += int(state.charges[hero_id][ability_id])
+			full += int(data.abilities[ability_id].get("charges", 0))
+	return float(left) / maxf(full, 1)
 
 
 static func _count_finds(counts: Dictionary, finds: Array) -> void:
@@ -260,25 +360,3 @@ static func _bot_recruit(data: Dictionary, state: RunState, levels: Dictionary, 
 	if not levels.is_empty():
 		levels[hero_id] = {"level": 2 if HeroStats.party_level(levels) >= 4.0 else 1, "xp": 0,
 				"personality": data.heroes[hero_id].get("personality", "")}
-
-
-static func _pick_room(state: RunState, options: Array, policy: String, rng: RandomNumberGenerator) -> String:
-	if options.size() == 1:
-		return options[0]
-	var kinds := {}
-	for id in options:
-		kinds[id] = state.map.room(id).kind
-	for id in options:
-		if kinds[id] == "prisoner":
-			return id  # 0.23: en fånge befrias alltid
-	var order: Array = ["elite", "portal", "treasure", "shrine", "battle", "campfire", "end"] if policy == "greedy" \
-			else ["campfire", "shrine", "treasure", "battle", "end", "portal", "elite"]
-	if policy == "simple":
-		var safe := options.filter(func(id: String) -> bool: return not kinds[id] in ["elite", "portal"])
-		if not safe.is_empty():
-			return safe[rng.randi() % safe.size()]
-	for kind in order:
-		for id in options:
-			if kinds[id] == kind:
-				return id
-	return options[0]
