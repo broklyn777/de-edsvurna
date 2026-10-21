@@ -94,14 +94,15 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 		var macro: Dictionary = macros.get(sim.current.id, data.macros.get(sim.current.id, {"lines": []}))
 		# Ett "svar" i balansrapporten (BALANS=elitsvar): en fokusrad före hjältens första Anfall-rad, så att helningar
 		# och skydd högre upp går först.
-		if opts.has("focus_line"):
+		var hero_line: Dictionary = opts.get("hero_lines", {}).get(sim.current.id, {})
+		if opts.has("focus_line") or not hero_line.is_empty():
 			var lines: Array = macro.get("lines", []).duplicate()
 			var at := lines.size()
 			for i in lines.size():
 				if lines[i].get("action", "") == "attack":
 					at = i
 					break
-			lines.insert(at, opts.focus_line)
+			lines.insert(at, hero_line if not hero_line.is_empty() else opts.focus_line)
 			macro = {"lines": lines}
 		var decision := MacroRunner.decide(sim, sim.current, macro)
 		if decision.ok:
@@ -110,7 +111,9 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 			no_match += 1
 			if sim.act("defend") != "":
 				sim.act("attack")  # Inga bönder: Försvara går inte
-		sim.drain_events()
+		var events := sim.drain_events()
+		if opts.has("event_log"):
+			opts.event_log.append_array(events)
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
 	return {"outcome": sim.outcome, "turns": sim.turn_no, "alive": alive, "no_match": no_match, "sim": sim}
 
