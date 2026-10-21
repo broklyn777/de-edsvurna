@@ -16,6 +16,13 @@ Ingen brådska. Plockas in i en putsrunda när det passar. Nyast överst inom va
      inte skada, ett lätt missförstånd).
   4. Visa tydligare att raderna går att trycka på (VD hittade det inte).
 
+## Repliker och föremål (VD 2026-10-21: bygg direkt efter steg 2)
+
+- Repliker i grottan (`docs/ideer/chat-repliker-grottan.md`, version 2 beställd av ChatGPT) och första omgången
+  Realm-föremål (`docs/ideer/chat-foremal-grottan.md`: sarkofag, gravklocka, gravregister; glasfönster, klockrep, kyrkbänk).
+- **Röster senare (VD):** varje replik får ett fast id (t.ex. `imma_elite_1`) och ska fungera utan `{namn}`, eftersom
+  inspelade röster inte kan säga spelarens namn. Kort och lätt att säga högt.
+
 ## Putsa
 
 - Lägret säger "SEGER! VÄLJ EN TROFÉ" fast alla erbjudna troféer redan hamnar i samlingen (0.26.3).
