@@ -18,23 +18,43 @@
 				"gorm": [
 					"Lägg handen på altaret och välj."
 				]
+			},
+			"silver": 100
+		},
+		{
+			"id": "forge",
+			"giver": "gorm",
+			"station": "smith",
+			"event": "forged",
+			"talk": [
+				"Eden är svuren. Klockan i tornet slog när du valde – det gör den bara ibland.",
+				"Men en paladin utan svärd är bara någon med goda avsikter. Här är hundra silver ur borgens kassa.",
+				"Gå till Hedda i smedjan, i östra längan. Ett riktigt svärd gör underverk. Ett träsvärd gör mest splitter."
+			],
+			"quest": "Smid ditt svärd hos Hedda i smedjan.",
+			"where": {
+				"gorm": "altar"
+			},
+			"at": {
+				"hedda": [
+					"Gorm skickade silver med dig? Ett svärd, då. Välj i lugn och ro – och rör inte städet."
+				]
 			}
 		},
 		{
 			"id": "practice",
-			"giver": "gorm",
+			"giver": "hedda",
 			"station": "practice",
 			"event": "practice_won",
-			"silver": 100,
 			"talk": [
-				"Eden är svuren. Klockan i tornet slog när du valde – det gör den bara ibland.",
-				"Men en paladin som inte kan hålla ett svärd är ingen paladin, hur vacker eden än är.",
-				"Gå till Stig i övningsgården, i västra längan. Anfall – och försvara dig när det blir hett."
+				"Så. Ett svärd. Mitt bästa i år, och det är oktober.",
+				"Prova det innan du tar det ned i kryptan. Stig har halmdockor i övningsgården, i västra längan.",
+				"Ibland slår svärdet till av sig självt när du anfaller. Se efter när det händer – och svinga det inte inomhus."
 			],
 			"quest": "Vinn en övningsstrid hos Stig i övningsgården.",
 			"at": {
 				"stig": [
-					"Gorm skickade dig? Bra. Ta en docka, vilken som helst – de slår inte tillbaka. Nästan inte.",
+					"Hedda skickade dig? Visa vad svärdet går för. Ta en docka, vilken som helst – de slår inte tillbaka. Nästan inte.",
 					[
 						"imma",
 						"{namn}! Om Gorm frågar så har jag läst läxor hela förmiddagen. Jag övade bara lite på dockorna. Med pilar. I huvudet."
@@ -48,37 +68,17 @@
 						"Jag går, jag går. Lycka till med dockan – den till vänster fuskar."
 					]
 				]
-			},
-			"where": {
-				"gorm": "altar"
-			}
-		},
-		{
-			"id": "forge",
-			"giver": "stig",
-			"station": "smith",
-			"event": "forged",
-			"talk": [
-				"Inte illa. Dockan reser sig inte igen, i alla fall.",
-				"Här är hundra silver för besväret. Säg inte till Gorm att jag var generös, han tror att jag är snål.",
-				"Gå till Hedda i smedjan, i östra längan. Ett riktigt svärd gör underverk. Ett träsvärd gör mest splitter."
-			],
-			"quest": "Smid ditt svärd hos Hedda i smedjan.",
-			"at": {
-				"hedda": [
-					"Stig sa att du kommer med silver. Ett svärd, då. Välj i lugn och ro – och rör inte städet."
-				]
 			}
 		},
 		{
 			"id": "macro",
-			"giver": "hedda",
+			"giver": "stig",
 			"station": "macros",
 			"event": "macro_line",
 			"talk": [
-				"Så. Ett svärd. Mitt bästa i år, och det är oktober.",
-				"Gorm vill att du tänker innan du slår. Hans kartbord står i kammaren bredvid kapellet.",
-				"Skriv din första rad där. Till exempel: anfall den svagaste fienden. Och svinga inte svärdet inomhus."
+				"Inte illa. Dockan reser sig inte igen, i alla fall.",
+				"Men nere i kryptan hinner du inte tänka på varje hugg. Gorm lär ut makron vid kartbordet, i kammaren bredvid kapellet.",
+				"Skriv din första rad där. Till exempel: anfall den svagaste fienden. Sedan kommer du hit och provar den."
 			],
 			"quest": "Skriv din första makrorad i Gorms kammare.",
 			"at": {

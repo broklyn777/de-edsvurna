@@ -53,6 +53,7 @@ const STARTER := "imma"
 ## Introduktionen (0.23, Intro): aktuellt steg i data/intro.json. En ny profil börjar ensam med Paladinen;
 ## Imma ansluter i steg 6. Befintliga profiler hoppar över introt.
 var intro_step := 0
+const INTRO_ORDER := 2  # 0.30: introts ordning (2 = smedjan före övningsgården), för att flytta gamla profiler rätt
 var intro_done := false
 ## 0.24: sant när man har pratat med den som ger introts aktuella uppdrag (nästa uppdrag kommer först efter samtalet).
 var intro_talked := false
@@ -572,6 +573,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "party", party)
 	cfg.set_value("progress", "recruited", recruited)
 	cfg.set_value("progress", "intro_step", intro_step)
+	cfg.set_value("progress", "intro_order", INTRO_ORDER)
 	cfg.set_value("progress", "intro_done", intro_done)
 	cfg.set_value("progress", "inn_seen", inn_seen)
 	cfg.set_value("progress", "intro_talked", intro_talked)
@@ -627,6 +629,12 @@ static func load_from(path: String) -> Profile:
 	# Introt: profiler från före 0.23 (utan "intro_done") har redan allt och hoppar över det.
 	p.intro_done = bool(cfg.get_value("progress", "intro_done", not cfg.has_section_key("progress", "recruited")))
 	p.intro_step = int(cfg.get_value("progress", "intro_step", 0))
+	# 0.30: smedjan kommer före övningsgården. En profil som stod på övningsstriden (1) eller svärdet (2) i den gamla
+	# ordningen börjar på svärdet; den som inte fick Stigs hundra silver får dem nu (eden ger dem i den nya ordningen).
+	if int(cfg.get_value("progress", "intro_order", 1)) < INTRO_ORDER and p.intro_step in [1, 2]:
+		if p.intro_step == 1:
+			p.silver += 100
+		p.intro_step = 1
 	p.inn_seen = int(cfg.get_value("progress", "inn_seen", p.recruited.size()))
 	p.intro_talked = bool(cfg.get_value("progress", "intro_talked", false))
 	p.set_hero_name(String(cfg.get_value("progress", "hero_name", DEFAULT_NAME)))
