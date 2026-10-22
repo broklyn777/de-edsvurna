@@ -133,7 +133,7 @@ func _macro_rect() -> Rect2:
 func _draw() -> void:
 	var data: Dictionary = run.data
 	var profile: Profile = run.profile
-	header("ÖVNINGSGÅRDEN", "Strid utan risk: inget förloras, Charges är fulla. Se i loggen varför hjältarna gjorde som de gjorde.")
+	header("ÖVNINGSGÅRDEN", "Prova makron och troféer utan risk: inget förloras och Charges är fulla. Loggen visar varför hjältarna gjorde som de gjorde.")
 	small_button(back_rect(), "‹ BASEN")
 
 	UiStyle.text(self, Vector2(MARGIN, 114), "FIENDER", 14, Color(1, 1, 1, 0.6))

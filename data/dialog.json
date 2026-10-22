@@ -175,6 +175,14 @@
 					"text": "Halmdockorna klagar aldrig. Det är därför jag gillar dem."
 				},
 				{
+					"id": "stig_idle_macros",
+					"text": "Här kan du slåss hur många gånger du vill. Ingen dör på riktigt, och dina makron får visa vad de går för."
+				},
+				{
+					"id": "stig_idle_macros_2",
+					"text": "Skriv en ny rad i makrot och kom hit. Håller den mot dockorna håller den kanske nere i kryptan."
+				},
+				{
 					"text": "Försvara dig när det blir hett. Eller var snabbare. Helst båda."
 				},
 				{
@@ -349,7 +357,7 @@
 			"tag": "Arena",
 			"options": [
 				{
-					"label": "Öva en strid",
+					"label": "Prova makron i en övningsstrid",
 					"open": "practice"
 				}
 			]
