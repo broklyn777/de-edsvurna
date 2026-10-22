@@ -133,6 +133,8 @@ var _turn_counts := {}
 var _turn_procs := 0
 ## Vad varje egenskap har gjort i striden (för kvittot): trait_id -> {unit, procs, damage, heal}.
 var trait_stats := {}
+## 0.30: förmåga → {unit, aura, count, extra} för träffar som fick en kombinationsbonus.
+var combo_stats := {}
 ## 0.27: senaste figuren per lag som kastade en besvärjelse (pick "caster"), och väckningar per lag (Sista klangen).
 var _last_caster := {}
 var _team_revives := {}
@@ -1894,6 +1896,13 @@ func _emit(e: Dictionary) -> void:
 
 
 func _count_stats(e: Dictionary) -> void:
+	# 0.30: kombinationer (förmågans bonus mot en status) räknas för segerskärmens "Det här avgjorde striden".
+	if e.type == "damage" and e.get("calc", {}).has("combo"):
+		var c: Dictionary = e.calc.combo
+		var cs: Dictionary = combo_stats.get(c.ability, {"unit": e.source, "aura": c.aura, "count": 0, "extra": 0.0})
+		cs.count += 1
+		cs.extra += e.amount - e.amount / float(c.mult)
+		combo_stats[c.ability] = cs
 	var trait_id: String = e.get("trait", "")
 	if trait_id == "":
 		return

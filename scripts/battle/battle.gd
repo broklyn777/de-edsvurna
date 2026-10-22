@@ -805,28 +805,11 @@ func _continue() -> void:
 	run.battle_finished(sim.outcome == "victory", receipt(), macro_log.entries)
 
 
-## Högst tre rader om vad som avgjorde striden, från vad egenskaperna faktiskt gjorde.
+## Högst tre rader om vad som avgjorde striden (lägret, Övningsgården), samma urval som segerskärmen.
 func receipt() -> Array[String]:
-	var rows: Array = []
-	for trait_id in sim.trait_stats:
-		var st: Dictionary = sim.trait_stats[trait_id]
-		var t: Dictionary = data.traits[trait_id]
-		if st.procs == 0 or t.get("hidden", false) and not t.has("name"):
-			continue
-		rows.append({"id": trait_id, "score": st.damage + st.heal * 1.2 + st.procs * 5.0, "st": st})
-	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.score > b.score)
 	var out: Array[String] = []
-	for row in rows.slice(0, 3):
-		var st: Dictionary = row.st
-		var t: Dictionary = data.traits[row.id]
-		var who: String = sim.unit(st.unit).name if sim.unit(st.unit) else ""
-		var what: Array[String] = []
-		if st.damage > 0:
-			what.append("%d skada" % int(st.damage))
-		if st.heal > 0:
-			what.append("%d helning" % int(st.heal))
-		out.append("%s (%s): slog till %d gånger%s" % [t.name, who, st.procs,
-				(" – " + ", ".join(what)) if not what.is_empty() else ""])
+	for d in BattleSummary.deciders(sim, 3):
+		out.append("%s (%s): %s" % [d.name, d.who, d.text])
 	return out
 
 
@@ -1099,7 +1082,8 @@ func _on_outcome(result: String) -> void:
 		if run.state.practice:
 			title = "ÖVNINGEN VUNNEN"
 		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
-		overlay.lines = receipt()
+		# 0.30: det som avgjorde striden står till vänster, med vilken del av bygget det kom ifrån.
+		overlay.deciders = BattleSummary.deciders(sim)
 		# 0.19: erfarenhet och nivåuppgångar syns och hörs på segerskärmen.
 		overlay.level_ups = run.award_battle(sim, true)
 		if not overlay.level_ups.is_empty():

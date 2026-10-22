@@ -23,6 +23,8 @@ var lines: Array[String] = []
 var level_ups: Array = []
 ## Fynden efter segern (0.20): material och Nether Stones, till höger, ett i taget med glöd.
 var finds: Array = []
+## 0.30: "Det här avgjorde striden" till vänster (BattleSummary.deciders): [{name, tag, who, text}].
+var deciders: Array = []
 var data: Dictionary = {}
 ## Våningsreglerna som gäller (visas uppe till höger under knapparna).
 var rules_text := ""
@@ -115,6 +117,27 @@ func _draw_level_ups(w: float, h: float, a: float) -> void:
 		draw_set_transform(Vector2.ZERO)
 		UiStyle.text(self, Vector2(0, y + i * 40 + 18), "  ".join(parts), 16, Color(1, 1, 1, 0.85 * a * t),
 				HORIZONTAL_ALIGNMENT_CENTER, w, 4)
+
+
+## Det här avgjorde striden: till vänster om resultatet, spegelvänt mot fynden. Taggen säger vilken del av bygget
+## (trofé, kall, artefakt, egen eller en kombination) som bar striden.
+func _draw_deciders(w: float, h: float, a: float) -> void:
+	if deciders.is_empty():
+		return
+	var x := 30.0
+	var y := h * 0.45 - 40.0
+	UiStyle.text(self, Vector2(x, y), "DET HÄR AVGJORDE STRIDEN", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, 330, 4)
+	for i in deciders.size():
+		var d: Dictionary = deciders[i]
+		var t := clampf((_big_t - 1.2 - i * 0.3) / 0.4, 0.0, 1.0)
+		if t <= 0.0:
+			continue
+		var p := Vector2(x, y + 30 + i * 64)
+		var col := UiStyle.GOLD if d.tag == "KOMBINATION" else UiStyle.TRAIT_GOLD
+		UiStyle.text(self, p, d.tag, 15, Color(col, 0.75 * a * t), HORIZONTAL_ALIGNMENT_LEFT, 330, 4)
+		UiStyle.text(self, p + Vector2(0, 20), d.name, 17, Color(col.lightened(0.2), a * t), HORIZONTAL_ALIGNMENT_LEFT, 330, 4)
+		UiStyle.text(self, p + Vector2(0, 40), "%s · %s" % [d.who, d.text], 15, Color(1, 1, 1, 0.75 * a * t),
+				HORIZONTAL_ALIGNMENT_LEFT, 330, 4)
 
 
 ## Fynden till höger om resultatet: en ädelsten i fyndets färg och namnet, ett i taget.
@@ -239,6 +262,7 @@ func _draw() -> void:
 					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 		_draw_level_ups(w, h, a)
 		_draw_finds(w, h, a)
+		_draw_deciders(w, h, a)
 		if mode in ["victory", "defeat"] and _big_t > 1.0:
 			var blink := 0.6 + 0.4 * sin(_t * 4.0)
 			UiStyle.text(self, Vector2(0, h - 16), "Tryck för att fortsätta", 20, Color(1, 1, 1, blink),
