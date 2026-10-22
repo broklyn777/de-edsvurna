@@ -270,6 +270,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `CombatSim._bonus_vs`, `calc.combo`), och Immas Rökpil förblindar alla fiender. Första gången visas rutan
   "Kombination!" med orsak och siffror (`HelpBox.offer_custom`, hjälpen "combo"), sedan ordet KOMBINATION! över målet;
   Imma tipsar om det när hon ansluter. `--combo` förblindar fienderna och kör ALLA AUTO för skärmdumpar.
+  **Det här avgjorde striden** (0.30, byggets fingeravtryck, `BattleSummary.deciders`): segerskärmen visar till vänster
+  upp till fyra delar av sällskapets bygge som bar striden, med källan (TROFÉ, KALL, ARTEFAKT, EGEN, KOMBINATION) och vad
+  de gjorde (`CombatSim.trait_stats`, `combo_stats`); kallet räknas en gång under Paladinen. Samma urval är kvittot vid lägret.
   Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
