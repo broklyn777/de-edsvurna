@@ -127,6 +127,8 @@ func _ready() -> void:
 	_start_dialog()
 	# Utvecklarflagga för skärmdumpar: --talk=<station> står vid stationen och pratar.
 	for arg in OS.get_cmdline_user_args():
+		if arg == "--settings":
+			SettingsBox.open.call_deferred(self)  # 0.30: inställningarna öppna (skärmdumpar)
 		if arg.begins_with("--talk="):
 			var st := arg.get_slice("=", 1)
 			pal = _v(keep.rooms[st].stand) if keep.rooms.has(st) else _v(keep.scene.people.get(st, keep.yard.home)) + Vector2(70, 40)
@@ -492,6 +494,11 @@ func _renamed(n: String) -> void:
 
 # --- Inmatning ------------------------------------------------------------------
 
+## 0.30: knappen under ‹ PROFILER.
+func _settings_rect() -> Rect2:
+	return Rect2(back_rect().position.x, back_rect().end.y + 10, back_rect().size.x, 40)
+
+
 func _tap(p: Vector2) -> void:
 	if not _conv.is_empty():
 		if _conv.menu and _conv.i == _conv.lines.size() - 1:
@@ -505,6 +512,9 @@ func _tap(p: Vector2) -> void:
 	if back_rect().has_point(p):
 		run._save()
 		run.go(run.SLOTS_SCENE)
+		return
+	if _settings_rect().has_point(p):
+		SettingsBox.open(self)  # 0.30: volym och rumsögonblick
 		return
 	for i in STATIONS.size():
 		if _chip_rect(i).has_point(p):
@@ -695,6 +705,10 @@ func _paint_ui(ci: CanvasItem) -> void:
 	ci.draw_rect(back_rect(), Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)
 	UiStyle.text(ci, back_rect().position + Vector2(0, 29), "‹ PROFILER", 18, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER,
 			back_rect().size.x, 4)
+	ci.draw_rect(_settings_rect(), Color(0, 0, 0, 0.6))
+	ci.draw_rect(_settings_rect(), Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)
+	UiStyle.text(ci, _settings_rect().position + Vector2(0, 26), "INSTÄLLNINGAR", 16, UiStyle.TRAIT_GOLD,
+			HORIZONTAL_ALIGNMENT_CENTER, _settings_rect().size.x, 4)
 	# Rummens namn i tusch, och personernas namn under porträtten.
 	for id in keep.rooms:
 		var st := Dialog.station(data, id)

@@ -75,6 +75,7 @@ var _ui_frame := -1
 func _ready() -> void:
 	data = GameData.load_all()
 	rng.randomize()
+	GameSettings.load_and_apply()  # 0.30: volymen gäller hela spelet
 	audio = Sfx.new()
 	add_child(audio)
 	SaveSlots.migrate()
