@@ -28,20 +28,22 @@ func _do(p: Profile, event: String, value := 0) -> void:
 func test_the_chain_waits_for_each_conversation() -> void:
 	var p := Profile.new()
 	assert_true(Intro.notify(_data, p, "oath_chosen").is_empty(), "inget uppdrag förrän Gorm har pratat")
-	_do(p, "oath_chosen")
-	assert_eq(Intro.current(_data, p).id, "practice")
-	assert_true(Intro.needs_talk(_data, p), "nästa uppdrag kommer först efter samtalet")
-	assert_eq(Intro.station_state(_data, p, "practice"), "locked", "Övningsgården väntar på Gorms ord")
-	Intro.talked(_data, p)
-	assert_eq(Intro.station_state(_data, p, "practice"), "current")
 	var silver := p.silver
-	Intro.notify(_data, p, "practice_won")
-	assert_eq(p.silver, silver + 100, "övningen ger silver")
+	_do(p, "oath_chosen")
+	assert_eq(p.silver, silver + 100, "eden ger silver till svärdet (0.30: smedjan före övningsgården)")
 	assert_true(p.silver >= Profile.FORGE_COST, "det räcker till svärdet")
-	assert_eq(Intro.station_state(_data, p, "practice"), "current", "Stig ger nästa uppdrag")
+	assert_eq(Intro.current(_data, p).id, "forge")
+	assert_true(Intro.needs_talk(_data, p), "nästa uppdrag kommer först efter samtalet")
+	assert_eq(Intro.station_state(_data, p, "smith"), "locked", "Smedjan väntar på Gorms ord")
 	Intro.talked(_data, p)
 	assert_eq(Intro.station_state(_data, p, "smith"), "current")
 	Intro.notify(_data, p, "forged")
+	assert_eq(Intro.current(_data, p).id, "practice")
+	assert_eq(Intro.station_state(_data, p, "smith"), "current", "Hedda ger nästa uppdrag")
+	Intro.talked(_data, p)
+	assert_eq(Intro.station_state(_data, p, "practice"), "current")
+	Intro.notify(_data, p, "practice_won")
+	assert_eq(Intro.station_state(_data, p, "practice"), "current", "Stig ger nästa uppdrag")
 	for e in ["macro_line", "library_read"]:
 		_do(p, e)
 	# 0.25: natten efter introdagen. Arbetarna kommer upp ur kryptan, och samtalet spelas direkt i borgen.
@@ -109,3 +111,24 @@ func test_the_practice_fight_suits_a_lone_paladin() -> void:
 		var r := Bot.run_fight(_data, s, Bot.Skill.BASIC, "intro_yard", ["paladin"])
 		wins += 1 if r.outcome == "victory" else 0
 	assert_true(wins >= 18, "en lätt strid: %d/20 med bara Anfall" % wins)
+
+
+## 0.30: en profil som stod på övningsstriden eller svärdet i den gamla ordningen börjar på svärdet, och den som inte
+## hade fått de hundra silvren får dem.
+func test_old_profiles_move_to_the_new_order() -> void:
+	var path := "user://test_intro_order.cfg"
+	for old in [1, 2]:
+		var p := Profile.new()
+		p.intro_step = old
+		p.silver = 0 if old == 1 else 100
+		p.save(path)
+		var cfg := ConfigFile.new()
+		cfg.load(path)
+		cfg.set_value("progress", "intro_order", 1)
+		cfg.save(path)
+		var q := Profile.load_from(path)
+		assert_eq(q.intro_step, 1, "börjar på svärdet")
+		assert_eq(q.silver, 100, "har silver till svärdet")
+		q.save(path)
+		assert_eq(Profile.load_from(path).intro_step, 1, "flyttas bara en gång")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
