@@ -188,7 +188,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Ge upp** (0.20.1, Siralims Forfeit): knappen GE UPP bredvid 1×/Auto, med en bekräftelse. Räknas som
   förlust: körningen och questens belöning går förlorade och Realmen börjar om från våning 1 (`run.cfg`
   tas bort, `RunState.delete_saved`); erfarenhet, troféer, silver och material som redan är vunna finns kvar.
-  `CombatSim.forfeit()`. `-- --ask-forfeit` visar frågan i en strid.
+  `CombatSim.forfeit()`. `-- --ask-forfeit` visar frågan i en strid. **GÅ HEM** (0.30, Siralims återvändo till slottet) i grottan
+  gör samma sak utanför striden, med en bekräftelse (`Run.leave_run`, `--ask-leave`); att stänga spelet pausar bara.
 - **Grottans utseende** (0.28.3, efter skärmgranskningen): dimman är en sammanhängande tuschlavering med skraffering
   och svagt rutnät; besökta rutor ljust pergament med stenprickar; bergssidor i tusch där det kända möter dimman; ett
   varmt sken där man står; hörnmarkeringar på hela gränsen mot dimman (varje ruta man når med ett tryck). `--explore=<n>`
