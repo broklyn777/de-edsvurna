@@ -147,8 +147,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   valet Visa hjältebladet. Välkomstrepliken en gång efter en nedstigning hen stannade hemma under (`Profile.home_runs`,
   `inn_heard`), efter två nedstigningar hemma vill hen följa med. Kronan steg 2 (Gorm, Alrik) när två bossar är besegrade
   (`min_bosses`). `--talk=<följeslagare>` med `--all-companions --keep`.
-  **Introduktionen** för en ny profil (`data/intro.json`, `src/game/intro.gd`): eden vid altaret, en övningsstrid
-  ensam, svärdet hos Smeden (bara svärdet går att välja), första makroraden, Biblioteket, och (0.25 "Berättelsen",
+  **Introduktionen** för en ny profil (`data/intro.json`, `src/game/intro.gd`): eden vid altaret (Gorm ger 100 silver),
+  svärdet hos Smeden (bara svärdet går att välja), en övningsstrid ensam där svärdet prövas (0.30: smedjan före
+  övningsgården; `Profile.INTRO_ORDER` flyttar profiler som stod mitt i den gamla ordningen till svärdssteget), första makroraden, Biblioteket, och (0.25 "Berättelsen",
   `docs/plan/0.25-berattelsen.md`) natten: berättarens rutor, sedan arbetarna från kryptan på gården (de skadade på
   bårar, Mor Elin och Broder Alrik hos dem, `keep.json` "scene"). Gravgrävaren Tor berättar, Gorm skickar paladinen
   ned ensam och Imma får stanna (stegen `workers` och `descent`; steg med `"auto"` spelar samtalet direkt i borgen,
@@ -168,6 +169,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (rumskartan, Realm Quest, troféer, makron, artefakter, material, djup, instabilitet, perks, lärjungar, tidslinjen,
   statusar, ge upp), en gång per profil (`Profile.help_seen`); i striden pausas spelet medan rutan syns. Alla går att
   läsa igen i Broder Alriks handbok (`handbook_screen`). `--no-help` stänger av dem för skärmdumpar.
+- **Inställningar** (0.30, `GameSettings`, `SettingsBox`): musikens och ljudeffekternas volym för hela spelet
+  (`user://settings.cfg`, ljudkanalerna "Music" och "Sfx" som `Sfx` och figurernas kastljud använder; 0 % stänger av)
+  och rumsögonblicken (profilens). Knappen INSTÄLLNINGAR under ‹ PROFILER i borgen och LJUD i striden (pausar).
+  `--settings` öppnar rutan i borgen eller striden.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,

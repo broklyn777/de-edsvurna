@@ -29,16 +29,21 @@ var _music_tween: Tween
 
 
 func _ready() -> void:
+	GameSettings.ensure_buses()  # 0.30: musik och effekter på var sin kanal, så att inställningarna styr dem
 	for i in VOICES:
 		var p := AudioStreamPlayer.new()
+		p.bus = GameSettings.SFX_BUS
 		add_child(p)
 		_players.append(p)
 	_voice = AudioStreamPlayer.new()
+	_voice.bus = GameSettings.SFX_BUS
 	add_child(_voice)
 	_ambience = AudioStreamPlayer.new()
+	_ambience.bus = GameSettings.SFX_BUS
 	add_child(_ambience)
 	for i in 2:
 		var m := AudioStreamPlayer.new()
+		m.bus = GameSettings.MUSIC_BUS
 		add_child(m)
 		_music.append(m)
 	_setup_master_bus()

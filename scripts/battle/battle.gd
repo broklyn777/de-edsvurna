@@ -41,6 +41,7 @@ var speed_chip: ChipButton
 var forfeit_chip: ChipButton
 ## Skadeloggen och uträkningen bakom siffrorna (0.21).
 var log_chip: ChipButton
+var settings_chip: ChipButton
 var order_chip: ChipButton  # 0.30: "Spara som order" efter ett eget val som makrot inte hade gjort
 var _order := {}  # {hero, line, until_ms}
 var _orders_offered := {}  # hjälte:rad som redan har erbjudits i striden
@@ -106,6 +107,8 @@ func _ready() -> void:
 			seed_value = int(arg.get_slice("=", 1))
 		elif arg == "--statuses":
 			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
+		elif arg == "--settings":
+			SettingsBox.open.call_deferred(self, true)  # 0.30: inställningarna öppna (skärmdumpar)
 		elif arg == "--combo" or arg == "--offer-order":
 			_dev_combo = true
 			_dev_order = arg == "--offer-order"  # visar "Spara som order" för Rättfärdigt slag (skärmdumpar)
@@ -266,6 +269,10 @@ func _build_ui() -> void:
 	macro_chip.setup("MAKRON", 140)
 	macro_chip.pressed.connect(_open_macro_editor)
 	ui.add_child(macro_chip)
+	settings_chip = ChipButton.new()
+	settings_chip.setup("LJUD", 140)
+	settings_chip.pressed.connect(func() -> void: SettingsBox.open(self, true))  # 0.30: pausar striden
+	ui.add_child(settings_chip)
 	overlay = BattleOverlay.new()
 	overlay.restart_requested.connect(_continue)
 	overlay.forfeit_answered.connect(_on_forfeit_answer)
@@ -291,6 +298,7 @@ func _layout() -> void:
 	forfeit_chip.position = Vector2(speed_chip.position.x - forfeit_chip.size.x - 8, 12)
 	log_chip.position = Vector2(vs.x - log_chip.size.x - 12, 64)
 	macro_chip.position = Vector2(vs.x - macro_chip.size.x - 12, 116)
+	settings_chip.position = Vector2(vs.x - settings_chip.size.x - 12, 168)
 	order_chip.position = macro_log.position + Vector2(0, -order_chip.size.y - 8)
 	overlay.size = vs
 
@@ -1076,6 +1084,7 @@ func _on_outcome(result: String) -> void:
 	action_bar.visible = false
 	forfeit_chip.visible = false
 	macro_chip.visible = false
+	settings_chip.visible = false
 	# 0.29.5: skadeloggen går att öppna på resultatskärmen (det är då man vill läsa den): knappen och loggen ovanpå rutan.
 	log_chip.get_parent().move_child(log_chip, -1)
 	damage_log.get_parent().move_child(damage_log, -1)

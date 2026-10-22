@@ -114,6 +114,7 @@ func setup(u: CombatUnit, s: CombatSim, vis: Dictionary) -> void:
 	_cast_light.light_energy = 0.0
 	_body.add_child(_cast_light)
 	_cast_player = AudioStreamPlayer.new()
+	_cast_player.bus = GameSettings.SFX_BUS
 	add_child(_cast_player)
 	_idle(0.0)
 
