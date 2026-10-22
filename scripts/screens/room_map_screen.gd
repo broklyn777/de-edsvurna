@@ -62,6 +62,8 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--enter="):
 			_dev_enter(arg.get_slice("=", 1))
+		elif arg == "--ask-leave":
+			_dialog = _leave_dialog()  # frågan om att gå hem (skärmdumpar)
 		elif arg.begins_with("--explore="):
 			_dev_explore(int(arg.get_slice("=", 1)))
 
@@ -149,6 +151,9 @@ func _tap(p: Vector2) -> void:
 	if _moments_rect().has_point(p):
 		run.profile.room_moments = not run.profile.room_moments
 		run.save()
+		return
+	if _home_rect().has_point(p):
+		_dialog = _leave_dialog()
 		return
 	if state.at_group():
 		if _fight_rect().has_point(p):
@@ -335,6 +340,8 @@ func _tap_dialog(p: Vector2) -> void:
 				run.descend()
 				_walk_from = run.state.pos
 				HelpBox.offer(self, ["realm_quest"])
+			elif action == "leave":
+				run.leave_run()
 			return
 
 
@@ -395,6 +402,17 @@ func _moments_rect() -> Rect2:
 	return Rect2(size.x - MARGIN - 180 - 14 - 260, size.y - 66, 260, 48)
 
 
+## 0.30: GÅ HEM (Siralims återvändo till slottet): körningen avslutas, det vunna finns kvar.
+func _home_rect() -> Rect2:
+	return Rect2(_moments_rect().position.x - 14 - 160, size.y - 66, 160, 48)
+
+
+func _leave_dialog() -> Dictionary:
+	return {"title": "Gå hem till borgen?", "text": "Körningen och questens belöning går förlorade; det ni redan har vunnit "
+			+ "behåller ni. Vill du bara pausa: stäng spelet, körningen sparas.",
+			"options": [{"label": "GÅ HEM", "action": "leave"}, {"label": "STANNA"}]}
+
+
 func _dialog_rect() -> Rect2:
 	if _dialog.has("hero"):
 		return Rect2(size.x / 2 - 380, size.y / 2 - 210, 760, 420)  # befrielsen: porträtt, egenskap och makroförslag
@@ -449,8 +467,9 @@ func _draw() -> void:
 	var msg: String = _toast if _toast != "" else run.room_result
 	if msg != "" and _dialog.is_empty():
 		UiStyle.para(self, Vector2(_grid_rect().position.x, size.y - 50), msg, 16, Parchment.INK,
-				_moments_rect().position.x - _grid_rect().position.x - 20, 2)
+				_home_rect().position.x - _grid_rect().position.x - 20, 2)
 	small_button(_macro_rect(), "MAKRON")
+	small_button(_home_rect(), "GÅ HEM")
 	small_button(_moments_rect(), "RUMSÖGONBLICK: " + ("PÅ" if run.profile.room_moments else "AV"))
 	if not _dialog.is_empty():
 		_draw_dialog()

@@ -425,6 +425,15 @@ func _clear_run() -> void:
 	RunState.delete_saved(RUN_PATH)
 
 
+## 0.30: GÅ HEM från grottan (Siralims återvändo till slottet). Som att ge upp: körningen och questens belöning går
+## förlorade och Realmen börjar om; det som redan är vunnet (silver, troféer, fynd, erfarenhet) finns kvar.
+func leave_run() -> void:
+	ui("ui_back", -12.0)
+	_clear_run()
+	_save()
+	get_tree().change_scene_to_file(BASE_SCENE)
+
+
 ## Vid start: en sparad körning fortsätter på rumskartan.
 func _resume_run() -> void:
 	var saved := RunState.load_from(RUN_PATH)
