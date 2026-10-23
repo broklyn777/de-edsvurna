@@ -2361,6 +2361,7 @@
 		}
 	},
 	"moss_cloak": {
+		"combo": {"needs": "turn_start", "creates": "heal", "scope": "self"},
 		"name": "Mosskappa",
 		"trophy": true,
 		"rarity": "common",
@@ -2379,6 +2380,7 @@
 		]
 	},
 	"porridge_bowl": {
+		"combo": {"needs": "enemy_heal", "creates": "attack_up", "scope": "self"},
 		"name": "Grötskål",
 		"trophy": true,
 		"rarity": "common",
@@ -2399,6 +2401,7 @@
 		]
 	},
 	"envy_stone": {
+		"combo": {"needs": "enemy_buff", "creates": "buff", "scope": "self"},
 		"name": "Avundsten",
 		"trophy": true,
 		"rarity": "common",
@@ -2418,6 +2421,7 @@
 		]
 	},
 	"kalles_club": {
+		"combo": {"needs": "enemy_defend", "creates": "damage_bonus", "scope": "enemy"},
 		"name": "Kalles klubba",
 		"trophy": true,
 		"rarity": "common",
@@ -2432,6 +2436,7 @@
 		}
 	},
 	"toll_buckle": {
+		"combo": {"needs": "enemy_provoke", "creates": "damage_bonus", "scope": "enemy"},
 		"name": "Brospännet",
 		"trophy": true,
 		"rarity": "elite",
@@ -2446,6 +2451,7 @@
 		}
 	},
 	"grey_shawl": {
+		"combo": {"needs": "acted", "creates": "sleep", "scope": "enemies"},
 		"name": "Gråluvans sjal",
 		"trophy": true,
 		"rarity": "elite",
@@ -2465,6 +2471,7 @@
 		]
 	},
 	"mountain_crown": {
+		"combo": {"needs": "enemy_repeat", "creates": "damage_reduction", "scope": "self"},
 		"name": "Bergakungens krona",
 		"trophy": true,
 		"rarity": "boss",
