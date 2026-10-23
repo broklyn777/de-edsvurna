@@ -151,6 +151,30 @@ func test_chaos_wind_swaps_attack_and_defense() -> void:
 	assert_eq(brokk.defense, float(_data.heroes.brokk.stats.attack))
 
 
+## 0.30.16: Kaosvinden lägger sig när hjälten börjar sin fjärde tur, så att striden inte kan bli evig.
+func test_chaos_wind_calms_after_three_turns() -> void:
+	var sim := _sim(["chaos_wind"])
+	sim.begin()
+	var calmed := false
+	for i in 400:
+		if sim.outcome != "":
+			break
+		if sim.needs_input():
+			sim.act("attack", sim.default_target(sim.current, "attack"))
+		else:
+			sim.ai_act()
+		for e in sim.drain_events():
+			if e.type == "chaos_calm" and e.unit == "brokk":
+				calmed = true
+		if calmed:
+			break
+	var brokk := sim.unit("brokk")
+	assert_true(calmed, "Kaosvinden lade sig för Brokk")
+	assert_true(brokk.turns_taken == CombatSim.CHAOS_WIND_TURNS + 1)
+	assert_eq(brokk.attack, float(_data.heroes.brokk.stats.attack))
+	assert_eq(brokk.defense, float(_data.heroes.brokk.stats.defense))
+
+
 # --- Elitvarianter och troféjakt ----------------------------------------------------
 
 func test_elite_chance_grows_with_depth_and_instability() -> void:

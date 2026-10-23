@@ -396,7 +396,8 @@ func start_run(party: Array[String]) -> void:
 	roll_rules()  # nästa körning får nya regler
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
 	# 0.24: nedstigningarna räknas per Realm; första gången i en Realm säger någon något om den.
-	state.first_descent = profile.total_descents() == 0
+	# 0.30.16: introts nedstigning är den första tills Imma har följt med (den som föll ensam får trappan igen).
+	state.first_descent = profile.total_descents() == 0 or Intro.current(data, profile).get("id", "") == "descent"
 	var seen := int(profile.descents.get(state.realm, 0))
 	profile.descents[state.realm] = seen + 1
 	profile.count_home_runs()
@@ -837,6 +838,9 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		return
 	if not victory:
 		last_silver = 0
+		# 0.30.16: föll paladinen innan Imma smet efter börjar introts nedstigning om, med en egen kort hemkomst.
+		if Intro.current(data, profile).get("id", "") == "descent" and not profile.recruited.has("imma"):
+			pending_story += Intro.speech(data.intro.get("alone_home", {}).get("lines", []))
 		_clear_run()
 		get_tree().change_scene_to_file(BASE_SCENE)
 		return

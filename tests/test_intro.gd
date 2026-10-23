@@ -134,3 +134,11 @@ func test_old_profiles_move_to_the_new_order() -> void:
 		q.save(path)
 		assert_eq(Profile.load_from(path).intro_step, 1, "flyttas bara en gång")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+## 0.30.16: föll paladinen innan Imma smet efter finns en egen kort hemkomst, och nedstigningen är fortfarande den första.
+func test_alone_home_lines_exist() -> void:
+	var lines := Intro.speech(_data.intro.get("alone_home", {}).get("lines", []))
+	assert_true(lines.size() >= 2, "Gorm säger något när paladinen kommer hem ensam")
+	for l in lines:
+		assert_true(l.who in ["gorm", "imma"], "bara Gorm och Imma")

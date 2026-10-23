@@ -651,6 +651,8 @@ func _next_turn() -> void:
 		current = u
 		turn_no += 1
 		u.turns_taken += 1
+		if u.team == 0 and _rule("chaos_wind") and u.turns_taken == CHAOS_WIND_TURNS + 1:
+			_calm_chaos_wind(u)
 		_turn_counts.clear()
 		_team_heals.clear()
 		_turn_procs = 0
@@ -765,6 +767,20 @@ func _end_turn() -> void:
 
 func _rule(rule_id: String) -> bool:
 	return rules.has(rule_id)
+
+
+## Kaosvind (0.30.16, vårt val): bytet håller i hjältens tre första turer och lägger sig sedan, så att en strid där
+## ingen sida hinner skada den andra ändå tar slut (botarna fann eviga strider på instabilitet 3).
+const CHAOS_WIND_TURNS := 3
+
+
+func _calm_chaos_wind(u: CombatUnit) -> void:
+	var atk := u.attack
+	u.attack = u.defense
+	u.defense = atk
+	u.base_stats.attack = u.attack
+	u.base_stats.defense = u.defense
+	_emit({"type": "chaos_calm", "unit": u.id})
 
 
 ## En regel slog till: första gången i striden blir det en händelse (dolda regler avslöjas).

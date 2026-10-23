@@ -319,7 +319,9 @@ func _jump() -> void:
 func _start_dialog() -> void:
 	var data: Dictionary = run.data
 	# 0.25: den första nedstigningen är klar när man är hemma igen (vunnen eller inte).
-	if Intro.current(data, run.profile).get("event", "") == "came_home" and run.profile.total_descents() > 0:
+	# 0.30.16: bara om Imma smet efter (hon rekryteras då på rumskartan); föll paladinen ensam börjar steget om.
+	if Intro.current(data, run.profile).get("event", "") == "came_home" and run.profile.total_descents() > 0 \
+			and run.profile.recruited.has("imma"):
 		run.intro("came_home")
 	var story: Array = run.pending_story
 	run.pending_story = []

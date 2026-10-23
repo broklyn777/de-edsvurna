@@ -155,7 +155,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   ned ensam och Imma får stanna (stegen `workers` och `descent`; steg med `"auto"` spelar samtalet direkt i borgen,
   rader är text eller `[talare, text]`, `Intro.lines`). Den första striden gör paladinen ensam (fienderna ×0,80 till,
   `RunState.FIRST_FIGHT_ALONE`, ~99 % vinst); direkt efter den smiter Imma efter (0.25.1: striden märker `RunState.joins_next`, hon ansluter först på rumskartan efter segerskärmen, `Run.imma_sneaks`; hennes porträtt
-  på rumskartan, `intro.json` "imma_joins") och följer med resten av vägen. Hemma igen (`came_home`) skäller Gorm lite
+  på rumskartan, `intro.json` "imma_joins") och följer med resten av vägen (0.30.16: faller paladinen innan dess spelas en egen kort hemkomst, `intro.json`
+  "alone_home", och nedstigningen börjar om med samma trappa). Hemma igen (`came_home`) skäller Gorm lite
   på henne, och sedan svärdet till nivå 3. Varje steg börjar med ett samtal på 2–5 repliker hos den som
   ger uppdraget (`giver`, `talk`, `Profile.intro_talked`, `Intro.needs_talk()`); nästa uppdrag kommer först efter
   samtalet. Uppdraget syns bara överst (svärdssteget med nivå och nästa kostnad), aldrig i någons mun: personen vid stegets plats säger en egen replik (`at` i
@@ -186,7 +187,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Instabilitet och våningsregler** (0.17, Siralims Realm Instability och Realm Properties): på kampanjkartan
   väljs instabilitet 0–3. Nivå n ger n synliga och n dolda regler för hela körningen (`data/floor_rules.json`,
   t.ex. De döda vaknar, Förseglade ord, Vaksamma vakter, Speglande ben, Kaosvind), mer silver och bättre
-  troféchans. Dolda regler avslöjas när de slår till (händelsen `rule`).
+  troféchans. Dolda regler avslöjas när de slår till (händelsen `rule`). Kaosvind (0.30.16) lägger sig efter varje
+  hjältes tredje tur (`CombatSim.CHAOS_WIND_TURNS`, händelsen `chaos_calm`): botarna fann eviga strider annars.
 - **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
   namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
   (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.
