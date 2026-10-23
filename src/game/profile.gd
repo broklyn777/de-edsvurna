@@ -122,6 +122,8 @@ var anointed := {}
 var growth := {}
 var growth_rest := {}
 var growth_news := {}
+## När man senast gick till varje Realm (antal nedstigningar då); den som har legat orörd längst växer.
+var growth_last := {}
 
 
 static func reward(floor: int, at_depth := 1) -> int:
@@ -610,6 +612,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "growth", growth)
 	cfg.set_value("progress", "growth_rest", growth_rest)
 	cfg.set_value("progress", "growth_news", growth_news)
+	cfg.set_value("progress", "growth_last", growth_last)
 	return cfg.save(path)
 
 
@@ -687,5 +690,6 @@ static func load_from(path: String) -> Profile:
 	p.growth = cfg.get_value("progress", "growth", {})
 	p.growth_rest = cfg.get_value("progress", "growth_rest", {})
 	p.growth_news = cfg.get_value("progress", "growth_news", {})
+	p.growth_last = cfg.get_value("progress", "growth_last", {})
 	p.choose_depth(int(cfg.get_value("progress", "depth", 1)))
 	return p

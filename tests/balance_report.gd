@@ -859,12 +859,18 @@ func _vows(data: Dictionary) -> void:
 ## förvridna bossen. Sist bara bossmötet: Benfursten mot den svärtade Benfursten.
 func _living(data: Dictionary) -> void:
 	var party := ["paladin", "brokk", "alva", "eira"]
+	if OS.get_environment("LEVANDE_STAT") != "":
+		LivingMap.stat_per_step = float(OS.get_environment("LEVANDE_STAT"))
+	var depths := [1, 2] if OS.get_environment("LEVANDE_DJUP") == "" else [int(OS.get_environment("LEVANDE_DJUP"))]
+	print("Stats per steg: +%.1f %%" % (LivingMap.stat_per_step * 100.0))
 	print("=== Den levande kartan, %d körningar per ruta: vinst per steg (MACRO / TUNED) ===" % RUNS)
-	for depth in [1, 2]:
+	for depth in depths:
 		var lv := HeroStats.expected_level(depth)
 		for realm_id in data.realms:
+			if OS.get_environment("LEVANDE_REALM") not in ["", realm_id]:
+				continue
 			var line := "  djup %d %-8s nivå %d" % [depth, data.realms[realm_id].short, lv]
-			for g in range(0, LivingMap.GROWTH_MAX + 1):
+			for g in range(1, LivingMap.GROWTH_MAX + 1):
 				var won := [0, 0]
 				for k in 2:
 					var skill: Bot.Skill = [Bot.Skill.MACRO, Bot.Skill.TUNED][k]
@@ -874,13 +880,14 @@ func _living(data: Dictionary) -> void:
 						won[k] += 1 if r.cleared else 0
 				line += "  steg %d %3d/%3d %%" % [g, roundi(100.0 * won[0] / RUNS), roundi(100.0 * won[1] / RUNS)]
 			print(line)
-	print("  Bossmötet ensamt (nivå %d, fulla Charges, MACRO):" % HeroStats.expected_level(1))
+	var boss_lv := HeroStats.expected_level(1) + 2  # sällskapet har vuxit under körningen när det når bossen
+	print("  Bossmötet ensamt (nivå %d, fulla Charges, MACRO):" % boss_lv)
 	for enc in ["crypt_3", "crypt_twisted"]:
 		for g in [1, 4]:
 			var won := 0
 			for seed_value in range(1, RUNS + 1):
 				var r := Bot.run_fight(data, seed_value, Bot.Skill.MACRO, enc, party, {}, {}, {}, 1,
-						{"levels": Bot.party_levels(data, HeroStats.expected_level(1), party), "floor": 2,
+						{"levels": Bot.party_levels(data, boss_lv, party), "floor": 2,
 						"stat_bonus": LivingMap.stat_mult(g), "counter": true})
 				won += 1 if r.outcome == "victory" else 0
 			print("    %-14s steg %d: %3d %%" % [enc, g, roundi(100.0 * won / RUNS)])

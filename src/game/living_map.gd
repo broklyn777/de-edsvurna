@@ -5,19 +5,23 @@ extends RefCounted
 ## **Avvikelse från Siralim:** Siralim har ingen värld som förändras mellan körningarna. Varje Realm som man har gått
 ## ned i har ett fördärv, `growth` 0–4 (Profile.growth, start GROWTH_START). Efter varje nedstigning med minst en
 ## vunnen strid (aldrig i verklig tid) sjunker den Realm man gick till (2 steg om dess Realm Quest klarades, annars 1)
-## och de andra upplåsta växer ett steg. En Realm som når 0 vilar nästa nedstigning (växer inte). En Realm på 4 står
-## still tills man går dit; där har en förvriden boss vaknat (realms.json "growth": "twisted").
+## och en annan upplåst Realm växer ett steg. En Realm som når 0 vilar nästa nedstigning (växer inte). En Realm på 4
+## står still tills man går dit; där har en förvriden boss vaknat (realms.json "growth": "twisted").
 ##
 ## Vårt val (mätt med botarna, docs/plan/levande-karta.md "Resultat"):
 ## - "Upplåst" = man har gått ned där minst en gång (Profile.descents). En Realm man aldrig har sett växer inte.
-## - Alla andra upplåsta Realms växer (planens regel), också med tre Realms: fallet och vilan håller världen nere när
-##   man växlar, och bara den som lämnas orörd i tre nedstigningar når 4.
+## - Med tre Realms växer bara den som har legat orörd längst (Profile.growth_last). Planens regel (alla andra växer)
+##   drev med tre Realms upp den Realm man förlorade i: karriärbotarna hade kryptan på 3–4 efter tolv nedstigningar och
+##   mötte den förvridna bossen 2,4 gånger per profil fast de växlade Realm varje gång. Med två Realms är det samma regel.
 ## - Steg 0 och 1 är dagens strider (inget blir lättare än balansen); styrkan och bytet kommer från steg 2.
 
 const GROWTH_MAX := 4
 const GROWTH_START := 1
-## Fiendernas stats per steg över STRENGTH_FROM (steg 4: ×1,18).
-const STAT_PER_STEP := 0.06
+## Fiendernas stats per steg över STRENGTH_FROM (steg 4: ×1,06). Botarna: +6 % per steg fällde kryptans körningar från
+## 35 % till 12/5/0 % (steg 2/3/4); +2 % ger 28/21 % (BALANS=levande, docs/plan/levande-karta.md).
+const STAT_PER_STEP := 0.02
+## Samma värde, men botarna kan pröva andra (BALANS=levande LEVANDE_STAT=0.02).
+static var stat_per_step := STAT_PER_STEP
 ## Troféchans och fynd per steg över STRENGTH_FROM.
 const TROPHY_PER_STEP := 0.05
 const AMBER_CHANCE_PER_STEP := 0.10
@@ -46,9 +50,10 @@ static func extra_steps(g: int) -> int:
 	return maxi(g - STRENGTH_FROM, 0)
 
 
-## Fiendernas skalning på steget (1,0 för steg 0–1).
+## Fiendernas skalning på steget (1,0 för steg 0–1). Steg 4 är lika starkt som steg 3 (vårt val): där är det den
+## förvridna bossen som är hotet, och med båda tappade botarna nästan alla körningar.
 static func stat_mult(g: int) -> float:
-	return 1.0 + STAT_PER_STEP * extra_steps(g)
+	return 1.0 + stat_per_step * extra_steps(mini(g, WARN_AT))
 
 
 static func trophy_bonus(g: int) -> float:
@@ -92,6 +97,8 @@ static func changes(profile: Profile, data: Dictionary, realm_id: String, quest_
 	var open := unlocked(profile, data)
 	if not open.has(realm_id):
 		open.append(realm_id)
+	# Den som har legat orörd längst växer (inte den som vilar eller redan står på 4).
+	var oldest := ""
 	for other in open:
 		if other == realm_id:
 			continue
@@ -101,7 +108,11 @@ static func changes(profile: Profile, data: Dictionary, realm_id: String, quest_
 		if profile.growth_rest.has(other):
 			out.append({"realm": other, "from": og, "to": og, "why": "rest"})
 			continue
-		out.append({"realm": other, "from": og, "to": og + 1, "why": "neglect"})
+		if oldest == "" or int(profile.growth_last.get(other, -1)) < int(profile.growth_last.get(oldest, -1)):
+			oldest = other
+	if oldest != "":
+		var og := growth(profile, oldest)
+		out.append({"realm": oldest, "from": og, "to": og + 1, "why": "neglect"})
 	return out
 
 
@@ -117,6 +128,7 @@ static func after_descent(profile: Profile, data: Dictionary, realm_id: String, 
 		if int(c.to) == 0 and c.why != "rest":
 			rest[c.realm] = true
 	profile.growth_rest = rest
+	profile.growth_last[realm_id] = profile.total_descents()
 	if not profile.growth.has(realm_id):
 		profile.growth[realm_id] = growth(profile, realm_id)
 	profile.growth_news = news(profile, data, realm_id, list)

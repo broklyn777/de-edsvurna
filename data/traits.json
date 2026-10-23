@@ -3298,7 +3298,7 @@
 	"black_marrow": {
 		"name": "Svart märg",
 		"enemy": true,
-		"text": "När någon annan i hans följe faller får den svärtade Benfursten en Barriär för 12 % av sitt max liv.",
+		"text": "När någon annan i hans följe faller får den svärtade Benfursten en Barriär för 8 % av sitt max liv.",
 		"trigger": "death",
 		"when": {
 			"unit": "ally"
@@ -3307,7 +3307,7 @@
 			{
 				"type": "barrier",
 				"stat": "health",
-				"pct": 0.12,
+				"pct": 0.08,
 				"target": "self"
 			}
 		]

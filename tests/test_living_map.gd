@@ -59,6 +59,22 @@ func test_the_realm_you_go_to_sinks_and_the_others_grow() -> void:
 	assert_eq(LivingMap.growth(p, "crypt"), 3)
 
 
+func test_with_three_realms_only_the_longest_untouched_grows() -> void:
+	var p := _profile(["crypt", "chapel", "grove"])
+	p.growth = {"crypt": 1, "chapel": 1, "grove": 1}
+	p.growth_last = {"crypt": 0, "chapel": 2, "grove": 1}
+	p.descents = {"crypt": 1, "chapel": 1, "grove": 1}
+	LivingMap.after_descent(p, _data, "chapel", 1, false)
+	assert_eq(LivingMap.growth(p, "crypt"), 2, "kryptan har legat orörd längst")
+	assert_eq(LivingMap.growth(p, "grove"), 1, "lunden väntar")
+	assert_eq(LivingMap.growth(p, "chapel"), 0)
+	assert_eq(int(p.growth_last.chapel), p.total_descents())
+	# Nästa gång (kapellet vilar) är lunden äldst.
+	LivingMap.after_descent(p, _data, "crypt", 1, false)
+	assert_eq(LivingMap.growth(p, "grove"), 2)
+	assert_eq(LivingMap.growth(p, "chapel"), 0, "vilar")
+
+
 func test_a_realm_at_zero_rests_one_descent() -> void:
 	var p := _profile()
 	p.growth = {"crypt": 1, "chapel": 2}
@@ -125,7 +141,8 @@ func test_growth_strengthens_battles_from_step_two() -> void:
 		assert_near(float(opts.get("stat_bonus", 1.0)), want, 0.0001, "steg %d" % g)
 	assert_near(LivingMap.stat_mult(1), 1.0)
 	assert_near(LivingMap.stat_mult(0), 1.0, 0.0001, "steg 0 är dagens strider")
-	assert_true(LivingMap.stat_mult(4) > LivingMap.stat_mult(3))
+	assert_true(LivingMap.stat_mult(3) > LivingMap.stat_mult(2) and LivingMap.stat_mult(2) > 1.0)
+	assert_near(LivingMap.stat_mult(4), LivingMap.stat_mult(3), 0.0001, "steg 4: hotet är den förvridna bossen")
 	# Profilens första nedstigning har sin egen trappa och påverkas inte.
 	p.growth = {"crypt": 4}
 	var first := RunState.new_run(p, _data)
