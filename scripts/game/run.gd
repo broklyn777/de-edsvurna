@@ -499,10 +499,22 @@ func descend() -> void:
 	if not state.floor_cleared() or state.is_last_floor():
 		return
 	ui("room_door", -6.0)
+	var trail := _pay_trail()
 	state.next_floor(data)
 	bark("cave")
-	room_result = "Ni går ned till våning %d." % (state.floor + 1)
+	room_result = "Ni går ned till våning %d." % (state.floor + 1) + ("  " + trail if trail != "" else "")
 	save_run()
+
+
+## 0.30.22: spåren efter de vanliga grupper man lät vara (RunState.take_trail). Returnerar raden till rumskartan.
+func _pay_trail() -> String:
+	var t := state.take_trail(data)
+	if t.is_empty():
+		return ""
+	profile.grant_xp(data, state.party, int(t.xp))
+	var amount := roundi(float(t.silver) * state.silver_mult(data))
+	profile.silver += amount
+	return "Spåren efter %d grupper ni lät vara: +%d erfarenhet, +%d silver." % [t.groups, t.xp, amount]
 
 
 ## Lägereldens trofébyte (0.27, VAL: troféer byts bara vid en lägereld): lägret öppnas utan nytt erbjudande.
@@ -797,6 +809,7 @@ func after_camp() -> void:
 	_save()
 	if state.floor_cleared():
 		if state.is_last_floor():
+			_pay_trail()
 			profile.clear_depth(state.depth, state.realm)
 			state.finished = true
 			_clear_run()

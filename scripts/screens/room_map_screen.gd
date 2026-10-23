@@ -593,6 +593,17 @@ func _draw_grid(m: Grotto, state: RunState) -> void:
 	for i in Grotto.SIZE * Grotto.SIZE:
 		if known.call(i):
 			_draw_cell(m, state, i)
+	# 0.30.22: ryktena om questens mål (en ring över 3×3 genom dimman) och, när questen är klar, stigen till målet.
+	for rumour in state.active_hints():
+		InkArt.ring(self, _cell_center(int(rumour.center)), cs * 1.45, Color(Parchment.SEAL, 0.4 + 0.2 * pulse), 2.6)
+	if not state.goal_locked() and state.pos != m.goal and not state.at_group():
+		var route := m.path(state.pos, m.goal, state.visited)
+		var prev := _cell_center(state.pos)
+		for step in route:
+			var nxt := _cell_center(step)
+			draw_dashed_line(prev, nxt, Color(UiStyle.GOLD.darkened(0.3), 0.6 + 0.4 * pulse), 3.0, 9.0)
+			prev = nxt
+		draw_circle(_cell_center(m.goal), cs * (0.5 + 0.06 * pulse), Color(UiStyle.GOLD, 0.18 + 0.12 * pulse))
 
 
 ## Fyra hörn som markerar en ruta (len = hörnens längd).
@@ -730,6 +741,10 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		var hint := "Tryck på en ruta bredvid för att gå dit. En besökt ruta går pjäsen till själv."
 		if state.goal_locked():
 			hint += " %s syns men är låst tills questen är klar." % ("Bossen" if state.map.last_floor else "Trappan")
+			if not state.active_hints().is_empty():
+				hint += " De röda ringarna visar ungefär var målen finns."
+		else:
+			hint = "Questen är klar: %s är öppen (den gyllene stigen). Grupper ni låter vara lämnar spår: halva erfarenheten och silvret när ni går vidare." % ("bossen" if state.map.last_floor else "trappan")
 		UiStyle.para(self, Vector2(x, y + 28), hint, 16, Color(InkArt.INK, 0.8), w, 6)
 		return
 	# Gruppens kort (plan: fiender, storlek, egenskaper, möjlig trofé och för en elit en varning).

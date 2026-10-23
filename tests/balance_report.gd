@@ -423,13 +423,15 @@ func _grotto(data: Dictionary) -> void:
 
 func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Array, lv: int, extra: Dictionary) -> void:
 	var line := "  %-8s %-34s" % [data.realms[realm_id].short, label]
-	for run in [[Bot.Skill.MACRO, "simple"], [Bot.Skill.TUNED, "simple"], [Bot.Skill.MACRO, "careful"]]:
+	for run in [[Bot.Skill.MACRO, "simple"], [Bot.Skill.TUNED, "simple"], [Bot.Skill.MACRO, "careful"],
+			[Bot.Skill.MACRO, "direct"]]:
 		var skill: Bot.Skill = run[0]
 		var policy: String = run[1]
 		var cleared := 0
 		var fights := 0
 		var fights_cleared := 0
 		var steps := 0
+		var xp := 0
 		for seed_value in range(1, RUNS + 1):
 			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
 			opts.merge(extra.duplicate(true))
@@ -437,11 +439,12 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 			cleared += 1 if r.cleared else 0
 			fights += int(r.fights)
 			steps += int(r.rooms)
+			xp += int(r.get("xp", 0))
 			if r.cleared:
 				fights_cleared += int(r.fights)
-		line += "  %s%s %3d %% (strider %.1f, klarade %.1f, steg %d)" % [_skill_name(skill), "-försiktig" if policy == "careful" else "",
-				roundi(100.0 * cleared / RUNS),
-				float(fights) / RUNS, float(fights_cleared) / maxi(cleared, 1), roundi(float(steps) / RUNS)]
+		line += "  %s%s %3d %% (strider %.1f, klarade %.1f, steg %d, erf %d)" % [_skill_name(skill),
+				{"careful": "-försiktig", "direct": "-direkt"}.get(policy, ""), roundi(100.0 * cleared / RUNS),
+				float(fights) / RUNS, float(fights_cleared) / maxi(cleared, 1), roundi(float(steps) / RUNS), xp / RUNS]
 	print(line)
 
 

@@ -159,6 +159,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	loot_rng.seed = seed_value * 7 + 3
 	# Nivåer (0.19): opts.levels = startnivåer per hjälte; med opts.grow växer de av erfarenheten.
 	var levels: Dictionary = opts.get("levels", {}).duplicate(true)
+	var xp_total := 0  # 0.30.22: erfarenhet per hjälte i körningen (strider och spår)
 	# 0.27: grottan. Boten går ett steg i taget mot närmaste okända ruta (mot målet), slåss mot grupperna den kliver på
 	# (elitgrupper bara om questen kräver dem), tar skatter, helgedomar, fångar och lägereldar, och går till målet när
 	# questen är klar.
@@ -201,6 +202,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.store_charges(result.sim)
 			if opts.get("grow", false):
 				var xp := HeroStats.battle_xp(RunState.fight_kind(r), depth, r.get("boss", false))
+				xp_total += xp
 				for hero_id in levels:
 					HeroStats.add_xp(levels[hero_id], xp)
 			# 0.25: opts.joins (t.ex. "imma") ansluter efter den första vunna striden, som Run.imma_sneaks.
@@ -222,6 +224,9 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				"item":
 					state.collect_item()
 			if state.floor_cleared():
+				var t := _bot_trail(data, state, levels, opts)
+				xp_total += int(t.get("xp", 0))
+				silver += roundi(float(t.get("silver", 0.0)))
 				state.next_floor(data)
 			continue
 		# Rutans innehåll (obevakat).
@@ -239,6 +244,9 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					var gifts := state.shrine_options(data, rng)
 					state.apply_shrine(data, rng, gifts[0] if gifts[0].kind == "charge" else gifts[1])
 		if state.floor_cleared():
+			var t := _bot_trail(data, state, levels, opts)
+			xp_total += int(t.get("xp", 0))
+			silver += roundi(float(t.get("silver", 0.0)))
 			state.next_floor(data)
 			continue
 		var target := _bot_target(data, state, policy)
@@ -247,7 +255,16 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		rooms += 1
 	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won, "finds": finds, "silver": silver,
-			"vow_kept": state.vow_kept(data)}
+			"vow_kept": state.vow_kept(data), "xp": xp_total}
+
+
+## 0.30.22: spåren efter de vanliga grupper boten lät vara (RunState.take_trail), när våningen är klar.
+static func _bot_trail(data: Dictionary, state: RunState, levels: Dictionary, opts: Dictionary) -> Dictionary:
+	var t := state.take_trail(data)
+	if not t.is_empty() and opts.get("grow", false):
+		for hero_id in levels:
+			HeroStats.add_xp(levels[hero_id], int(t.xp))
+	return t
 
 
 ## Slåss boten mot gruppen den står på? Elitgrupper bara om questen kräver dem (eller med "greedy").
@@ -260,6 +277,9 @@ static func _bot_wants_fight(state: RunState, r: Dictionary, policy: String) -> 
 		return false
 	# "careful": backar från vanliga grupper och bevakade skatter så länge det finns en annan väg (färre strider).
 	if policy == "careful" and (r.kind == "battle" or (r.kind == "treasure" and not r.get("elite", false))):
+		return false
+	# 0.30.22 "direct": backar från vanliga grupper (tar spåren när den går vidare), slåss för questen och skatterna.
+	if policy == "direct" and r.kind == "battle" and RunState.is_common_group(r):
 		return false
 	if not r.get("elite", false):
 		return true
