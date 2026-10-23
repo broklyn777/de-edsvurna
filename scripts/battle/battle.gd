@@ -133,6 +133,8 @@ func _ready() -> void:
 	var opts: Dictionary = state.battle_opts() if state.map != null and not state.practice \
 			else state.practice_opts(data)
 	opts.levels = run.profile.levels_for(data, state.party)  # 0.19: hjältarnas nivåer
+	if not state.practice:
+		state.apply_vow(data, opts)  # 0.30.17: Jag helar inte
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
 			state.artifacts, state.depth, opts)
 	data = sim.data  # med artefakternas egenskaper
@@ -573,6 +575,9 @@ func _update_rules_text() -> void:
 	for i in unknown:
 		names.append("?")
 	overlay.rules_text = ("Regler: " + " · ".join(names)) if not names.is_empty() else ""
+	if state.vow != "" and not state.practice:
+		var vow_txt := "Löfte: " + state.vow_name(data)
+		overlay.rules_text = vow_txt if overlay.rules_text == "" else overlay.rules_text + " · " + vow_txt
 
 
 ## Vilken trofé fienden kan lämna (Inspect): elitens egen, bossens med räknaren, eller den vanliga.
@@ -879,6 +884,8 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e), _on_trait.bind(e))
 		"rule":
 			_after(_effect_delay(e), _on_rule.bind(e.rule))
+		"chaos_calm":
+			_after(_cursor + 0.1, _float.bind(e.unit, "KAOSVINDEN LÄGGER SIG", UiStyle.TRAIT_GOLD, 18, true))
 		"elite":
 			_after(_cursor + 0.6, _on_elite.bind(e.unit))
 		"release":
@@ -998,6 +1005,23 @@ func _on_damage(e: Dictionary) -> void:
 
 ## 0.30: en förmåga slog hårdare tack vare en status som en annan satte (introts kombination: Rökpil gör fienden
 ## Förblindad, Rättfärdigt slag +50 %). Ett guldord ovanför målet, och första gången en ruta med orsak och verkan.
+## 0.30.16: för varje TROFÉ-rad på segerskärmen, troféerna man äger i körningen som kunde ta dess plats.
+func _decider_alternatives(rows: Array) -> Dictionary:
+	var out := {}
+	var names := {}
+	for h in sim.heroes:
+		names[h.id] = h.name
+	for i in rows.size():
+		if rows[i].tag != "TROFÉ" or not rows[i].has("id"):
+			continue
+		# I en körning byts troféer bland körningens (vid en lägereld); i Övningsgården väljer man ur hela samlingen.
+		var owned: Array = run.profile.collection if run.state.practice else run.state.trophies
+		var list := BattleSummary.alternatives(data, rows[i].id, owned, run.state.equipped, names)
+		if not list.is_empty():
+			out[i] = list
+	return out
+
+
 func _on_combo(e: Dictionary) -> void:
 	var c: Dictionary = e.calc.combo
 	_float(e.target, "KOMBINATION!", UiStyle.GOLD, 22, true)
@@ -1094,6 +1118,11 @@ func _on_outcome(result: String) -> void:
 		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
 		# 0.30: det som avgjorde striden står till vänster, med vilken del av bygget det kom ifrån.
 		overlay.deciders = BattleSummary.deciders(sim)
+		overlay.alternatives = _decider_alternatives(overlay.deciders)
+		if run.state.practice:
+			overlay.alt_hint = "Byt troféer i Övningsgården."
+		if "--alt-open" in OS.get_cmdline_user_args() and not overlay.alternatives.is_empty():
+			overlay.alt_open = overlay.alternatives.keys()[0]  # skärmdumpar av listan
 		# 0.19: erfarenhet och nivåuppgångar syns och hörs på segerskärmen.
 		overlay.level_ups = run.award_battle(sim, true)
 		if not overlay.level_ups.is_empty():

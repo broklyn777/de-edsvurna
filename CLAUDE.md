@@ -155,7 +155,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   ned ensam och Imma får stanna (stegen `workers` och `descent`; steg med `"auto"` spelar samtalet direkt i borgen,
   rader är text eller `[talare, text]`, `Intro.lines`). Den första striden gör paladinen ensam (fienderna ×0,80 till,
   `RunState.FIRST_FIGHT_ALONE`, ~99 % vinst); direkt efter den smiter Imma efter (0.25.1: striden märker `RunState.joins_next`, hon ansluter först på rumskartan efter segerskärmen, `Run.imma_sneaks`; hennes porträtt
-  på rumskartan, `intro.json` "imma_joins") och följer med resten av vägen. Hemma igen (`came_home`) skäller Gorm lite
+  på rumskartan, `intro.json` "imma_joins") och följer med resten av vägen (0.30.16: faller paladinen innan dess spelas en egen kort hemkomst, `intro.json`
+  "alone_home", och nedstigningen börjar om med samma trappa). Hemma igen (`came_home`) skäller Gorm lite
   på henne, och sedan svärdet till nivå 3. Varje steg börjar med ett samtal på 2–5 repliker hos den som
   ger uppdraget (`giver`, `talk`, `Profile.intro_talked`, `Intro.needs_talk()`); nästa uppdrag kommer först efter
   samtalet. Uppdraget syns bara överst (svärdssteget med nivå och nästa kostnad), aldrig i någons mun: personen vid stegets plats säger en egen replik (`at` i
@@ -173,6 +174,13 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`user://settings.cfg`, ljudkanalerna "Music" och "Sfx" som `Sfx` och figurernas kastljud använder; 0 % stänger av)
   och rumsögonblicken (profilens). Knappen INSTÄLLNINGAR under ‹ PROFILER i borgen och LJUD i striden (pausar).
   `--settings` öppnar rutan i borgen eller striden.
+- **Löften** (0.30.17, prov, `docs/plan/loften.md`, `data/vows.json`): på kampanjkartan (LÖFTE bredvid FÖRBEREDELSER,
+  efter introt, `Profile.vow`) lovar Paladinen något för hela körningen. Hållet ger en egenskap hos Paladinen och silver;
+  brutet blir det en ödmjukare form (`RunState.vow`, `vow_broken`, `vow_trait`, `vow_after_battle`, `is_common_group`).
+  Ingen ska falla (Barriär till den svagaste; bryts när någon faller, då reser sig den som faller en gång), Jag helar inte
+  (helningsförmågor går inte att välja, `CombatSim.no_heal`, orsaken "vowed"; Paladinens attacker helar 20 %), Raka vägen
+  (högst två vanliga grupper per våning; questens silver dubbelt). Botarna: `BALANS=loften`. `--vow=<id>` före `--map`,
+  `--vows` öppnar valet på kampanjkartan.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
@@ -186,7 +194,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Instabilitet och våningsregler** (0.17, Siralims Realm Instability och Realm Properties): på kampanjkartan
   väljs instabilitet 0–3. Nivå n ger n synliga och n dolda regler för hela körningen (`data/floor_rules.json`,
   t.ex. De döda vaknar, Förseglade ord, Vaksamma vakter, Speglande ben, Kaosvind), mer silver och bättre
-  troféchans. Dolda regler avslöjas när de slår till (händelsen `rule`).
+  troféchans. Dolda regler avslöjas när de slår till (händelsen `rule`). Kaosvind (0.30.16) lägger sig efter varje
+  hjältes tredje tur (`CombatSim.CHAOS_WIND_TURNS`, händelsen `chaos_calm`): botarna fann eviga strider annars.
 - **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
   namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
   (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.
@@ -273,6 +282,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   **Det här avgjorde striden** (0.30, byggets fingeravtryck, `BattleSummary.deciders`): segerskärmen visar till vänster
   upp till fyra delar av sällskapets bygge som bar striden, med källan (TROFÉ, KALL, ARTEFAKT, EGEN, KOMBINATION) och vad
   de gjorde (`CombatSim.trait_stats`, `combo_stats`); kallet räknas en gång under Paladinen. Samma urval är kvittot vid lägret.
+  Andra halvan (0.30.16): tryck på en TROFÉ-rad så visas upp till fyra ägda troféer som kunde ta dess plats
+  (`BattleSummary.alternatives`: samma roll, utlösare, sällsynthet; körningens troféer, i Övningsgården samlingen), med
+  vem som bär dem; `--alt-open` öppnar listan för skärmdumpar. Plan för Löften per nedstigning: `docs/plan/loften.md`.
   Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
@@ -422,6 +434,10 @@ godot --path .
 
 # Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var), och per kall
 godot --headless --path . --script res://tests/balance_report.gd
+
+# Buggjakt med botar (0.30.16, tests/soak.gd): tusentals hela körningar med slumpade val och kontroller efter varje drag
+# (körfel, fastlåsning, eviga strider, sparning och inläsning, silver, samling, Charges). --seed=N --verbose återskapar ett fel.
+godot --headless --path . --script res://tests/soak.gd -- --runs=1000
 
 # Granskningen av siffrorna (0.23.3): räknar om varje skada, helning och undvikande i 432 seedade strider med en
 # oberoende formelmodul (tests/numbers_reference.gd) och listar avvikelser. AUDIT_SEEDS=n ändrar antalet frön.

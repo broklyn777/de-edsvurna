@@ -64,6 +64,14 @@ var rules_revealed: Array = []
 var last_elites: Array = []
 ## Realm Depth som fienderna skalar med (Profile.depth).
 var depth := 1
+## 0.30.17: körningens löfte (data/vows.json, docs/plan/loften.md): "" = inget. Brutet blir det den ödmjuka formen;
+## vow_used = den ödmjuka formens gång per körning är förbrukad. commons_fought räknar vanliga grupper på våningen.
+var vow := ""
+var vow_broken := false
+var vow_used := false
+var vow_breaks_on := ""
+var vow_max_commons := 0
+var commons_fought := 0
 ## Troféer som hittats under körningen.
 var trophies: Array[String] = []
 ## hero_id -> trophy_id
@@ -128,6 +136,8 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.depth = profile.depth
 	s.set_realm(data, profile.realm)
 	s.fill_charges(data)
+	if profile.intro_done:
+		s.set_vow(data, profile.vow)
 	s.place_prisoners(data, profile.recruited, int(profile.descents.get(profile.realm, 0)))
 	# 0.26.3 (Siralim): hjältarna bär sina troféer ur samlingen in i varje körning.
 	for hero_id in profile.worn:
@@ -223,6 +233,8 @@ func hero_traits(data: Dictionary) -> Dictionary:
 	var out := {}
 	for hero_id in party:
 		var list: Array = ([oath] + perks) if hero_id == "paladin" else data.heroes[hero_id].get("traits", []).duplicate()
+		if hero_id == "paladin" and vow_trait(data) != "":
+			list.append(vow_trait(data))
 		if equipped.has(hero_id):
 			list.append(equipped[hero_id])
 		out[hero_id] = list
@@ -270,6 +282,8 @@ func silver_mult(data: Dictionary) -> float:
 	var m := 1.0
 	for id in active_rules():
 		m += float(data.floor_rules[id].get("silver", 0.0))
+	if vow_kept(data):
+		m += float(data.vows[vow].get("silver", 0.0))
 	return m
 
 
@@ -419,6 +433,7 @@ func start_floor(data: Dictionary) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = run_seed * 977 + floor * 31 + 13
 	quest = roll_quest(rng, floor)
+	commons_fought = 0
 	var pools: Array = data.realms[realm].get("pools", [])
 	if pools.is_empty():
 		pools = [floor_ids]
@@ -508,6 +523,69 @@ func back() -> bool:
 ## Striden mot gruppen på rutan börjar (körningen sparas före striden).
 func fight() -> void:
 	battle_pending = at_group()
+	if battle_pending and is_common_group(current_room()):
+		commons_fought += 1
+		if vow_breaks_on == "commons" and not vow_broken and commons_fought > vow_max_commons:
+			vow_broken = true
+
+
+# --- Löften (0.30.17) ---------------------------------------------------------
+
+func set_vow(data: Dictionary, vow_id: String) -> void:
+	var v: Dictionary = data.get("vows", {}).get(vow_id, {})
+	vow = vow_id if not v.is_empty() else ""
+	vow_broken = false
+	vow_used = false
+	vow_breaks_on = String(v.get("breaks_on", ""))
+	vow_max_commons = int(v.get("max_commons", 0))
+
+
+## Löftets egenskap hos Paladinen i nästa strid: den hållna formen, den ödmjuka efter ett brott (om den inte är förbrukad).
+func vow_trait(data: Dictionary) -> String:
+	if vow == "":
+		return ""
+	var v: Dictionary = data.vows[vow]
+	if not vow_broken:
+		return String(v.get("held", ""))
+	return "" if vow_used else String(v.get("humble", ""))
+
+
+## Det som bara stridsmotorn behöver veta (Jag helar inte).
+func apply_vow(data: Dictionary, opts: Dictionary) -> void:
+	if vow != "" and not vow_broken and data.vows[vow].get("no_heal", false):
+		opts.no_heal = true
+
+
+## Efter en vunnen strid: bryts löftet av att någon föll, och förbrukades den ödmjuka formen? Ger "broke" om det brast nu.
+func vow_after_battle(data: Dictionary, sim: CombatSim) -> String:
+	if vow == "":
+		return ""
+	if vow_broken:
+		var humble := String(data.vows[vow].get("humble", ""))
+		if humble != "" and int(sim.trait_stats.get(humble, {}).get("procs", 0)) > 0:
+			vow_used = true
+		return ""
+	if vow_breaks_on == "death" and sim.heroes.any(func(u: CombatUnit) -> bool: return u.deaths > 0):
+		vow_broken = true
+		return "broke"
+	return ""
+
+
+## Löftets namn som det står nu: "Ingen ska falla", eller den ödmjuka formen efter ett brott.
+func vow_name(data: Dictionary) -> String:
+	if vow == "":
+		return ""
+	var v: Dictionary = data.vows[vow]
+	return String(v.get("humble_name", v.name)) if vow_broken else String(v.name)
+
+
+func vow_kept(data: Dictionary) -> bool:
+	return vow != "" and not vow_broken
+
+
+## En vanlig grupp för Raka vägen: inte elit, Nemesis, boss eller en grupp som vaktar questens föremål.
+static func is_common_group(r: Dictionary) -> bool:
+	return not (r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false) or r.get("kind", "") == "item")
 
 
 ## Inställningar till CombatSim för rutans strid (regler, elit, Nemesis, helgedomens gåva). "floor" är gruppens tier, som
@@ -863,7 +941,8 @@ func object_won() -> Dictionary:
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
-		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult"]
+		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
+		"vow_breaks_on", "vow_max_commons", "commons_fought"]
 
 
 func to_dict() -> Dictionary:

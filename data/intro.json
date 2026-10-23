@@ -291,6 +291,23 @@
 		"library": "Böckerna springer ingenstans. De har inga ben. Gör klart det du håller på med.",
 		"inn": "Kom tillbaka när du har någon som behöver husrum. Då dukar jag fram."
 	},
+	"alone_home": {
+		"_comment": "0.30.16: förlorar paladinen innan Imma hunnit smita efter spelas inte hemkomsten; steget börjar om.",
+		"lines": [
+			[
+				"gorm",
+				"Du kom hem. Det är det viktigaste – Sven säger det, och för en gångs skull har han rätt."
+			],
+			[
+				"gorm",
+				"Ben som reser sig slår hårt första gången. Vila, och gå ned igen när du är redo."
+			],
+			[
+				"imma",
+				"Jag såg dig gå genom porten. Nästa gång står jag inte bara här och väntar."
+			]
+		]
+	},
 	"imma_joins": {
 		"_comment": "0.25: Imma dyker upp på rumskartan efter den första striden i den första nedstigningen.",
 		"lines": [

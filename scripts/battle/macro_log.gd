@@ -62,7 +62,8 @@ func _draw() -> void:
 	for i in range(start, entries.size()):
 		var e: Dictionary = entries[i]
 		var col := Color(1, 1, 1, 0.9) if e.ok else Color("#ff8a6a")
-		UiStyle.text(self, Vector2(8, 38 + (i - start) * LINE_H), e.text, 17, col, HORIZONTAL_ALIGNMENT_LEFT, size.x - 14, 3)
+		UiStyle.text(self, Vector2(8, 38 + (i - start) * LINE_H), UiStyle.fit(e.text, 17, size.x - 14), 17, col,
+				HORIZONTAL_ALIGNMENT_LEFT, size.x - 14, 3)
 
 
 func _draw_expanded() -> void:

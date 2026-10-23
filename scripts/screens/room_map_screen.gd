@@ -463,13 +463,22 @@ func _draw() -> void:
 			size.x - 420, 0)
 	var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
 	var hidden := state.active_rules().size() - known.size()
+	var header := ""
 	if not state.active_rules().is_empty():
-		UiStyle.text(self, Vector2(MARGIN, 110), "REGLER: %s%s" % [", ".join(known), "" if hidden == 0 else " · %d dolda" % hidden],
-				15, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
+		header = "REGLER: %s%s" % [", ".join(known), "" if hidden == 0 else " · %d dolda" % hidden]
+	if state.vow != "":
+		# 0.30.17: löftet, och för Raka vägen hur många vanliga grupper som återstår på våningen.
+		var vow_txt := "LÖFTE: " + state.vow_name(data) + ("" if state.vow_kept(data) else " (brutet)")
+		if state.vow_breaks_on == "commons" and state.vow_kept(data):
+			vow_txt += " · %d av %d vanliga grupper" % [state.commons_fought, state.vow_max_commons]
+		header = vow_txt if header == "" else header + "   ·   " + vow_txt
+	if header != "":
+		UiStyle.text(self, Vector2(MARGIN, 110), UiStyle.fit(header, 15, size.x - 460), 15, Parchment.INK,
+				HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
 	_draw_charges(data, state)
 	_draw_found(data, state)
 	_draw_panel(data, state)
-	var msg: String = _toast if _toast != "" else run.room_result
+	var msg: String = _toast if _toast != "" else (run.vow_news + " " + run.room_result).strip_edges()
 	if msg != "" and _dialog.is_empty():
 		UiStyle.para(self, Vector2(_grid_rect().position.x, size.y - 50), msg, 16, Parchment.INK,
 				_home_rect().position.x - _grid_rect().position.x - 20, 2)
@@ -758,6 +767,9 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		lines.append("Egenskaper: " + ", ".join(traits))
 	if not trophies.is_empty():
 		lines.append("Kan lämna: " + ", ".join(trophies))
+	if state.vow_breaks_on == "commons" and state.vow_kept(data) and RunState.is_common_group(r) \
+			and state.commons_fought >= state.vow_max_commons:
+		lines.append("Löftet Raka vägen brister om ni anfaller den här gruppen.")
 	if r.get("elite", false) or r.get("nemesis", false):
 		lines.append("Varning: en elitfiende är starkare än vanligt och har en egen regelbrytande egenskap. Backa och byt makro, eller troféer vid en lägereld, om det behövs.")
 	# 0.27: elitens motdrag (Siralims counters) på en rad, t.ex. "Klockaren: ni får bara väcka döda en gång per strid".

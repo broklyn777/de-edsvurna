@@ -124,6 +124,8 @@ func _roll_config() -> Dictionary:
 	c.realm = "crypt" if c.first else ["crypt", "chapel"][pick.randi() % 2]
 	c.depth = 1 if c.first else pick.randi_range(1, 3)
 	c.instability = 0 if c.first else pick.randi_range(0, 3)
+	var vows: Array = [""] + data.vows.keys().filter(func(k: String) -> bool: return not k.begins_with("_"))
+	c.vow = "" if c.first else String(vows[pick.randi() % vows.size()])  # 0.30.17: löftet
 	c.oath = data.oaths.keys()[pick.randi() % data.oaths.size()]
 	var companions: Array = data.heroes.keys().filter(func(h: String) -> bool: return h != "paladin")
 	c.party = []
@@ -188,6 +190,7 @@ func _setup_profile() -> void:
 		profile.depth = cfg.depth
 		profile.best_depth = cfg.depth
 		profile.instability = cfg.instability
+		profile.vow = cfg.vow
 		profile.descents = {cfg.realm: cfg.descents}
 		profile.silver = pick.randi_range(0, 500)
 		macros = data.macros.duplicate(true)
@@ -203,7 +206,7 @@ func _start_run() -> void:
 	state.rules_visible = rules.visible.duplicate()
 	state.rules_hidden = rules.hidden.duplicate()
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
-	state.first_descent = profile.total_descents() == 0
+	state.first_descent = profile.total_descents() == 0 or Intro.current(data, profile).get("id", "") == "descent"
 	var seen := int(profile.descents.get(state.realm, 0))
 	profile.descents[state.realm] = seen + 1
 	profile.count_home_runs()
@@ -439,6 +442,7 @@ func _fight() -> void:
 			_fail("spara", "battle_pending försvann vid inläsningen")
 	var opts := state.battle_opts()
 	opts.levels = profile.levels_for(data, state.party)
+	state.apply_vow(data, opts)
 	var sim := CombatSim.create(data, state.encounter(), seed_now * 1000 + step_now, state.party, state.hero_traits(data),
 			state.charges, state.artifacts, state.depth, opts)
 	sim.begin()
@@ -502,6 +506,7 @@ func _award(sim: CombatSim, won: bool) -> void:
 		h.wins = int(h.wins) + (1 if won else 0)
 	if won:
 		var r := state.current_room()
+		state.vow_after_battle(data, sim)
 		_roll_finds("boss" if r.get("boss", false) else RunState.fight_kind(r))
 		profile.grant_xp(data, state.party, HeroStats.battle_xp(RunState.fight_kind(r), state.depth, r.get("boss", false)))
 
@@ -583,7 +588,8 @@ func _home() -> void:
 	if profile.intro_done or state == null:
 		return
 	var had_imma := state.party.has("imma") or state.joins_next == "imma"
-	if Intro.current(data, profile).get("event", "") == "came_home" and profile.total_descents() > 0:
+	if Intro.current(data, profile).get("event", "") == "came_home" and profile.total_descents() > 0 \
+			and profile.recruited.has("imma"):
 		Intro.notify(data, profile, "came_home")
 		if Intro.current(data, profile).get("id", "") != "crypt":
 			_fail("intro", "efter hemkomsten står introt på %s, inte crypt" % Intro.current(data, profile).get("id", ""))
@@ -768,7 +774,7 @@ func _cfg_text() -> String:
 	return "%s djup %d inst %d %s sällskap %s nivå %d %s%s" % [cfg.realm, cfg.depth, cfg.instability,
 			profile.oath if profile else cfg.oath,
 			str(["paladin"] + Array(cfg.party)) if not cfg.first else "[paladin]", cfg.level if not cfg.first else 1, cfg.policy,
-			" FÖRSTA NEDSTIGNINGEN" if cfg.first else ""]
+			(" FÖRSTA NEDSTIGNINGEN" if cfg.first else "") + (" löfte " + String(cfg.vow) if String(cfg.get("vow", "")) != "" else "")]
 
 
 func _report(ms: int) -> void:
