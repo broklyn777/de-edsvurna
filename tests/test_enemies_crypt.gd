@@ -228,3 +228,17 @@ func test_the_grotto_takes_elites_from_the_elite_pools() -> void:
 	s.pos = s.map.indices("elite")[0]
 	assert_true(s.battle_opts().get("counter", false), "elitrutan slår på motdrag")
 	assert_eq(s.map.cells[s.pos].encounter, "crypt_e1", "första våningens elit är Kolossens vakt")
+
+
+## 0.30.19: våning 1:s elitgrupp är mildare för ett sällskap med högst två hjältar (svårighetskurvan).
+func test_small_party_meets_a_milder_first_floor_elite() -> void:
+	var s := RunState.new()
+	s.set_realm(_data, "crypt")
+	s.party.assign(["paladin", "imma"])
+	s.fill_charges(_data)
+	s.start_expedition(_data, 5)
+	s.first_descent = false
+	s.pos = s.map.indices("elite")[0]
+	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), RunState.SMALL_PARTY_ELITE, 1e-6)
+	s.party.assign(["paladin", "imma", "alva"])
+	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), 1.0, 1e-6, "tre hjältar möter eliten som vanligt")

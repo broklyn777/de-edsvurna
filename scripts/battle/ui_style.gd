@@ -86,9 +86,9 @@ static func pie(ci: CanvasItem, center: Vector2, radius: float, fraction: float,
 
 
 ## Kort med titel och brödtext (valskärmar). Markerat kort får guldram och guldkant till vänster.
-## reserve: höjd längst ned som texten lämnar fri (t.ex. för en BLAD-knapp i kortet).
+## reserve: höjd längst ned som texten lämnar fri (t.ex. för en BLAD-knapp i kortet); right: bredd till höger om titeln.
 static func card(ci: CanvasItem, r: Rect2, title: String, body: String, selected: bool, accent: Color,
-		tag := "", flash := 0.0, reserve := 0.0) -> void:
+		tag := "", flash := 0.0, reserve := 0.0, right := 0.0) -> void:
 	ci.draw_rect(r, Color(0.09, 0.08, 0.12, 0.96) if selected else Color(0.06, 0.055, 0.08, 0.85))
 	if flash > 0.0:
 		ci.draw_rect(r, Color(TRAIT_GOLD, 0.3 * flash))
@@ -100,11 +100,12 @@ static func card(ci: CanvasItem, r: Rect2, title: String, body: String, selected
 	var a := 1.0 if selected else 0.7
 	# Titeln krymper (ned till 16) hellre än att krocka med etiketten till höger.
 	var title_size := 21
-	var room := r.size.x - 32.0
+	var room := r.size.x - 32.0 - right  # right: bredd till höger som titeln lämnar fri (t.ex. BLAD i samma rad)
 	if tag != "":
 		room -= bold().get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 10.0
 	while title_size > 16 and bold().get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size).x > room:
 		title_size -= 1
+	title = fit(title, title_size, room)
 	text(ci, r.position + Vector2(16, 28), title, title_size, Color(TRAIT_GOLD, a), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 24, 4)
 	if tag != "":
 		text(ci, r.position + Vector2(0, 28), tag, 15, Color(accent, 0.9), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 12, 3)

@@ -216,7 +216,8 @@ func _draw() -> void:
 			body = t.name
 		var lv := int(run.profile.hero(data, id).level)
 		UiStyle.card(self, _companion_rect(i), "%s · nivå %d" % [h.name, lv], body, companions.has(id), Color(h.color),
-				h.title.to_upper() if roster.size() <= 10 else "", 0.0, 30.0)  # tre rader: BLAD tar rollens plats
+				h.title.to_upper() if roster.size() <= 10 else "", 0.0, 30.0,
+				_sheet_rect(i).size.x + 8 if roster.size() > 10 else 0.0)  # tre rader: BLAD tar rollens plats
 		_sheet_button(_sheet_rect(i))
 		if companions.has(id):
 			_check(_companion_rect(i).position + Vector2(-13, -13))

@@ -119,3 +119,24 @@ Fråga: en minsta skada på 1 för en träff, eller en turgräns?
 - Bara kallet Domens kall (profilens förval) och den billigaste perken.
 - Instabilitet 0 hela vägen.
 - Speltiden är inte mätt här. En körning är 6–10 strider (se provspel-0.30.14).
+
+## Efter rättelsen (0.30.19-test)
+
+VD:s beslut: rätta dödläget och mildra steget till djup 2 för små sällskap.
+- **Dödläget:** fiender som försvarar sig vid lågt liv (Asketen, Kistbäraren, Fanbäraren) gör det bara direkt efter ett
+  anfall, alltså varannan tur (villkoret `self_last_attacked`, som Lansen). Frö 30 slutar nu med en förlust i stället för
+  en evig strid.
+- **Små sällskap:** våning 1:s elitgrupp och Nemesis får ×0,80 för ett sällskap med högst två hjältar, också efter den
+  första nedstigningen (`RunState.SMALL_PARTY_ELITE`).
+
+Samma körning (80 profiler × 18 nedstigningar), inga fel:
+
+| Ned | Före | Efter |
+|---|---|---|
+| 2 | 26 % | **41 %** |
+| 3 | 34 % | **40 %** |
+| 4 | 54 % | 44 % |
+| 4–18 | 33–56 % | 35–58 % |
+
+Steget till djup 2 är fortfarande märkbart, men det är inte längre en vägg. Mittspelet och taket vid djup 6–7 är som
+förut.
