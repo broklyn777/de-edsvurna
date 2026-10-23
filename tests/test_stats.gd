@@ -190,7 +190,7 @@ func test_macro_conditions_on_stats() -> void:
 
 
 func test_follow_up_share_of_a_hit_never_crits_again() -> void:
-	# 0.26.3: Skelettets fingerled gör 40 % av en kritisk träff; följdanfallet blir inte kritiskt en gång till.
+	# 0.26.3: Det andra hugget gör 40 % av en kritisk träff; följdanfallet blir inte kritiskt en gång till.
 	var sim := _sim()
 	var paladin := sim.unit("paladin")
 	var archer := sim.unit("skeleton_archer_1")

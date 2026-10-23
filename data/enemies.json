@@ -374,7 +374,32 @@
 			"trophy": "wolf_leap",
 			"trait": "wolf_leap",
 			"tint": "#e0e8ff",
-			"glow": "#4a6aa0"
+			"glow": "#4a6aa0",
+			"visual": {
+				"model": "varg",
+				"scale": 1.25,
+				"colors": {
+					"Varg_Main": "#d8cfb4",
+					"Varg_Main_Light": "#f0e8d0"
+				},
+				"emit": {
+					"Varg_Eyes_Black": "#7aa8ff"
+				},
+				"emit_energy": 2.0,
+				"light": "#6a8aff",
+				"light_energy": 0.5,
+				"anims": {
+					"idle": "Idle_Loop",
+					"attack": [
+						"Sword_Attack",
+						"Leap_Attack"
+					],
+					"hit": "Hit_Chest",
+					"death": "Death01",
+					"walk": "Walk_Loop",
+					"run": "Run_Loop"
+				}
+			}
 		}
 	},
 	"coffin_bearer": {
@@ -2567,5 +2592,175 @@
 			}
 		},
 		"twisted": true
+	},
+	"ghoul": {
+		"name": "Likätare",
+		"family": "bone_kin",
+		"color": "#9aa880",
+		"stats": {
+			"health": 48,
+			"attack": 15,
+			"intelligence": 8,
+			"defense": 1,
+			"speed": 11
+		},
+		"crit_chance": 0.06,
+		"attack_ability": "ghoul_claw",
+		"traits": [
+			"grave_hunger"
+		],
+		"rules": [
+			{
+				"ability": "corpse_feast",
+				"if": {
+					"dead_ally": true
+				}
+			}
+		],
+		"visual": {
+			"model": "ghoul",
+			"scale": 1.0,
+			"colors": {
+				"Gho_Skin": "#68705a",
+				"Gho_Green": "#3a3e2e",
+				"Gho_LightGreen": "#4a5040",
+				"Gho_Grey": "#50564a",
+				"Gho_Black": "#262a1e",
+				"Gho_Brown": "#2e2418",
+				"Gho_Brown2": "#3e3020",
+				"Gho_Teeth": "#c8b878",
+				"Gho_Claw": "#2a2216"
+			},
+			"emit": {
+				"Gho_EyeGlow": "#d8ff3a",
+				"Gho_Eye": "#c8f030"
+			},
+			"emit_energy": 2.0,
+			"light": "#c8e05a",
+			"light_energy": 0.3,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"cast": "Spell_Simple_Shoot",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"run": "Run_Loop"
+			}
+		},
+		"trophy": "ghoul_spade",
+		"elite": {
+			"name": "Gravgnagaren",
+			"trophy": "gnawer_chain",
+			"trait": "gnawer_chain",
+			"tint": "#d0e0a0",
+			"glow": "#4a6a10"
+		}
+	},
+	"cult_zealot": {
+		"name": "Blodsvuren",
+		"family": "cult_kin",
+		"color": "#b03030",
+		"stats": {
+			"health": 52,
+			"attack": 17,
+			"intelligence": 8,
+			"defense": 1.5,
+			"speed": 11
+		},
+		"crit_chance": 0.08,
+		"attack_ability": "pact_knife",
+		"traits": [
+			"blood_pact"
+		],
+		"rules": [
+			{
+				"ability": "blood_cut",
+				"if": {
+					"self_hp_below": 0.9
+				}
+			}
+		],
+		"visual": {
+			"model": "kultfanatiker",
+			"scale": 1.0,
+			"emit": {
+				"Kfan_Glow": "#ff5a1a"
+			},
+			"emit_energy": 1.6,
+			"light": "#ff3a1a",
+			"light_energy": 0.5,
+			"anims": {
+				"idle": "Sword_Idle",
+				"attack": [
+					"Sword_Attack"
+				],
+				"cast": "Spell_Simple_Shoot",
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"run": "Run_Loop"
+			}
+		},
+		"trophy": "pact_blade",
+		"elite": {
+			"name": "Blodfogden",
+			"trophy": "bailiff_staff",
+			"trait": "bailiff_staff",
+			"tint": "#ffb0a0",
+			"glow": "#a01010"
+		}
+	},
+	"church_grim": {
+		"name": "Kyrkogrimmen",
+		"rank": "elite",
+		"color": "#ff8a3a",
+		"stats": {
+			"health": 80,
+			"attack": 17,
+			"intelligence": 10,
+			"defense": 2,
+			"speed": 15
+		},
+		"crit_chance": 0.08,
+		"attack_ability": "grim_bite",
+		"traits": [
+			"grim_watch"
+		],
+		"rules": [
+			{
+				"ability": "hellfire_leap"
+			}
+		],
+		"counter": {
+			"trait": "laughing_wisp",
+			"min_depth": 3
+		},
+		"visual": {
+			"model": "helvetshund",
+			"scale": 0.8,
+			"emit": {
+				"Hh_Flame": "#ff7a1a",
+				"Hh_Glow": "#ff4a0a",
+				"Hh_Eyes_Black": "#ffb020"
+			},
+			"emit_energy": 2.5,
+			"light": "#ff7a2a",
+			"light_energy": 1.4,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"run": "Run_Loop"
+			}
+		},
+		"trophy": "grim_collar"
 	}
 }

@@ -451,7 +451,7 @@
 			"creates": "damage",
 			"scope": "enemy"
 		},
-		"name": "Skelettets fingerled",
+		"name": "Det andra hugget",
 		"trophy": true,
 		"text": "Efter en kritisk direkt attack gör bäraren ett följdanfall för 40 % (en gång per tur).",
 		"trigger": "damage",
@@ -468,7 +468,8 @@
 				"pct_of_event": 0.4,
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Skelettkrigaren stannade aldrig efter första hugget. {bärare} har lärt sig att följa upp."
 	},
 	"bow_sinew": {
 		"combo": {
@@ -476,7 +477,7 @@
 			"creates": "crit",
 			"scope": "enemy"
 		},
-		"name": "Benbågens sena",
+		"name": "Den kapade bågsträngen",
 		"trophy": true,
 		"text": "Bärarens attacker mot märkta mål är alltid kritiska.",
 		"trigger": "modify_damage",
@@ -486,7 +487,8 @@
 		},
 		"modify": {
 			"force_crit": true
-		}
+		},
+		"lesson": "Bågskytten släppte aldrig sitt mål. {bärare} har lärt sig se var pilen ska sitta."
 	},
 	"rosary": {
 		"combo": {
@@ -508,7 +510,8 @@
 				"pct_of_event": 0.25,
 				"target": "weakest_ally"
 			}
-		]
+		],
+		"lesson": "Gravprästens böner var tomma. {bärare} har lärt sig att det heliga både slår och läker."
 	},
 	"warden_helm": {
 		"combo": {
@@ -534,7 +537,8 @@
 				"pct": 1.4,
 				"target": "weakest_ally"
 			}
-		]
+		],
+		"lesson": "Gravväktaren stod still och höll stånd. {bärare} har lärt sig att den som står fast skyddar fler än sig själv."
 	},
 	"ember_jaw": {
 		"combo": {
@@ -542,7 +546,7 @@
 			"creates": "damage_bonus",
 			"scope": "self"
 		},
-		"name": "Glödkäken",
+		"name": "Den slocknade glöden",
 		"trophy": true,
 		"text": "När någon i sällskapet helas får bäraren en Glöd (högst 5). Bärarens nästa förmåga förbrukar dem: +15 % skada per Glöd.",
 		"trigger": "heal",
@@ -563,7 +567,8 @@
 			"action": "ability",
 			"stack": "glod",
 			"damage_mult_per": 0.15
-		}
+		},
+		"lesson": "Glödskelettet hade bara aska kvar. När sällskapet läker tänds i stället något i {bärare}."
 	},
 	"lich_crown": {
 		"combo": {
@@ -571,7 +576,7 @@
 			"creates": "holy_damage",
 			"scope": "enemy"
 		},
-		"name": "Benfurstens krona",
+		"name": "Den krossade benkronan",
 		"trophy": true,
 		"text": "Bärarens följdanfall räknas som Heliga besvärjelser, men bärarens direkta besvärjelser gör 20 % mindre skada.",
 		"trigger": "convert_damage",
@@ -586,10 +591,11 @@
 		},
 		"parts": [
 			"lich_crown_penalty"
-		]
+		],
+		"lesson": "Benfursten vände det heliga till sitt eget. {bärare} för det tillbaka, men det kostar egen kraft."
 	},
 	"lich_crown_penalty": {
-		"name": "Benfurstens krona",
+		"name": "Den krossade benkronan",
 		"hidden": true,
 		"text": "",
 		"trigger": "modify_damage",
@@ -796,7 +802,7 @@
 			"creates": "barrier",
 			"scope": "party"
 		},
-		"name": "Bönepärlor",
+		"name": "Det brustna bönebandet",
 		"trophy": true,
 		"rarity": "common",
 		"text": "I början av bärarens tur får den svagaste i sällskapet en Barriär för 60 % av bärarens Intelligence.",
@@ -811,7 +817,8 @@
 				"pct": 0.6,
 				"target": "weakest_ally"
 			}
-		]
+		],
+		"lesson": "Kultisten bad till fel herre. {bärare} ber för den svagaste i sällskapet, och bönen bär."
 	},
 	"wraith_veil": {
 		"combo": {
@@ -819,7 +826,7 @@
 			"creates": "dodge",
 			"scope": "self"
 		},
-		"name": "Gastens slöja",
+		"name": "Den rivna slöjan",
 		"trophy": true,
 		"rarity": "common",
 		"text": "Bäraren undviker 20 % av attacker, och blir Smidig (25 % extra undvikande i 3 turer) varje gång hen undviker.",
@@ -832,7 +839,8 @@
 		},
 		"parts": [
 			"wraith_veil_agile"
-		]
+		],
+		"lesson": "Gasten undvek varje hugg. {bärare} har lärt sig hur."
 	},
 	"fallen_oath": {
 		"combo": {
@@ -840,7 +848,7 @@
 			"creates": "damage",
 			"scope": "enemy"
 		},
-		"name": "Den fallnes ed",
+		"name": "Den fallnes klinga",
 		"trophy": true,
 		"rarity": "common",
 		"text": "Medan bäraren försvarar sig slår hen tillbaka mot varje attack för 50 %.",
@@ -859,7 +867,8 @@
 				"kind": "attack",
 				"target": "source"
 			}
-		]
+		],
+		"lesson": "Den fallne riddaren hade glömt sin ed men inte sin fäktkonst. {bärare} lärde sig det han kunde."
 	},
 	"witch_tongue": {
 		"combo": {
@@ -867,7 +876,7 @@
 			"creates": "silenced",
 			"scope": "enemy"
 		},
-		"name": "Häxans tunga",
+		"name": "Den brutna trollstaven",
 		"trophy": true,
 		"rarity": "common",
 		"text": "Bärarens direkta besvärjelser har 50 % chans att tysta målet i 1 tur (fiender kan då bara anfalla).",
@@ -885,7 +894,8 @@
 				"duration": 1,
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Häxans ord band andras tungor. {bärare} har lärt sig att få fiendens ord att tystna."
 	},
 	"executioner_hood": {
 		"combo": {
@@ -909,7 +919,8 @@
 				"aura": "vulnerable",
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Botgöraren visste var slaget skulle sitta. {bärare} har lärt sig att ett väl lagt hugg öppnar för fler."
 	},
 	"bishop_mitre": {
 		"combo": {
@@ -927,7 +938,8 @@
 		},
 		"parts": [
 			"bishop_mitre_penalty"
-		]
+		],
+		"lesson": "Den fallne biskopen gömde sig bakom sin hjord. {bärare} skyddas av de sina, men vet att det kostar dem."
 	},
 	"bishop_mitre_penalty": {
 		"name": "Biskopens mitra",
@@ -958,7 +970,8 @@
 		},
 		"modify": {
 			"damage_mult": 3.0
-		}
+		},
+		"lesson": "Benkaptenen lade allt i första hugget. {bärare} har lärt sig att börja som man menar att sluta."
 	},
 	"quick_shot": {
 		"combo": {
@@ -986,7 +999,8 @@
 				"kind": "attack",
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Benjägaren lät aldrig ett byte hämta andan. {bärare} har lärt sig att slå medan öppningen finns."
 	},
 	"bearer_of_light": {
 		"combo": {
@@ -994,7 +1008,7 @@
 			"creates": "heal",
 			"scope": "party"
 		},
-		"name": "Ljusets bärare",
+		"name": "Den återtända ljusstaken",
 		"trophy": true,
 		"rarity": "elite",
 		"original": "Bearer of Needs",
@@ -1010,7 +1024,8 @@
 				"pct": 0.08,
 				"target": "allies"
 			}
-		]
+		],
+		"lesson": "Gravabboten höll sitt ljus för sig själv. {bärare} lärde sig att det lyser mer när det delas."
 	},
 	"salted_earth": {
 		"combo": {
@@ -1037,7 +1052,8 @@
 				"aura": "salted",
 				"target": "enemies"
 			}
-		]
+		],
+		"lesson": "Gravfogden lät ingen få fäste på sin mark. {bärare} har lärt sig att ett fast försvar gör fienden svag."
 	},
 	"scatter_shot": {
 		"combo": {
@@ -1045,7 +1061,7 @@
 			"creates": "damage",
 			"scope": "enemies"
 		},
-		"name": "Splitterben",
+		"name": "Askurnan",
 		"trophy": true,
 		"rarity": "elite",
 		"original": "Scatter Shot",
@@ -1064,7 +1080,8 @@
 				"no_crit": true,
 				"target": "other_enemies"
 			}
-		]
+		],
+		"lesson": "Askbäraren spred sin aska över alla. {bärare} har lärt sig att ett slag kan nå fler än ett mål."
 	},
 	"phantasm": {
 		"combo": {
@@ -1072,7 +1089,7 @@
 			"creates": "damage_bonus",
 			"scope": "self"
 		},
-		"name": "Fantasm",
+		"name": "Det upprepade slaget",
 		"trophy": true,
 		"rarity": "elite",
 		"original": "Phantasm",
@@ -1083,7 +1100,8 @@
 		},
 		"modify": {
 			"damage_mult_per_use": 0.2
-		}
+		},
+		"lesson": "Ockultisten upprepade samma ord tills de fick makt. {bärare} har lärt sig att det övade slaget sitter bäst."
 	},
 	"surprise": {
 		"combo": {
@@ -1091,13 +1109,14 @@
 			"creates": "timeline_top",
 			"scope": "self"
 		},
-		"name": "Överraskning!",
+		"name": "Förvarningen",
 		"trophy": true,
 		"rarity": "elite",
 		"original": "Surprise! (Mimic)",
 		"text": "Bäraren börjar alltid striden överst på tidslinjen.",
 		"trigger": "passive",
-		"start_first": true
+		"start_first": true,
+		"lesson": "Bansheens skri kom alltid före döden. {bärare} har lärt sig att höra varslet och vara först."
 	},
 	"heart_of_chaos": {
 		"combo": {
@@ -1105,7 +1124,7 @@
 			"creates": "revive",
 			"scope": "self"
 		},
-		"name": "Kaosets hjärta",
+		"name": "Edsbrytarens fall",
 		"trophy": true,
 		"rarity": "elite",
 		"original": "Heart of Steel",
@@ -1114,7 +1133,8 @@
 		"undying": {
 			"pct": 0.5,
 			"requires_ability": true
-		}
+		},
+		"lesson": "Edsbrytaren föll och reste sig, om och om igen. {bärare} har lärt sig att resa sig en gång till."
 	},
 	"miracle": {
 		"combo": {
@@ -1122,7 +1142,7 @@
 			"creates": "ability_cast",
 			"scope": "self"
 		},
-		"name": "Mirakel",
+		"name": "Häxmästarinnans brutna spira",
 		"trophy": true,
 		"rarity": "elite",
 		"original": "Miracle of the Mind",
@@ -1142,7 +1162,8 @@
 				"type": "cast",
 				"ability_from_event": true
 			}
-		]
+		],
+		"lesson": "Häxmästarinnan lät varje ord klinga två gånger. {bärare} lärde sig att låta ett väl valt ord eka."
 	},
 	"sareas_plot": {
 		"combo": {
@@ -1150,7 +1171,7 @@
 			"creates": "damage_bonus",
 			"scope": "self"
 		},
-		"name": "Sareas intrig",
+		"name": "Det brutna gisslet",
 		"trophy": true,
 		"rarity": "elite",
 		"original": "Sarea's Plot",
@@ -1158,10 +1179,11 @@
 		"trigger": "modify_damage",
 		"modify": {
 			"damage_mult_per_hit_taken": 0.1
-		}
+		},
+		"lesson": "Självplågaren sökte såren. {bärare} söker dem inte, men har lärt sig att slå hårdare för varje."
 	},
 	"wraith_veil_agile": {
-		"name": "Gastens slöja",
+		"name": "Den rivna slöjan",
 		"hidden": true,
 		"trigger": "dodge",
 		"when": {
@@ -1554,7 +1576,7 @@
 			"creates": "agile",
 			"scope": "self"
 		},
-		"name": "Springarens senor",
+		"name": "Springarens steg",
 		"trophy": true,
 		"text": "Bäraren börjar striden Smidig i 2 turer.",
 		"answers": "Grupper som slår först",
@@ -1566,7 +1588,8 @@
 				"duration": 2,
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Benspringaren var borta innan svärdet lyfts. {bärare} har lärt sig hans första steg."
 	},
 	"wolf_leap": {
 		"combo": {
@@ -1585,7 +1608,8 @@
 				"type": "to_top",
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Benvargen väntade aldrig på sin tur. {bärare} har lärt sig att vara först i språnget."
 	},
 	"coffin_nail": {
 		"combo": {
@@ -1593,7 +1617,7 @@
 			"creates": "barrier",
 			"scope": "party"
 		},
-		"name": "Kistspik",
+		"name": "Kistspiken",
 		"trophy": true,
 		"text": "När en allierad faller får sällskapet en Barriär för 8 % av bärarens max liv.",
 		"answers": "Grupper som fäller en hjälte tidigt",
@@ -1608,7 +1632,8 @@
 				"pct": 0.08,
 				"target": "allies"
 			}
-		]
+		],
+		"lesson": "Kistbäraren bar de döda utan att släppa taget. {bärare} lärde sig att sluta leden när någon faller."
 	},
 	"last_watch": {
 		"combo": {
@@ -1633,7 +1658,8 @@
 				"duration": 2,
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Likbäraren vakade över sina döda. {bärare} vakar över de levande och kliver fram när någon faller."
 	},
 	"mold_jaw": {
 		"combo": {
@@ -1641,7 +1667,7 @@
 			"creates": "poisoned",
 			"scope": "enemy"
 		},
-		"name": "Mögelkäken",
+		"name": "Den möglade klingan",
 		"trophy": true,
 		"text": "Bärarens direkta attacker har 30 % chans att förgifta målet i 3 turer.",
 		"answers": "Benrustning och Taggig utmaning (indirekt skada biter)",
@@ -1658,7 +1684,8 @@
 				"aura": "poisoned",
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Mögelskelettets klinga ruttnade inifrån. {bärare} har lärt sig hur rötan biter i ett sår."
 	},
 	"spore_burst": {
 		"combo": {
@@ -1666,7 +1693,7 @@
 			"creates": "poisoned",
 			"scope": "enemies"
 		},
-		"name": "Sporfallet",
+		"name": "Smittans väg",
 		"trophy": true,
 		"text": "När en förgiftad fiende faller förgiftas en annan fiende.",
 		"answers": "Stora grupper",
@@ -1682,7 +1709,8 @@
 				"aura": "poisoned",
 				"target": "random_enemy"
 			}
-		]
+		],
+		"lesson": "Sporfursten lät smittan vandra från kropp till kropp. {bärare} har lärt sig följa dess väg."
 	},
 	"rattler_bone": {
 		"combo": {
@@ -1690,7 +1718,7 @@
 			"creates": "defensive",
 			"scope": "self"
 		},
-		"name": "Skramlarens ben",
+		"name": "Den tystade skramlan",
 		"trophy": true,
 		"text": "Efter en direkt attack mot bäraren blir hen Defensiv i 1 tur (en gång per tur).",
 		"answers": "Många små träffar (Bågskytt, Benspringare)",
@@ -1709,7 +1737,8 @@
 				"duration": 1,
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Skramlaren rasslade så fort den träffades. {bärare} lärde sig att varje slag är en varning."
 	},
 	"clatter_stone": {
 		"combo": {
@@ -1744,7 +1773,8 @@
 				"no_crit": true,
 				"target": "source"
 			}
-		]
+		],
+		"lesson": "Benklappret svarade på varje slag. {bärare} har lärt sig att möta ett hugg och låta det kosta."
 	},
 	"colossus_spine": {
 		"combo": {
@@ -1752,7 +1782,7 @@
 			"creates": "stat_gain",
 			"scope": "self"
 		},
-		"name": "Kolossens ryggrad",
+		"name": "Kolossens tålamod",
 		"trophy": true,
 		"text": "Bäraren får +8 % Attack i början av varje egen tur (högst 5 gånger).",
 		"answers": "Långa strider och mycket liv (Benfursten)",
@@ -1770,7 +1800,8 @@
 				"max_times": 5,
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Benkolossen blev starkare för varje steg den tog. {bärare} lärde sig att låta kraften växa."
 	},
 	"caller_lantern": {
 		"combo": {
@@ -1778,7 +1809,7 @@
 			"creates": "revive",
 			"scope": "party"
 		},
-		"name": "Väckarens lykta",
+		"name": "Den släckta lyktan",
 		"trophy": true,
 		"text": "En gång per strid: när någon i sällskapet faller väcks hen med 30 % liv.",
 		"answers": "Fiender som slår först och bossens stora slag",
@@ -1794,7 +1825,8 @@
 				"pct": 0.3,
 				"target": "unit"
 			}
-		]
+		],
+		"lesson": "Gravväckaren ropade de döda tillbaka. {bärare} har lärt sig något renare: att aldrig ge upp en fallen vän."
 	},
 	"mist_veil": {
 		"combo": {
@@ -1802,7 +1834,7 @@
 			"creates": "sleeping",
 			"scope": "enemy"
 		},
-		"name": "Dimmans slöja",
+		"name": "Den skingrade dimman",
 		"trophy": true,
 		"text": "Bäraren kan inte sövas (inte heller Dimsömn). Bärarens första besvärjelse i striden söver målet i 1 tur.",
 		"answers": "Elitfiender som slår först eller växer",
@@ -1825,7 +1857,8 @@
 		"immune_auras": [
 			"sleeping",
 			"deep_sleep"
-		]
+		],
+		"lesson": "Gravdimman lade sig tung över sinnet. {bärare} har lärt sig hur sömnen smyger sig på."
 	},
 	"scribe_quill": {
 		"combo": {
@@ -1845,7 +1878,8 @@
 		"modify": {
 			"damage_mult": 1.15
 		},
-		"ignore_repeat": true
+		"ignore_repeat": true,
+		"lesson": "Benskrivaren skrev aldrig samma rad två gånger. {bärare} har lärt sig att växla och överraska."
 	},
 	"bell_rope": {
 		"combo": {
@@ -1872,7 +1906,8 @@
 		"parts": [
 			"bell_rope_cost"
 		],
-		"once_per_turn": true
+		"once_per_turn": true,
+		"lesson": "Klockaren ringde andra till vila och kom själv sist. {bärare} har lärt sig att låta de svaga gå före."
 	},
 	"bell_rope_cost": {
 		"name": "Klockrepet (kostnad)",
@@ -2121,7 +2156,8 @@
 				"duration": 2,
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Diakonen hade glömt varför han bar stolan. {bärare} minns: den som helas ska få fortsätta läka."
 	},
 	"clean_spring": {
 		"combo": {
@@ -2144,7 +2180,8 @@
 				"count": 1,
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Ärkediakonen grumlade allt han rörde. {bärare} har lärt sig att en ren hand tar bort det som tynger."
 	},
 	"torn_banner": {
 		"combo": {
@@ -2164,7 +2201,8 @@
 		},
 		"modify": {
 			"damage_mult": 1.08
-		}
+		},
+		"lesson": "Fanbäraren stod så länge fanan stod. {bärare} har lärt sig att sällskapet slåss bättre när någon håller ut."
 	},
 	"herald_horn": {
 		"combo": {
@@ -2172,7 +2210,7 @@
 			"creates": "savage",
 			"scope": "self"
 		},
-		"name": "Härolds horn",
+		"name": "Häroldens horn",
 		"trophy": true,
 		"text": "När bäraren Provocerar blir sällskapet Vildsint i 1 tur.",
 		"answers": "Skyddare",
@@ -2189,7 +2227,8 @@
 				"duration": 1,
 				"target": "allies"
 			}
-		]
+		],
+		"lesson": "Härolden kallade till strid och alla svarade. {bärare} har lärt sig att ett utrop kan tända ett helt sällskap."
 	},
 	"wisp_flame": {
 		"combo": {
@@ -2197,7 +2236,7 @@
 			"creates": "dodge",
 			"scope": "self"
 		},
-		"name": "Irrblossets låga",
+		"name": "Det släckta irrblosset",
 		"trophy": true,
 		"text": "Bäraren undviker attacker så ofta det går (taket för undvikande, 75 %) tills hen har agerat första gången.",
 		"answers": "Grupper som slår först",
@@ -2209,7 +2248,8 @@
 		},
 		"modify": {
 			"dodge_add": 1.0
-		}
+		},
+		"lesson": "Irrblosset gick inte att träffa förrän det rörde sig. {bärare} har lärt sig att vara svår att se."
 	},
 	"lantern_light": {
 		"combo": {
@@ -2217,7 +2257,7 @@
 			"creates": "blind",
 			"scope": "enemy"
 		},
-		"name": "Lyktans ljus",
+		"name": "Den krossade lyktan",
 		"trophy": true,
 		"text": "Bärarens första träff i striden förblindar målet i 1 tur.",
 		"answers": "Grupper som slår först, starka anfallare",
@@ -2236,7 +2276,8 @@
 				"duration": 1,
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Lyktgubbens sken bländade den som följde det. {bärare} har lärt sig att det första slaget kan ta synen."
 	},
 	"mirror_shield": {
 		"combo": {
@@ -2263,7 +2304,8 @@
 				"kind": "indirect",
 				"target": "source"
 			}
-		]
+		],
+		"lesson": "Spegelvakten lät trolldom slå tillbaka mot den som kastat den. {bärare} har lärt sig samma sköldkonst."
 	},
 	"silver_glass": {
 		"combo": {
@@ -2271,7 +2313,7 @@
 			"creates": "heal",
 			"scope": "self"
 		},
-		"name": "Silverglaset",
+		"name": "Silverskärvan",
 		"trophy": true,
 		"text": "Första besvärjelsen som skadar bäraren i striden studsar tillbaka: bäraren får livet tillbaka och kastaren tar lika mycket (indirekt).",
 		"answers": "Besvärjare",
@@ -2296,7 +2338,8 @@
 				"kind": "indirect",
 				"target": "source"
 			}
-		]
+		],
+		"lesson": "Silverspegeln kastade varje besvärjelse tillbaka. {bärare} har lärt sig att möta den första och vända den."
 	},
 	"overseer_keys": {
 		"combo": {
@@ -2320,7 +2363,8 @@
 				"duration": 1,
 				"target": "weakest_ally"
 			}
-		]
+		],
+		"lesson": "Förmannen låste in sina fångar. {bärare} låser i stället dörren kring den som behöver skydd."
 	},
 	"inquisitor_seal": {
 		"combo": {
@@ -2345,7 +2389,8 @@
 				"duration": 1,
 				"target": "unit"
 			}
-		]
+		],
+		"lesson": "Inkvisitorn hörde när någon upprepade sig. {bärare} har lärt sig se när fienden saknar nya knep."
 	},
 	"ascetic_strap": {
 		"combo": {
@@ -2371,7 +2416,8 @@
 				"max_times": 5,
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Asketen härdade sig dag för dag. {bärare} har lärt sig att uthållighet byggs ett andetag i taget."
 	},
 	"lance_tip": {
 		"combo": {
@@ -2393,7 +2439,8 @@
 		},
 		"modify": {
 			"ignore_defense": true
-		}
+		},
+		"lesson": "Den svarta lansen gick igenom varje rustning. {bärare} har lärt sig var det första hugget ska ta."
 	},
 	"abbess_key": {
 		"combo": {
@@ -2420,7 +2467,8 @@
 		],
 		"parts": [
 			"abbess_key_cost"
-		]
+		],
+		"lesson": "Abbedissan låste in det rena. {bärare} har låst upp det, även om det kostar i kraft."
 	},
 	"abbess_key_cost": {
 		"name": "Abbedissans nyckel (kostnad)",
@@ -2602,7 +2650,7 @@
 			"creates": "heal",
 			"scope": "self"
 		},
-		"name": "Mosskappa",
+		"name": "Mosskappan",
 		"trophy": true,
 		"rarity": "common",
 		"text": "I början av bärarens tur helas bäraren för 6 % av sitt max liv.",
@@ -2617,7 +2665,8 @@
 				"pct": 0.06,
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Mossryggens sår läkte långsamt men slutade aldrig. {bärare} lärde sig att vila mitt i striden."
 	},
 	"porridge_bowl": {
 		"combo": {
@@ -2625,7 +2674,7 @@
 			"creates": "attack_up",
 			"scope": "self"
 		},
-		"name": "Grytskärva",
+		"name": "Grytskärvan",
 		"trophy": true,
 		"rarity": "common",
 		"text": "När en fiende helas får bäraren +10 % Attack (högst 3 gånger per strid).",
@@ -2642,7 +2691,8 @@
 				"max_times": 3,
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Grytmodern matade de sina mitt i striden. {bärare} lärde sig att det är då man ska slå hårdare."
 	},
 	"envy_stone": {
 		"combo": {
@@ -2650,7 +2700,7 @@
 			"creates": "buff",
 			"scope": "self"
 		},
-		"name": "Avundsten",
+		"name": "Den kluvna stenen",
 		"trophy": true,
 		"rarity": "common",
 		"text": "När en fiende får en buff får bäraren samma buff (en gång per tur).",
@@ -2666,7 +2716,8 @@
 				"aura": "event_aura",
 				"target": "self"
 			}
-		]
+		],
+		"lesson": "Avundsjätten ville ha allt den såg hos andra. {bärare} lärde sig att ta vara på det goda utan att avundas."
 	},
 	"kalles_club": {
 		"combo": {
@@ -2685,7 +2736,8 @@
 		},
 		"modify": {
 			"damage_mult": 1.5
-		}
+		},
+		"lesson": "Stenkrossaren slog sönder varje sköld. {bärare} har lärt sig att även den som gömmer sig kan träffas."
 	},
 	"toll_buckle": {
 		"combo": {
@@ -2704,7 +2756,8 @@
 		},
 		"modify": {
 			"damage_mult": 1.4
-		}
+		},
+		"lesson": "Brom tog tull av alla som gick över. {bärare} har lärt sig att den som ställer sig i vägen får betala."
 	},
 	"grey_shawl": {
 		"combo": {
@@ -2728,7 +2781,8 @@
 				"duration": 1,
 				"target": "random_enemy"
 			}
-		]
+		],
+		"lesson": "Trollmor Gråluva sjöng så att man somnade. {bärare} har lärt sig rytmen som söver, men inte ondskan bakom."
 	},
 	"mountain_crown": {
 		"combo": {
@@ -2736,7 +2790,7 @@
 			"creates": "damage_reduction",
 			"scope": "self"
 		},
-		"name": "Bergakungens krona",
+		"name": "Bergakungens kluvna krona",
 		"trophy": true,
 		"rarity": "boss",
 		"text": "Bäraren tar 40 % mindre skada när fienderna gör samma sorts handling två gånger i rad.",
@@ -2746,7 +2800,8 @@
 		},
 		"modify": {
 			"damage_taken_mult": 0.6
-		}
+		},
+		"lesson": "Bergakungen såg varje mönster i berget. {bärare} har lärt sig se när fienden upprepar sig."
 	},
 	"spider_snare": {
 		"name": "Fästtråd",
@@ -2973,7 +3028,8 @@
 				"aura": "snared",
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Snärjspindeln band sitt byte innan det hann röra sig. {bärare} har lärt sig att binda fienden med första slaget."
 	},
 	"silk_noose": {
 		"combo": {
@@ -2992,7 +3048,8 @@
 		},
 		"modify": {
 			"damage_mult": 1.25
-		}
+		},
+		"lesson": "Silkesnärjaren drog åt kring den som satt fast. {bärare} har lärt sig att slå hårdast mot den som inte kan fly."
 	},
 	"venom_fang": {
 		"combo": {
@@ -3000,7 +3057,7 @@
 			"creates": "poisoned",
 			"scope": "enemy"
 		},
-		"name": "Gifttanden",
+		"name": "Den tömda giftflaskan",
 		"trophy": true,
 		"text": "När en fiende blir Snärjd förgiftar bäraren den i 3 turer.",
 		"answers": "Benrustning och Asketen (indirekt skada biter)",
@@ -3015,7 +3072,8 @@
 				"aura": "poisoned",
 				"target": "unit"
 			}
-		]
+		],
+		"lesson": "Gifttandsspindeln bet den som fastnat. {bärare} har lärt sig att giftet tar bäst på den som inte kommer loss."
 	},
 	"emerald_venom": {
 		"combo": {
@@ -3035,7 +3093,8 @@
 		},
 		"modify": {
 			"damage_mult": 1.5
-		}
+		},
+		"lesson": "Smaragdtanden lät giftet verka länge. {bärare} har lärt sig att göra det bittrare för den som sitter fast."
 	},
 	"dust_tuft": {
 		"combo": {
@@ -3043,7 +3102,7 @@
 			"creates": "blind",
 			"scope": "enemy"
 		},
-		"name": "Dammkörteln",
+		"name": "Dammpungen",
 		"trophy": true,
 		"text": "Bärarens anfall mot en Förgiftad fiende förblindar den till efter dess nästa tur.",
 		"answers": "Starka anfallare",
@@ -3062,7 +3121,8 @@
 				"duration": 2,
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Dammspindeln blåste damm i ögonen på den som redan var svag. {bärare} har lärt sig att blända den som giftet tagit."
 	},
 	"ash_cloud": {
 		"combo": {
@@ -3082,7 +3142,8 @@
 		},
 		"modify": {
 			"damage_mult": 1.25
-		}
+		},
+		"lesson": "Askspindeln jagade i mörkret. {bärare} har lärt sig att slå hårdare mot den som inte ser."
 	},
 	"barbed_thread": {
 		"combo": {
@@ -3109,7 +3170,8 @@
 				"duration": 1,
 				"target": "source"
 			}
-		]
+		],
+		"lesson": "Hullingspindeln lät varje blint slag riva upp sår. {bärare} har lärt sig att den som slår i blindo får betala."
 	},
 	"rose_thorn": {
 		"combo": {
@@ -3137,7 +3199,8 @@
 				"duration": 1,
 				"target": "source"
 			}
-		]
+		],
+		"lesson": "Blodtaggen straffade den som slog medan den satt fast. {bärare} har lärt sig samma tålamod."
 	},
 	"lull_web": {
 		"combo": {
@@ -3165,7 +3228,8 @@
 				"duration": 2,
 				"target": "target"
 			}
-		]
+		],
+		"lesson": "Sömnvävaren vaggade sina byten till sömns. {bärare} har lärt sig att söva den som redan sitter fast."
 	},
 	"devour_maw": {
 		"combo": {
@@ -3173,7 +3237,7 @@
 			"creates": "heal",
 			"scope": "self"
 		},
-		"name": "Slukarens käke",
+		"name": "Den rivna slukväven",
 		"trophy": true,
 		"rarity": "elite",
 		"text": "Bärarens anfall mot en Snärjd fiende gör 60 % mer skada och helar bäraren med 30 %. Snärjningen släpper.",
@@ -3188,10 +3252,11 @@
 		},
 		"parts": [
 			"devour_maw_feed"
-		]
+		],
+		"lesson": "Slukaren åt av den som satt fast och blev stark. {bärare} har lärt sig att ta kraft ur ett säkert grepp."
 	},
 	"devour_maw_feed": {
-		"name": "Slukarens käke",
+		"name": "Den rivna slukväven",
 		"hidden": true,
 		"text": "",
 		"trigger": "damage",
@@ -3221,7 +3286,7 @@
 			"creates": "snared",
 			"scope": "enemy"
 		},
-		"name": "Strypvävarens öga",
+		"name": "Den lösta strypknuten",
 		"trophy": true,
 		"rarity": "boss",
 		"text": "I början av bärarens tur snärjs fienden som står överst på tidslinjen, men bäraren börjar striden längst ned.",
@@ -3240,10 +3305,11 @@
 		],
 		"parts": [
 			"knot_eye_cost"
-		]
+		],
+		"lesson": "Strypvävaren band alltid den som stod först. {bärare} har lärt sig knuten, men den binder också en själv."
 	},
 	"knot_eye_cost": {
-		"name": "Strypvävarens öga (kostnad)",
+		"name": "Den lösta strypknuten (kostnad)",
 		"hidden": true,
 		"text": "Bäraren börjar striden längst ned.",
 		"trigger": "battle_start",
@@ -3280,7 +3346,8 @@
 		],
 		"parts": [
 			"mother_silk_cost"
-		]
+		],
+		"lesson": "Vävmodern spann ett silke som ingen slet sig ur ostraffat. {bärare} har lärt sig att ett grepp som brister ändå kan såra."
 	},
 	"mother_silk_cost": {
 		"name": "Moderns silke",
@@ -3318,7 +3385,7 @@
 			"creates": "damage",
 			"scope": "enemies"
 		},
-		"name": "Svärtad krona",
+		"name": "Den krossade svarta kronan",
 		"trophy": true,
 		"rarity": "boss",
 		"text": "När någon i sällskapet faller sveper bäraren fienderna med Benstorm (gratis), men bärarens helningar är 25 % svagare.",
@@ -3335,10 +3402,11 @@
 		],
 		"parts": [
 			"black_crown_cost"
-		]
+		],
+		"lesson": "Den svärtade Benfursten blev starkare av varje fall. {bärare} har lärt sig att vända sorgen till ett slag, men det kostar läkekraft."
 	},
 	"black_crown_cost": {
-		"name": "Svärtad krona (kostnad)",
+		"name": "Den krossade svarta kronan (kostnad)",
 		"hidden": true,
 		"text": "Bärarens helningar är 25 % svagare.",
 		"trigger": "modify_heal",
@@ -3348,5 +3416,197 @@
 		"modify": {
 			"heal_mult": 0.75
 		}
+	},
+	"grave_hunger": {
+		"name": "Gravhunger",
+		"enemy": true,
+		"text": "Varje måltid ger Likätaren +20 % Attack för resten av striden (högst 3 gånger). Det den äter kan aldrig väckas.",
+		"card": "växer av varje lik den äter; det den äter väcks aldrig",
+		"trigger": "corpse_consumed",
+		"when": {
+			"by": "self"
+		},
+		"effects": [
+			{
+				"type": "raise_stat",
+				"stat": "attack",
+				"pct": 0.2,
+				"additive": true,
+				"max_times": 3,
+				"count_key": "grave_hunger",
+				"target": "self"
+			}
+		]
+	},
+	"ghoul_spade": {
+		"combo": {
+			"needs": "kill",
+			"creates": "no_revive",
+			"scope": "self"
+		},
+		"name": "Den brutna gravspaden",
+		"trophy": true,
+		"rarity": "common",
+		"text": "Fiender som bäraren fäller kan inte väckas. Bäraren helas 10 % av sitt max liv när hen fäller en fiende.",
+		"answers": "Grupper som väcker (Gravväckaren, Benfursten, regeln De döda vaknar)",
+		"lesson": "Likätaren lät inga döda vila. {bärare} har lärt sig att det som fallit ska få ligga kvar.",
+		"trigger": "death",
+		"when": {
+			"source": "self",
+			"unit": "enemy"
+		},
+		"effects": [
+			{
+				"type": "consume_corpse",
+				"target": "unit"
+			},
+			{
+				"type": "heal",
+				"stat": "health",
+				"pct": 0.1,
+				"target": "self"
+			}
+		]
+	},
+	"gnawer_chain": {
+		"combo": {
+			"needs": "enemy_death",
+			"creates": "attack_up",
+			"scope": "self"
+		},
+		"name": "Den sprängda bojan",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "När en fiende faller får bäraren +8 % Attack för resten av striden (högst 3 gånger).",
+		"answers": "Grupper med många små (Springarnas flock, Irrblossens dans, spindlarna)",
+		"lesson": "Gravgnagaren växte för varje kropp som föll. {bärare} har lärt sig att varje fallen fiende ger mod.",
+		"trigger": "death",
+		"when": {
+			"unit": "enemy"
+		},
+		"effects": [
+			{
+				"type": "raise_stat",
+				"stat": "attack",
+				"pct": 0.08,
+				"additive": true,
+				"max_times": 3,
+				"count_key": "gnawer_chain",
+				"target": "self"
+			}
+		]
+	},
+	"blood_pact": {
+		"name": "Blodpakt",
+		"enemy": true,
+		"text": "Blodsvuren gör 10 % mer skada för varje tiondel liv den saknar (högst +50 %).",
+		"card": "slår hårdare ju mer skadad den är",
+		"trigger": "modify_damage",
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"modify": {
+			"damage_mult_per_missing_tenth": 0.1,
+			"max": 0.5
+		}
+	},
+	"pact_blade": {
+		"combo": {
+			"needs": "low_health",
+			"creates": "damage_bonus",
+			"scope": "self"
+		},
+		"name": "Den brutna paktkniven",
+		"trophy": true,
+		"rarity": "common",
+		"text": "Bäraren gör 6 % mer skada för varje tiondel liv hen saknar (högst +30 %).",
+		"answers": "Långa strider och mycket liv (Asketen, bossarna); passar med Barriär",
+		"lesson": "Blodsvuren slogs hårdare ju mer den blödde. {bärare} har lärt sig att inte vika när såren blir fler.",
+		"trigger": "modify_damage",
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"modify": {
+			"damage_mult_per_missing_tenth": 0.06,
+			"max": 0.3
+		}
+	},
+	"bailiff_staff": {
+		"combo": {
+			"needs": "low_health",
+			"creates": "barrier",
+			"scope": "self"
+		},
+		"name": "Den brutna fogdestaven",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Första gången i striden som bäraren hamnar under 50 % liv får hen en Barriär för 25 % av sitt max liv.",
+		"answers": "Stora slag (Lansens anstormning, Blodhugget, bossarna)",
+		"lesson": "Blodfogden reste sig alltid en gång till. {bärare} har lärt sig att samla sig när det är som svårast.",
+		"trigger": "damage",
+		"once_per_battle": true,
+		"when": {
+			"target": "self",
+			"self_hp_below": 0.5
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "health",
+				"pct": 0.25,
+				"target": "self"
+			}
+		]
+	},
+	"grim_watch": {
+		"name": "Grimmens vakt",
+		"enemy": true,
+		"text": "När en hjälte skadar en annan fiende med en direkt träff biter Kyrkogrimmen hen för 50 % (en gång per tur).",
+		"card": "biter den som slår någon annan i gruppen",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"when": {
+			"source": "enemy",
+			"target": "ally",
+			"target_not_self": true,
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.5,
+				"target": "source"
+			}
+		]
+	},
+	"grim_collar": {
+		"combo": {
+			"needs": "ally_hit",
+			"creates": "follow_up",
+			"scope": "party"
+		},
+		"name": "Grimmens brustna halsband",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "När en fiende skadar någon annan i sällskapet än bäraren med en direkt träff biter bäraren den fienden för 40 % (en gång per tur).",
+		"answers": "Grupper som slår samma hjälte (Botgörare och Häxa, Bågskyttar, Lansen)",
+		"lesson": "Kyrkogrimmen vaktade de sina med tänderna. {bärare} har lärt sig att ingen slår en vän ostraffat.",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"when": {
+			"source": "enemy",
+			"target": "ally",
+			"target_not_self": true,
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.4,
+				"target": "source"
+			}
+		]
 	}
 }

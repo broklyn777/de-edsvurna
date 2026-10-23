@@ -82,3 +82,24 @@ func test_every_trophy_has_a_combo_entry() -> void:
 		for key in ["needs", "creates", "scope"]:
 			assert_true(String(c.get(key, "")) != "", "%s saknar combo.%s" % [id, key])
 		assert_true(["self", "party", "enemy", "enemies"].has(c.get("scope", "")), "%s: okänd scope" % id)
+
+
+
+## VD 2026-10-23 (regel 2): varje trofé har en lärdom, och {bärare} blir hjältens namn (annars "Bäraren").
+func test_every_trophy_has_a_lesson() -> void:
+	var ids := {}
+	for id in _data.traits:
+		if _data.traits[id].get("trophy", false):
+			ids[id] = true
+	for kind in _data.enemies:
+		var d: Dictionary = _data.enemies[kind]
+		for t in [d.get("trophy", ""), d.get("elite", {}).get("trophy", "")]:
+			if t != "":
+				ids[t] = true
+	for id in ids:
+		var lesson: String = _data.traits[id].get("lesson", "")
+		assert_true(lesson.length() > 20, "%s saknar lärdom" % id)
+		assert_true(lesson.contains("{bärare}"), "%s: lärdomen nämner bäraren" % id)
+	assert_true(GameData.lesson(_data, "bone_finger", "Brokk").contains("Brokk har lärt sig"))
+	assert_true(GameData.lesson(_data, "bone_finger").contains("Bäraren har lärt sig"))
+	assert_eq(GameData.lesson(_data, "no_such_trophy"), "")

@@ -1152,5 +1152,121 @@
 			"grave_priest"
 		],
 		"stat_mult": 1.02
+	},
+	"crypt_2g": {
+		"name": "Likgropen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"ghoul",
+			"skeleton_warrior",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.7,
+		"template": "Den som äter"
+	},
+	"crypt_3e": {
+		"name": "Gnagda ben",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"ghoul",
+			"bone_runner",
+			"bone_runner"
+		],
+		"stat_mult": 0.72,
+		"template": "Offret"
+	},
+	"crypt_e7": {
+		"name": "Gravfältet",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_caller",
+			"ghoul",
+			"skeleton_warrior",
+			"skeleton_warrior"
+		],
+		"stat_mult": 0.95,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Två som vill ha liken"
+	},
+	"chapel_1d": {
+		"name": "Paktens vakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cult_zealot",
+			"cultist"
+		],
+		"stat_mult": 0.64,
+		"template": "Skyddad präst, vänd"
+	},
+	"chapel_3f": {
+		"name": "Blodmässan",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cult_zealot",
+			"cultist",
+			"corrupted_deacon"
+		],
+		"stat_mult": 0.7,
+		"template": "Front och stöd"
+	},
+	"chapel_3g": {
+		"name": "Fanatikernas led",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cult_zealot",
+			"cult_zealot",
+			"banner_bearer"
+		],
+		"stat_mult": 0.7,
+		"template": "Familj med ledare"
+	},
+	"chapel_e7": {
+		"name": "Grimmens vakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"church_grim",
+			"cultist",
+			"witch"
+		],
+		"stat_mult": 0.9,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Vakthunden"
 	}
 }

@@ -26,14 +26,16 @@
 				"crypt_2c",
 				"crypt_2d",
 				"crypt_2e",
-				"crypt_2f"
+				"crypt_2f",
+				"crypt_2g"
 			],
 			[
 				"crypt_3a",
 				"crypt_3b",
 				"crypt_3c",
 				"crypt_3d",
-				"crypt_2d"
+				"crypt_2d",
+				"crypt_3e"
 			]
 		],
 		"elite_pools": [
@@ -45,7 +47,8 @@
 				"crypt_e3",
 				"crypt_e4",
 				"crypt_e5",
-				"crypt_e6"
+				"crypt_e6",
+				"crypt_e7"
 			]
 		],
 		"map": {
@@ -119,7 +122,8 @@
 			[
 				"chapel_1a",
 				"chapel_1b",
-				"chapel_1c"
+				"chapel_1c",
+				"chapel_1d"
 			],
 			[
 				"chapel_2a",
@@ -136,7 +140,9 @@
 				"chapel_3c",
 				"chapel_3d",
 				"chapel_3e",
-				"chapel_2f"
+				"chapel_2f",
+				"chapel_3f",
+				"chapel_3g"
 			]
 		],
 		"elite_pools": [
@@ -148,7 +154,8 @@
 				"chapel_e3",
 				"chapel_e4",
 				"chapel_e5",
-				"chapel_e6"
+				"chapel_e6",
+				"chapel_e7"
 			]
 		],
 		"map": {

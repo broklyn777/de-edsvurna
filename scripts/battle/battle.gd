@@ -204,9 +204,13 @@ func _build_scene() -> void:
 			# Elitvarianten: egen färg, glöd och lite större, så att den syns direkt.
 			var elite: Dictionary = data.enemies[u.kind].elite
 			vis = vis.duplicate()
-			vis.tint = elite.get("tint", "#ffd36a")
-			vis.glow = elite.get("glow", "#a06a00")
-			vis.scale = float(vis.get("scale", 1.0)) * 1.15
+			# 0.31: en variant kan ha en egen figur (Benvargen är en varg); då gäller dess egna färger och storlek.
+			if elite.has("visual"):
+				vis = elite.visual.duplicate()
+			if not elite.has("visual"):
+				vis.tint = elite.get("tint", "#ffd36a")
+				vis.glow = elite.get("glow", "#a06a00")
+				vis.scale = float(vis.get("scale", 1.0)) * 1.15
 			# 0.31 (spindlarna): en figur som färgas per material får elitens egna färger och glöd.
 			if elite.has("colors"):
 				vis.colors = elite.colors
@@ -354,7 +358,12 @@ func _process(delta: float) -> void:
 			sim.begin()
 			# Speltiden: striden räknas från första turen (inte i Övningsgården).
 			if not run.state.practice and run.state.map != null:
-				run.playtime.start_battle(Playtime.battle_kind(run.state.current_room(), run.state.is_last_floor()))
+				# 0.31: sällskapets snittnivå och fiendernas väntade nivå följer med.
+				var lv_sum := 0.0
+				for h in sim.heroes:
+					lv_sum += h.level
+				run.playtime.start_battle(Playtime.battle_kind(run.state.current_room(), run.state.is_last_floor()),
+						lv_sum / maxi(sim.heroes.size(), 1), HeroStats.enemy_level(sim.depth, run.state.floor))
 			if _dev_combo_first and pal_unit != null:
 				pal_unit.speed = pal_speed
 			if _dev_exhaust > 0:
@@ -629,11 +638,17 @@ func _show_inspect(unit_id: String) -> void:
 		var t: Dictionary = data.traits[trait_id]
 		if not t.get("hidden", false):
 			lines.append("%s: %s" % [t.name, t.text])
+			if t.get("trophy", false) and t.has("lesson") and u.team == 0:
+				lines.append(BattleOverlay.LESSON_MARK + GameData.lesson(data, trait_id, u.name))
 	if lines.size() == 1:
 		lines.append("Inga egenskaper.")
 	lines.append_array(StatusIcons.lines(data, u))  # 0.22: statusarna med text och turer kvar
 	if u.team == 1:
 		lines.append(_trophy_line(u))
+		var trophy_id: String = data.enemies[u.kind].get("elite", {}).get("trophy", "") if u.elite \
+				else data.enemies[u.kind].get("trophy", "")
+		if trophy_id != "" and data.traits[trophy_id].has("lesson"):
+			lines.append(BattleOverlay.LESSON_MARK + GameData.lesson(data, trophy_id))
 		lines.append("Djup %d · stats ×%.2f" % [sim.depth, CombatSim.enemy_mult(data.encounters[run.state.encounter()], sim.depth)])
 	overlay.show_inspect(u.name, lines)
 
@@ -911,6 +926,14 @@ func _handle(e: Dictionary) -> void:
 			_after(_cursor + 0.1, _on_exhaustion_start)
 		"exhaustion":
 			_after(_cursor + 0.2, _float.bind(e.unit, "−%d" % int(e.amount), Color("#c9a77a"), 18, false))
+		# 0.31: Blodhugget kostar Blodsvuren liv; Likmåltid äter ett lik som sedan inte går att väcka.
+		"self_damage":
+			_after(_effect_delay(e) + 0.15, _float.bind(e.unit, "−%d" % int(e.amount), Color("#c0302a"), 18, false))
+		"corpse_consumed":
+			_after(_effect_delay(e), _float.bind(e.unit, "UPPÄTEN", Color("#a8c070"), 20, false))
+		"revive_blocked":
+			if e.get("consumed", false):
+				_after(_effect_delay(e), _float.bind(e.unit, "KAN INTE VÄCKAS", Color("#a8c070"), 18, false))
 		"chaos_calm":
 			_after(_cursor + 0.1, _float.bind(e.unit, "KAOSVINDEN LÄGGER SIG", UiStyle.TRAIT_GOLD, 18, true))
 		"elite":

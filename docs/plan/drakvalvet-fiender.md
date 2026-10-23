@@ -1,5 +1,12 @@
 # Drakvalvets fiender: Likätaren, Blodsvuren, Kyrkogrimmen och vargen
 
+> **Inkopplat 2026-10-23 på grenen `fiender-data`** (VD:s beslut): Likätaren och Gravgnagaren (äter inte hjältar), Blodsvuren
+> och Blodfogden (ingen elitgrupp med Förmannen), Kyrkogrimmen i kapellet (väg A, `chapel_e7`), vargen som Benvargens figur
+> (alternativ 1). Troféerna fick namn efter regeln "föremål eller lärdom": Likätarens tand → Den brutna gravspaden
+> (`ghoul_spade`), Gravgnagarens käke → Den sprängda bojan (`gnawer_chain`), Paktkniven → Den brutna paktkniven, Blodseden →
+> Den brutna fogdestaven (`bailiff_staff`), Grimmens halsband → Grimmens brustna halsband. Stats som i planen; mötenas
+> `stat_mult` som planens gissningar. Ljudet `ghoul_feast` är inte gjort (Likmåltid använder bone_crush).
+
 Skriven 2026-10-23 på grenen `drakvalvet-fiender` (från `test-0.30`). Den här omgången innehåller bara modeller och plan.
 Ingen speldata och ingen kod är ändrad, eftersom Den levande kartan ändrar `data/` samtidigt.
 Underlag:
@@ -152,7 +159,7 @@ Kulten skyddar alltså sin fanatiker utan någon ny regel.
 
 | Trofé (id) | Sällsynthet | Text | `combo` | Svar på |
 |---|---|---|---|---|
-| Paktkniven (`pact_blade`) | vanlig | "Bäraren gör 6 % mer skada för varje tiondel liv hen saknar (högst +30 %)." | `{"needs": "low_health", "creates": "damage_bonus", "scope": "self"}` (ny `needs`) | Långa strider och höga liv (Asketen, bossar). Passar ihop med Barriär (Bönepärlor, Kistspik) och med Väktarens kall. |
+| Paktkniven (`pact_blade`) | vanlig | "Bäraren gör 6 % mer skada för varje tiondel liv hen saknar (högst +30 %)." | `{"needs": "low_health", "creates": "damage_bonus", "scope": "self"}` (ny `needs`) | Långa strider och höga liv (Asketen, bossar). Passar ihop med Barriär (Det brustna bönebandet, Kistspik) och med Väktarens kall. |
 | Blodseden (`blood_oath`) | elit (variant) | "Första gången i striden som bäraren hamnar under 50 % liv får hen en Barriär för 25 % av sitt maxliv." | `{"needs": "low_health", "creates": "barrier", "scope": "self"}` | Stora slag (Lansens anstormning, Dödsdom, Blodhugget) |
 
 **Möten:**

@@ -311,7 +311,16 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 		var lines := ceili(UiStyle.bold().get_string_size(t.text, HORIZONTAL_ALIGNMENT_LEFT, -1, UiStyle.BODY_SIZE).x
 				/ (_left_w() - 40)) + (1 if stat != "" else 0)
 		var ch := 44.0 + 22.0 * clampi(lines, 1, 4)
-		UiStyle.card(self, Rect2(MARGIN, y, _left_w(), ch), t.name, body, true, UiStyle.TRAIT_GOLD, tag)
+		# Troféns lärdom (VD 2026-10-23): kursiv under effekten, i samma kort.
+		var lesson := GameData.lesson(data, trait_id, String(h.name)) if t.get("trophy", false) else ""
+		var lesson_h := 0.0
+		if lesson != "":
+			lesson_h = UiStyle.italic().get_multiline_string_size(lesson, HORIZONTAL_ALIGNMENT_LEFT, _left_w() - 28,
+					UiStyle.LESSON_SIZE, 2).y + 2.0
+		UiStyle.card(self, Rect2(MARGIN, y, _left_w(), ch + lesson_h), t.name, body, true, UiStyle.TRAIT_GOLD, tag, 0.0, lesson_h)
+		if lesson != "":
+			UiStyle.lesson(self, Vector2(MARGIN + 16, y + ch + 10), lesson, _left_w() - 28, 2)
+		ch += lesson_h
 		y += ch + 8
 		if y > size.y - 80:
 			break

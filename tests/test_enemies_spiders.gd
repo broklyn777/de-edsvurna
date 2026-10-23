@@ -215,7 +215,7 @@ func test_spider_trophies_build_the_chain_for_the_party() -> void:
 	assert_true(snare.auras.has("snared"), "Snärjtrådenn snärjer första gången")
 	assert_true(snare.auras.has("poisoned") and sim.unit(snare.auras.poisoned.source).id == "eira", "Gifttanden förgiftar")
 	_hit(sim, sim.unit("alva"), snare)
-	assert_true(snare.auras.has("blind"), "Dammkörteln förblindar den förgiftade")
+	assert_true(snare.auras.has("blind"), "Dammpungen förblindar den förgiftade")
 	var venom := _enemy(sim, "venom_spider")
 	_hit(sim, paladin, venom)
 	assert_true(not venom.auras.has("snared"), "Snärjtrådenn bara en gång per strid")

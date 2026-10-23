@@ -52,7 +52,7 @@ förvridna bossen i kryptan och botarna. Tester: `tests/test_living_map.gd`.
 - **Vila:** en Realm som når 0 växer inte nästa nedstigning; vilar den, växer den näst äldsta.
 - **Den svärtade Benfursten** (`bone_lich_black`, mötet `crypt_twisted`): Benfurstens regler, Resistent, Odödlig vrede och
   Svart märg (Barriär 8 % av max liv när någon i hans följe faller), stats 190/12/12/2/9 (Benfursten 180/11,8/11,8/2/9).
-  Sotsvart kåpa, järnkrona, röda ögon och rött sken. Hans trofé **Svärtad krona** (boss): när någon i sällskapet faller
+  Sotsvart kåpa, järnkrona, röda ögon och rött sken. Hans trofé **Den krossade svarta kronan** (boss): när någon i sällskapet faller
   sveper bäraren fienderna med Benstorm, men bärarens helningar är 25 % svagare. Ges direkt vid första segern (inte efter tre
   som Siralims Masters), eftersom han bara visar sig på steg 4. Kapellet och Lunden har ingen förvriden boss än; där är
   steg 4 bara steg 3 som står still.

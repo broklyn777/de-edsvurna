@@ -105,7 +105,7 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Instabilitet | `Profile.instability`, `RunState.instability`, `roll_rules()` | Realm Instability | 0–3 på kampanjkartan: n synliga och n dolda våningsregler, mer silver och troféchans. |
 | Den levande kartan, fördärvet (steg 0–4) | `LivingMap`, `Profile.growth`, `growth_rest`, `growth_news`, `RunState.growth` | – (vårt prov; Siralim har ingen värld som ändras mellan körningarna) | Den Realm man går till sjunker, de andra man har besökt växer. Visas utan siffror på kampanjkartan. docs/plan/levande-karta.md. |
 | Vilar | `Profile.growth_rest` | – | En Realm som når 0 växer inte nästa nedstigning. |
-| Den förvridna bossen, Den svärtade Benfursten | `twisted` i enemies.json (`bone_lich_black`), `realms.json` "growth": "twisted", mötet `crypt_twisted`, `RunState.twisted` | – (närmast en Nether-boss) | Visar sig på steg 4 och tar den vanliga bossens plats. Trofén Svärtad krona (`black_crown`) ges direkt. Egenskapen Svart märg (`black_marrow`). |
+| Den förvridna bossen, Den svärtade Benfursten | `twisted` i enemies.json (`bone_lich_black`), `realms.json` "growth": "twisted", mötet `crypt_twisted`, `RunState.twisted` | – (närmast en Nether-boss) | Visar sig på steg 4 och tar den vanliga bossens plats. Trofén Den krossade svarta kronan (`black_crown`) ges direkt. Egenskapen Svart märg (`black_marrow`). |
 | Våningsregel | `data/floor_rules.json`, `CombatSim.rules`, händelsen `rule` | Realm Property | T.ex. De döda vaknar (Resurrect on Death), Förseglade ord (Gems Sealed After Casting), Speglande ben (Reflect Damage Taken), Kaosvind (Stats are Swapped). |
 | Dold regel | `rules_hidden`, `rules_revealed` | hidden Realm Property | Syns först när den slår till. |
 | Elitvariant | `elite` i enemies.json, `CombatUnit.elite`, `CombatSim.elite_chance()` | – (sällsynta varelser; Fused/Nether-varianter) | Benkapten, Benjägare, Gravabbot, Gravfogde, Askbärare, Ockultist, Banshee, Edsbrytare, Häxmästarinna, Självplågare. Egen trofé. |
@@ -206,3 +206,12 @@ Källa: `docs/research/siralim.md`.
 | Förklaring | macro log | – (vårt tillägg) |
 | Trollhud, Svedd hud | `troll_hide` i traits.json, auran `troll_scorched` (`no_heal`), villkoret `source_used_ability` | – (vårt val, research K) | En träff från en förmåga stoppar trollets läkning till efter dess nästa tur. |
 | Stenhjärta | `stone_heart`, villkoret `source_repeats_team_action`, `CombatSim.team_repeats()` | – | Bergakungen tar 60 % mindre skada när sällskapet gör samma sorts handling två gånger i rad. |
+| Likätare, Gravgnagaren | `ghoul` (Benfolket; elitvariant), modellen `ghoul.glb` | – (vårt val, docs/plan/drakvalvet-fiender.md §1) | Kryptans likätare: äter fallna ur Benfolket, helar sig och växer. Äter aldrig hjältar. |
+| Likmåltid | corpse feast, `corpse_feast` (förmågan, `target: dead_ally`, `family: true`) | – | Äter ett lik ur den egna familjen och helar 35 % av max liv. |
+| Uppätet lik | consumed corpse, `CombatUnit.consumed`, effekten `consume_corpse`, händelsen `corpse_consumed` | – | Kan aldrig väckas (`revive_blocked` med `consumed`), räknas fortfarande som fallet. |
+| Gravhunger | grave hunger, `grave_hunger` | – | +20 % Attack per måltid, högst 3 (`raise_stat` med `count_key`). |
+| Blodsvuren, Blodfogden | zealot, `cult_zealot` (Kultens folk; elitvariant), modellen `kultfanatiker.glb` | – | Blir farligare ju mer skadad den är; kulten skyddar den. |
+| Blodpakt, Blodhugget | blood pact `blood_pact` (`damage_mult_per_missing_tenth`), blood cut `blood_cut` (effekten `self_damage`) | – | Mer skada per saknad tiondel liv; Blodhugget kostar 10 % av max liv men dödar aldrig. |
+| Kyrkogrimmen | church grim, `church_grim` (elit, ingen familj), modellen `helvetshund.glb` | – (svensk folktro) | Kapellets vakthund; motdraget Skrattande låga från djup 3. |
+| Grimmens vakt | grim watch, `grim_watch` | – | Biter den som skadar någon annan i gruppen, en gång per tur. |
+| Lärdom | lesson, `lesson` i traits.json, `GameData.lesson()`, `UiStyle.lesson()` | – (VD 2026-10-23) | Vad bäraren lärde sig av fienden; visas kursivt under troféns effekt. `{bärare}` blir hjältens namn. |

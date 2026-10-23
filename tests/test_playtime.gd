@@ -83,6 +83,46 @@ func test_averages_and_lines() -> void:
 	assert_eq(lines[0], "Strid: snitt 2,7 min (3 st)  ·  Körning: snitt 8 min (1 st)")
 	assert_eq(lines[1], "Vanlig 1,5 min  ·  Boss 5,0 min")
 	assert_eq(Playtime.new().summary_lines()[0], "Strid: snitt – (0 st)  ·  Körning: snitt – (0 st)")
+	assert_eq(lines[2], "Djup 1: 2,7 min (3)", "snitt per djup")
+	assert_eq(lines.size(), 3, "inga nivåer mätta: ingen nivårad")
+	assert_eq(Playtime.new().summary_lines().size(), 2, "inget mätt: ingen djuprad")
+
+
+## 0.31: sällskapets snittnivå och fiendernas väntade nivå per strid; snitt per djup och över/i nivå/under (±2).
+func test_levels_per_depth_and_old_entries() -> void:
+	var p := _fresh()
+	p.start_run(1, "crypt", 1)
+	p.start_battle("normal", 3.25, 3.0)
+	p.tick(120.0)
+	p.end_battle(true, 10)
+	assert_near(float(p.battles[0].party_level), 3.3, 0.001, "sällskapets nivå sparas (en decimal)")
+	assert_near(float(p.battles[0].enemy_level), 3.0, 0.001, "fiendernas nivå sparas")
+	p.start_battle("normal")
+	p.tick(60.0)
+	p.end_battle(true, 8)
+	assert_true(not p.battles[1].has("party_level"), "utan nivåer sparas inga")
+	# En gammal post (före 0.31) på djup 2, utan nivåer, och två med nivåer långt under.
+	p.battles.append({"sec": 240.0, "realm": "crypt", "depth": 2, "floor": 0, "kind": "normal", "won": true, "turns": 20})
+	p.battles.append({"sec": 240.0, "realm": "crypt", "depth": 2, "floor": 1, "kind": "normal", "won": true, "turns": 20,
+			"party_level": 5.0, "enemy_level": 9.5})
+	var d := p.depths()
+	assert_eq(d.size(), 2)
+	assert_eq(d[0].depth, 1)
+	assert_near(float(d[0].sec), 90.0, 0.01, "snitt djup 1 räknar alla strider")
+	assert_eq(int(d[0].leveled), 1, "bara striden med nivåer räknas i nivåsnittet")
+	assert_near(float(d[0].diff), 0.3, 0.01)
+	assert_near(float(d[1].diff), -4.5, 0.01, "den gamla posten räknas inte i nivåsnittet")
+	var lines := p.summary_lines()
+	assert_eq(lines[2], "Djup 1: 1,5 min (2) · Djup 2: 4,0 min (2)")
+	assert_eq(lines[3], "Nivå mot fienderna: djup 1 i nivå (+0,3) · djup 2 under (−4,5)")
+	assert_eq(Playtime.level_word(2.0), "i nivå", "precis två nivåer över räknas som i nivå")
+	assert_eq(Playtime.level_word(2.1), "över")
+	assert_eq(Playtime.level_word(-2.1), "under")
+	# Filen: gamla och nya poster läses tillbaka.
+	p.save()
+	var q := Playtime.load_from(TMP)
+	assert_eq(q.summary_lines()[3], lines[3], "samma rader efter laddning")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TMP))
 
 
 func test_saves_and_loads_and_resumes() -> void:

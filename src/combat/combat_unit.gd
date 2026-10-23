@@ -69,6 +69,8 @@ var hit_log := {}
 var last_ability := ""
 var prev_ability := ""
 var alive := true
+## 0.31 (Likätaren): liket är uppätet och kan inte väckas (räknas fortfarande som fallet).
+var consumed := false
 ## Tidslinjen (0.22): "top" om figuren ska komma först igen när turen är slut (flyttad under sin egen tur).
 var next_slot := ""
 ## ability_id -> egna turer kvar.

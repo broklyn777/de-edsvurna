@@ -69,7 +69,7 @@ Defense dras alltså av *sist* och bara till en femtedel. Indirekt skada kan int
 
 **Fasta belopp** (t.ex. ett följdanfall för 50 % av träffen, eller Brinner = 30 % av kastarens Intelligence
 per tur) räknas inte om mot Defense igen, men får modifierarna. Brinner och Förgiftad räknas ut när statusen läggs
-och är sedan samma varje tur. *Vårt val:* ett följdanfall från en egenskap (Jägarinstinkt, Skelettets fingerled) är
+och är sedan samma varje tur. *Vårt val:* ett följdanfall från en egenskap (Jägarinstinkt, Det andra hugget) är
 ett **anfall** om datan inte säger "indirect": det kan undvikas och bli krit, men drar ingen Defense.
 
 **Tillägg** (originalets "additional damage", t.ex. Bästa försvaret: +30 % av Defense) läggs på sist. Det går förbi

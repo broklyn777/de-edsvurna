@@ -1848,5 +1848,109 @@
 				"duration": 2
 			}
 		]
+	},
+	"ghoul_claw": {
+		"name": "Likklor",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"corpse_feast": {
+		"name": "Likmåltid",
+		"target": "dead_ally",
+		"family": true,
+		"cooldown": 2,
+		"anim": "Spell_Simple_Shoot",
+		"sound": "bone_crush",
+		"text": "Äter liket av en fallen ur Benfolket (det kan inte väckas) och helar sig 35 % av sitt max liv.",
+		"effects": [
+			{
+				"type": "consume_corpse"
+			},
+			{
+				"type": "heal",
+				"pct_max_hp": 0.35,
+				"target": "self"
+			}
+		]
+	},
+	"pact_knife": {
+		"name": "Paktkniven",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"blood_cut": {
+		"name": "Blodhugget",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"cooldown": 2,
+		"anim": "Chop_Attack",
+		"sound": "k_boss_hit",
+		"text": "140 % skada mot den svagaste. Blodsvuren förlorar 10 % av sitt max liv (förbi Barriär, aldrig det sista).",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.4
+			},
+			{
+				"type": "self_damage",
+				"pct_max_hp": 0.1
+			}
+		]
+	},
+	"grim_bite": {
+		"name": "Glödbett",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "fire_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			},
+			{
+				"type": "aura",
+				"aura": "burning",
+				"duration": 2
+			}
+		]
+	},
+	"hellfire_leap": {
+		"name": "Eldsprånget",
+		"target": "enemy",
+		"pick": "last_attacker",
+		"melee": true,
+		"cooldown": 3,
+		"anim": "Leap_Attack",
+		"sound": "fire_hit",
+		"text": "120 % skada mot den som senast skadade Kyrkogrimmen, som börjar brinna i 2 turer.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.2
+			},
+			{
+				"type": "aura",
+				"aura": "burning",
+				"duration": 2
+			}
+		]
 	}
 }
