@@ -499,7 +499,8 @@ func active_hints() -> Array:
 
 ## 0.30.22 Spåren (nya-grottor.md B, vårt val): den som går ned när questen är klar får en del av erfarenheten och
 ## silvret från de vanliga grupper som står kvar ("ni lärde er av spåren"), så att det inte alltid lönar sig att rensa allt.
-const TRAIL_SHARE := 0.5
+## 0,75: botarna i kryptan vinner lika ofta direkt som när de rensar allt (0,5 för lite, 1,0 för mycket).
+const TRAIL_SHARE := 0.75
 var trail_taken := false
 
 

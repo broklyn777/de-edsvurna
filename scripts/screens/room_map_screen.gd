@@ -744,7 +744,7 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 			if not state.active_hints().is_empty():
 				hint += " De röda ringarna visar ungefär var målen finns."
 		else:
-			hint = "Questen är klar: %s är öppen (den gyllene stigen). Grupper ni låter vara lämnar spår: halva erfarenheten och silvret när ni går vidare." % ("bossen" if state.map.last_floor else "trappan")
+			hint = "Questen är klar: %s är öppen (den gyllene stigen). Grupper ni låter vara lämnar spår: tre fjärdedelar av erfarenheten och silvret när ni går vidare." % ("bossen" if state.map.last_floor else "trappan")
 		UiStyle.para(self, Vector2(x, y + 28), hint, 16, Color(InkArt.INK, 0.8), w, 6)
 		return
 	# Gruppens kort (plan: fiender, storlek, egenskaper, möjlig trofé och för en elit en varning).
