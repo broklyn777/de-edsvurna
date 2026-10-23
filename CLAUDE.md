@@ -141,7 +141,17 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Realm eller när paladinen står ensam kvar; högst en per rum, aldrig i striden, inget upprepas samma körning
   (`RunState.barks_used`); ibland ett kort samtal mellan två (`pairs`). Visas på rumskartan. 0.28.1: tillfällen i grottan (cave, elite, back, treasure, stairs, boss, fallen; home i datan men visas inte än) för
   sju följeslagare ur ChatGPT:s version 2 (`docs/ideer/repliker-v2.tsv`); nya repliker är `{id, text}` med fasta id:n
-  (t.ex. `imma_elite_1`, för eventuella röster senare), `Dialog.line_text`. Ragnhild Ljusdom (0.29.1) är sträng, konservativ och
+  (t.ex. `imma_elite_1`, för eventuella röster senare), `Dialog.line_text`. **Replikminnet** (levande repliker steg 1–3,
+  `docs/research/levande-repliker.md` §5): `Profile.said` {nyckel: nedstigningen då den senast sades} (+ `said_times`,
+  `last_idle`; nyckeln är id:t, annars `Dialog.line_key` = hash av texten) varar mellan körningarna. Grottans repliker väljer
+  aldrig sagda först, sedan den som vilat längst; vilan är `Dialog.BARK_REST_PER_LINE` (2) × lägets pool för sällskapet, högst
+  `BARK_COOLDOWN` (10) nedstigningar; vilar allt blir det tyst, utom i starka lägen. `barks_used` håller nycklar (ingen
+  upprepning i körningen). Budget (`RunState.bark_allowed`): högst 5 repliker per nedstigning (`BARK_BUDGET`), aldrig i två
+  rum i rad (`rooms_entered`, `bark_room`), vanliga lägen med `BARK_CHANCE`; starka lägen (`STRONG_BARKS`: boss, fallen,
+  alone, rare_find, rescue, new_realm) går före. Nyheter i borgen (`idle` med `when`) sägs högst 2 gånger (`Dialog.NEWS_TIMES`),
+  sedan vilar de; högst en nyhet per person och hemkomst (`said["news:<person>"]`), allmänna repliker aldrig två i rad.
+  Valfria fält på en replik (bakåtkompatibelt med `{id, text}`): `once` (en gång per profil), `times` (nyheter),
+  `cooldown` (nedstigningar), `chance` (0–1). Ragnhild Ljusdom (0.29.1) är sträng, konservativ och
   älskvärd och citerar bibelord **endast ur 1917 års kyrkobibel**, ordagrant och kontrollerade (`ref`,
   `docs/ideer/ragnhild-bibelord.md`); aldrig för att förlöjliga tron.
   Hennes Sanningens ljus har nåd (0.29.4): den svagaste i sällskapet helas med 12 % av hennes Intelligence när ljuset bränner (kapellet
