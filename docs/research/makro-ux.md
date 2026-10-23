@@ -15,7 +15,7 @@ Läs först: `docs/ideer/siralim_makron.md` (Siralims regler), `docs/research/si
   för felsökning.
 - Inget makro passade → hjälten väntar (Siralims beteende, `siralim.md` §9b). Startmakrona har ingen garanterad sista
   rad: Paladinens sista rad är "någon fiende är inte immun → anfall", som bara missar om alla fiender är immuna
-  samtidigt (sällsynt, men inget hindrar det) eller om Paladinen är Tystad/Hånad på ett sätt som spärrar anfallet. Följeslagarnas startrader är
+  samtidigt (sällsynt, men inget hindrar det). Följeslagarnas startrader är
   bara de två första (`Run.starter_lines`), så en ny profils hjältar kan stå stilla.
 - Radeditorn (0.30.24): fyra kolumner, sökfält, villkorsgrupper, förhandsvisning av radens text (`_update_preview`).
   Förhandsvisningen säger vad raden *betyder*, inte vad den *skulle göra just nu*.
