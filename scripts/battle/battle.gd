@@ -53,6 +53,9 @@ var _dev_calc := false
 var _dev_statuses := false
 var _dev_order := false
 var _dev_combo := false  # 0.30: --combo förblindar fienderna vid start och kör ALLA AUTO (kombinationens ruta)
+## --combo-first: som --combo, men Paladinen agerar först, så att rutan "Kombination!" kommer i första turen. Rutan visas
+## bara en gång per profil: använd en ny profil, t.ex. --intro-step=crypt --combo-first --floor=0 --frames=260.
+var _dev_combo_first := false
 var _dev_inspect := ""
 var _dev_log := false
 var _dev_ask_forfeit := false
@@ -109,8 +112,9 @@ func _ready() -> void:
 			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
 		elif arg == "--settings":
 			SettingsBox.open.call_deferred(self, true)  # 0.30: inställningarna öppna (skärmdumpar)
-		elif arg == "--combo" or arg == "--offer-order":
+		elif arg == "--combo" or arg == "--offer-order" or arg == "--combo-first":
 			_dev_combo = true
+			_dev_combo_first = arg == "--combo-first"
 			_dev_order = arg == "--offer-order"  # visar "Spara som order" för Rättfärdigt slag (skärmdumpar)
 			for id in ["timeline", "statuses", "charges"]:
 				if not run.profile.help_seen.has(id):
@@ -332,7 +336,13 @@ func _process(delta: float) -> void:
 			started = true
 			overlay.show_big("STRID!")
 			sfx.play("go", -2.0, 0.0)
+			var pal_unit := sim.unit("paladin")
+			var pal_speed := pal_unit.speed if pal_unit != null else 0.0
+			if _dev_combo_first and pal_unit != null:
+				pal_unit.speed = 9999.0  # överst på tidslinjen; snabbheten återställs när ordningen är lagd
 			sim.begin()
+			if _dev_combo_first and pal_unit != null:
+				pal_unit.speed = pal_speed
 			if _dev_statuses:
 				_give_dev_statuses()
 			if _dev_combo:
