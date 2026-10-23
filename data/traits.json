@@ -2244,5 +2244,237 @@
 	},
 	"vow_no_fall_held": {"name": "Ingen ska falla", "vow": true, "text": "I början av striden får den svagaste i sällskapet en Barriär för 20 % av sitt liv.", "trigger": "battle_start", "effects": [{"type": "barrier", "pct_max_hp": 0.2, "target": "weakest_ally"}]},
 	"vow_no_fall_humble": {"name": "Den som föll reser sig", "vow": true, "text": "En gång under körningen: när någon i sällskapet faller väcks hen med 30 % liv.", "trigger": "death", "once_per_battle": true, "when": {"unit": "ally"}, "effects": [{"type": "revive", "pct": 0.3, "target": "unit"}]},
-	"vow_no_heal_held": {"name": "Jag helar inte", "vow": true, "text": "Paladinens direkta attacker helar den svagaste i sällskapet för 20 % av skadan.", "trigger": "damage", "when": {"source": "self", "direct": true}, "effects": [{"type": "heal", "pct_of_event": 0.2, "target": "weakest_ally"}]}
+	"vow_no_heal_held": {"name": "Jag helar inte", "vow": true, "text": "Paladinens direkta attacker helar den svagaste i sällskapet för 20 % av skadan.", "trigger": "damage", "when": {"source": "self", "direct": true}, "effects": [{"type": "heal", "pct_of_event": 0.2, "target": "weakest_ally"}]},
+	"troll_hide": {
+		"name": "Trollhud",
+		"enemy": true,
+		"text": "Trollfolket: en träff från en förmåga stoppar trollets läkning till efter dess nästa tur.",
+		"trigger": "damage",
+		"when": {
+			"target": "self",
+			"source_used_ability": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "troll_scorched",
+				"duration": 2,
+				"target": "self"
+			}
+		]
+	},
+	"troll_moss": {
+		"name": "Mossa",
+		"enemy": true,
+		"text": "I början av sin tur helas Mossrygg för 10 % av sitt max liv.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"stat": "health",
+				"pct": 0.1,
+				"target": "self"
+			}
+		]
+	},
+	"porridge_greed": {
+		"name": "Sju sorters gröt",
+		"enemy": true,
+		"text": "Varje gång en hjälte helas blir Gudrun mättare: +10 % Attack (högst 3 gånger).",
+		"trigger": "heal",
+		"when": {
+			"target": "enemy"
+		},
+		"effects": [
+			{
+				"type": "raise_stat",
+				"stat": "attack",
+				"pct": 0.1,
+				"additive": true,
+				"max_times": 3,
+				"target": "self"
+			}
+		]
+	},
+	"troll_envy": {
+		"name": "Avund",
+		"enemy": true,
+		"text": "När en hjälte får en buff får Gunnar samma buff (en gång per tur).",
+		"trigger": "aura_applied",
+		"when": {
+			"unit": "enemy",
+			"aura_kind": "buff"
+		},
+		"once_per_turn": true,
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "event_aura",
+				"target": "self"
+			}
+		]
+	},
+	"troll_club": {
+		"name": "Klubban",
+		"enemy": true,
+		"text": "Kalles anfall mot en hjälte som Försvarar gör dubbel skada.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_has_aura": "defend",
+			"kind": "attack"
+		},
+		"modify": {
+			"damage_mult": 2.0
+		}
+	},
+	"bridge_toll": {
+		"name": "Tull",
+		"enemy": true,
+		"text": "Brom bryr sig inte om Provocera: han slår den som skadade honom senast, +50 % mot den som Provocerar.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_has_aura": "provoke"
+		},
+		"modify": {
+			"damage_mult": 1.5
+		}
+	},
+	"troll_lullaby": {
+		"name": "Trollmors vaggvisa",
+		"enemy": true,
+		"text": "Var tredje tur sjunger hon: den som senast använde en förmåga somnar en tur. Anfall eller Försvara när sången närmar sig.",
+		"trigger": "passive"
+	},
+	"stone_heart": {
+		"name": "Stenhjärta",
+		"enemy": true,
+		"text": "Gör sällskapet samma sorts handling två gånger i rad (anfall efter anfall, förmåga efter förmåga) tar Grumse 60 % mindre skada. Variera!",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"source_repeats_team_action": true
+		},
+		"modify": {
+			"damage_taken_mult": 0.4
+		}
+	},
+	"moss_cloak": {
+		"name": "Mosskappa",
+		"trophy": true,
+		"rarity": "common",
+		"text": "I början av bärarens tur helas bäraren för 6 % av sitt max liv.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"stat": "health",
+				"pct": 0.06,
+				"target": "self"
+			}
+		]
+	},
+	"porridge_bowl": {
+		"name": "Grötskål",
+		"trophy": true,
+		"rarity": "common",
+		"text": "När en fiende helas får bäraren +10 % Attack (högst 3 gånger per strid).",
+		"trigger": "heal",
+		"when": {
+			"target": "enemy"
+		},
+		"effects": [
+			{
+				"type": "raise_stat",
+				"stat": "attack",
+				"pct": 0.1,
+				"additive": true,
+				"max_times": 3,
+				"target": "self"
+			}
+		]
+	},
+	"envy_stone": {
+		"name": "Avundsten",
+		"trophy": true,
+		"rarity": "common",
+		"text": "När en fiende får en buff får bäraren samma buff (en gång per tur).",
+		"trigger": "aura_applied",
+		"when": {
+			"unit": "enemy",
+			"aura_kind": "buff"
+		},
+		"once_per_turn": true,
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "event_aura",
+				"target": "self"
+			}
+		]
+	},
+	"kalles_club": {
+		"name": "Kalles klubba",
+		"trophy": true,
+		"rarity": "common",
+		"text": "Bärarens anfall mot en fiende som Försvarar gör +50 % skada.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_has_aura": "defend",
+			"kind": "attack"
+		},
+		"modify": {
+			"damage_mult": 1.5
+		}
+	},
+	"toll_buckle": {
+		"name": "Brospännet",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Bärarens anfall mot en fiende som Provocerar gör +40 % skada.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_has_aura": "provoke",
+			"kind": "attack"
+		},
+		"modify": {
+			"damage_mult": 1.4
+		}
+	},
+	"grey_shawl": {
+		"name": "Gråluvans sjal",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Var tredje gång bäraren agerar somnar en slumpad fiende en tur.",
+		"trigger": "acted",
+		"when": {
+			"unit": "self"
+		},
+		"every": 3,
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sleeping",
+				"duration": 1,
+				"target": "random_enemy"
+			}
+		]
+	},
+	"mountain_crown": {
+		"name": "Bergakungens krona",
+		"trophy": true,
+		"rarity": "boss",
+		"text": "Bäraren tar 40 % mindre skada när fienderna gör samma sorts handling två gånger i rad.",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"source_repeats_team_action": true
+		},
+		"modify": {
+			"damage_taken_mult": 0.6
+		}
+	}
 }

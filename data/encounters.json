@@ -736,5 +736,116 @@
 		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Helar och renar"
+	},
+	"troll_1a": {
+		"name": "Mossiga backen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"moss_troll",
+			"moss_troll"
+		]
+	},
+	"troll_1b": {
+		"name": "Söndagsgröt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"porridge_troll",
+			"moss_troll"
+		]
+	},
+	"troll_1c": {
+		"name": "Sura grannar",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grumpy_troll",
+			"club_troll"
+		]
+	},
+	"troll_2a": {
+		"name": "Klubbor i dimman",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"club_troll",
+			"moss_troll",
+			"grumpy_troll"
+		]
+	},
+	"troll_2b": {
+		"name": "Grötkalaset",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"porridge_troll",
+			"porridge_troll",
+			"club_troll"
+		]
+	},
+	"troll_e1": {
+		"name": "Barnkammaren",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"troll_mother",
+			"grumpy_troll",
+			"moss_troll"
+		],
+		"elite_group": true
+	},
+	"troll_e2": {
+		"name": "Bron",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bridge_troll",
+			"moss_troll",
+			"moss_troll"
+		],
+		"elite_group": true
+	},
+	"troll_3": {
+		"name": "Bergakungens sal",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"mountain_king",
+			"club_troll",
+			"troll_mother"
+		]
 	}
 }

@@ -1363,5 +1363,192 @@
 				"pct_max_hp": 0.3
 			}
 		]
+	},
+	"troll_club_swing": {
+		"name": "Trollslag",
+		"target": "enemy",
+		"pick": "lowest",
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"moss_throw": {
+		"name": "Mosskast",
+		"target": "enemy",
+		"pick": "random",
+		"travel": 0.4,
+		"cooldown": 3,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.7
+			},
+			{
+				"type": "aura",
+				"aura": "snared",
+				"duration": 2
+			}
+		]
+	},
+	"troll_ladle": {
+		"name": "Slevslag",
+		"target": "enemy",
+		"pick": "lowest",
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.9
+			}
+		]
+	},
+	"hot_porridge": {
+		"name": "Het gröt",
+		"target": "all_enemies",
+		"cooldown": 3,
+		"school": "fire",
+		"sound": "fire_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.45
+			},
+			{
+				"type": "aura",
+				"aura": "weak",
+				"duration": 2,
+				"chance": 0.3
+			}
+		]
+	},
+	"sour_glare": {
+		"name": "Sur blick",
+		"target": "enemy",
+		"pick": "highest_attack",
+		"ignore_taunt": true,
+		"cooldown": 3,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "scorned",
+				"duration": 1
+			},
+			{
+				"type": "damage",
+				"power": 0.4
+			}
+		]
+	},
+	"ground_slam": {
+		"name": "Markskalv",
+		"target": "enemy",
+		"pick": "random",
+		"cooldown": 3,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.8
+			},
+			{
+				"type": "to_bottom"
+			}
+		]
+	},
+	"toll_strike": {
+		"name": "Tullslag",
+		"target": "enemy",
+		"pick": "last_attacker",
+		"ignore_taunt": true,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"bridge_toll": {
+		"name": "Brotull",
+		"target": "enemy",
+		"pick": "random",
+		"ignore_taunt": true,
+		"cooldown": 3,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "drain_charge"
+			},
+			{
+				"type": "damage",
+				"power": 0.6
+			}
+		]
+	},
+	"knitting_needles": {
+		"name": "Stickor",
+		"target": "enemy",
+		"pick": "lowest",
+		"travel": 0.3,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.9
+			}
+		]
+	},
+	"grey_lullaby": {
+		"name": "Gråluvans vaggvisa",
+		"target": "all_enemies",
+		"kind": "spell",
+		"school": "shadow",
+		"tier": "small",
+		"cooldown": 3,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sleeping",
+				"duration": 1,
+				"if_target_cast": true
+			}
+		]
+	},
+	"mountain_club": {
+		"name": "Bergakungens klubba",
+		"target": "enemy",
+		"pick": "lowest",
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"mountain_wrath": {
+		"name": "Bergets vrede",
+		"target": "all_enemies",
+		"cooldown": 3,
+		"sound": "bone_crush",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.75
+			},
+			{
+				"type": "aura",
+				"aura": "stone",
+				"duration": 1,
+				"chance": 0.2
+			}
+		]
 	}
 }
