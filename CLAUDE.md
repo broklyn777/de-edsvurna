@@ -196,6 +196,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   t.ex. De döda vaknar, Förseglade ord, Vaksamma vakter, Speglande ben, Kaosvind), mer silver och bättre
   troféchans. Dolda regler avslöjas när de slår till (händelsen `rule`). Kaosvind (0.30.16) lägger sig efter varje
   hjältes tredje tur (`CombatSim.CHAOS_WIND_TURNS`, händelsen `chaos_calm`): botarna fann eviga strider annars.
+  Fiender som försvarar sig vid lågt liv gör det bara direkt efter ett anfall (0.30.19, `self_last_attacked`: karriärbotarna
+  fann ett dödläge mot Asketen). **Svårighetskurvan** (`SOAK=karriar` i `tests/soak.gd` på testgrenen,
+  `docs/provspel/svarighetskurva.md`): en profil genom 18 nedstigningar; djup 1 är en platå, taket kommer vid djup 6–7.
+  Våning 1:s elitgrupp och Nemesis ×0,80 för högst två hjältar (`RunState.SMALL_PARTY_ELITE`, andra nedstigningen 26 → 41 %).
 - **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
   namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
   (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.
