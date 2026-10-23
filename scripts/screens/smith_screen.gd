@@ -336,7 +336,13 @@ func _stone(id: String) -> Dictionary:
 # --- Layout -----------------------------------------------------------------
 
 func _hero_rect(i: int) -> Rect2:
-	return Rect2(MARGIN, 104 + i * 98, 280, 88)
+	# 0.30.17: med många hjältar blir korten lägre så att listan ryms ovanför förrådet.
+	var step := _hero_step()
+	return Rect2(MARGIN, 104 + i * step, 280, step - 8)
+
+
+func _hero_step() -> float:
+	return clampf((size.y - 104.0 - 110.0) / maxf(_heroes().size(), 1), 42.0, 98.0)
 
 
 func _x0() -> float:
@@ -404,6 +410,12 @@ func _draw() -> void:
 	for i in heroes.size():
 		var h: Dictionary = data.heroes[heroes[i]]
 		var art: Dictionary = profile.artifact(heroes[i])
+		if _hero_step() < 70.0:
+			# Kompakt: bara namnet och artefaktens typ (allt om den valda står till höger).
+			var kind: String = data.artifacts.get(art.get("type", ""), {}).get("name", "") if not art.is_empty() else "–"
+			UiStyle.card(self, _hero_rect(i), h.name, "", hero == heroes[i], Color(h.color), kind.to_upper(),
+					_flash if hero == heroes[i] else 0.0)
+			continue
 		UiStyle.card(self, _hero_rect(i), h.name, ArtifactText.name_of(data, art), hero == heroes[i],
 				Color(h.color), h.title.to_upper(), _flash if hero == heroes[i] else 0.0)
 	_draw_store(data, profile, Vector2(MARGIN, size.y - 70))

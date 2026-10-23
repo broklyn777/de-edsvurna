@@ -178,8 +178,8 @@ func _draw_enemy_levels(data: Dictionary, prof: Profile, level: int, at: Vector2
 	var w := _personality_rect().position.x - at.x - 16
 	UiStyle.text(self, at, "FIENDERNA I %s, DJUP %d" % [String(data.realms[prof.realm].short).to_upper(), prof.depth], 16,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
-	UiStyle.text(self, at + Vector2(0, 28), "Fiendernas nivå: %d till %d (svårare längre in och vid bossen)" % [lv[0], lv[2]], 21, Color.WHITE,
-			HORIZONTAL_ALIGNMENT_LEFT, w, 2)
+	UiStyle.text(self, at + Vector2(0, 28), UiStyle.fit("Fiendernas nivå: %d–%d" % [lv[0], lv[2]], 21, w), 21,
+			Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 	var verdict := "Rustad för hela djupet"
 	var color := Color("#8fd18f")
 	if level < lv[0]:

@@ -16,7 +16,9 @@ func _ready() -> void:
 
 
 func _row_rect(i: int) -> Rect2:
-	return Rect2(MARGIN, 84 + i * (ROW_H + 4), 300, ROW_H)
+	# 0.30.17: raderna krymper så att alla ämnen ryms på skärmen.
+	var step := minf(ROW_H + 4, (size.y - 84.0 - 10.0) / maxf(Help.order(run.data).size(), 1))
+	return Rect2(MARGIN, 84 + i * step, 300, step - 4)
 
 
 func _tap(p: Vector2) -> void:
@@ -43,7 +45,7 @@ func _draw() -> void:
 		var seen: bool = run.profile.help_seen.has(id)
 		draw_rect(r, Color(0.08, 0.2, 0.1, 0.95) if on else Color(0, 0, 0, 0.5))
 		draw_rect(r, Color(HelpBox.GREEN, 0.9 if on else 0.3), false, 2.0 if on else 1.0)
-		UiStyle.text(self, r.position + Vector2(14, 27), String(Help.entry(run.data, id).get("title", id)), 17,
+		UiStyle.text(self, r.position + Vector2(14, r.size.y / 2 + 7), String(Help.entry(run.data, id).get("title", id)), 17,
 				Color.WHITE if seen or on else Color(1, 1, 1, 0.5))
 	if selected != "":
 		var x := _row_rect(0).end.x + 24

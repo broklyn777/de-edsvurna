@@ -120,13 +120,14 @@ func _draw() -> void:
 			box.size.x - 32, 2)
 
 	# Hjältarna (0.19): tryck för hjältebladet; här kan personligheten bytas mot silver.
-	var y := size.y - 120.0
+	var y := size.y - (120.0 if _heroes().size() <= 5 else 126.0)
 	UiStyle.text(self, Vector2(MARGIN, y), "HJÄLTARNA – TRYCK FÖR HJÄLTEBLADET (HÄR BYTS PERSONLIGHET)", 16, Color(1, 1, 1, 0.6))
 	var heroes: Array = _heroes()
 	for i in heroes.size():
 		var h: Dictionary = run.profile.hero(data, heroes[i])
 		var p: Dictionary = data.personalities.get(h.personality, {})
-		chip(_hero_rect(i), "%s · nivå %d · %s" % [data.heroes[heroes[i]].name, int(h.level), p.get("name", "")], false, 15)
+		var label := "%s · nivå %d · %s" % [data.heroes[heroes[i]].name, int(h.level), p.get("name", "")]
+		chip(_hero_rect(i), UiStyle.fit(label, 15, _hero_rect(i).size.x - 10), false, 15)
 
 
 ## 0.24.3: bara Paladinen och de som har anslutit.
@@ -135,5 +136,11 @@ func _heroes() -> Array:
 
 
 func _hero_rect(i: int) -> Rect2:
-	var w := (size.x - MARGIN * 2 - GAP * 4) / 5.0
-	return Rect2(MARGIN + i * (w + GAP), size.y - 96, w, 50)
+	var n := _heroes().size()
+	if n <= 5:
+		var w := (size.x - MARGIN * 2 - GAP * 4) / 5.0
+		return Rect2(MARGIN + i * (w + GAP), size.y - 96, w, 50)
+	# 0.30.17: fler än fem hjältar: två rader med upp till sex i varje.
+	var per := ceili(n / 2.0)
+	var w2 := (size.x - MARGIN * 2 - GAP * (per - 1)) / per
+	return Rect2(MARGIN + (i % per) * (w2 + GAP), size.y - 104 + (i / per) * 48, w2, 42)
