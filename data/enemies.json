@@ -1891,7 +1891,7 @@
 		},
 		"trophy": "barbed_thread",
 		"elite": {
-			"name": "Rosentaggen",
+			"name": "Blodtaggen",
 			"trophy": "rose_thorn",
 			"trait": "rose_thorn",
 			"tint": "#ffb0c0",
@@ -2009,7 +2009,7 @@
 		]
 	},
 	"old_knot": {
-		"name": "Gamla Knut",
+		"name": "Strypvävaren",
 		"family": "spider_kin",
 		"color": "#c8c0b0",
 		"stats": {

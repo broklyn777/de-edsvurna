@@ -767,7 +767,7 @@
 		]
 	},
 	"lullaby": {
-		"name": "Vaggvisa",
+		"name": "Dvalgift",
 		"target": "enemy",
 		"pick": "lowest",
 		"pick_aura": "snared",
@@ -776,7 +776,7 @@
 		"anim": "Spell_Simple_Shoot",
 		"cooldown": 3,
 		"sound": "shadow_hit",
-		"text": "Gungar nätet: en Snärjd somnar (tills den tar skada).",
+		"text": "Ett bedövande gift: en Snärjd somnar (tills den tar skada).",
 		"effects": [
 			{
 				"type": "aura",
@@ -1421,7 +1421,7 @@
 		]
 	},
 	"weaver_bite": {
-		"name": "Vaggbett",
+		"name": "Dvalbett",
 		"target": "enemy",
 		"pick": "lowest",
 		"melee": true,
@@ -1449,7 +1449,7 @@
 		"pick_aura": "snared"
 	},
 	"knot_bite": {
-		"name": "Knutens bett",
+		"name": "Strypvävarens bett",
 		"target": "enemy",
 		"pick": "lowest",
 		"melee": true,

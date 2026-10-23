@@ -974,7 +974,7 @@
 		"template": "Döda öppnaren"
 	},
 	"grove_e2": {
-		"name": "Slukarens bord",
+		"name": "Slukarens håla",
 		"party": [
 			"paladin",
 			"brokk",
@@ -992,7 +992,7 @@
 		"template": "Skördaren"
 	},
 	"grove_e3": {
-		"name": "Gamla Knuts nät",
+		"name": "Strypvävarens nät",
 		"party": [
 			"paladin",
 			"brokk",

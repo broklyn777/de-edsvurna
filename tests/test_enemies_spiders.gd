@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 ## 0.31 (docs/plan/spindlar.md): Sidenlunden och Spindelfolket – kedjan Snärjd → gift → blind → blödning, Slukaren,
-## Gamla Knut med Spindelskräck, Vävmodern, troféerna och Lundens föremål.
+## Strypvävaren med Spindelskräck, Vävmodern, troféerna och Lundens föremål.
 
 var _data := GameData.load_all()
 
@@ -165,10 +165,10 @@ func test_weaver_puts_the_snared_to_sleep() -> void:
 
 
 func test_old_knot_snares_the_top_hero_and_carries_arachnophobia() -> void:
-	var sim := _sim("grove_e3", {}, {"counter": true})  # Gamla Knut, Gifttand, Dammspindel
+	var sim := _sim("grove_e3", {}, {"counter": true})  # Strypvävaren, Gifttand, Dammspindel
 	var knot := _enemy(sim, "old_knot")
 	sim.order.assign(sim.units.map(func(u: CombatUnit) -> String: return u.id))
-	assert_true(knot.traits.has("arachnophobia"), "motdraget sitter på Knut")
+	assert_true(knot.traits.has("arachnophobia"), "motdraget sitter på Strypvävaren")
 	var top := ""
 	for id in sim.order:
 		if sim.unit(id).team == 0:
@@ -208,13 +208,13 @@ func test_spider_trophies_build_the_chain_for_the_party() -> void:
 	var paladin := sim.unit("paladin")
 	var snare := _enemy(sim, "snare_spider")
 	_hit(sim, paladin, snare)
-	assert_true(snare.auras.has("snared"), "Trådspolen snärjer första gången")
+	assert_true(snare.auras.has("snared"), "Snärjtrådenn snärjer första gången")
 	assert_true(snare.auras.has("poisoned") and sim.unit(snare.auras.poisoned.source).id == "eira", "Gifttanden förgiftar")
 	_hit(sim, sim.unit("alva"), snare)
-	assert_true(snare.auras.has("blind"), "Dammtofsen förblindar den förgiftade")
+	assert_true(snare.auras.has("blind"), "Dammkörteln förblindar den förgiftade")
 	var venom := _enemy(sim, "venom_spider")
 	_hit(sim, paladin, venom)
-	assert_true(not venom.auras.has("snared"), "Trådspolen bara en gång per strid")
+	assert_true(not venom.auras.has("snared"), "Snärjtrådenn bara en gång per strid")
 
 
 func test_knot_eye_trophy_starts_last_and_mother_silk_costs_attacks() -> void:
@@ -266,4 +266,4 @@ func test_every_spider_has_a_signature_action_with_its_own_intent() -> void:
 	var knot := _enemy(sim, "old_knot")
 	sim._kill(_enemy(sim, "venom_spider"))
 	sim._choose_intent(knot)
-	assert_eq(knot.intent.ability, "cocoon_revive", "Knut väcker en fallen spindel")
+	assert_eq(knot.intent.ability, "cocoon_revive", "Strypvävaren väcker en fallen spindel")

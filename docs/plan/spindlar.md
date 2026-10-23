@@ -85,9 +85,9 @@ Stats mot Kultisten (H 42, A 11, I 12, D 1, S 10). Varje text ska gå att läsa 
 | 2 | Gifttandsspindel (`venom_spider`) | Giftspridare | H 38, A 11, D 1, S 10 | *Gift i tråden:* "När en hjälte blir Snärjd förgiftar Gifttanden hen i 3 turer." | grundanfall |
 | 3 | Dammspindel (`dust_spider`) | Stör målval | H 34, A 10, D 1,5, S 11 | *Damm i ögonen:* "Bettet förblindar en Förgiftad hjälte i 1 tur." | grundanfall mot en Förgiftad (`pick_aura` ⚙) |
 | 4 | Hullingspindel (`barb_spider`) | Straffar | H 44, A 11, D 2, S 9 | *Hullingar:* "En Förblindad hjälte som anfaller börjar blöda (1 tur)." ⚙ `source_has_aura` | grundanfall |
-| 5 | Sömnvävaren (`sleep_weaver`), elit | Förbereder ett offer | H 70, A 13, I 12, D 2, S 12 | *Vaggande nät:* "Anfall mot en Snärjd hjälte söver hen (tills hen tar skada)." | grundanfall mot en Snärjd (`pick_aura` ⚙) |
+| 5 | Sömnvävaren (`sleep_weaver`), elit | Förbereder ett offer | H 70, A 13, I 12, D 2, S 12 | *Dvalans nät:* "Anfall mot en Snärjd hjälte söver hen (tills hen tar skada)." | grundanfall mot en Snärjd (`pick_aura` ⚙) |
 | 6 | Slukaren (`devourer_spider`), elit | Skördar kontrollen | H 80, A 15, D 2,5, S 8 | *Sluka:* "Anfall mot en Snärjd gör dubbel skada och helar Slukaren med hälften. Snärjningen släpper." ⚙ `remove_aura` | grundanfall mot en Snärjd (`pick_aura`) |
-| 7 | Gamla Knut (`old_knot`), miniboss | Väljer nästa offer | H 140, A 13, I 12, D 3, S 9 | Resistent + *Trådens slut:* "I början av sin tur snärjer Knut den hjälte som står överst på tidslinjen." ⚙ mål `top_enemy` | grundanfall |
+| 7 | Strypvävaren (`old_knot`), miniboss | Väljer nästa offer | H 140, A 13, I 12, D 3, S 9 | Resistent + *Trådens slut:* "I början av sin tur snärjer Strypvävaren den hjälte som står överst på tidslinjen." ⚙ mål `top_enemy` | grundanfall |
 | 8 | Vävmodern (`web_mother`), boss | Spinner in alla | H 135, A 13, I 13, D 2, S 9 | Resistent + *Moderns tråd:* "Den som sliter sig loss ur Snärjd förgiftas i 3 turer." | Kokongstorm (alla Snärjda, ingen skada, nedkylning 5), annars bett (30 % gift); följe Snärjspindel, Dammspindel, Hullingspindel |
 
 **Signaturhandlingar** (VD: varje spindel ska kännas igen i striden):
@@ -102,10 +102,10 @@ Stats mot Kultisten (H 42, A 11, I 12, D 1, S 10). Varje text ska gå att läsa 
 | Gifttandsspindel | Gifthugg (`venom_strike`) | 90 % skada + gift, 50 % hårdare mot en Snärjd (`bonus_vs`); tar helst den Snärjda | 2 | nature_hit, bett |
 | Dammspindel | Dammpust (`dust_puff`) | 30 % skada; förblindar den Förgiftade i 2 turer | 3 | nature_hit, nätskott |
 | Hullingspindel | Hullingkast (`barb_throw`) | 70 % skada, 50 % chans till blödning | 3 | arrow_hit, kast |
-| Sömnvävaren | Vaggvisa (`lullaby`) | den Snärjda somnar | 3 | shadow_hit, nätskott |
+| Sömnvävaren | Dvalgift (`lullaby`) | den Snärjda somnar | 3 | shadow_hit, nätskott |
 | Slukaren | Slukarens språng (`devour_lunge`) | 130 % skada mot den svagaste Snärjda (Sluka dubblar) | 2 | k_boss_hit, bett |
-| Gamla Knut | Kokongen (`cocoon_revive`) | väcker en fallen spindel med 40 % liv | 4 | renew, nätskott |
-| Gamla Knut | Trådstrypning (`knot_strangle`) | 110 % skada, 50 % hårdare mot en Snärjd | 2 | k_boss_hit, bett |
+| Strypvävaren | Kokongen (`cocoon_revive`) | väcker en fallen spindel med 40 % liv | 4 | renew, nätskott |
+| Strypvävaren | Trådstrypning (`knot_strangle`) | 110 % skada, 50 % hårdare mot en Snärjd | 2 | k_boss_hit, bett |
 | Vävmodern | Kokongstorm (`cocoon_storm`) | hela sällskapet blir Snärjt | 5 | shadow_hit, nätskott |
 
 **Äggsäcken som kläcker småspindlar** kräver att figurer kan komma in mitt i striden: ny kod i CombatSim och i
@@ -117,14 +117,14 @@ Därför känns de spindelaktiga utan nya förmågor. En trofé som ger en hjäl
 trofé-förmågor, som vi inte har.
 
 **Motdrag** (Siralim §21.2, högst ett per grupp, bara elit/miniboss/boss):
-- Gamla Knut har **Spindelskräck** (förebild Woolly Arachnalisk, Arachnophobia): "Snärjda hjältar tar dubbel skada av
+- Strypvävaren har **Spindelskräck** (förebild Woolly Arachnalisk, Arachnophobia): "Snärjda hjältar tar dubbel skada av
   gift." Den gäller från djup 1, som Abbedissans Ordensregel.
 
 **Elitvarianter** (5 %, glöder, eget namn och egen trofé) för de fyra vanliga:
 - Silkesnärjaren
 - Smaragdtanden
 - Askspindeln
-- Rosentaggen
+- Blodtaggen
 
 ## 3. Ny kod (⚙, allt litet)
 
@@ -141,17 +141,17 @@ trofé-förmågor, som vi inte har.
 
 | Fiende | Trofé (id) | Sällsynthet | Text | Svar på |
 |---|---|---|---|---|
-| Snärjspindel | Trådspole (`thread_spool`) | vanlig | Bärarens första anfall i striden snärjer målet. | Grupper som slår först (Lansen, Irrbloss) |
+| Snärjspindel | Snärjtråden (`thread_spool`) | vanlig | Bärarens första anfall i striden snärjer målet. | Grupper som slår först (Lansen, Irrbloss) |
 | — Silkesnärjaren | Sidenslingan (`silk_noose`) | elit | Bäraren gör 25 % mer skada mot Snärjda fiender. | Höga liv, långa strider |
 | Gifttandsspindel | Gifttanden (`venom_fang`) | vanlig | När en fiende blir Snärjd förgiftar bäraren den i 3 turer. | Benrustning, Asketen (indirekt skada biter) |
 | — Smaragdtanden | Smaragdgiftet (`emerald_venom`) | elit | Bärarens gift gör 50 % mer skada på Snärjda fiender. | Bossar med mycket liv |
-| Dammspindel | Dammtofsen (`dust_tuft`) | vanlig | Bärarens anfall mot en Förgiftad fiende förblindar den i 1 tur. | Starka anfallare |
+| Dammspindel | Dammkörteln (`dust_tuft`) | vanlig | Bärarens anfall mot en Förgiftad fiende förblindar den i 1 tur. | Starka anfallare |
 | — Askspindeln | Askmolnet (`ash_cloud`) | elit | Bärarens anfall gör 25 % mer skada mot Förblindade fiender. | Kombinationen med Immas Rökpil |
 | Hullingspindel | Hullingtråden (`barbed_thread`) | vanlig | En Förblindad fiende som skadar någon i sällskapet börjar blöda (1 tur). | Elitfiender som slår hårt |
-| — Rosentaggen | Rosentornet (`rose_thorn`) | elit | En Snärjd fiende som anfaller bäraren börjar blöda (1 tur). | Långsamma, tunga slag |
-| Sömnvävaren | Vaggande nätet (`lull_web`) | elit | Bärarens anfall mot en Snärjd fiende söver den. | Elitfiender som slår först |
+| — Blodtaggen | Blodtornet (`rose_thorn`) | elit | En Snärjd fiende som anfaller bäraren börjar blöda (1 tur). | Långsamma, tunga slag |
+| Sömnvävaren | Dvalnätet (`lull_web`) | elit | Bärarens anfall mot en Snärjd fiende söver den. | Elitfiender som slår först |
 | Slukaren | Slukarens käke (`devour_maw`) | elit | Bärarens anfall mot en Snärjd fiende gör 60 % mer skada och helar bäraren med 30 %; snärjningen släpper. | Nötning |
-| Gamla Knut | Knutens öga (`knot_eye`) | boss | I början av bärarens tur snärjs fienden som står överst på tidslinjen, **men** bäraren börjar striden längst ned. | Grupper som slår först |
+| Strypvävaren | Strypvävarens öga (`knot_eye`) | boss | I början av bärarens tur snärjs fienden som står överst på tidslinjen, **men** bäraren börjar striden längst ned. | Grupper som slår först |
 | Vävmodern | Moderns silke (`mother_silk`) | boss | Fiender som sliter sig loss ur Snärjd förgiftas i 3 turer, **men** sällskapet gör 15 % mindre skada med anfall. | Bossar (Snärjd släpper lättare för dem) |
 
 ## 5. Möten och föremål
@@ -168,8 +168,8 @@ trofé-förmågor, som vi inte har.
 - **Elit, våning 1:** **Sömnvävarens bädd** (Sömnvävaren + Snärjspindel + Gifttand). Den prövar en enda sak: döda
   öppnaren.
 - **Elit, våning 2:**
-  - Slukarens bord;
-  - Gamla Knuts nät (miniboss);
+  - Slukarens håla;
+  - Strypvävarens nät (miniboss);
   - Två vävare.
 - **Föremål:**
   - **Kokong** (skär upp: en starkare spindelgrupp och dubbel skatt);
@@ -202,7 +202,7 @@ En strid i taget med fulla Charges vinns till 100 % i alla grupper, både i Lund
   makron, små sällskap tidigt):
   - Nästan alla förluster i Lunden sker hos Vävmodern.
   - Signaturhandlingarna gjorde först Lunden mycket svårare (djup 3: 13 %).
-  - Det som hjälpte var att Vävmodern inte längre väcker fallna spindlar (Moderns kallelse togs bort; Gamla Knut
+  - Det som hjälpte var att Vävmodern inte längre väcker fallna spindlar (Moderns kallelse togs bort; Strypvävaren
     behåller Kokongen), Nätskott var fjärde tur, och Kokongstorm var femte tur utan skada.
   - Slutläget (Vävmodern 135 liv):
 
@@ -222,6 +222,22 @@ En strid i taget med fulla Charges vinns till 100 % i alla grupper, både i Lund
 - Elitgrupperna (`BALANS=elitgrupper NIVA_REALM=grove`) vinns till 100 % med fulla Charges på djup 1 och 3, som
   kapellets.
 
+## 5c. Namnen (VD 2026-10-23: fiender ska se allvarliga och farliga ut)
+
+Lundens namn och texter är rensade från det skämtsamma (id:na är kvar):
+
+| Förut | Nu |
+|---|---|
+| Gamla Knut | Strypvävaren |
+| Vaggvisa | Dvalgift |
+| Vaggande nät | Dvalans nät |
+| Rosentaggen | Blodtaggen |
+| Dammtofsen | Dammkörteln |
+| Trådspole | Snärjtråden |
+| Slukarens bord | Slukarens håla |
+
+Kokongens text är också allvarligare.
+
 ## 6. Öppna frågor till VD (inga beslut)
 
 1. **Vinjett:** Gråskogen är ett lån. Förslag på prompt: *"a silent birch grove wrapped in thick spider silk, cocoons
@@ -237,9 +253,9 @@ Under **Design**, efter "Kapellets fiender":
 > - **Sidenlunden** (0.31, Realm 3, `docs/plan/spindlar.md`, `realms.json` "grove", `"style": "grove"`): familjen Spindelfolket
 >   (`spider_kin`) kring bossen Vävmodern, en kedja Snärjd → gift → blind → blödning (förebild Arachnalisk): Snärjspindel
 >   (Fästtråd), Gifttandsspindel (Gift i tråden), Dammspindel (Damm i ögonen), Hullingspindel (Hullingar, villkoret
->   `source_has_aura`); elitfiender Sömnvävaren (Vaggande nät) och Slukaren (Sluka, effekten `remove_aura`); miniboss Gamla
->   Knut (Trådens slut, målet `top_enemy`; motdraget Spindelskräck från djup 1). Förmågor med `pick_aura` riktar avsikten mot
->   den som har statusen. Varje spindel har en signaturhandling (Nätskott, Gifthugg, Dammpust, Hullingkast, Vaggvisa,
+>   `source_has_aura`); elitfiender Sömnvävaren (Dvalans nät) och Slukaren (Sluka, effekten `remove_aura`); miniboss
+>   Strypvävaren (Trådens slut, målet `top_enemy`; motdraget Spindelskräck från djup 1). Förmågor med `pick_aura` riktar avsikten mot
+>   den som har statusen. Varje spindel har en signaturhandling (Nätskott, Gifthugg, Dammpust, Hullingkast, Dvalgift,
 >   Slukarens språng, Kokongen, Trådstrypning, Kokongstorm) med egen animation (förmågans `"anim"`). Snärjd är Siralims (`_sink_snared`, 10 %/30 % loss), kostar aldrig en tur. Modell: Drakvalvets
 >   jättespindel (`assets/models/spindel.glb`, färger per material, elitvarianter med egna `colors`/`emit`). Striden blir en
 >   lund (`CryptWorld.style`: grön dimma, stammar med nät, kokonger); vinjetten är Drakvalvets Gråskogen tills en egen finns.

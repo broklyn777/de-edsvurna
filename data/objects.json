@@ -111,7 +111,7 @@
 	},
 	"cocoon": {
 		"name": "Kokong",
-		"text": "Något sprattlar därinne och har uppenbarligen åsikter. Skär ni upp den vaknar en spindelvakt (lite starkare än vanligt) – men den har samlat på sig: dubbel skatt.",
+		"text": "Något rör sig därinne. Skär ni upp den vaknar en spindelvakt (lite starkare än vanligt) – men kokongen har samlat byte: dubbel skatt.",
 		"options": [
 			{
 				"id": "knock",
@@ -155,7 +155,7 @@
 		],
 		"results": {
 			"found": "Spåret leder fram till",
-			"none": "Spåret tar slut i en buske. Inget nytt."
+			"none": "Spåret tar slut i snåren. Inget nytt."
 		}
 	}
 }
