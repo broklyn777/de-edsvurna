@@ -67,6 +67,7 @@ altaret, buren, stentavlan, lägerelden och portalen byggs av former i kod. Stat
 - `assets/audio/voice/*.mp3` – användarens egna röstrepliker, gjorda i ElevenLabs.
   **Kontrollera att ElevenLabs-planen tillåter kommersiell användning före release.**
 - `assets/models/troll.glb`, `troll_mossrygg.glb`, `troll_grumse.glb` – användarens egen ogre ur Drakvalvet (`~/Desktop/Blender-Test/Drakvalvet/Monster/ogre.blend`), omgjord till troll i Blender 2026-10-23 (näsa, mossa, stenkrona).
+- `assets/models/ghoul.glb`, `kultfanatiker.glb`, `helvetshund.glb`, `varg.glb` – användarens egna figurer ur Drakvalvet (`~/Desktop/Blender-Test/Drakvalvet/Monster/{ghoul,kultfanatiker,hellhound,varg}.blend`, byggda på Quaternius-figurer, CC0 1.0), exporterade oförändrade till GLB (30 fps, spelets klippnamn) 2026-10-23.
 
 # Illustrationer
 

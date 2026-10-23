@@ -33,8 +33,12 @@ func _tap(p: Vector2) -> void:
 
 
 func _trophy_rect(i: int) -> Rect2:
-	var w := (size.x - MARGIN * 2 - GAP * (PER_ROW - 1)) / PER_ROW
-	return Rect2(MARGIN + (i % PER_ROW) * (w + GAP), 118 + (i / PER_ROW) * 68, w, 60)
+	# 0.31: med fler än 25 troféer (Lunden) blir rutnätet tätare, sex per rad, så att rutan med texten och lärdomen
+	# får plats ovanför hjältarna.
+	var per := PER_ROW if _all_trophies().size() <= PER_ROW * 5 else 6
+	var pitch := 68.0 if per == PER_ROW else 46.0
+	var w := (size.x - MARGIN * 2 - GAP * (per - 1)) / per
+	return Rect2(MARGIN + (i % per) * (w + GAP), 118 + (i / per) * pitch, w, pitch - 8.0)
 
 
 ## Alla troféer Realm för Realm: varje fiendetyps vanliga trofé och dess elittrofé, i den ordning
@@ -52,6 +56,14 @@ func _all_trophies() -> Array:
 						seen.append(pair[0])
 						out.append({"trophy": pair[0], "kind": kind, "realm": realm_id, "elite": pair[1]})
 	return out
+
+
+## Hjälten som bär trofén (0.26.3: Profile.worn), annars "".
+func _bearer(trophy_id: String) -> String:
+	for hero_id in run.profile.worn:
+		if run.profile.worn[hero_id] == trophy_id and run.data.heroes.has(hero_id):
+			return run.data.heroes[hero_id].name
+	return ""
 
 
 ## Rykten (0.24.3): kryptans vanliga troféer och bossens. Elitvarianternas troféer förblir okända tills man hittar dem.
@@ -73,6 +85,7 @@ func _draw() -> void:
 				break
 	var detail_title := ""
 	var detail_text := "Tryck på en trofé för att läsa vad den gör."
+	var detail_lesson := ""
 	for i in all.size():
 		var entry: Dictionary = all[i]
 		var t: Dictionary = data.traits[entry.trophy]
@@ -89,6 +102,7 @@ func _draw() -> void:
 			if selected == i:
 				detail_title = "%s – %s" % [t.name, tag]
 				detail_text = "%s (Från %s.)" % [t.text, source]
+				detail_lesson = GameData.lesson(data, entry.trophy, _bearer(entry.trophy))
 		elif _rumoured(entry):
 			# 0.24.3: kryptans troféer är kända som rykten (som Siralims Bestiary), men inte ens egna.
 			var source: String = d.name
@@ -116,8 +130,13 @@ func _draw() -> void:
 	if detail_title != "":
 		UiStyle.text(self, box.position + Vector2(16, 28), detail_title, 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT,
 				box.size.x - 32, 3)
-	UiStyle.para(self, box.position + Vector2(16, 54 if detail_title != "" else 30), detail_text, 18, Color(1, 1, 1, 0.9),
-			box.size.x - 32, 2)
+	var used := UiStyle.para(self, box.position + Vector2(16, 54 if detail_title != "" else 30), detail_text, 18,
+			Color(1, 1, 1, 0.9), box.size.x - 32, 2)
+	# Lärdomen (VD 2026-10-23): kursiv och dämpad under effekten, om den ryms i rutan.
+	var ly := box.position.y + (54.0 if detail_title != "" else 30.0) + used - 2.0
+	if detail_lesson != "" and ly + 18.0 < box.end.y:
+		UiStyle.lesson(self, Vector2(box.position.x + 16, ly), detail_lesson, box.size.x - 32,
+				clampi(int((box.end.y - ly) / 20.0), 1, 2))
 
 	# Hjältarna (0.19): tryck för hjältebladet; här kan personligheten bytas mot silver.
 	var y := size.y - (120.0 if _heroes().size() <= 5 else 126.0)

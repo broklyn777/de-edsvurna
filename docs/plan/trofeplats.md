@@ -38,13 +38,13 @@ battle_start, ally_death, poisoned_enemy_death, ally_healed, heal_cast, defend_o
 new_ability, repeat_ability, enemy_repeat, enemy_timeline_top, not_acted, marked, allies_alive, family_alive; skapar också
 damage, damage_bonus, heal, barrier, revive, dodge, immune, stat_gain, timeline_top, ignore_defense, defense_down, purge,
 ability_cast och statusarna (poisoned, vulnerable, silenced, sleeping, blind, defensive, agile, mending, savage, protected).
-Exempel på kedjor där det ena skapar det andra behöver: Benbågens sena (needs marked, creates crit) + Skelettets fingerled eller
-Bödelns huva (needs crit); Mögelkäken (creates poisoned) + Sporfallet (needs poisoned_enemy_death).
+Exempel på kedjor där det ena skapar det andra behöver: Den kapade bågsträngen (needs marked, creates crit) + Det andra hugget eller
+Bödelns huva (needs crit); Den möglade klingan (creates poisoned) + Smittans väg (needs poisoned_enemy_death).
 
 ## Botarna (BALANS=trofeplats, djup 1, 100 körningar, MACRO/TUNED)
 
-Troféer per hjälte (`TROPHY_PAIRS`): Paladinen Gravprästens radband + Skelettets fingerled, Brokk Skramlarens ben + Väktarens hjälm, Alva Bönepärlor +
-Diakonens stola, Eira Benbågens sena + Snabbt tag, Imma Mögelkäken + Splitterben (buren + artefakt). Artefakter på nivå 6 utan förmåga.
+Troféer per hjälte (`TROPHY_PAIRS`): Paladinen Gravprästens radband + Det andra hugget, Brokk Den tystade skramlan + Väktarens hjälm, Alva Det brustna bönebandet +
+Diakonens stola, Eira Den kapade bågsträngen + Snabbt tag, Imma Den möglade klingan + Askurnan (buren + artefakt). Artefakter på nivå 6 utan förmåga.
 
 | | inga troféer | 1 trofé + artefakt 6 | 2 troféer + artefakt 6 |
 |---|---|---|---|

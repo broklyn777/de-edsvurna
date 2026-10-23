@@ -261,3 +261,83 @@ func test_owning_four_heroes_means_full_strength_enemies() -> void:
 	var small := CombatSim.create(_data, "crypt_1", 3, ["paladin", "imma"], {}, {}, {}, 1, {})
 	assert_true(full.enemies.size() >= small.enemies.size(), "lika många fiender som mot fyra")
 	assert_true(full.enemies[0].max_hp > small.enemies[0].max_hp, "fullstarka fiender")
+
+
+
+## 0.31 (docs/plan/drakvalvet-fiender.md §1): Likätaren äter liken ur Benfolket, helar sig och växer; det uppätna kan
+## aldrig väckas. Gravgnagaren (elitvarianten) äter aldrig hjältar. Benvargen har en egen figur.
+func test_ghoul_feast_heals_consumes_and_blocks_revive() -> void:
+	var sim := _sim("crypt_2g")
+	var ghoul := _enemy(sim, "ghoul")
+	var warrior := _enemy(sim, "skeleton_warrior")
+	var rule: Dictionary = ghoul.rules[0]
+	assert_true(not sim._rule_matches(ghoul, rule), "inget lik: ingen måltid")
+	sim._kill(warrior, sim.unit("brokk"))
+	assert_true(sim._rule_matches(ghoul, rule), "ett lik ur Benfolket")
+	ghoul.hp = 10.0
+	sim.drain_events()
+	sim._perform(ghoul, "corpse_feast", "intent", "")
+	assert_true(warrior.consumed, "liket är uppätet")
+	assert_near(ghoul.hp, 10.0 + roundf(ghoul.max_hp * 0.35), 1.0, "Likmåltid helar 35 % av max liv")
+	assert_true(sim.drain_events().any(func(e: Dictionary) -> bool: return e.type == "corpse_consumed" and e.by == ghoul.id))
+	sim._revive(warrior, 0.6)
+	assert_true(not warrior.alive, "liket kan inte väckas")
+	assert_true(sim.drain_events().any(func(e: Dictionary) -> bool: return e.type == "revive_blocked" and e.get("consumed", false)))
+	assert_true(sim._pick_targets(ghoul, {"target": "dead_ally"}).is_empty(), "ett uppätet lik går inte att välja")
+	assert_true(not sim._rule_matches(ghoul, rule), "och kan inte ätas igen")
+	# Gravpakt räknar fortfarande det uppätna som fallet.
+	assert_eq(sim._dead_allies(ghoul), 1)
+
+
+func test_ghoul_eats_only_its_own_family_and_never_heroes() -> void:
+	var sim := _sim("crypt_e7")  # Gravväckaren, Likätare, Skelettkrigare ×2
+	var ghoul := _enemy(sim, "ghoul")
+	sim._kill(_enemy(sim, "grave_caller"))
+	assert_true(not sim._rule_matches(ghoul, ghoul.rules[0]), "Gravväckaren hör inte till Benfolket")
+	sim._kill(sim.unit("alva"))
+	assert_true(not sim._rule_matches(ghoul, ghoul.rules[0]), "en fallen hjälte äts aldrig")
+	# Elitvarianten Gravgnagaren: samma regel, och dess egen egenskap räknar fallna hjältar men äter dem inte.
+	var elite := _sim("crypt_2g", {"force_elites": 1})
+	var gnawer := _enemy(elite, "ghoul")
+	assert_eq(gnawer.name, "Gravgnagaren")
+	assert_true(gnawer.traits.has("gnawer_chain"))
+	var atk := gnawer.attack
+	elite._kill(elite.unit("eira"), gnawer)
+	assert_true(not elite.unit("eira").consumed, "hjälten är inte uppäten")
+	assert_near(gnawer.attack, atk + float(gnawer.base_stats.attack) * 0.08, 1e-6, "+8 % Attack när en hjälte faller")
+
+
+func test_grave_hunger_stacks_at_most_three_times() -> void:
+	var sim := _sim("crypt_3e")
+	var ghoul := _enemy(sim, "ghoul")
+	var base: float = ghoul.base_stats.attack
+	for i in 5:
+		sim._emit({"type": "corpse_consumed", "unit": "x", "by": ghoul.id})
+	assert_near(ghoul.attack, base * 1.6, 1e-6, "högst 3 gånger +20 %")
+	sim._emit({"type": "corpse_consumed", "unit": "x", "by": "skeleton_warrior_9"})
+	assert_near(ghoul.attack, base * 1.6, 1e-6, "bara egna måltider")
+
+
+func test_ghoul_trophy_and_the_bone_wolf() -> void:
+	# Den brutna gravspaden: den bäraren fäller kan inte väckas, och bäraren helas 10 %.
+	var sim := CombatSim.create(_data, "crypt_e2", 3, ["paladin", "brokk", "alva", "eira"], {"brokk": ["ghoul_spade"]})
+	var brokk := sim.unit("brokk")
+	var warrior := _enemy(sim, "skeleton_warrior")
+	brokk.hp = 20.0
+	sim._kill(warrior, brokk)
+	assert_true(warrior.consumed, "den fällde är uppäten")
+	assert_true(brokk.hp > 20.0, "bäraren helas")
+	sim._revive(warrior, 0.6)
+	assert_true(not warrior.alive, "Gravväckaren kan inte väcka den")
+	var other := _enemy(sim, "skeleton_archer")
+	sim._kill(other, sim.unit("eira"))
+	assert_true(not other.consumed, "bara bärarens egna")
+	# Benvargen (Benspringarens elitvariant) är en varg med benfärg.
+	var wolf: Dictionary = _data.enemies.bone_runner.elite.visual
+	assert_eq(wolf.model, "varg")
+	assert_true(wolf.colors.has("Varg_Main"))
+	assert_true(ResourceLoader.exists("res://assets/models/varg.glb"))
+	for enc in ["crypt_2g", "crypt_3e"]:
+		assert_true(_data.realms.crypt.pools[1].has(enc) or _data.realms.crypt.pools[2].has(enc), enc)
+	assert_true(_data.realms.crypt.elite_pools[1].has("crypt_e7"))
+	assert_true(_data.encounters.crypt_e7.elite_group)

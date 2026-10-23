@@ -143,15 +143,15 @@ trofé-förmågor, som vi inte har.
 |---|---|---|---|---|
 | Snärjspindel | Snärjtråden (`thread_spool`) | vanlig | Bärarens första anfall i striden snärjer målet. | Grupper som slår först (Lansen, Irrbloss) |
 | — Silkesnärjaren | Sidenslingan (`silk_noose`) | elit | Bäraren gör 25 % mer skada mot Snärjda fiender. | Höga liv, långa strider |
-| Gifttandsspindel | Gifttanden (`venom_fang`) | vanlig | När en fiende blir Snärjd förgiftar bäraren den i 3 turer. | Benrustning, Asketen (indirekt skada biter) |
+| Gifttandsspindel | Den tömda giftflaskan (`venom_fang`) | vanlig | När en fiende blir Snärjd förgiftar bäraren den i 3 turer. | Benrustning, Asketen (indirekt skada biter) |
 | — Smaragdtanden | Smaragdgiftet (`emerald_venom`) | elit | Bärarens gift gör 50 % mer skada på Snärjda fiender. | Bossar med mycket liv |
-| Dammspindel | Dammkörteln (`dust_tuft`) | vanlig | Bärarens anfall mot en Förgiftad fiende förblindar den i 1 tur. | Starka anfallare |
+| Dammspindel | Dammpungen (`dust_tuft`) | vanlig | Bärarens anfall mot en Förgiftad fiende förblindar den i 1 tur. | Starka anfallare |
 | — Askspindeln | Askmolnet (`ash_cloud`) | elit | Bärarens anfall gör 25 % mer skada mot Förblindade fiender. | Kombinationen med Immas Rökpil |
 | Hullingspindel | Hullingtråden (`barbed_thread`) | vanlig | En Förblindad fiende som skadar någon i sällskapet börjar blöda (1 tur). | Elitfiender som slår hårt |
 | — Blodtaggen | Blodtornet (`rose_thorn`) | elit | En Snärjd fiende som anfaller bäraren börjar blöda (1 tur). | Långsamma, tunga slag |
 | Sömnvävaren | Dvalnätet (`lull_web`) | elit | Bärarens anfall mot en Snärjd fiende söver den. | Elitfiender som slår först |
-| Slukaren | Slukarens käke (`devour_maw`) | elit | Bärarens anfall mot en Snärjd fiende gör 60 % mer skada och helar bäraren med 30 %; snärjningen släpper. | Nötning |
-| Strypvävaren | Strypvävarens öga (`knot_eye`) | boss | I början av bärarens tur snärjs fienden som står överst på tidslinjen, **men** bäraren börjar striden längst ned. | Grupper som slår först |
+| Slukaren | Den rivna slukväven (`devour_maw`) | elit | Bärarens anfall mot en Snärjd fiende gör 60 % mer skada och helar bäraren med 30 %; snärjningen släpper. | Nötning |
+| Strypvävaren | Den lösta strypknuten (`knot_eye`) | boss | I början av bärarens tur snärjs fienden som står överst på tidslinjen, **men** bäraren börjar striden längst ned. | Grupper som slår först |
 | Vävmodern | Moderns silke (`mother_silk`) | boss | Fiender som sliter sig loss ur Snärjd förgiftas i 3 turer, **men** sällskapet gör 15 % mindre skada med anfall. | Bossar (Snärjd släpper lättare för dem) |
 
 ## 5. Möten och föremål
@@ -232,7 +232,7 @@ Lundens namn och texter är rensade från det skämtsamma (id:na är kvar):
 | Vaggvisa | Dvalgift |
 | Vaggande nät | Dvalans nät |
 | Rosentaggen | Blodtaggen |
-| Dammtofsen | Dammkörteln |
+| Dammtofsen | Dammpungen |
 | Trådspole | Snärjtråden |
 | Slukarens bord | Slukarens håla |
 
@@ -260,5 +260,5 @@ Under **Design**, efter "Kapellets fiender":
 >   jättespindel (`assets/models/spindel.glb`, färger per material, elitvarianter med egna `colors`/`emit`). Striden blir en
 >   lund (`CryptWorld.style`: grön dimma, stammar med nät, kokonger); vinjetten är Drakvalvets Gråskogen tills en egen finns.
 >   Föremål: Kokong, Daggnät, Silkesspår (objects.json `results` ger egen text till lånade val). Inga lärjungar i Lunden.
->   0.31 rättade också att en sömn som en träff lägger (Dimmans slöja) väcktes av samma träff. Tester:
+>   0.31 rättade också att en sömn som en träff lägger (Den skingrade dimman) väcktes av samma träff. Tester:
 >   `tests/test_enemies_spiders.gd`.

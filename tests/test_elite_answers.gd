@@ -1,5 +1,5 @@
 extends "res://tests/test_case.gd"
-## Elitbalansen (grenen elit-balans): svaren på elitgrupperna – Skrivarens penna, Dimmans slöja, Klockrepet,
+## Elitbalansen (grenen elit-balans): svaren på elitgrupperna – Skrivarens penna, Den skingrade dimman, Klockrepet,
 ## Spegelskölden – och första nedstigningens egna elitstyrka.
 
 var _data := GameData.load_all()

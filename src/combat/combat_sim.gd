@@ -446,7 +446,7 @@ func begin() -> void:
 	var alive: Array[CombatUnit] = units.duplicate()
 	alive.sort_custom(func(a: CombatUnit, b: CombatUnit) -> bool:
 		return a.speed > b.speed or (a.speed == b.speed and a.team < b.team))
-	# Överraskning! (Siralims Surprise!): figurer med "start_first" börjar överst.
+	# Förvarningen (Siralims Surprise!): figurer med "start_first" börjar överst.
 	var first := alive.filter(func(u: CombatUnit) -> bool:
 		return u.traits.any(func(t: String) -> bool: return data.traits[t].get("start_first", false)))
 	for u in first:
@@ -912,7 +912,9 @@ func _intent_chosen(e: CombatUnit) -> void:
 
 func _enemy_choice(e: CombatUnit) -> Dictionary:
 	if e.intent.is_empty() or e.cooldown_left(e.intent.ability) > 0.0 \
-			or (is_silenced(e) and e.intent.ability != e.attack_ability):
+			or (is_silenced(e) and e.intent.ability != e.attack_ability) \
+			or (ability(e.intent.ability).get("target", "") == "dead_ally" and _pick_targets(e, ability(e.intent.ability)).is_empty()):
+		# 0.31: liket som avsikten gällde är redan väckt eller uppätet (Gravväckaren och Likätaren tävlar).
 		_choose_intent(e)
 	var target := ""
 	for id in e.intent.targets:
@@ -936,8 +938,12 @@ func _rule_matches(u: CombatUnit, rule: Dictionary) -> bool:
 		return false
 	if condition.has("enemies_at_least") and _enemies(u).size() < condition.enemies_at_least:
 		return false
-	if condition.get("dead_ally", false) and _pick_targets(u, {"target": "dead_ally"}).is_empty():
-		return false
+	if condition.get("dead_ally", false):
+		# 0.31: förmågans eget urval (Likmåltid tar bara lik ur den egna familjen), annars vilket lik som helst.
+		var probe: Dictionary = ability(rule.ability) if rule.has("ability") \
+				and ability(rule.ability).get("target", "") == "dead_ally" else {"target": "dead_ally"}
+		if _pick_targets(u, probe).is_empty():
+			return false
 	# 0.27: familjen (lever minst n andra ur den) och ensam kvar.
 	if condition.has("family_at_least") and family_count(u) < int(condition.family_at_least):
 		return false
@@ -1061,12 +1067,14 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 	var ab := ability(ability_id)
 	var can_crit: bool = not ab.get("no_crit", false)
 	var releases := _take_releases(caster, ability_id)
+	if ab.get("target", "") == "dead_ally" and targets.is_empty():
+		return  # 0.31: inget lik kvar, ingen måltid (och ingen helning)
 	for effect in ab.get("effects", []):
 		# 0.23: en effekt kan gälla kastaren själv ("target": "self") fast förmågan riktas mot någon annan.
 		var effect_targets: Array = [caster.id] if effect.get("target", "") == "self" else targets
 		for target_id in effect_targets:
 			var t := unit(target_id)
-			if t == null or (not t.alive and effect.type != "revive"):
+			if t == null or (not t.alive and not effect.type in ["revive", "consume_corpse"]):
 				continue
 			# En effekt kan ha en chans (0.22: t.ex. 25 % att Blöda); slås per mål.
 			if effect.has("chance") and rng.randf() >= float(effect.chance):
@@ -1104,9 +1112,34 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 					_group_to_top(_family(t))
 				"drain_charge":
 					_drain_charge(t)
+				"consume_corpse":
+					_consume_corpse(caster, t)
+				"self_damage":
+					_self_damage(caster, float(effect.get("pct_max_hp", 0.1)), ability_id)
 	_release_bonus = {}
 	for r in releases:
 		_run_release(caster, r, targets)
+
+
+## 0.31 (Likätaren, docs/plan/drakvalvet-fiender.md §1): liket äts upp och kan aldrig väckas. Det räknas fortfarande
+## som fallet (Gravpakt). Händelsen corpse_consumed (unit, by) sätter igång Gravhunger.
+func _consume_corpse(by: CombatUnit, t: CombatUnit) -> void:
+	if t.alive or t.consumed:
+		return
+	t.consumed = true
+	_emit({"type": "corpse_consumed", "unit": t.id, "by": by.id})
+
+
+## 0.31 (Blodsvurens Blodhugget): utföraren betalar en andel av sitt max liv, förbi Barriär. VAL: dödar aldrig (golv
+## 1 liv) och sätter inte igång något som lyssnar på skada.
+func _self_damage(u: CombatUnit, pct: float, ability_id: String) -> void:
+	if not u.alive:
+		return
+	var amount := minf(roundf(u.max_hp * pct), maxf(u.hp - 1.0, 0.0))
+	if amount <= 0.0:
+		return
+	u.hp -= amount
+	_emit({"type": "self_damage", "unit": u.id, "amount": amount, "ability": ability_id})
 
 
 ## 0.30.23: senaste handlingen var en förmåga (inte grundanfallet, Försvara eller Provocera).
@@ -1262,7 +1295,7 @@ func has_flag(u: CombatUnit, flag: String) -> bool:
 	return false
 
 
-## Egenskaper som gör bäraren immun mot vissa statusar ("immune_auras", t.ex. Dimmans slöja mot Sover).
+## Egenskaper som gör bäraren immun mot vissa statusar ("immune_auras", t.ex. Den skingrade dimman mot Sover).
 func _trait_immune(u: CombatUnit, aura_id: String) -> bool:
 	for trait_id in u.traits:
 		if aura_id in data.traits.get(trait_id, {}).get("immune_auras", []):
@@ -1450,6 +1483,11 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 			fx.append({"f": 1.0 + float(m.damage_mult_per_hit_taken) * src.times_hit, "name": x.name})
 		if m.has("damage_mult_per_family") and family_count(src) > 0:
 			fx.append({"f": 1.0 + float(m.damage_mult_per_family) * family_count(src), "name": x.name})
+		# 0.31 (Blodpakt, Paktkniven): mer skada för varje tiondel liv som saknas, högst "max".
+		if m.has("damage_mult_per_missing_tenth"):
+			var bonus := missing_tenths_bonus(src, float(m.damage_mult_per_missing_tenth), float(m.get("max", 0.5)))
+			if bonus > 0.0:
+				fx.append({"f": 1.0 + bonus, "name": x.name})
 		if m.has("additional_from_stat"):
 			additional += src.stat(m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
 			calc.additional_name = x.name
@@ -1539,13 +1577,13 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		if float(src.auras[aura_id].get("leech", 0.0)) > 0.0:
 			leech += float(src.auras[aura_id].leech)
 			leech_id = aura_id
-	# 0.31: en sömn som träffen själv lägger (Dimmans slöja, Vaggande nät) väcks inte av samma träff.
+	# 0.31: en sömn som träffen själv lägger (Den skingrade dimman, Vaggande nät) väcks inte av samma träff.
 	var was_asleep := tgt.auras.has("sleeping")
 	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": lost, "absorbed": absorbed,
 			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct, "calc": calc,
 			"landed": landed})
 	if tgt.hp <= 0.0:
-		_kill(tgt)
+		_kill(tgt, src)
 	if guarded > 0.0:
 		_guard_takes(src, guard, tgt, guarded, ability_id)
 	# Leeching (0.22): en andel av skadan helar anfallaren; helningens uträkning pekar på träffen.
@@ -1626,6 +1664,12 @@ func _buff_count(u: CombatUnit) -> int:
 	return n
 
 
+## 0.31: bonusen för saknat liv, per hel tiondel, högst cap.
+static func missing_tenths_bonus(u: CombatUnit, per: float, cap: float) -> float:
+	var tenths := floori((1.0 - u.hp / maxf(u.max_hp, 1.0)) * 10.0 + 0.0001)
+	return minf(per * maxi(tenths, 0), cap)
+
+
 ## Hur många i figurens lag som har fallit (och inte väckts).
 func _dead_allies(u: CombatUnit) -> int:
 	var n := 0
@@ -1664,6 +1708,10 @@ func _convert(src: CombatUnit, probe: Dictionary) -> void:
 
 func _revive(u: CombatUnit, pct: float) -> void:
 	if u.alive:
+		return
+	# 0.31: ett uppätet lik (Likmåltid, Den brutna gravspaden) väcks aldrig.
+	if u.consumed:
+		_emit({"type": "revive_blocked", "unit": u.id, "consumed": true})
 		return
 	# 0.27, Sista klangen (Klockarens motdrag, Satyr Guardian): motståndarnas lag får bara väcka n gånger per strid.
 	for x in units:
@@ -1847,7 +1895,7 @@ func _raise_stat(u: CombatUnit, effect: Dictionary) -> void:
 	# 0.27 (Växande vrede): "additive" lägger till en andel av startvärdet, "max_times" gånger per strid. Räkningen står
 	# i staplarna ("raise_<stat>"), som AI-villkoret self_stacks_at_least läser.
 	if effect.has("max_times"):
-		var key := "raise_" + stat
+		var key: String = effect.get("count_key", "raise_" + stat)  # 0.31: egen räkning (Gravhunger, bojan)
 		if u.stacks.get(key, 0.0) >= float(effect.max_times):
 			return
 		u.stacks[key] = u.stacks.get(key, 0.0) + 1.0
@@ -1983,7 +2031,7 @@ func _send_down(x: CombatUnit) -> void:
 	_emit({"type": "timeline_move", "unit": x.id, "dir": "bottom", "steps": 0, "pushed": true})
 
 
-func _kill(u: CombatUnit) -> void:
+func _kill(u: CombatUnit, by: CombatUnit = null) -> void:
 	if not u.alive:  # en egenskap kan ha dödat enheten mitt i en annan träff
 		return
 	var rebirth := float(data.auras.get(flag_aura(u, "rebirth"), {}).get("rebirth", 0.0))
@@ -1994,14 +2042,17 @@ func _kill(u: CombatUnit) -> void:
 	u.auras.clear()
 	u.barrier = 0.0
 	order.erase(u.id)
-	_emit({"type": "death", "unit": u.id, "had": had})
+	var death := {"type": "death", "unit": u.id, "had": had}
+	if by != null and by != u:
+		death.source = by.id  # 0.31: den som fällde (Den brutna gravspaden)
+	_emit(death)
 	if outcome != "" and u.team == 1:
 		return
 	# Pånyttfödd (0.22): återuppstår med 50 % liv; statusen förbrukas.
 	if rebirth > 0.0:
 		_revive(u, rebirth)
 		return
-	# De döda vaknar (våningsregel) och Kaosets hjärta (trofé): återuppstå en gång.
+	# De döda vaknar (våningsregel) och Edsbrytarens fall (trofé): återuppstå en gång.
 	if u.team == 1 and u.revives == 0 and _rule("risen_dead"):
 		_rule_hit("risen_dead")
 		_revive(u, RISEN_DEAD_HP)
@@ -2179,7 +2230,7 @@ func _trait_targets(owner: CombatUnit, where: String, e: Dictionary, ability_tar
 				out = [foes[rng.randi() % foes.size()]]
 		"dead_ally":
 			for x in units:
-				if not x.alive and x.team == owner.team:
+				if not x.alive and not x.consumed and x.team == owner.team:
 					out = [x]
 					break
 		"other_enemies":
@@ -2275,6 +2326,8 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_add_stack(tgt, effect, e)
 		"dispel", "purge", "to_top", "to_bottom", "step_down":
 			_status_effect(effect, tgt)
+		"consume_corpse":
+			_consume_corpse(owner, tgt)
 		"remove_aura":
 			# 0.31 (Sluka): en bestämd status släpper.
 			if tgt.auras.has(effect.aura):
@@ -2289,7 +2342,7 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_steal_buff(owner, tgt)
 		"cast":
 			# Utan "target" väljer förmågan själv; annars mot figuren ur händelsen (t.ex. samma fiende).
-			# "ability_from_event": samma förmåga som i händelsen (Mirakel kastar den igen).
+			# "ability_from_event": samma förmåga som i händelsen (Häxmästarinnans brutna spira kastar den igen).
 			var cast_id: String = e.get("ability", "") if effect.get("ability_from_event", false) else effect.ability
 			if data.abilities.has(cast_id):
 				_auto_cast(owner, cast_id, tgt.id if effect.has("target") else "")
@@ -2604,8 +2657,11 @@ func _pick_targets(caster: CombatUnit, ab: Dictionary) -> Array:
 		"self":
 			return [caster.id]
 		"dead_ally":
+			# 0.31: uppätna lik går inte att välja; "family" begränsar till den egna familjen (Likmåltid).
+			var kin_only: bool = ab.get("family", false)
 			for x in units:
-				if not x.alive and x.team == caster.team:
+				if not x.alive and not x.consumed and x.team == caster.team \
+						and (not kin_only or (caster.family != "" and x.family == caster.family)):
 					return [x.id]
 			return []
 		"all_enemies":

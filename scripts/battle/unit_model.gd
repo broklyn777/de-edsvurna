@@ -540,7 +540,7 @@ func _setup_materials(vis: Dictionary) -> void:
 				if emits.has(key):
 					mat.emission_enabled = true
 					mat.emission = Color(emits[key])
-					mat.emission_energy_multiplier = 1.0
+					mat.emission_energy_multiplier = float(vis.get("emit_energy", 1.0))  # 0.31: lågor och ögon som lyser
 				elif vis.has("glow") and tint != Color.WHITE:
 					mat.emission_enabled = true
 					mat.emission = Color(vis.glow)

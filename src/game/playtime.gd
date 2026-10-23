@@ -15,7 +15,8 @@ const KIND_NAMES := {"normal": "Vanlig", "elite": "Elit", "nemesis": "Nemesis", 
 const SAVE_EVERY := 15.0
 
 var path := PATH
-## De senaste striderna: {sec, realm, depth, floor, kind, won, turns}.
+## De senaste striderna: {sec, realm, depth, floor, kind, won, turns, party_level, enemy_level}. Nivåerna (sällskapets
+## snitt och fiendernas väntade nivå, HeroStats.enemy_level) finns sedan 0.31; äldre poster saknar dem.
 var battles: Array = []
 ## De senaste körningarna: {sec, floors: [sek per våning], battles, outcome, realm, depth}.
 ## outcome: "boss" (klarad), "loss" (sällskapet föll), "forfeit" (GE UPP i striden), "home" (GÅ HEM).
@@ -73,12 +74,16 @@ func next_floor() -> void:
 		current[slot].floors.append(0.0)
 
 
-## Stridens första tur. kind: "normal", "elite", "nemesis" eller "boss".
-func start_battle(kind: String) -> void:
+## Stridens första tur. kind: "normal", "elite", "nemesis" eller "boss". party_level: sällskapets snittnivå,
+## enemy_level: fiendernas väntade nivå (negativt = okänt, sparas inte).
+func start_battle(kind: String, party_level := -1.0, enemy_level := -1.0) -> void:
 	if not active():
 		return
 	var c: Dictionary = current[slot]
 	battle = {"sec": 0.0, "realm": c.realm, "depth": c.depth, "floor": c.floors.size() - 1, "kind": kind}
+	if party_level >= 0.0 and enemy_level >= 0.0:
+		battle.party_level = snappedf(party_level, 0.1)
+		battle.enemy_level = snappedf(enemy_level, 0.1)
 
 
 ## Segerskärmen eller förlusten: striden sparas.
@@ -158,7 +163,62 @@ func summary_lines() -> Array[String]:
 		if int(a.kinds[k][1]) > 0:
 			parts.append("%s %s" % [KIND_NAMES[k], _minutes(a.kinds[k][0], a.kinds[k][1], 1)])
 	lines.append("  ·  ".join(parts) if not parts.is_empty() else "Inga strider mätta än.")
+	# 0.31: snitt per djup, och om sällskapet låg över, i nivå med eller under fienderna.
+	var per_depth: Array[String] = []
+	var levels: Array[String] = []
+	for d in depths():
+		per_depth.append("Djup %d: %s (%d)" % [d.depth, _minutes(d.sec, d.n, 1), d.n])
+		if int(d.leveled) > 0:
+			levels.append("djup %d %s (%s)" % [d.depth, level_word(d.diff), _signed(d.diff)])
+	if not per_depth.is_empty():
+		lines.append(" · ".join(per_depth))
+	if not levels.is_empty():
+		lines.append("Nivå mot fienderna: " + " · ".join(levels))
 	return lines
+
+
+## Snitten per djup, lägst djup först: [{depth, sec, n, leveled, diff}]. diff = sällskapets nivå minus fiendernas i snitt,
+## över de strider som har nivåer (leveled st).
+func depths() -> Array:
+	var by := {}
+	for b in battles:
+		var d := int(b.get("depth", 1))
+		if not by.has(d):
+			by[d] = {"depth": d, "sec": 0.0, "n": 0, "leveled": 0, "diff": 0.0}
+		var e: Dictionary = by[d]
+		e.sec = float(e.sec) + float(b.sec)
+		e.n = int(e.n) + 1
+		if b.has("party_level") and b.has("enemy_level"):
+			e.leveled = int(e.leveled) + 1
+			e.diff = float(e.diff) + float(b.party_level) - float(b.enemy_level)
+	var keys := by.keys()
+	keys.sort()
+	var out := []
+	for d in keys:
+		var e: Dictionary = by[d]
+		e.sec = float(e.sec) / int(e.n)
+		if int(e.leveled) > 0:
+			e.diff = float(e.diff) / int(e.leveled)
+		out.append(e)
+	return out
+
+
+## Inom ±2 nivåer räknas som i nivå (VD 2026-10-23).
+const LEVEL_MARGIN := 2.0
+
+
+static func level_word(diff: float) -> String:
+	if diff > LEVEL_MARGIN:
+		return "över"
+	if diff < -LEVEL_MARGIN:
+		return "under"
+	return "i nivå"
+
+
+## "+1,2" / "−2,5" med svensk decimal.
+static func _signed(v: float) -> String:
+	var s := "%.1f" % absf(v)
+	return ("−" if v < -0.05 else "+") + s.replace(".", ",")
 
 
 ## Minuter med svensk decimal ("3,4 min"); "–" när inget är mätt.
@@ -222,7 +282,13 @@ static func make_demo() -> Playtime:
 			"boss": [460.0]}
 	for k in secs:
 		for s in secs[k]:
-			p.battles.append({"sec": s, "realm": "crypt", "depth": 1, "floor": 0, "kind": k, "won": true, "turns": 24})
+			p.battles.append({"sec": s, "realm": "crypt", "depth": 1, "floor": 0, "kind": k, "won": true, "turns": 24,
+					"party_level": 3.5, "enemy_level": 3.0})
+	# 0.31: ett djup till (med nivåer, under fienderna) och en gammal post utan nivå.
+	for s in [230.0, 260.0, 250.0]:
+		p.battles.append({"sec": s, "realm": "chapel", "depth": 2, "floor": 1, "kind": "normal", "won": true, "turns": 30,
+				"party_level": 5.0, "enemy_level": 9.0})
+	p.battles.append({"sec": 300.0, "realm": "crypt", "depth": 3, "floor": 0, "kind": "normal", "won": false, "turns": 41})
 	for s in [2280.0, 2650.0, 1900.0]:
 		p.runs.append({"sec": s, "floors": [s * 0.45, s * 0.55], "battles": 9, "outcome": "boss", "realm": "crypt",
 				"depth": 1})

@@ -33,6 +33,8 @@ var alt_hint := "Byt troféer vid en lägereld."
 var data: Dictionary = {}
 ## Våningsreglerna som gäller (visas uppe till höger under knapparna).
 var rules_text := ""
+## Rader i Inspect som börjar med det här tecknet är en troféns lärdom (VD 2026-10-23) och ritas kursivt.
+const LESSON_MARK := "§"
 var inspect_title := ""
 var inspect_lines: Array[String] = []
 
@@ -341,6 +343,9 @@ func _draw() -> void:
 		for i in inspect_lines.size():
 			var font := UiStyle.bold()
 			var pos := r.position + Vector2(20, 76 + i * 46)
+			if inspect_lines[i].begins_with(LESSON_MARK):  # en troféns lärdom: kursiv och dämpad
+				UiStyle.lesson(self, pos, inspect_lines[i].trim_prefix(LESSON_MARK), bw - 40, 2)
+				continue
 			draw_multiline_string(font, pos, inspect_lines[i], HORIZONTAL_ALIGNMENT_LEFT, bw - 40, 17, 2, Color(1, 1, 1, 0.9))
 	if calc_title != "":
 		_draw_calc(w)

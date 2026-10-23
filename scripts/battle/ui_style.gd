@@ -115,6 +115,33 @@ static func card(ci: CanvasItem, r: Rect2, title: String, body: String, selected
 				r.size.x - 28, BODY_SIZE, lines, Color(1, 1, 1, 0.92 if selected else 0.7))
 
 
+## Kursiv stil för troféernas lärdomar (VD 2026-10-23): dämpad, minst 15 px.
+const LESSON_SIZE := 16
+const LESSON_COLOR := Color(0.86, 0.8, 0.66, 0.78)
+static var _italic: Font
+
+
+static func italic() -> Font:
+	if _italic == null:
+		var f := SystemFont.new()
+		f.font_names = PackedStringArray(["Avenir Next", "Helvetica Neue", "Roboto", "Arial", "sans-serif"])
+		f.font_weight = 500
+		f.font_italic = true
+		_italic = f
+	return _italic
+
+
+## En lärdom som ett kursivt stycke inom bredden. Returnerar höjden det tog (0 om texten är tom).
+static func lesson(ci: CanvasItem, pos: Vector2, s: String, width: float, max_lines := 2, size := LESSON_SIZE) -> float:
+	if s == "":
+		return 0.0
+	size = maxi(size, MIN_SIZE)
+	var f := italic()
+	s = _clip_lines(f, s, size, width, max_lines)
+	ci.draw_multiline_string(f, pos, s, HORIZONTAL_ALIGNMENT_LEFT, width, size, max_lines, LESSON_COLOR)
+	return f.get_multiline_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, width, size, max_lines).y
+
+
 ## Brödtextens storlek i kort och stycken (0.20.3).
 const BODY_SIZE := 17
 

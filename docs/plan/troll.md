@@ -8,13 +8,13 @@ Underlag: `docs/ideer/claude-coola-fiender.md` §1. Modeller: Drakvalvets ogre g
 
 | Troll | Roll | Egenskap | Egen förmåga | Trofé |
 |---|---|---|---|---|
-| Mossrygg | vanlig | Mossa: helas 10 % i början av sin tur | Mosskast: skada + Snärjd 2 turer | Mosskappa (helas 6 %) |
-| Grytmodern | vanlig | Grytans hunger: +10 % Attack när en hjälte helas (×3) | Kokande gryta: alla hjältar, 30 % Försvagad | Grytskärva (samma mot fiendens helning) |
-| Avundsjätten | vanlig | Avund: får samma buff som en hjälte | Avundens blick: Hånad på den med högst Attack | Avundsten (kopierar fiendens buff) |
+| Mossrygg | vanlig | Mossa: helas 10 % i början av sin tur | Mosskast: skada + Snärjd 2 turer | Mosskappan (helas 6 %) |
+| Grytmodern | vanlig | Grytans hunger: +10 % Attack när en hjälte helas (×3) | Kokande gryta: alla hjältar, 30 % Försvagad | Grytskärvan (samma mot fiendens helning) |
+| Avundsjätten | vanlig | Avund: får samma buff som en hjälte | Avundens blick: Hånad på den med högst Attack | Den kluvna stenen (kopierar fiendens buff) |
 | Stenkrossaren | vanlig | Klubban: dubbel skada mot den som Försvarar | Markskalv: skada + längst ned på tidslinjen | Krossarens klubba (+50 % mot Försvarar) |
 | Brom, broarnas väktare | miniboss | Tull: slår den som skadade honom senast, +50 % mot den som Provocerar | Brotull: tar en Charge + skada | Brospännet (+40 % mot Provocerar) |
 | Trollmor Gråluva | elit | Vaggvisa var tredje tur | Gråluvans vaggvisa: den som senast använde en förmåga somnar | Gråluvans sjal (var tredje handling somnar en fiende) |
-| Bergakungen | boss | Resistent, Stenhjärta (−60 % skada när sällskapet upprepar samma sorts handling) | Bergets vrede: alla, 20 % Förstenad | Bergakungens krona |
+| Bergakungen | boss | Resistent, Stenhjärta (−60 % skada när sällskapet upprepar samma sorts handling) | Bergets vrede: alla, 20 % Förstenad | Bergakungens kluvna krona |
 
 Ny motor (`CombatSim`): `pick: last_attacker`, effekterna `drain_charge` och `if_target_cast`, villkoren
 `source_used_ability` och `source_repeats_team_action`, auraflaggan `no_heal`. Tester: `tests/test_enemies_trolls.gd`.

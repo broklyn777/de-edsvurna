@@ -8,7 +8,7 @@ extends CanvasLayer
 signal closed
 
 const W := 680.0
-const H := 520.0
+const H := 560.0
 const STEPS := 10
 
 var pause_tree := false
@@ -61,7 +61,7 @@ func _moments_rect() -> Rect2:
 ## Speltidens knapp (eller JA/AVBRYT i bekräftelsen: i = 0 och 1).
 func _reset_rect(i := -1) -> Rect2:
 	var r := _panel()
-	var y := r.position.y + 382
+	var y := r.position.y + 424  # 0.31: plats för fyra rader speltid
 	if i < 0:
 		return Rect2(r.position.x + (W - 300) / 2.0, y, 300, 44)
 	return Rect2(r.position.x + W / 2.0 - 250 + i * 270, y, 230, 44)

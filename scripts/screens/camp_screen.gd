@@ -149,6 +149,13 @@ func _draw() -> void:
 		UiStyle.card(self, _offer_rect(i), t.name, t.text, chosen == run.offer[i], UiStyle.TRAIT_GOLD,
 				"FRÅN " + _source_name(run.offer[i]).to_upper())
 
+	# Lärdomen (VD 2026-10-23) för den valda trofén, kursiv på en rad under korten.
+	var lesson_id := chosen if chosen != "" else (selected if _swap() else "")
+	if lesson_id != "" and data.traits.has(lesson_id):
+		var who := state.wearer(lesson_id)
+		var lesson := GameData.lesson(data, lesson_id, String(data.heroes[who].name) if who != "" else "")
+		UiStyle.lesson(self, Vector2(MARGIN, 287), lesson, size.x - MARGIN * 2, 1)
+
 	# 0.27.2: med en vald trofé står vad den gör i rubrikens ställe.
 	var head := "DINA TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE" if _swap() \
 			else "DINA TROFÉER – DE BYTS VID EN LÄGERELD I GROTTAN"

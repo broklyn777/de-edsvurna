@@ -52,6 +52,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Hjältarna behåller sina troféer (0.26.3, som i Siralim, `Profile.worn`, `wear()`, `keep_worn()`): de följer med i varje
   körning och i Övningsgården tills man byter i lägret eller i Förberedelser; allt som hittas hamnar i samlingen.
   En andel av en träff (`pct_of_event`, t.ex. följdanfall) blir aldrig kritisk igen.
+  **Namn och lärdom** (VD 2026-10-23, `docs/ideer/chat-trofeer-1.tsv`): en trofé är ett föremål man tagit eller en lärdom man
+  dragit, aldrig en ed, en pakt, en mottagen kraft eller en kroppsdel; ett föremål från en ockult fiende låter besegrat eller
+  brutet. Varje trofé har `lesson` ("{bärare} har lärt sig …", `GameData.lesson()`), kursiv under effekten (`UiStyle.lesson`) i
+  Biblioteket, lägret, Inspect och hjältebladet (`tests/test_trophy_slot.gd`).
 - Varje hjälte får till slut 3 egenskaper: egen, trofé och artefakt.
 - **Artefakter** (0.12, Siralims Artifacts): en per hjälte, smids hos Smeden för silver. Typen höjer en
   stat och avgör när förmågan i den slår till av sig själv: svärd vid Anfall (25 %), stav vid Förmåga
@@ -179,7 +183,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   bakgrunden, när trädet är pausat och när en ruta i gruppen `stops_playtime` är öppen (hjälprutan, inställningarna).
   Övningsgården räknas inte. `user://playtime.cfg` för alla profiler (senaste 200 strider, 50 körningar; en pågående
   körning per sparplats räknar vidare efter omstart). Snitten och NOLLSTÄLL SPELTID i inställningsrutan; `--playtime-demo`
-  visar påhittade siffror och sparar inte. Tester: `tests/test_playtime.gd`.
+  visar påhittade siffror och sparar inte. Tester: `tests/test_playtime.gd`. 0.31: varje strid sparar också sällskapets
+  snittnivå och fiendernas väntade nivå; rutan visar snitt per djup och om sällskapet låg över, i nivå (±2) eller under.
 - **Löften** (0.30.17, prov, `docs/plan/loften.md`, `data/vows.json`): på kampanjkartan (LÖFTE bredvid FÖRBEREDELSER,
   efter introt, `Profile.vow`) lovar Paladinen något för hela körningen. Hållet ger en egenskap hos Paladinen och silver;
   brutet blir det en ödmjukare form (`RunState.vow`, `vow_broken`, `vow_trait`, `vow_after_battle`, `is_common_group`).
@@ -284,6 +289,14 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Trollfolket** (0.30.23, `docs/plan/troll.md`, ännu utan Realm; `--encounter=troll_1a` … `troll_3`): familjen `troll_kin`
   med artregeln Trollhud (en förmåga stoppar läkningen, `troll_scorched`), sju troll med var sin egen förmåga och trofé, bossen
   Bergakungen (Stenhjärta). Modellerna `troll*.glb` ur Drakvalvets ogre, färgade per troll med `colors`.
+- **Drakvalvets fiender** (0.31, `docs/plan/drakvalvet-fiender.md`, `tests/test_enemies_crypt.gd`/`_chapel.gd`): **Likätaren**
+  (`ghoul`, Benfolket) äter lik ur familjen (Likmåltid, `consume_corpse`, `CombatUnit.consumed`: kan aldrig väckas) och växer
+  (Gravhunger, högst 3); elitvarianten Gravgnagaren äter aldrig hjältar. **Blodsvuren** (`cult_zealot`, Kultens folk; elit
+  Blodfogden) slår hårdare ju mer skadad den är (Blodpakt, `damage_mult_per_missing_tenth`) och betalar Blodhugget med eget liv
+  (`self_damage`, aldrig det sista); ingen grupp med Förmannen. **Kyrkogrimmen** (`church_grim`, elit utan familj, `chapel_e7`)
+  biter den som slår någon annan i gruppen (Grimmens vakt, en gång per tur), motdraget Skrattande låga från djup 3. Benvargen
+  (Benspringarens elitvariant) är `varg.glb` (`elite.visual` ersätter figuren). `emit_energy` i `visual` låter lågor och ögon
+  lysa. Möten `crypt_2g`, `crypt_3e`, `crypt_e7`, `chapel_1d`, `chapel_3f`, `chapel_3g`, `chapel_e7`. Ingen ny kontroll.
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens kall, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.

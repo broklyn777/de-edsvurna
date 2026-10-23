@@ -16,3 +16,10 @@ static func _load_json(path: String) -> Dictionary:
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	assert(parsed is Dictionary, "Kunde inte läsa " + path)
 	return parsed
+
+
+## Troféns lärdom (VD 2026-10-23, regel 2): vad bäraren lärde sig av fienden. "{bärare}" blir hjältens namn, annars
+## "Bäraren". Tom sträng om trofén saknar lärdom.
+static func lesson(data: Dictionary, trophy_id: String, bearer := "") -> String:
+	var text: String = data.get("traits", {}).get(trophy_id, {}).get("lesson", "")
+	return text.replace("{bärare}", bearer if bearer != "" else "Bäraren")

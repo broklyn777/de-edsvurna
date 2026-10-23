@@ -38,7 +38,7 @@ func _factor(calc: Dictionary, name: String) -> float:
 
 func test_new_chapel_enemies_have_data_trophies_and_traits() -> void:
 	for kind in ["corrupted_deacon", "banner_bearer", "will_o_wisp", "mirror_warden", "cult_overseer", "inquisitor",
-			"ascetic", "black_lance", "corrupted_abbess"]:
+			"ascetic", "black_lance", "corrupted_abbess", "cult_zealot", "church_grim"]:
 		var d: Dictionary = _data.enemies[kind]
 		for t in d.traits:
 			assert_true(_data.traits.has(t), "%s: egenskapen %s finns" % [kind, t])
@@ -56,7 +56,7 @@ func test_new_chapel_enemies_have_data_trophies_and_traits() -> void:
 	for enc_id in chapel.elite_pools[0] + chapel.elite_pools[1] + chapel.pools[1] + chapel.pools[2]:
 		assert_true(_data.encounters.has(enc_id), enc_id)
 	assert_eq(chapel.elite_pools[0], ["chapel_e1"], "våning 1 har bara Lansens anstormning")
-	assert_eq(chapel.pools[0], ["chapel_1a", "chapel_1b", "chapel_1c"], "tier 0 är orörd")
+	assert_eq(chapel.pools[0], ["chapel_1a", "chapel_1b", "chapel_1c", "chapel_1d"], "tier 0: de gamla och Paktens vakt (0.31)")
 
 
 func test_two_families_count_their_own_kin() -> void:
@@ -265,13 +265,13 @@ func test_chapel_trophies() -> void:
 	sim._heal(sim.unit("alva"), brokk, 10.0, "healing_light")
 	assert_near(brokk.hp, 18.0, 1e-9, "−20 %")
 	assert_true(not brokk.auras.has("weak"), "renad")
-	# Irrblossets låga: undviker tills bäraren har agerat.
+	# Det släckta irrblosset: undviker tills bäraren har agerat.
 	sim = CombatSim.create(_data, "chapel_1a", 3, ["paladin", "brokk", "alva", "eira"], {"brokk": ["wisp_flame"]})
 	var bearer := sim.unit("brokk")
 	var probe := {"source": sim.enemies[0].id, "target": "brokk", "kind": "attack", "direct": true}
 	var before := sim._dodge_for(sim.enemies[0], bearer, 1.0, probe)
 	bearer.last_ability = "defend"
-	assert_true(before - sim._dodge_for(sim.enemies[0], bearer, 1.0, probe) >= 0.3, "Irrblossets låga sänker träffchansen kraftigt (taket gäller)")
+	assert_true(before - sim._dodge_for(sim.enemies[0], bearer, 1.0, probe) >= 0.3, "Det släckta irrblosset sänker träffchansen kraftigt (taket gäller)")
 
 
 func test_the_grotto_takes_chapel_elites_from_the_elite_pools() -> void:
@@ -330,3 +330,75 @@ func test_low_health_defenders_alternate_with_attacks() -> void:
 	asc.last_ability = "defend"
 	sim._choose_intent(asc)
 	assert_eq(asc.intent.ability, asc.attack_ability, "efter att ha försvarat sig anfaller hen")
+
+
+
+## 0.31 (docs/plan/drakvalvet-fiender.md §2–3): Blodsvuren och Kyrkogrimmen.
+func test_blood_cut_never_kills_the_zealot_and_ignores_barrier() -> void:
+	var sim := _sim("chapel_1d")
+	var zealot := _enemy(sim, "cult_zealot")
+	assert_eq(zealot.family, "cult_kin", "Blodsvuren hör till Kultens folk")
+	var full := zealot.hp
+	zealot.barrier = 50.0
+	sim._perform(zealot, "blood_cut", "intent", "")
+	assert_near(zealot.hp, full - roundf(zealot.max_hp * 0.1), 1e-6, "förlorar 10 % av sitt max liv")
+	assert_near(zealot.barrier, 50.0, 1e-6, "förbi Barriär")
+	zealot.cooldowns.clear()
+	zealot.hp = 2.0
+	sim._perform(zealot, "blood_cut", "intent", "")
+	assert_near(zealot.hp, 1.0, 1e-6, "aldrig det sista livet")
+	zealot.cooldowns.clear()
+	sim._perform(zealot, "blood_cut", "intent", "")
+	assert_true(zealot.alive and is_equal_approx(zealot.hp, 1.0), "Blodhugget dödar aldrig Blodsvuren själv")
+	assert_true(not sim._rule_matches(_enemy(_sim("chapel_1d"), "cult_zealot"), zealot.rules[0]), "skär sig inte vid fullt liv")
+
+
+func test_blood_pact_grows_with_missing_health() -> void:
+	var sim := _sim("chapel_3f")
+	var zealot := _enemy(sim, "cult_zealot")
+	var eira := sim.unit("eira")
+	assert_near(_factor(_hit_calc(sim, zealot, eira, "pact_knife"), "Blodpakt"), 1.0, 1e-9, "fullt liv: ingen bonus")
+	zealot.hp = zealot.max_hp * 0.55
+	assert_near(_factor(_hit_calc(sim, zealot, eira, "pact_knife"), "Blodpakt"), 1.4, 1e-9, "fyra hela tiondelar: +40 %")
+	zealot.hp = 1.0
+	assert_near(_factor(_hit_calc(sim, zealot, eira, "pact_knife"), "Blodpakt"), 1.5, 1e-9, "högst +50 %")
+	# Trofén: 6 % per tiondel, högst 30 %; elittrofén ger en Barriär första gången under 50 %.
+	sim = CombatSim.create(_data, "chapel_1a", 3, ["paladin", "brokk", "alva", "eira"], {"eira": ["pact_blade", "bailiff_staff"]})
+	eira = sim.unit("eira")
+	eira.hp = eira.max_hp * 0.25
+	assert_near(_factor(_hit_calc(sim, eira, sim.enemies[0], "x"), "Den brutna paktkniven"), 1.3, 1e-9)
+	eira.hp = eira.max_hp * 0.6
+	for i in 20:
+		if eira.hp < eira.max_hp * 0.5:
+			break
+		_hit_calc(sim, sim.enemies[0], eira, "x")
+	assert_true(eira.barrier > 0.0, "Barriär under 50 %")
+
+
+func test_grim_watch_bites_once_per_turn_and_not_for_hits_on_itself() -> void:
+	var sim := _sim("chapel_e7", {"counter": true}, 3)
+	var grim := _enemy(sim, "church_grim")
+	var cultist := _enemy(sim, "cultist")
+	var eira := sim.unit("eira")
+	assert_eq(grim.family, "", "Kyrkogrimmen hör inte till någon familj")
+	assert_eq(grim.counter, "laughing_wisp", "motdraget Skrattande låga på djup 3")
+	assert_eq(_sim("chapel_e7", {"counter": true}).enemies[0].counter, "", "inget motdrag på djup 1")
+	var bites := func() -> int:
+		return sim.drain_events().filter(func(e: Dictionary) -> bool:
+			return e.type in ["damage", "dodge"] and e.source == grim.id and e.get("ability", "") == "grim_watch").size()
+	sim.drain_events()
+	_hit_calc(sim, eira, grim, "x")
+	assert_eq(bites.call(), 0, "slår man hunden själv biter den inte")
+	sim._deal_damage(eira, cultist, 1.0, "physical", "x", false, true, "attack", true)
+	var first: int = bites.call()
+	sim._deal_damage(eira, cultist, 1.0, "physical", "x", false, true, "attack", true)
+	assert_eq(first, 1, "biter den som slår en annan")
+	assert_eq(bites.call(), 0, "högst en gång per tur")
+	sim.turn_no += 1
+	sim._deal_damage(sim.unit("brokk"), cultist, 1.0, "physical", "x", false, true, "attack", true)
+	assert_eq(bites.call(), 1, "nästa tur igen")
+	assert_true(_data.realms.chapel.elite_pools[1].has("chapel_e7"))
+	for enc in ["chapel_3f", "chapel_3g"]:
+		assert_true(_data.realms.chapel.pools[2].has(enc), enc)
+	assert_true(not _data.encounters.values().any(func(e: Dictionary) -> bool:
+		return e.enemies.has("cult_zealot") and e.enemies.has("cult_overseer")), "ingen grupp med Förmannen och Blodsvuren")

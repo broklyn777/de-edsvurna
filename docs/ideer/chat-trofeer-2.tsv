@@ -1,0 +1,56 @@
+id	nuvarande namn	nytt namn	bryter regeln	lärdom
+bone_finger	Skelettets fingerled	Det andra hugget	ja – kroppsdel	Skelettkrigaren stannade aldrig efter första hugget. {bärare} har lärt sig att följa upp.
+first_strike	Kaparens första hugg	Kaparens första hugg	nej – ett hugg, alltså en lärdom	Benkaptenen slog alltid först och hårdast. {bärare} lärde sig att inte tveka.
+bow_sinew	Benbågens sena	Den brutna bågen	ja – sena är en kroppsdel	Skytten släppte aldrig blicken från sitt märke. Nu gör inte {bärare} det heller.
+quick_shot	Snabbt tag	Snabbt tag	nej – en färdighet	Benjägaren lade nästa pil på strängen innan den första träffat. {bärare} såg och lärde.
+rosary	Gravprästens radband	Gravprästens radband	nej – helgat föremål som återtagits, inte ockult	Gravprästen bad fortfarande, fast ingen svarade. {bärare} vet vart bönen ska riktas.
+bearer_of_light	Ljusets bärare	Den återtända ljusstaken	ja – en titel och inte ett föremål; ordagrant ”Lucifer”	Gravabboten höll sitt ljus för sig själv. {bärare} lärde sig att det lyser mer när det delas.
+warden_helm	Väktarens hjälm	Väktarens hjälm	nej – föremål	Gravväktaren stod kvar så länge något fanns att vakta. {bärare} lärde sig vad en sköld är till för.
+salted_earth	Saltad jord	Saltad jord	nej – salt är hjältens vapen mot de döda	Gravfogden visste att den som håller sin mark försvagar den som anfaller. Nu vet {bärare} det också.
+ember_jaw	Glödkäken	Den släckta eldpannan	ja – kroppsdel	Glödskelettet brann på det det stal. {bärare} lärde sig att elden kan tändas av omsorg i stället.
+scatter_shot	Splitterben	Den krossade askurnan	ja – fiendens ben	När askurnan sprack spreds askan över alla. {bärare} lärde sig att ett slag kan nå fler än ett mål.
+runner_sinew	Springarens senor	Det lätta steget	ja – kroppsdel	Benspringaren bar ingen tyngd den inte behövde. {bärare} har lärt sig att stiga lätt in i striden.
+wolf_leap	Vargens språng	Vargens språng	nej – en rörelse man lärt sig	Benvargen väntade aldrig på ett tecken. {bärare} har lärt sig att vara först.
+coffin_nail	Kistspik	Kistspiken	nej – föremål (bestämd form som i regeln)	Kistbäraren bar de döda utan att släppa taget. {bärare} lärde sig att sluta leden när någon faller.
+last_watch	Sista vaktens sköld	Sista vaktens sköld	nej – föremål	Likbäraren stod kvar vid de fallna. {bärare} lärde sig att ta hugget i deras ställe.
+mold_jaw	Mögelkäken	Den rostiga dolken	ja – kroppsdel	Mögelskelettets sår ruttnade långt efter striden. {bärare} lärde sig att ett sår kan verka länge.
+spore_burst	Sporfallet	Den spruckna sporkapseln	ja – fiendens kraft, varken föremål eller lärdom	Sporfurstens smitta gick från kropp till kropp. {bärare} lärde sig att vända den mot dess egna.
+rattler_bone	Skramlarens ben	Den tystade skramlan	ja – kroppsdel	Skramlaren rasslade så fort den träffades. {bärare} lärde sig att varje slag är en varning.
+clatter_stone	Klapperstenen	Klapperstenen	nej – föremål	Benklappret gav tillbaka varje slag det fick. {bärare} lärde sig att stå som sten.
+colossus_spine	Kolossens ryggrad	Kolossens tålamod	ja – kroppsdel	Benkolossen blev starkare för varje steg den tog. {bärare} lärde sig att låta kraften växa.
+caller_lantern	Väckarens lykta	Det sista ropet	ja – ett ockult föremål som väcker döda, alltså nekromanti	Gravväckaren kallade på de döda. {bärare} lärde sig att kalla tillbaka dem som ännu inte gått.
+mist_veil	Dimmans slöja	Den skingrade dimman	ja – ett ockult plagg som inte låter besegrat	Gravdimman sövde de vakna utan ett ljud. {bärare} lärde sig hur tyst sömnen faller.
+scribe_quill	Skrivarens penna	Skrivarens penna	nej – föremål	Benskrivaren skrev aldrig samma rad två gånger. {bärare} gör det inte heller.
+bell_rope	Klockrepet	Klockrepet	nej – föremål	Klockaren ringde in andra före sig själv. {bärare} lärde sig att låta de svaga gå först.
+lich_crown	Benfurstens krona	Den krossade benkronan	ja – ockult krona som inte låter besegrad	Benfursten lät andra slå åt sig. {bärare} lärde sig att det heliga kan bäras av svärdet, inte bara av orden.
+prayer_beads	Bönepärlor	De spridda pärlorna	ja – kultens andaktsföremål, hel och obruten	Kultisten bad för sig själv. {bärare} lärde sig att be för den som står svagast.
+phantasm	Fantasm	Den sönderrivna formelboken	ja – en ockult kraft och inte ett föremål	Ockultisten upprepade samma ord tills de bar. {bärare} lärde sig att varje upprepning skärper.
+wraith_veil	Gastens slöja	Den sönderrivna slöjan	ja – man klär sig i gastens väsen	Gasten undvek varje hugg. {bärare} har lärt sig hur.
+surprise	Överraskning!	Före varslet	ja – skämtsam ton, varken föremål eller lärdom	Bansheen skrek innan någon hunnit höja ett vapen. {bärare} lärde sig att vara snabbare än varslet.
+fallen_oath	Den fallnes ed	Den fallnes klinga	ja – en ed	Den fallne riddaren hade glömt sin ed men inte sin fäktkonst. {bärare} lärde sig det han kunde.
+heart_of_chaos	Kaosets hjärta	Den brutna eden	ja – kroppsdel och kaoskraft	Edsbrytaren föll när hans ord föll. {bärare} lärde sig att den som håller sitt ord reser sig igen.
+witch_tongue	Häxans tunga	Häxans brutna stav	ja – kroppsdel	Häxan kunde inte förbanna den hon inte nådde med orden. {bärare} lärde sig att tysta henne först.
+miracle	Mirakel	Häxmästarinnans brutna spira	ja – en kraft man tar emot, och ett mirakel från fel håll	Häxmästarinnan lät varje ord klinga två gånger. {bärare} lärde sig att låta ett väl valt ord eka.
+executioner_hood	Bödelns huva	Bödelns huva	nej – föremål, inte ockult	Botgöraren letade alltid efter det öppna såret. {bärare} lärde sig att se var rustningen brustit.
+sareas_plot	Sareas intrig	Det brutna gisslet	ja – en intrig är något man ingår i	Självplågaren blev farligare för varje slag hen tog. {bärare} lärde sig att inte vika för smärtan.
+bishop_mitre	Biskopens mitra	Biskopens mitra	nej – helgat föremål som återtagits	Den fallne biskopen lät hjorden skydda honom. {bärare} lärde sig vad det kostar att låta andra stå framför.
+deacon_stole	Diakonens stola	Diakonens stola	nej – helgat föremål som återtagits	Diakonen hade en gång vårdat de sjuka. {bärare} lärde sig av det han glömt.
+clean_spring	Den rena källan	Den rena källan	nej – en bild för det som renats	Ärkediakonen grumlade allt han rörde. {bärare} lärde sig hur vatten blir klart igen.
+torn_banner	Den trasiga fanan	Den trasiga fanan	nej – föremål som låter besegrat	Fanbäraren höll fanan högt även när den hängde i trasor. {bärare} lärde sig vad det betyder för dem som följer.
+herald_horn	Härolds horn	Häroldens horn	nej – föremål (bara böjningen rättad)	Härolden blåste och hela hopen stormade fram. {bärare} lärde sig att ett rop kan bära fler än en.
+wisp_flame	Irrblossets låga	Det släckta irrblosset	ja – man bär fiendens eld	Irrblosset gick inte att träffa förrän det rörde sig. {bärare} lärde sig att vänta i stillhet.
+lantern_light	Lyktans ljus	Lyktans ljus	nej – ljus är inte ockult	Lyktgubben bländade den som såg rakt in i ljuset. {bärare} lärde sig att slå medan ögonen är fulla av det.
+mirror_shield	Spegelskölden	Spegelskölden	nej – föremål	Spegelvakten lät besvärjelserna möta sig själva. {bärare} lärde sig att hålla skölden rätt.
+silver_glass	Silverglaset	Silverglaset	nej – föremål, silver är rent	Silverspegeln kastade tillbaka det första den fick se. {bärare} lärde sig att vända förbannelsen mot sitt upphov.
+overseer_keys	Förmannens nyckelknippa	Förmannens nyckelknippa	nej – föremål, tagna från fångvaktaren	Kultens förman låste in de svaga. {bärare} lärde sig att ett lås också kan skydda.
+inquisitor_seal	Inkvisitorns sigill	Inkvisitorns sigill	nej – föremål	Inkvisitorn straffade den som upprepade sig. {bärare} lärde sig se när en fiende har slut på nya grepp.
+ascetic_strap	Asketens rem	Asketens rem	nej – föremål	Asketen härdade sig en dag i taget. {bärare} lärde sig tålamodet, men inte plågan.
+lance_tip	Lansspetsen	Lansspetsen	nej – föremål (exempel i regeln)	Den svarta lansen gick rakt igenom allt den mötte. {bärare} lärde sig att den första stöten ska gå hela vägen.
+abbess_key	Abbedissans nyckel	Abbedissans nyckel	nej – föremål	Abbedissan låste in allt rent hon fann. {bärare} lärde sig att släppa det fritt, även om det kostar.
+moss_cloak	Mosskappa	Mosskappan	nej – föremål	Mossryggens sår läkte långsamt men slutade aldrig. {bärare} lärde sig att vila mitt i striden.
+porridge_bowl	Grytskärva	Grytskärvan	nej – föremål som låter krossat	Grytmodern matade de sina mitt i striden. {bärare} lärde sig att det är då man ska slå hårdare.
+envy_stone	Avundsten	Den kluvna stenen	ja – namnet gör en last till hjältens egendom	Avundsjätten ville ha allt den såg hos andra. {bärare} lärde sig att ta vara på det goda utan att avundas.
+kalles_club	Krossarens klubba	Krossarens klubba	nej – föremål	Stenkrossaren slog hårdast mot den som stod still. {bärare} lärde sig var försvaret är svagast.
+toll_buckle	Brospännet	Brospännet	nej – föremål	Brom stod i vägen för alla som ville över. {bärare} lärde sig hur man tar sig förbi en sådan.
+grey_shawl	Gråluvans sjal	Gråluvans sjal	nej – föremål, folksaga och inte kult	Trollmor Gråluva sjöng vaggvisor mitt i striden. {bärare} minns en av dem.
+mountain_crown	Bergakungens krona	Bergakungens krona	nej – folksagans kung, inte ockult	Bergakungen hade sett alla knep förut. {bärare} lärde sig att känna igen det som upprepas.

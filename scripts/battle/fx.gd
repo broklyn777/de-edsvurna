@@ -189,7 +189,12 @@ class Overheads extends Node2D:
 		for id in u.intent.get("targets", []):
 			var t := sim.unit(id)
 			if t and t.alive:
-				target_name = t.name
+				target_name = "→ " + t.name
+				break
+			# 0.31: en avsikt mot ett lik (Likmåltid, Väck de döda) säger vad den gör.
+			if t and ab.get("target", "") == "dead_ally":
+				var eats: bool = ab.effects.any(func(e: Dictionary) -> bool: return e.type == "consume_corpse")
+				target_name = ("äter " if eats else "väcker ") + t.name
 				break
 		if target_name != "":
-			UiStyle.text(self, at + Vector2(-80, -20), "→ " + target_name, 12, Color(col, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 160, 4)
+			UiStyle.text(self, at + Vector2(-80, -20), target_name, 12, Color(col, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 160, 4)

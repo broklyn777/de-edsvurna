@@ -472,6 +472,12 @@ func check_damage(sim: CombatSim, r: Dictionary) -> void:
 			factors.append(1.0 + float(m.damage_mult_per_hit_taken) * int(src.times_hit))
 		if m.has("damage_mult_per_family"):
 			factors.append(1.0 + float(m.damage_mult_per_family) * _kin(units, src))
+		if m.has("damage_mult_per_missing_tenth"):
+			# 0.31 (Blodpakt): per hel tiondel liv som saknas, högst "max".
+			var tenths := floori((1.0 - float(src.hp) / maxf(float(src.max_hp), 1.0)) * 10.0 + 0.0001)
+			var bonus := minf(float(m.damage_mult_per_missing_tenth) * maxi(tenths, 0), float(m.get("max", 0.5)))
+			if bonus > 0.0:
+				factors.append(1.0 + bonus)
 		if m.has("additional_from_stat"):
 			additional += _stat(src, m.additional_from_stat.stat) * float(m.additional_from_stat.pct)
 	if src.resistant and r.direct and ((kind == "attack" and _has_flag(src, "scorn"))
