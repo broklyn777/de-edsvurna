@@ -774,7 +774,7 @@ func _cfg_text() -> String:
 	return "%s djup %d inst %d %s sällskap %s nivå %d %s%s" % [cfg.realm, cfg.depth, cfg.instability,
 			profile.oath if profile else cfg.oath,
 			str(["paladin"] + Array(cfg.party)) if not cfg.first else "[paladin]", cfg.level if not cfg.first else 1, cfg.policy,
-			" FÖRSTA NEDSTIGNINGEN" if cfg.first else ""]
+			(" FÖRSTA NEDSTIGNINGEN" if cfg.first else "") + (" löfte " + String(cfg.vow) if String(cfg.get("vow", "")) != "" else "")]
 
 
 func _report(ms: int) -> void:
