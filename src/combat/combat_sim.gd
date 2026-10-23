@@ -684,11 +684,19 @@ func _next_turn() -> void:
 
 
 ## Snärjd: 10 % chans (resistent 30 %) att slita sig loss i början av varje figurs tur.
+## 0.30.25: chansen fördubblas för varje misslyckat försök (som Frusen), annars kunde en snärjd hjälte stå
+## stilla hela striden (provspelet i Sidenlunden: varaktigheten räknas bara på egna turer, och de kom aldrig).
 func _break_snares() -> void:
 	for x in units:
 		var snare := flag_aura(x, "snare")
-		if x.alive and snare != "" and rng.randf() < (0.3 if x.resistant else 0.1):
+		if not x.alive or snare == "":
+			continue
+		var a: Dictionary = x.auras[snare]
+		var chance := float(a.get("break", 0.3 if x.resistant else 0.1))
+		if rng.randf() < chance:
 			_remove_aura(x, snare, "broke_free")
+		else:
+			a.break = minf(1.0, chance * 2.0)
 
 
 ## Frusen och Sover i början av den egna turen. Sant om figuren kan agera.
@@ -1740,6 +1748,10 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 	if (kind == "debuff" and has_flag(tgt, "debuff_immune")) or _trait_immune(tgt, aura_id):
 		_emit({"type": "status_immune", "unit": tgt.id, "aura": aura_id})
 		return
+	# 0.30.25 Fri: den som just slapp en kontroll kan inte låsas igen förrän efter sin nästa tur.
+	if is_control(aura_id) and tgt.auras.has("unbound"):
+		_emit({"type": "status_immune", "unit": tgt.id, "aura": aura_id, "unbound": true})
+		return
 	# En status som tar bort andra (t.ex. Snabb tar bort Långsam).
 	for other in d.get("removes", []):
 		if tgt.auras.has(other):
@@ -1858,6 +1870,14 @@ func _remove_aura(u: CombatUnit, aura_id: String, reason: String) -> void:
 	if aura_id == "barrier":
 		u.barrier = 0.0
 	_emit({"type": "aura_removed", "unit": u.id, "aura": aura_id, "aura_kind": kind, "reason": reason})
+	if is_control(aura_id) and u.alive and data.auras.has("unbound"):
+		_add_aura(u, u, "unbound")
+
+
+## 0.30.25: statusar som tar turer (Snärjd, Sover, Frusen). Efter en sådan blir figuren Fri en stund.
+func is_control(aura_id: String) -> bool:
+	var d: Dictionary = data.auras.get(aura_id, {})
+	return d.has("snare") or d.has("sleep") or d.has("freeze")
 
 
 ## Dispel (buffar) och Purge (debuffar): tar bort upp till count statusar av typen, de senaste först.

@@ -219,3 +219,41 @@ func test_holy_smite_hits_harder_on_a_blinded_enemy() -> void:
 	for ev in strike.drain_events():
 		if ev.type == "damage":
 			assert_true(not ev.calc.has("combo"), "inget utan status")
+
+
+# --- 0.30.25: ingen kedjad kontroll (provspelet i Sidenlunden) ---------------------
+
+func test_snare_break_chance_doubles_each_failed_try() -> void:
+	var sim := _sim()
+	var brokk := sim.unit("brokk")
+	sim._add_aura(brokk, brokk, "snared")
+	var freed_after := -1
+	for i in 12:
+		sim._break_snares()
+		if not brokk.auras.has("snared"):
+			freed_after = i
+			break
+	assert_true(freed_after >= 0 and freed_after < 8, "snaran släpper inom några figurers turer (efter %d)" % freed_after)
+
+
+func test_breaking_free_makes_the_hero_unbound_for_a_turn() -> void:
+	var sim := _sim()
+	var brokk := sim.unit("brokk")
+	sim._add_aura(brokk, brokk, "snared")
+	sim._remove_aura(brokk, "snared", "broke_free")
+	assert_true(brokk.auras.has("unbound"), "Fri efter snaran")
+	sim._add_aura(brokk, brokk, "snared")
+	sim._add_aura(brokk, brokk, "sleeping")
+	assert_true(not brokk.auras.has("snared") and not brokk.auras.has("sleeping"), "Fri: ingen ny kontroll")
+	sim._add_aura(brokk, brokk, "vulnerable")
+	assert_true(brokk.auras.has("vulnerable"), "andra debuffar fastnar som vanligt")
+
+
+func test_unbound_wears_off_after_the_next_own_turn() -> void:
+	var sim := _sim()
+	var brokk := sim.unit("brokk")
+	sim._add_aura(brokk, brokk, "unbound")
+	sim._tick_turn_start(brokk)
+	assert_true(brokk.auras.has("unbound"), "skyddar genom nästa tur")
+	sim._tick_turn_start(brokk)
+	assert_true(not brokk.auras.has("unbound"), "borta turen efter")

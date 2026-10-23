@@ -348,5 +348,12 @@
 		"no_heal": true,
 		"text": "Svedd hud: trollet läker inte förrän efter sin nästa tur.",
 		"glyph": "flame"
+	},
+	"unbound": {
+		"name": "Fri",
+		"duration": 2,
+		"text": "Fri: har just slitit sig loss och kan inte snärjas, sövas eller frysas förrän efter sin nästa tur.",
+		"glyph": "cross",
+		"cannot_dispel": true
 	}
 }

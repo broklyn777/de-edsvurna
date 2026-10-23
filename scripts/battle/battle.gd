@@ -881,6 +881,9 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e), _remember_number.bind(e))
 		"immune":
 			_after(_effect_delay(e), _float.bind(e.target, "IMMUN", Color("#ffe48a"), 22, false))
+		"status_immune":
+			if e.get("unbound", false):
+				_after(_effect_delay(e), _float.bind(e.unit, "FRI", Color("#bfe8ff"), 20, false))  # 0.30.25
 		# 0.28: livvakten tar en del av skadan; Ordensregeln stoppar en helning.
 		"guarded":
 			_after(_effect_delay(e), _float.bind(e.unit, "VAKT %d" % int(e.amount), Color("#ffc86a"), 20, false))
