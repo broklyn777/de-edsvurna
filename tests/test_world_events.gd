@@ -117,8 +117,63 @@ func test_pushing_a_realm_back_gives_a_gift_once() -> void:
 	rep = WorldEvents.after_descent(p, _data, "grove", "boss", 3, false, {"grove": 2, "chapel": 2})
 	assert_true(WorldEvents.merchant_here(p))
 	p.growth.chapel = 0
+	var bless := int(p.world.get("bless_runs", 0))
 	rep = WorldEvents.after_descent(p, _data, "chapel", "boss", 3, true, {"chapel": 2})
-	assert_true(int(p.world.bless_runs) >= 1)
+	assert_true(WorldEvents.rumour_pending(p), "kapellet: pilgrimens rykte")
+	assert_eq(int(p.world.get("bless_runs", 0)), bless, "ingen välsignelse längre")
+
+
+func test_merchant_stays_and_sells_one_of_each_until_the_next_descent() -> void:
+	var p := _profile()
+	p.world.merchant = {"grateful": false}
+	p.silver = 500
+	var goods := WorldEvents.merchant_goods(p, _data)
+	assert_true(WorldEvents.merchant_buy(p, _data, "amber"))
+	assert_true(WorldEvents.merchant_here(p), "han stannar efter ett köp")
+	assert_true(WorldEvents.merchant_sold(p, "amber"))
+	assert_true(not WorldEvents.merchant_buy(p, _data, "amber"), "en av varje")
+	assert_eq(int(p.materials[goods.amber]), WorldEvents.MERCHANT_AMBER)
+	# Sparas och läses i Profile.world.
+	assert_eq(p.save(TMP), OK)
+	var q := Profile.load_from(TMP)
+	assert_true(WorldEvents.merchant_here(q) and WorldEvents.merchant_sold(q, "amber") and not WorldEvents.merchant_sold(q, "trick"))
+	assert_true(WorldEvents.merchant_buy(p, _data, "trick"))
+	assert_eq(p.silver, 500 - WorldEvents.MERCHANT_AMBER_PRICE - WorldEvents.MERCHANT_TRICK_PRICE)
+	assert_true(not WorldEvents.merchant_here(p), "allt sålt: han går")
+	# Den tacksamma (karavanen) delar koden: han stannar efter ett köp och går när nästa nedstigning börjar.
+	p.world.merchant = {"grateful": true}
+	assert_true(WorldEvents.merchant_buy(p, _data, "trick"))
+	assert_true(WorldEvents.merchant_here(p))
+	var s := RunState.new_run(p, _data)
+	s.start_expedition(_data, 3)
+	WorldEvents.begin_run(p, s)
+	assert_true(not WorldEvents.merchant_here(p), "han går när paladinen går ned igen")
+
+
+func test_chapel_gift_is_a_rumour_that_shows_the_first_quest_targets() -> void:
+	var p := _profile()
+	p.growth = {"chapel": 1}
+	WorldEvents.after_descent(p, _data, "chapel", "boss", 3, true, {"chapel": 2})
+	assert_true(WorldEvents.rumour_pending(p))
+	assert_true(WorldEvents.rumour_line(p, _data) != "", "kampanjkartans rad")
+	# Vilken Realm som helst: här kryptan.
+	p.realm = "crypt"
+	var s := RunState.new_run(p, _data)
+	s.start_expedition(_data, 11)
+	var targets := s.quest_targets()
+	assert_true(not targets.is_empty())
+	assert_true(not s.active_hints().is_empty(), "före ryktet bara ringar")
+	WorldEvents.begin_run(p, s)
+	assert_true(s.world_rumour)
+	for t in targets:
+		assert_true(s.revealed.has(t), "målet syns genom dimman")
+	assert_true(s.active_hints().is_empty(), "ringarna behövs inte längre")
+	assert_true(not WorldEvents.rumour_pending(p), "förbrukas när körningen börjar")
+	assert_true(RunState.from_dict(s.to_dict()).world_rumour, "sparas med körningen")
+	var s2 := RunState.new_run(p, _data)
+	s2.start_expedition(_data, 11)
+	WorldEvents.begin_run(p, s2)
+	assert_true(not s2.world_rumour and s2.revealed.is_empty(), "bara en körning")
 
 
 func test_merchant_sells_once_and_the_grateful_one_is_cheaper() -> void:
@@ -132,7 +187,7 @@ func test_merchant_sells_once_and_the_grateful_one_is_cheaper() -> void:
 	assert_true(WorldEvents.merchant_buy(p, _data, "amber"))
 	assert_eq(p.silver, 200 - WorldEvents.MERCHANT_AMBER_PRICE)
 	assert_eq(int(p.materials[goods.amber]), WorldEvents.MERCHANT_AMBER)
-	assert_true(not WorldEvents.merchant_here(p), "han går efter ett köp")
+	assert_true(WorldEvents.merchant_here(p), "han stannar efter ett köp")
 	p.world.merchant = {"grateful": true}
 	assert_eq(WorldEvents.merchant_price(p, "trick"), WorldEvents.MERCHANT_TRICK_PRICE / 2)
 

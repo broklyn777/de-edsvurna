@@ -3106,7 +3106,7 @@
 				"key": "gift",
 				"who": "elin",
 				"realm": "chapel",
-				"text": "En pilgrim kom förbi med en välsignelse åt sällskapet och ett par lindor extra. Helarna får en laddning till nästa gång."
+				"text": "En pilgrim kom förbi kapellet utan att någon hindrade honom. Han sitter i värdshuset och har sett något på vägen. Hör vad han säger innan du går ned."
 			},
 			{
 				"id": "ragnhild_gift_chapel_1",
@@ -3114,7 +3114,7 @@
 				"who": "ragnhild",
 				"realm": "chapel",
 				"ref": "Rom. 12:13",
-				"text": "»Varen angelägna om att bevisa gästvänlighet.« Pilgrimen fick soppa och en säng, och vi fick en välsignelse. Rättvist byte."
+				"text": "»Varen angelägna om att bevisa gästvänlighet.« Pilgrimen fick soppa och en säng, och han berättar vad han såg på vägen. Rättvist byte."
 			},
 			{
 				"id": "alrik_ev_start_feast",
@@ -3487,7 +3487,7 @@
 		}
 	},
 	"world": {
-		"_comment": "Den levande världen (WorldEvents, data/world_events.json). ongoing: vad borgens folk säger medan en händelse (event), en följd (cost) eller handelsmannen (merchant) pågår. cost_map: kampanjkartans rad om vad Realmen kostar hemma. cost_on/cost_off/gift/tor: hemkomstens sammanfattning. merchant: handelsmannen på gården.",
+		"_comment": "Den levande världen (WorldEvents, data/world_events.json). ongoing: vad borgens folk säger medan en händelse (event), en följd (cost) eller handelsmannen (merchant) pågår. cost_map: kampanjkartans rad om vad Realmen kostar hemma. cost_on/cost_off/gift/tor: hemkomstens sammanfattning. merchant: handelsmannen på gården (bought: han stannar, sold_out: allt sålt). pilgrim_rumour: pilgrimen i värdshuset när kapellet trycktes tillbaka (ryktet om nästa körnings questmål); pilgrim: pilgrimsskarans välsignelse. rumour_map: kampanjkartans rad om ryktet.",
 		"ongoing": [
 			{
 				"id": "hedda_ongoing_grove",
@@ -3590,9 +3590,9 @@
 			"chapel": "Pilgrimerna kommer igen: Mor Elin har förband."
 		},
 		"gift": {
-			"grove": "En handelsman har kommit genom lunden och väntar på gården.",
+			"grove": "En handelsman har kommit genom lunden och väntar på gården tills ni går ned igen.",
 			"crypt": "Arbetarna hittade bärnsten och silver i kryptan.",
-			"chapel": "En pilgrim gav sällskapet en välsignelse: helarna får en Charge extra nästa körning."
+			"chapel": "En pilgrim sitter i värdshuset: han vet var nästa körnings första mål står, vilken Realm ni än väljer."
 		},
 		"tor": "Tors arbetare skickade en {bärnsten} från kryptan.",
 		"merchant": {
@@ -3601,9 +3601,25 @@
 				"Bärnsten, ädla paladin! Och trick, för den som vet vad den gör. Vägen genom lunden var fri, tack vare er.",
 				"Ni räddade min karavan. Det glömmer jag inte, och inte mina priser heller: halva, för er."
 			],
-			"bought": "Ett gott köp. Jag går vidare innan vägen stängs igen. Lycka till där nere.",
+			"bought": "Ett gott köp. Jag stannar tills ni går ned igen, om ni vill ha mer.",
+			"sold_out": "Nu har jag inget kvar att sälja. Jag går vidare innan vägen stängs igen. Lycka till där nere.",
 			"poor": "Silvret räcker inte, ser jag. Jag väntar en stund till."
 		},
+		"pilgrim_rumour": [
+			{
+				"id": "pilgrim_rumour_1",
+				"text": "Frid åt er. Jag gick genom kapellets dal i natt, och ingen stod i vägen. Det är er förtjänst."
+			},
+			{
+				"id": "pilgrim_rumour_2",
+				"text": "På vägen mötte jag andra som har varit där nere: en gravgrävare, en jägare, en präst som flydde. Jag lyssnade på var och en och ritade det de sade, så gott jag kunde."
+			},
+			{
+				"id": "pilgrim_rumour_3",
+				"text": "Ta det med er nästa gång ni går ned. Vart ni än går ser ni vad ni söker på den första våningen redan från trappan."
+			}
+		],
+		"rumour_map": "Pilgrimens rykte: questens mål på första våningen syns från start.",
 		"pilgrim": "Vi kom förbi kapellet utan att någon hindrade oss. Det är er förtjänst. Ta välsignelsen med er ned; den räcker till ett par extra lindor.",
 		"smith": {
 			"grove": "Nät över handelsvägen genom lunden, så järnet kostar mer. Rensa lunden, så smider jag billigare igen.",

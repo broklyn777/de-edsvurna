@@ -227,8 +227,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   ned, Tor och arbetarna står på gården och skickar ingen bärnsten (annars 1 per hemkomst, `tor_sends`); kapellet = inga
   pilgrimer, helningsförmågorna −1 Charge nästa körning (`heal_charge_mod`, `apply_to_run` i `RunState.new_run`).
   **Gåvor** (en gång när en Realm som stått på 2+ trycks till 0–1, `armed`): lunden = en handelsman på gården (5 bärnsten
-  eller ett trick för silver, `merchant_buy`, stationen "merchant"), kryptan = arbetarna hittar 3 bärnsten + 30 silver,
-  kapellet = en pilgrim i värdshuset, +1 Charge på helningar nästa körning (`bless_runs`). **Händelser** (5 st, tidigast efter
+  och ett trick för silver, en av varje, `merchant_buy`, `merchant_sold`, stationen "merchant"; han stannar tills nästa
+  nedstigning börjar, `begin_run`, eller tills allt är sålt; samma för karavanens tacksamma; `--buy=amber` med
+  `--world-demo --keep`), kryptan = arbetarna hittar 3 bärnsten + 30 silver, kapellet = en pilgrim i värdshuset med ett
+  rykte (`world.rumour`): i nästa körning, vilken Realm som helst, syns den första våningens questmål genom dimman från start
+  (`RunState.apply_rumour`, `world_rumour`; ringarna syns ju redan alltid; `dialog.json` world "pilgrim_rumour", "rumour_map";
+  `--world-demo --map`). Pilgrimsskarans händelse ger fortfarande +1 Charge på helningar (`bless_runs`). **Händelser** (5 st, tidigast efter
   4 nedstigningar, sedan 3–5 mellan starterna, aldrig två samtidigt, `pick_event`, `start`, `after_descent`): Kulten samlas
   till högtid (fäll biskopen; annars +1 steg och biskopen ×1,12 nästa körning, `world_boss_mult`), Spindlarna har tagit en
   karavan (questen; tacksam handelsman eller smedjan +10 % i 3 nedstigningar), Gravklockan ringer (4 strider; en Nether

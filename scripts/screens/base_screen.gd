@@ -159,6 +159,12 @@ func _ready() -> void:
 			_conv.i = clampi(int(arg.get_slice("=", 1)), 0, _conv.lines.size() - 1)  # 0.25: en viss rad i samtalet
 		elif arg == "--rename":
 			_rename()  # namnrutan hos Broder Alrik (0.24.2)
+		elif arg.begins_with("--buy=") and run.dev_profile and WorldEvents.merchant_here(run.profile):
+			# --buy=amber|trick (med --world-demo): ett köp hos handelsmannen, som sedan stannar (skärmdumpar)
+			run.profile.silver = maxi(run.profile.silver, 200)
+			pal = MERCHANT_AT + Vector2(70, 40)
+			_trail.append(pal)
+			_buy(arg.get_slice("=", 1))
 		elif arg.begins_with("--walk="):
 			_go(arg.get_slice("=", 1))  # --walk=<station>: paladinen går dit (för att se gången och raden)
 
@@ -349,9 +355,10 @@ const WORKERS_AT := [Vector2(560, 655), Vector2(650, 680), Vector2(575, 545)]
 const PILGRIM_LINE := "pilgrim"
 
 
-## En pilgrim sitter i värdshuset medan välsignelsen väntar (kapellet trycktes tillbaka eller pilgrimerna kom fram).
+## En pilgrim sitter i värdshuset medan hans rykte (kapellet trycktes tillbaka) eller pilgrimernas välsignelse (de kom
+## fram) väntar på nästa körning.
 func _pilgrim_seat() -> int:
-	if int(run.profile.world.get("bless_runs", 0)) <= 0:
+	if int(run.profile.world.get("bless_runs", 0)) <= 0 and not WorldEvents.rumour_pending(run.profile):
 		return -1
 	var i := _lodgers().size()
 	return i if i < keep.inn_seats.size() else -1
@@ -365,10 +372,23 @@ func _talk_merchant() -> void:
 	_talk("merchant", [String(greet[mini(1 if grateful else 0, greet.size() - 1)])], "merchant", true)
 
 
-## Valen hos en station; handelsmannens med vara och pris.
+## Pilgrimen i värdshuset: ryktet om nästa körnings questmål, annars pilgrimsskarans välsignelse.
+func _talk_pilgrim() -> void:
+	var w: Dictionary = run.data.dialog.get("world", {})
+	var lines: Array = []
+	if WorldEvents.rumour_pending(run.profile):
+		lines = Array(w.get("pilgrim_rumour", [])).map(func(l) -> String: return Dialog.line_text(l))
+	else:
+		lines = [String(w.get("pilgrim", ""))]
+	_talk("pilgrim", lines, "", false)
+
+
+## Valen hos en station; handelsmannens med vara och pris (det han redan har sålt finns inte kvar).
 func _station_options(station: String) -> Array:
 	var opts := Dialog.options(run.data, station)
 	if station == "merchant":
+		opts = opts.filter(func(o: Dictionary) -> bool:
+			return not WorldEvents.merchant_sold(run.profile, String(o.get("open", "")).trim_prefix("buy_")))
 		var goods := WorldEvents.merchant_goods(run.profile, run.data)
 		for o in opts:
 			if o.get("open", "") == "buy_amber":
@@ -385,7 +405,11 @@ func _buy(what: String) -> void:
 	if WorldEvents.merchant_buy(run.profile, run.data, what):
 		run.ui("ui_coins", -10.0)
 		run._save()
-		_talk("merchant", [String(t.get("bought", ""))], "", false)
+		# Han stannar tills nästa nedstigning, med det som finns kvar; när allt är sålt går han.
+		if WorldEvents.merchant_here(run.profile):
+			_talk("merchant", [String(t.get("bought", ""))], "merchant", true)
+		else:
+			_talk("merchant", [String(t.get("sold_out", ""))], "", false)
 	else:
 		run.ui("ui_error", -14.0)
 		_talk("merchant", [String(t.get("poor", ""))], "merchant", true)
@@ -708,7 +732,7 @@ func _tap(p: Vector2) -> void:
 		return
 	var ps := _pilgrim_seat()
 	if ps >= 0 and _v(keep.inn_seats[ps]).distance_to(q) < 50.0:
-		_talk("pilgrim", [String(run.data.dialog.get("world", {}).get("pilgrim", ""))], "", false)
+		_talk_pilgrim()
 		return
 	var party: Array = _followers()
 	for i in party.size():

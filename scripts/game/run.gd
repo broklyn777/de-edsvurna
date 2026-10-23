@@ -323,6 +323,8 @@ func _dev_args() -> void:
 			state.set_realm(data, keep_realm)
 			state.set_growth(data, LivingMap.growth(profile, keep_realm))
 			state.start_expedition(data, 7)
+			if WorldEvents.rumour_pending(profile):
+				state.apply_rumour()  # pilgrimens rykte (--world-demo), utan att förbruka det
 			get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
 		elif arg.begins_with("--encounter="):
 			# --encounter=<möte> (0.27): en övningsstrid mot det mötet, t.ex. crypt_e5 (Klockstapeln)
@@ -418,7 +420,7 @@ func _dev_args() -> void:
 				profile.descents[r] = maxi(int(profile.descents.get(r, 0)), 1)
 			profile.growth = {"crypt": 3, "chapel": 1, "grove": 3}
 			profile.world.merchant = {"grateful": false}
-			profile.world.bless_runs = 1
+			profile.world.rumour = true  # pilgrimens rykte (kapellet trycktes tillbaka)
 		elif arg == "--chronicle":
 			get_tree().change_scene_to_file.call_deferred(CHRONICLE_SCENE)  # krönikan och titlarna hos Broder Alrik
 		elif arg == "--descents":
