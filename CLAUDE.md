@@ -275,6 +275,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   **Det här avgjorde striden** (0.30, byggets fingeravtryck, `BattleSummary.deciders`): segerskärmen visar till vänster
   upp till fyra delar av sällskapets bygge som bar striden, med källan (TROFÉ, KALL, ARTEFAKT, EGEN, KOMBINATION) och vad
   de gjorde (`CombatSim.trait_stats`, `combo_stats`); kallet räknas en gång under Paladinen. Samma urval är kvittot vid lägret.
+  Andra halvan (0.30.16): tryck på en TROFÉ-rad så visas upp till fyra ägda troféer som kunde ta dess plats
+  (`BattleSummary.alternatives`: samma roll, utlösare, sällsynthet; körningens troféer, i Övningsgården samlingen), med
+  vem som bär dem; `--alt-open` öppnar listan för skärmdumpar. Plan för Löften per nedstigning: `docs/plan/loften.md`.
   Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.

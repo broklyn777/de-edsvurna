@@ -990,6 +990,23 @@ func _on_damage(e: Dictionary) -> void:
 
 ## 0.30: en förmåga slog hårdare tack vare en status som en annan satte (introts kombination: Rökpil gör fienden
 ## Förblindad, Rättfärdigt slag +50 %). Ett guldord ovanför målet, och första gången en ruta med orsak och verkan.
+## 0.30.16: för varje TROFÉ-rad på segerskärmen, troféerna man äger i körningen som kunde ta dess plats.
+func _decider_alternatives(rows: Array) -> Dictionary:
+	var out := {}
+	var names := {}
+	for h in sim.heroes:
+		names[h.id] = h.name
+	for i in rows.size():
+		if rows[i].tag != "TROFÉ" or not rows[i].has("id"):
+			continue
+		# I en körning byts troféer bland körningens (vid en lägereld); i Övningsgården väljer man ur hela samlingen.
+		var owned: Array = run.profile.collection if run.state.practice else run.state.trophies
+		var list := BattleSummary.alternatives(data, rows[i].id, owned, run.state.equipped, names)
+		if not list.is_empty():
+			out[i] = list
+	return out
+
+
 func _on_combo(e: Dictionary) -> void:
 	var c: Dictionary = e.calc.combo
 	_float(e.target, "KOMBINATION!", UiStyle.GOLD, 22, true)
@@ -1086,6 +1103,11 @@ func _on_outcome(result: String) -> void:
 		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
 		# 0.30: det som avgjorde striden står till vänster, med vilken del av bygget det kom ifrån.
 		overlay.deciders = BattleSummary.deciders(sim)
+		overlay.alternatives = _decider_alternatives(overlay.deciders)
+		if run.state.practice:
+			overlay.alt_hint = "Byt troféer i Övningsgården."
+		if "--alt-open" in OS.get_cmdline_user_args() and not overlay.alternatives.is_empty():
+			overlay.alt_open = overlay.alternatives.keys()[0]  # skärmdumpar av listan
 		# 0.19: erfarenhet och nivåuppgångar syns och hörs på segerskärmen.
 		overlay.level_ups = run.award_battle(sim, true)
 		if not overlay.level_ups.is_empty():

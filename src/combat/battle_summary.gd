@@ -20,14 +20,14 @@ static func deciders(sim: CombatSim, n := 4) -> Array:
 		var who: String = sim.heroes[0].name if src == "KALL" else u.name
 		var key := "%s|%s|%s" % [t.get("name", trait_id), src, who]
 		var g: Dictionary = groups.get(key, {"name": String(t.get("name", trait_id)), "tag": src, "who": who,
-				"damage": 0.0, "heal": 0.0, "procs": 0})
+				"damage": 0.0, "heal": 0.0, "procs": 0, "id": trait_id})
 		g.damage += st.damage
 		g.heal += st.heal
 		g.procs += st.procs
 		groups[key] = g
 	var rows: Array = []
 	for g in groups.values():
-		rows.append({"name": g.name, "tag": g.tag, "who": g.who, "text": _amounts(g.damage, g.heal, g.procs),
+		rows.append({"name": g.name, "tag": g.tag, "who": g.who, "id": g.id, "text": _amounts(g.damage, g.heal, g.procs),
 				"score": g.damage + g.heal * 1.2 + g.procs * 5.0})
 	for ability_id in sim.combo_stats:
 		var c: Dictionary = sim.combo_stats[ability_id]
@@ -38,6 +38,61 @@ static func deciders(sim: CombatSim, n := 4) -> Array:
 				"score": c.extra * 1.5 + c.count * 8.0})
 	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.score > b.score)
 	return rows.slice(0, n)
+
+
+## Fingeravtryckets andra halva (0.30.16): troféer man äger som kunde ta en trofés plats, bäst först. Lika roll (skada,
+## helning, skydd, kontroll) väger tyngst, sedan samma utlösare och samma sällsynthet. [{id, name, text, wearer}], högst n.
+## owned: troféerna man kan byta till (körningens); worn: hero_id -> trophy_id; names: hero_id -> namn.
+static func alternatives(data: Dictionary, trait_id: String, owned: Array, worn: Dictionary, names: Dictionary, n := 4) -> Array:
+	var t: Dictionary = data.traits.get(trait_id, {})
+	var mine := roles(t)
+	var scored: Array = []
+	for other in owned:
+		if other == trait_id or not data.traits.has(other):
+			continue
+		var o: Dictionary = data.traits[other]
+		var score := 0.0
+		for r in roles(o):
+			if mine.has(r):
+				score += 3.0
+		if o.get("trigger", "") == t.get("trigger", "-"):
+			score += 2.0
+		if o.get("rarity", "common") == t.get("rarity", "common"):
+			score += 1.0
+		var wearer := ""
+		for hero_id in worn:
+			if worn[hero_id] == other:
+				wearer = String(names.get(hero_id, hero_id))
+		if wearer == "":
+			score += 0.5  # en trofé som ingen bär är lättast att prova
+		scored.append({"id": other, "name": String(o.get("name", other)), "text": String(o.get("text", "")),
+				"wearer": wearer, "score": score})
+	scored.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return a.score > b.score or (a.score == b.score and a.name < b.name))
+	return scored.slice(0, n)
+
+
+## Vad en egenskap gör, grovt: "skada", "helning", "skydd", "kontroll".
+static func roles(t: Dictionary) -> Array:
+	var out: Array = []
+	var trig := String(t.get("trigger", ""))
+	if trig == "modify_damage":
+		out.append("skada")
+	if trig in ["modify_damage_taken", "convert_damage"]:
+		out.append("skydd")
+	if t.has("modify_heal"):
+		out.append("helning")
+	for e in t.get("effects", []):
+		match String(e.get("type", "")):
+			"damage", "cast":
+				out.append("skada")
+			"heal", "revive":
+				out.append("helning")
+			"barrier":
+				out.append("skydd")
+			"aura":
+				out.append("skydd" if String(e.get("target", "")) in ["self", "allies", "weakest_ally"] else "kontroll")
+	return out
 
 
 ## Var en egenskap kommer ifrån: TROFÉ, KALL, ARTEFAKT eller EGEN.
