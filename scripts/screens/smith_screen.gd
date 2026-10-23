@@ -599,7 +599,7 @@ func _draw_socket(data: Dictionary, art: Dictionary, s: Dictionary, level: int) 
 		var kind := "amber" if s.kind == "stat" else "trick"
 		GemArt.draw_find(self, data, {"kind": kind, "id": cur, "count": 1}, c, 18.0, _t)
 		name = _short(ArtifactText.material_name(data, cur))
-	UiStyle.text(self, c + Vector2(-56, SOCKET_R + 20), name, 15, Color(1, 1, 1, 0.85 if open else 0.45),
+	UiStyle.text(self, c + Vector2(-56, SOCKET_R + 20), UiStyle.fit(name, 15, 112), 15, Color(1, 1, 1, 0.85 if open else 0.45),
 			HORIZONTAL_ALIGNMENT_CENTER, 112, 2)
 
 
