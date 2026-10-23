@@ -204,6 +204,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   fann ett dödläge mot Asketen). **Svårighetskurvan** (`SOAK=karriar` i `tests/soak.gd` på testgrenen,
   `docs/provspel/svarighetskurva.md`): en profil genom 18 nedstigningar; djup 1 är en platå, taket kommer vid djup 6–7.
   Våning 1:s elitgrupp och Nemesis ×0,80 för högst två hjältar (`RunState.SMALL_PARTY_ELITE`, andra nedstigningen 26 → 41 %).
+  **Balanserat mot fyra** (0.30.21, VD): `PARTY_SCALE` och mildringen ovan gäller bara när profilen äger färre än fyra hjältar
+  (`RunState.owned_heroes`); den som har fyra och går med färre möter samma fiender som mot fyra (`full_party`), en bedrift.
 - **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
   namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
   (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.

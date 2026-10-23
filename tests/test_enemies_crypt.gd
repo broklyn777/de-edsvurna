@@ -242,3 +242,22 @@ func test_small_party_meets_a_milder_first_floor_elite() -> void:
 	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), RunState.SMALL_PARTY_ELITE, 1e-6)
 	s.party.assign(["paladin", "imma", "alva"])
 	assert_near(float(s.battle_opts().get("stat_bonus", 1.0)), 1.0, 1e-6, "tre hjältar möter eliten som vanligt")
+
+
+## 0.30.21 (VD): den som äger fyra hjältar och går med färre möter fiender som mot fyra.
+func test_owning_four_heroes_means_full_strength_enemies() -> void:
+	var s := RunState.new()
+	s.set_realm(_data, "crypt")
+	s.party.assign(["paladin", "imma"])
+	s.fill_charges(_data)
+	s.start_expedition(_data, 5)
+	s.first_descent = false
+	s.pos = s.map.indices("elite")[0]
+	s.owned_heroes = 4
+	var opts := s.battle_opts()
+	assert_true(opts.get("full_party", false))
+	assert_near(float(opts.get("stat_bonus", 1.0)), 1.0, 1e-6, "ingen mildring för små sällskap")
+	var full := CombatSim.create(_data, "crypt_1", 3, ["paladin", "imma"], {}, {}, {}, 1, {"full_party": true})
+	var small := CombatSim.create(_data, "crypt_1", 3, ["paladin", "imma"], {}, {}, {}, 1, {})
+	assert_true(full.enemies.size() >= small.enemies.size(), "lika många fiender som mot fyra")
+	assert_true(full.enemies[0].max_hp > small.enemies[0].max_hp, "fullstarka fiender")
