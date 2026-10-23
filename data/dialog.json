@@ -2304,5 +2304,84 @@
 		"hedda_no_slot": "Ditt svärd har ingen plats än. Höj det till nivå 2, så öppnar jag den första. Det kostar silver, som allt annat här.",
 		"hedda_slot": "Ditt svärd har en ledig plats. Välj \"Sätt in bärnsten och trick\", så visar jag.",
 		"hedda_reward": "Här. {belöning} silver för att du tog hem det i stället för att sälja det på vägen."
+	},
+	"living_map": {
+		"_comment": "Den levande kartan (prov, LivingMap): högst en replik efter hemkomsten, för den viktigaste ändringen. Imma om hon är rekryterad, annars Gorm. {plats} = kryptan/kapellet/lunden, {folk} = Benfolket …",
+		"imma": {
+			"rise": [
+				{
+					"id": "imma_map_rise_1",
+					"text": "Medan vi var borta har {folk} flyttat fram. Jag ser det på kartan. Typ."
+				},
+				{
+					"id": "imma_map_rise_2",
+					"text": "Sven säger att det luktar värre från {plats} nu. Han säger mycket, men ändå."
+				}
+			],
+			"warn": [
+				{
+					"id": "imma_map_warn_1",
+					"text": "Det är något med {plats}, {namn}. Som när det blir för tyst i skogen."
+				},
+				{
+					"id": "imma_map_warn_2",
+					"text": "Vi har lämnat {plats} för länge. Jag vill inte vara den som säger det, men jag säger det."
+				}
+			],
+			"wake": [
+				{
+					"id": "imma_map_wake_1",
+					"text": "Arbetarna vägrar gå ned i {plats}. Jag skämtar inte om det här, {namn}."
+				}
+			],
+			"calm": [
+				{
+					"id": "imma_map_calm_1",
+					"text": "Där nere andas folk lite lättare nu. Tack vare oss. Mest dig. Lite mig."
+				},
+				{
+					"id": "imma_map_calm_2",
+					"text": "{folk} drog sig undan. Vi borde fira. Med äppelkaka."
+				}
+			],
+			"calm_twisted": [
+				{
+					"id": "imma_map_calm_twisted_1",
+					"text": "Det där i {plats} … jag drömmer nog om det ett tag. Men det är borta."
+				}
+			]
+		},
+		"gorm": {
+			"rise": [
+				{
+					"id": "gorm_map_rise_1",
+					"text": "Fördärvet väntar inte på oss, {namn}. I {plats} växer det medan vi är på annat håll."
+				}
+			],
+			"warn": [
+				{
+					"id": "gorm_map_warn_1",
+					"text": "{plats} har fått vara i fred för länge. Gå dit snart, annars vaknar något som inte borde."
+				}
+			],
+			"wake": [
+				{
+					"id": "gorm_map_wake_1",
+					"text": "Något har vaknat i {plats}. Det är ingen skam att vänta, men det väntar inte på dig."
+				}
+			],
+			"calm": [
+				{
+					"id": "gorm_map_calm_1",
+					"text": "Bra. {folk} har dragit sig tillbaka. Det håller inte för evigt, men det håller en tid."
+				}
+			],
+			"calm_twisted": [
+				{
+					"id": "gorm_map_calm_twisted_1",
+					"text": "Det som vaknade är slaget. Skriv ned vad du såg, {namn}. Allt."
+				}
+			]
+		}
 	}
 }

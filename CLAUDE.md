@@ -187,6 +187,20 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (helningsförmågor går inte att välja, `CombatSim.no_heal`, orsaken "vowed"; Paladinens attacker helar 20 %), Raka vägen
   (högst två vanliga grupper per våning; questens silver dubbelt). Botarna: `BALANS=loften`. `--vow=<id>` före `--map`,
   `--vows` öppnar valet på kampanjkartan.
+- **Den levande kartan** (prov, grenen `levande-karta`, `docs/plan/levande-karta.md`, `src/game/living_map.gd`; avviker från
+  Siralim): varje Realm man har gått ned i har ett fördärv 0–4 (`Profile.growth`, start 1, `growth_rest`, `growth_news`).
+  Efter en nedstigning med minst en vunnen strid (`Run.end_descent`, `LivingMap.after_descent`; inte första nedstigningen)
+  sjunker den Realm man gick till (2 steg om Realm Quest klarades, `RunState.realm_quest_done`, annars 1) och den besökta
+  Realm som legat orörd längst växer 1 (`growth_last`; vårt val, alla andra växte för fort med tre Realms); en Realm som
+  når 0 vilar en nedstigning. Steg 0–1 är dagens strider; steg 2–3 fiender +2/+4 % (`RunState.battle_opts`,
+  `LivingMap.stat_mult`, steg 4 = steg 3), bättre troféchans och fynd (`Forge.roll_finds` `growth`). Steg 4 står still
+  tills man går dit; i kryptan vaknar Den svärtade Benfursten (`crypt_twisted`, `bone_lich_black`, `twisted`, trofén Svärtad
+  krona ges direkt). Kampanjkartan visar det utan siffror: tätare bläck, svarta stänk över ramen, fiendens eldar, ett rött
+  sigill på steg 4, en rad före avfärd (`departure_line`, varning på steg 3) och rutan "Medan ni var borta" efter hemkomsten
+  med högst en replik (Imma, annars Gorm; `dialog.json` "living_map"). Flaggor: `--growth=crypt:3,chapel:1`,
+  `--growth-home=chapel[:quest]` (som efter en hemkomst), `--twisted` (strid mot den förvridna bossen). Botarna:
+  `BALANS=levande` (vinst per steg), `SOAK=karriar` skriver kartans läge (`LEVANDE=av`, `KARRIAR_REALM=lagst|hogst`).
+  Tester: `tests/test_living_map.gd`.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,

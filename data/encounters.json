@@ -1137,5 +1137,20 @@
 		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Två som skördar"
+	},
+	"crypt_twisted": {
+		"name": "Den svärtade salen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bone_lich_black",
+			"skeleton_warrior",
+			"grave_priest"
+		],
+		"stat_mult": 1.02
 	}
 }

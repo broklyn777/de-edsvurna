@@ -3294,5 +3294,59 @@
 		"modify": {
 			"damage_mult": 0.85
 		}
+	},
+	"black_marrow": {
+		"name": "Svart märg",
+		"enemy": true,
+		"text": "När någon annan i hans följe faller får den svärtade Benfursten en Barriär för 8 % av sitt max liv.",
+		"trigger": "death",
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "health",
+				"pct": 0.08,
+				"target": "self"
+			}
+		]
+	},
+	"black_crown": {
+		"combo": {
+			"needs": "ally_death",
+			"creates": "damage",
+			"scope": "enemies"
+		},
+		"name": "Svärtad krona",
+		"trophy": true,
+		"rarity": "boss",
+		"text": "När någon i sällskapet faller sveper bäraren fienderna med Benstorm (gratis), men bärarens helningar är 25 % svagare.",
+		"answers": "Grupper som fäller en hjälte tidigt",
+		"trigger": "death",
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "cast",
+				"ability": "bone_storm"
+			}
+		],
+		"parts": [
+			"black_crown_cost"
+		]
+	},
+	"black_crown_cost": {
+		"name": "Svärtad krona (kostnad)",
+		"hidden": true,
+		"text": "Bärarens helningar är 25 % svagare.",
+		"trigger": "modify_heal",
+		"when": {
+			"source": "self"
+		},
+		"modify": {
+			"heal_mult": 0.75
+		}
 	}
 }

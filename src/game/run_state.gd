@@ -124,6 +124,12 @@ var first_descent := false
 var joins_next := ""
 ## 0.23: fångar på våningarna, floor (som text) -> {hero, first}. Den första är tidig och obevakad.
 var prisoners := {}
+## Den levande kartan (prov, LivingMap): Realmens fördärv 0–4 när körningen började, och den förvridna bossens möte
+## ("" om den inte har vaknat). Vunna strider i körningen och om den sista våningens quest (Realm Quest) är klar.
+var growth := LivingMap.GROWTH_START
+var twisted := ""
+var wins := 0
+var realm_quest_done := false
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -135,6 +141,7 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.artifacts = profile.artifacts.duplicate(true)
 	s.depth = profile.depth
 	s.set_realm(data, profile.realm)
+	s.set_growth(data, LivingMap.growth(profile, profile.realm))
 	s.fill_charges(data)
 	if profile.intro_done:
 		s.set_vow(data, profile.vow)
@@ -213,6 +220,17 @@ func set_realm(data: Dictionary, realm_id: String) -> void:
 	if data.get("realms", {}).has(realm_id):
 		realm = realm_id
 		floor_ids = data.realms[realm_id].floors
+
+
+## Den levande kartan: Realmens fördärv för körningen. På steg 4 tar den förvridna bossen den vanligas plats.
+func set_growth(data: Dictionary, g: int) -> void:
+	growth = clampi(g, 0, LivingMap.GROWTH_MAX)
+	twisted = ""
+	var enc := LivingMap.twisted_encounter(data, realm)
+	if growth >= LivingMap.GROWTH_MAX and enc != "" and data.encounters.has(enc):
+		floor_ids = floor_ids.duplicate()
+		floor_ids[floor_ids.size() - 1] = enc
+		twisted = enc
 
 
 func encounter() -> String:
@@ -295,6 +313,11 @@ func silver_mult(data: Dictionary) -> float:
 func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = [],
 		unlocked_bosses: Array = []) -> Array[String]:
 	var sure: Array[String] = []
+	# Den levande kartan: den förvridna bossen lämnar alltid sin trofé (den visar sig bara på steg 4).
+	for kind in CombatSim.enemy_lineup(data, data.encounters[encounter()].enemies, party.size()):
+		var tt: String = data.enemies[kind].get("trophy", "")
+		if data.enemies[kind].get("twisted", false) and tt != "" and not trophies.has(tt):
+			sure.append(tt)
 	for kind in elites:
 		var t: String = data.enemies[kind].get("elite", {}).get("trophy", "")
 		if t != "" and not sure.has(t) and not trophies.has(t):
@@ -320,7 +343,7 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = 
 	while offer.size() < OFFER_SIZE and not rest.is_empty():
 		offer.append(rest.pop_at(rng.randi() % rest.size()))
 	var out: Array[String] = sure.duplicate()
-	var chance := trophy_chance(depth, instability)
+	var chance := minf(1.0, trophy_chance(depth, instability) + LivingMap.trophy_bonus(growth))
 	var first := true
 	for t in offer.slice(0, OFFER_SIZE):
 		if first or rng.randf() < chance:
@@ -690,6 +713,11 @@ func battle_opts() -> Dictionary:
 		opts.full_party = true
 	elif not first_descent and party.size() <= 2 and floor == 0 and (r.get("elite", false) or r.get("nemesis", false)):
 		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * SMALL_PARTY_ELITE
+	# Den levande kartan: Realmens fördärv (steg 2–4) gör alla grupper starkare, som en mildare instabilitet.
+	var grown := LivingMap.stat_mult(growth)
+	if grown != 1.0 and not first_descent:
+		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * grown
+		opts.growth = growth
 	return opts
 
 
@@ -716,6 +744,7 @@ func battle_won() -> bool:
 	next_rules.clear()
 	next_stat_mult = 1.0
 	r.beaten = true
+	wins += 1
 	var before: bool = quest.get("done", false)
 	if r.get("nemesis", false) and quest.get("type", "") == "hunt":
 		_quest_step()
@@ -740,6 +769,8 @@ func _quest_step() -> void:
 	quest.progress = mini(int(quest.progress) + 1, int(quest.goal))
 	if quest.progress >= quest.goal:
 		quest.done = true
+		if is_last_floor():
+			realm_quest_done = true
 
 
 ## Sant när våningen är klar: bossen besegrad, eller trappan nådd med questen klar.
@@ -1020,7 +1051,8 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
-		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken"]
+		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken", "growth", "twisted",
+		"wins", "realm_quest_done"]
 
 
 func to_dict() -> Dictionary:

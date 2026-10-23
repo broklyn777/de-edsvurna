@@ -159,6 +159,8 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		state.set_vow(data, opts.vow)  # 0.30.17: löftet för hela körningen
 	if opts.has("recruited"):
 		state.place_prisoners(data, opts.recruited)  # 0.23: botarna befriar lärjungar som i spelet
+	if opts.has("growth"):
+		state.set_growth(data, int(opts.growth))  # den levande kartan: Realmens fördärv (steg 4 = den förvridna bossen)
 	state.start_expedition(data, seed_value)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value * 13 + 5
@@ -192,7 +194,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
@@ -217,7 +219,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.vow_after_battle(data, result.sim)
 			if opts.has("finds"):
 				_count_finds(finds, Forge.roll_finds(data, "boss" if r.get("boss", false) else RunState.fight_kind(r), depth,
-						opts.finds, state.instability, loot_rng))
+						opts.finds, state.instability, loot_rng, 0, state.growth))
 			state.store_charges(result.sim)
 			if opts.get("grow", false):
 				var xp := HeroStats.battle_xp(RunState.fight_kind(r), depth, r.get("boss", false))

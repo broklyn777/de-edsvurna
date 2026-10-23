@@ -94,7 +94,11 @@
 				"depth": 3,
 				"floor": 1
 			}
-		]
+		],
+		"growth": {
+			"folk": "Benfolket",
+			"twisted": "crypt_twisted"
+		}
 	},
 	"chapel": {
 		"name": "Det fördärvade kapellet",
@@ -179,7 +183,10 @@
 				"depth": 2,
 				"floor": 2
 			}
-		]
+		],
+		"growth": {
+			"folk": "Kultens folk"
+		}
 	},
 	"grove": {
 		"name": "Sidenlunden",
@@ -237,6 +244,9 @@
 			"zoom_image": "graskogen"
 		},
 		"style": "grove",
-		"disciples": []
+		"disciples": [],
+		"growth": {
+			"folk": "Spindelfolket"
+		}
 	}
 }
