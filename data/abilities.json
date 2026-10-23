@@ -767,16 +767,13 @@
 		]
 	},
 	"lullaby": {
-		"name": "Dvalgift",
+		"name": "Vaggvisa",
 		"target": "enemy",
-		"pick": "lowest",
-		"pick_aura": "snared",
 		"kind": "spell",
-		"school": "shadow",
-		"anim": "Spell_Simple_Shoot",
-		"cooldown": 3,
-		"sound": "shadow_hit",
-		"text": "Ett bedövande gift: en Snärjd somnar (tills den tar skada).",
+		"charges": 5,
+		"icon": "diamond",
+		"button_color": "#9fd3ff",
+		"text": "En fiende somnar i högst 2 turer (vaknar av skada).",
 		"effects": [
 			{
 				"type": "aura",
@@ -1830,6 +1827,25 @@
 			{
 				"type": "revive",
 				"pct": 0.4
+			}
+		]
+	},
+	"weaver_venom": {
+		"name": "Dvalgift",
+		"target": "enemy",
+		"pick": "lowest",
+		"pick_aura": "snared",
+		"kind": "spell",
+		"school": "shadow",
+		"anim": "Spell_Simple_Shoot",
+		"cooldown": 3,
+		"sound": "shadow_hit",
+		"text": "Ett bedövande gift: en Snärjd somnar (tills den tar skada).",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sleeping",
+				"duration": 2
 			}
 		]
 	}

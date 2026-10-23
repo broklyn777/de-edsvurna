@@ -164,7 +164,7 @@ func test_weaver_puts_the_snared_to_sleep() -> void:
 	assert_true(not alva.auras.has("sleeping"), "och vaknar av nästa träff")
 
 
-func test_old_knot_snares_the_top_hero_and_carries_arachnophobia() -> void:
+func test_old_knot_strangles_the_top_hero_and_carries_arachnophobia() -> void:
 	var sim := _sim("grove_e3", {}, {"counter": true})  # Strypvävaren, Gifttand, Dammspindel
 	var knot := _enemy(sim, "old_knot")
 	sim.order.assign(sim.units.map(func(u: CombatUnit) -> String: return u.id))
@@ -175,9 +175,10 @@ func test_old_knot_snares_the_top_hero_and_carries_arachnophobia() -> void:
 			top = id
 			break
 	sim._emit({"type": "turn_start", "unit": knot.id})
-	assert_true(sim.unit(top).auras.has("snared"), "den överst på tidslinjen snärjs")
+	assert_true(sim.unit(top).auras.has("bleeding"), "den överst på tidslinjen stryps (0.30.25: Blöder, ingen snara)")
 	var venom := _enemy(sim, "venom_spider")
 	var hero := sim.unit(top)
+	sim._add_aura(venom, hero, "snared")
 	sim.drain_events()
 	sim._deal_damage(venom, hero, 5.0, "nature", "poisoned", false, false, "indirect")
 	var dmg: Array = sim.drain_events().filter(func(e: Dictionary) -> bool: return e.type == "damage")
@@ -194,10 +195,13 @@ func test_web_mother_poisons_whoever_breaks_free() -> void:
 	sim._remove_aura(eira, "poisoned", "test")  # Gifttanden förgiftade redan när hon snärjdes
 	sim._remove_aura(eira, "snared", "expired")
 	assert_true(not eira.auras.has("poisoned"), "när snaran tar slut: inget gift")
+	sim._remove_aura(eira, "unbound", "test")  # 0.30.25: Fri efter snaran skyddar annars mot nästa
 	sim._add_aura(mother, eira, "snared")
 	sim._remove_aura(eira, "poisoned", "test")
 	sim._remove_aura(eira, "snared", "broke_free")
 	assert_true(eira.auras.has("poisoned"), "den som sliter sig loss förgiftas")
+	for h in sim.heroes:
+		sim._remove_aura(h, "unbound", "test")
 	sim._apply_effects(mother, "cocoon_storm", sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).map(
 			func(h: CombatUnit) -> String: return h.id))
 	assert_true(sim.heroes.all(func(h: CombatUnit) -> bool: return not h.alive or h.auras.has("snared")), "Kokongstormen snärjer alla")

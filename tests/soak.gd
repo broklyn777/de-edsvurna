@@ -437,6 +437,36 @@ func _use_object() -> void:
 
 # --- Striden -------------------------------------------------------------------
 
+## 0.30.25: en levande hjälte som inte har fått agera på fyra varv är låst av kontroll (Snärjd, Sover, Frusen i kedja;
+## provspelet i Sidenlunden). Rapporteras en gång per strid.
+func _check_control(sim: CombatSim, events: Array, acted: Dictionary, encounter: String) -> void:
+	# En tur räknas när hjälten fick välja (även Hoppa över tur), inte när en status tog den.
+	var prev := {}
+	for e in events:
+		var u := sim.unit(e.get("unit", ""))
+		if u == null or u.team != 0:
+			continue
+		if e.type in ["turn_start", "revive"]:
+			prev[u.id] = acted.get(u.id, sim.turn_no)
+			acted[u.id] = sim.turn_no
+		elif e.type == "status_skip" and prev.has(u.id):
+			acted[u.id] = prev[u.id]
+	if acted.get("_reported", false):
+		return
+	var alive := sim.units.filter(func(u: CombatUnit) -> bool: return u.alive).size()
+	for h in sim.heroes:
+		if not h.alive:
+			continue
+		if not acted.has(h.id):
+			acted[h.id] = sim.turn_no
+		var idle: int = sim.turn_no - int(acted[h.id])
+		if idle > maxi(4 * alive, 16):
+			acted["_reported"] = true
+			_fail("kontroll", "%s har inte fått agera på %d turer i %s (statusar %s)" % [h.id, idle, encounter,
+					", ".join(h.auras.keys())])
+			return
+
+
 func _fight() -> void:
 	state.fight()
 	if not state.battle_pending:
@@ -461,6 +491,7 @@ func _fight() -> void:
 			state.charges, state.artifacts, state.depth, opts)
 	sim.begin()
 	var guard := 0
+	var acted := {}  # 0.30.25: när varje hjälte senast agerade (kedjad kontroll)
 	var forfeit_ok: bool = pick.randf() < 0.03 and not cfg.get("no_forfeit", false)
 	while sim.outcome == "" and guard < MAX_BATTLE_STEPS:
 		guard += 1
@@ -472,7 +503,7 @@ func _fight() -> void:
 				break
 			_hero_turn(sim)
 		_check_battle(sim)
-		sim.drain_events()
+		_check_control(sim, sim.drain_events(), acted, state.encounter())
 	if sim.outcome == "":
 		var who := ", ".join(sim.units.map(func(u: CombatUnit) -> String:
 				return "%s %s/%s%s" % [u.id, str(snappedf(u.hp, 0.1)), str(snappedf(u.max_hp, 0.1)), "" if u.alive else " död"]))

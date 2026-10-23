@@ -2751,9 +2751,9 @@
 	"spider_snare": {
 		"name": "Fästtråd",
 		"enemy": true,
-		"text": "Bettet snärjer målet i 2 turer (50 %).",
+		"text": "Bettet snärjer målet i 2 turer (25 %).",
 		"trigger": "damage",
-		"chance": 0.5,
+		"chance": 0.25,
 		"when": {
 			"source": "self",
 			"direct": true,
@@ -2894,15 +2894,21 @@
 	"knot_end": {
 		"name": "Trådens slut",
 		"enemy": true,
-		"text": "I början av sin tur snärjer Strypvävaren den hjälte som står överst på tidslinjen.",
+		"text": "I början av sin tur stryper Strypvävaren den hjälte som står överst på tidslinjen (skada och Blöder).",
 		"trigger": "turn_start",
 		"when": {
 			"unit": "self"
 		},
 		"effects": [
 			{
+				"type": "damage",
+				"power": 0.5,
+				"kind": "attack",
+				"target": "top_enemy"
+			},
+			{
 				"type": "aura",
-				"aura": "snared",
+				"aura": "bleeding",
 				"duration": 2,
 				"target": "top_enemy"
 			}
