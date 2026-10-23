@@ -1,41 +1,42 @@
-# Troféerna – ChatGPT med prompten CHAT-JOBB-P (2026-10-23), med bedömning
+# Troféerna – ChatGPT med prompten CHAT-JOBB-P (2026-10-22), med bedömning
 
-Underlag, inte bestämt.
+Underlag, inte bestämt. Claude-chattens svar på samma jobb: `claude-kreativ-troféer.md`.
 
-## De trettio (rubriker)
-- **Långt från spel:** Lapptäcket (när-halva + vad-halva sys ihop), Surdegen (trofén får en andra rad efter familjerna man
-  mött), Ympningen (trofén på egen egenskap), Omkvädet (familjemönster i laget ger en refräng), Gåvan till byn, Successionen.
-- **Vända på regler:** Bördan (rena nackdelar som blir motorer), Fienden tar den, Ärret (rad som bara uppstår av förlust),
-  Lockbetet, Den tomma platsen (lånar trofén från senast fallna fiende), Den sparade.
-- **Relationer:** Grannen bär den, Samvetet, Familjen känner igen, Rivaliteten (troll anfaller spindlar först), Arvet, Ryktet.
-- **Telefonen:** Dag och natt, Medan du var borta, Fotot, Draget hemåt, Haptiken, Ett pass ett val.
-- **Fria:** Grammatiken, Den enda (trofén tas bort ur familjen på kartan), Krocken (motsägande troféer föder en tredje
-  regel), Spegeln, Ledtrådstavlan (gåta i stället för siluett), Eden (lås trofén med en ed).
+## Urval ur de trettio
+- **01 Synliga sömmar:** varje trofé visar ingång och utgång som verb ("väcker → flyttar"); dra en söm mellan två troféer
+  och förhandsse kedjan.
+- **04 Smaka av:** vid lägerelden provkör man ett samspel på en övningsdocka, med stridens logg, utan Charges.
+- **06 Låna grannens verktyg:** två hjältar byter troféer för nästa strid och får tillbaka dem efteråt.
+- **10 Nederlaget som ritning:** efter en förlust visas en ägd trofé som hade ändrat den avgörande händelsen.
+- **25 Trofén bär sin egen ledtråd** och **26 Frivilligt jaktvillkor:** besegra gruppen efter att ha brutit dess
+  skyddsregel för ett garanterat exemplar.
+- **29 Döp upptäckten:** spara ett lag (bärare, troféer, makrorader) som ett återställbart recept.
+- **30 Minneshyllan:** en avlagd trofé minns sin senaste fungerande kombination.
 
 ## ChatGPT:s fem bästa
-- **A. Lapptäcket:** Spindelns "när en fiende flyttas i turordningen" + Trollets "läk den som står sist".
-- **B. Den sparade:** De fallna ger upp nära döden; låt dem gå och få en annan, stillsammare regeltrofé (Ånger i stället för Svärdsarm).
-- **C. Den enda:** egenskapen försvinner ur familjen på kartan (Benfolket utan Benbron korsar inte floder). **ChatGPT:s satsning.**
-- **D. Krocken:** "agerar alltid först" + "agerar alltid sist" → två gånger med halv kraft; en krocklista i samlingen.
-- **E. Grannen bär den:** trofén verkar på hjälten bredvid.
+- **A. Fienden visar regeln, trofén ger den vidare** (25 + 26). **ChatGPT:s satsning.** Vävväktaren flyttar en kamrats
+  Snared till sig själv; dess trofé låter paladinen göra samma sak för att befria bågskytten.
+- **B. Synliga sömmar** (01, 27).
+- **C. Negativ status som lagets arbetsuppgift** (09, 14): ta över en snara, byt tidslinjeplats med den befriade.
+- **D. Låna grannens verktyg för en strid** (06, 28).
+- **E. Känn igen sin upptäckt efter ett avbrott** (13, 20, 23): ett minneskort med den kedja som fungerade.
 
 ## Tio troféer (förslag)
-Benbron (skelett står kvar en runda och tar nästa anfall), Lånta ögon (se fiendens drag, byt plats en gång), Tunga fötter
-(agerar sist, slutet av rundan två gånger), Nätväverskans tråd (trådade fiender ett steg bakåt i tidslinjen), Ånger,
-Körens eko (nästa hjälte upprepar förmågan mot ett nytt mål), Äggsäcken (kläck en spindel som bär den fallnes trofé),
-Mossklädd, Sista ordet (artefakten kastar en sista gång), Kalkskal (skydd per Benfolk-trofé i laget).
+Vävväktarens spänne (ta över snaran), Grindvaktens gångjärn (byt tidslinjeplats med befriaren), Vaktpostens namnbricka
+(ta över Marked), Fältkockens klocka (väck en allierad), Spejarens reflexbleck (lås en fiendes visade avsikt),
+Trollvaktens lånevante (byt troféer i striden), Benfoglarens säkerhetsnål, Vägvävarens knytband (styr nästa snara),
+Trollbrovaktens vägmärke (passera en trollspärr på kartan), Benarkivariens sidflik (låna familjetillhörighet).
 
 ## Bedömning (huvudtråden)
-- **Lapptäcket** är den mest intressanta – och billigare än den låter, för våra egenskaper är redan `trigger` + `when`
-  + `effects` i datan. En söm = den enas trigger med den andras effekter. Risken är balans och läsbar text, inte kod.
-  Avsteg från Siralim (som inte syr ihop egenskaper), så bara som ett tydligt eget lager, t.ex. hos Smeden eller som
-  bosstrofé. Värd ett pappersprov: hur många av 36 par är begripliga och lockande?
-- **Den sparade** passar tonen och De fallna exakt och är liten att bygga (elit/Nemesis ur `fallen_kin`, en fråga när
-  de är nära döden, två troféer). Båda måste vara bra åt olika håll, annars dör valet.
-- **Den enda** kräver den levande kartan (parkerad) och går emot Siralim, där man slåss mot samma monster igen för
-  troféer (bosstroféer kräver tre segrar). Hör till kartplanen, inte nu.
-- **Krocken** blir handskrivna specialfall – godtyckligt och dyrt. Nej.
-- **Grannen bär den** kräver en formation vi inte har (tidslinje, inga platser). Nej.
-- **Troféerna:** Tunga fötter bygger på rundor, som vi inte har (Siralims tidslinje). Nätväverskans tråd, Äggsäcken,
-  Sista ordet och Benbron passar spindlarna och Benfolket och kan bli riktiga troféer när spindlarna byggs.
-- **Fienden tar den** (nr 8) kom också från Claude (O-körning 2, "Förlusten sprids").
+- **A** är i grunden det vi redan har, och det Siralim har: trofén ger monstrets egenskap, och Inspect visar vad ett
+  monster lämnar. Det nya är **jaktvillkoret** (26): en synlig uppgift som ger det första exemplaret säkert i stället för
+  troféchansen. Ett eget avsteg men litet och läsbart; värt att minnas när troféchansen känns som slump.
+- **Sömmarna** är nu föreslagna tre gånger: ChatGPT:s O (två körningar), Claudes P (Lapptäcket) och här. Den starkaste
+  signalen över båda modellerna. Versionerna skiljer sig: Claudes syr ihop två troféer till en regel; ChatGPT:s här är
+  en förhandsvisning av kedjor mellan befintliga troféer – ett läsverktyg, ingen ny regel, och närmast
+  fingeravtryckets andra halva (tryck på en rad och se andra ägda troféer).
+- **Döp upptäckten** (29) = sparade lag. Billigt och nyttigt nu när hjältarna behåller sina troféer.
+- **Nederlaget som ritning** (10) är lockande men kräver en ärlig kontrafaktisk uträkning; lätt att visa fel.
+- **C, D och E** är redan nästan täckta (troféer byts vid lägerelden, fingeravtrycket finns) eller tunga regelpaket.
+- **De tio troféerna** handlar nästan alla om att flytta statusar och byta tidslinjeplatser, med långa undantagsregler.
+  För pilligt för en mobilskärm som paket; ett par (Vävväktarens spänne, Vägvävarens knytband) kan passa spindlarna.

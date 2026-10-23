@@ -28,7 +28,7 @@ Underlag, inte bestämt. Första körningen: `claude-kreativ-30-ideer.md`; ChatG
 - **Näringskedjan** är det första som ger den levande kartan en motor. Hör hemma i `docs/plan/levande-karta.md`.
 - **Lägerelden** är billig (troféer byts redan vid lägerelden) men ännu ett system att hålla i huvudet. Senare.
 - **Förlusten sprids** – lockande, men Siralim tar aldrig ditt bygge; risk att det känns som straff. Samma idé kom
-  från ChatGPT (troféjobbet P nr 8, "Fienden tar den") – två modeller oberoende, värt att minnas.
+  i Claudes troféjobb P (nr 8, "Fienden tar den") – samma modell, så ingen oberoende bekräftelse.
 - **Brev** kräver notiser och simulering medan spelet är stängt, och ligger nära förbjudna dagliga påminnelser.
 - **Dåliga för oss:** Paladinen slåss inte (Paladinen står alltid med), Berättaren (krockar med granskningsbara siffror),
   Lånad trofé (flera spelare), Dygnsrytm (tvingar speltider), Spegeln.
