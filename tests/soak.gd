@@ -203,7 +203,7 @@ func _start_run() -> void:
 	state.rules_visible = rules.visible.duplicate()
 	state.rules_hidden = rules.hidden.duplicate()
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
-	state.first_descent = profile.total_descents() == 0
+	state.first_descent = profile.total_descents() == 0 or Intro.current(data, profile).get("id", "") == "descent"
 	var seen := int(profile.descents.get(state.realm, 0))
 	profile.descents[state.realm] = seen + 1
 	profile.count_home_runs()
@@ -583,7 +583,8 @@ func _home() -> void:
 	if profile.intro_done or state == null:
 		return
 	var had_imma := state.party.has("imma") or state.joins_next == "imma"
-	if Intro.current(data, profile).get("event", "") == "came_home" and profile.total_descents() > 0:
+	if Intro.current(data, profile).get("event", "") == "came_home" and profile.total_descents() > 0 \
+			and profile.recruited.has("imma"):
 		Intro.notify(data, profile, "came_home")
 		if Intro.current(data, profile).get("id", "") != "crypt":
 			_fail("intro", "efter hemkomsten står introt på %s, inte crypt" % Intro.current(data, profile).get("id", ""))
