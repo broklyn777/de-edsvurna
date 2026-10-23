@@ -138,6 +138,7 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.fill_charges(data)
 	if profile.intro_done:
 		s.set_vow(data, profile.vow)
+	s.owned_heroes = profile.recruited.size() + 1
 	s.place_prisoners(data, profile.recruited, int(profile.descents.get(profile.realm, 0)))
 	# 0.26.3 (Siralim): hjältarna bär sina troféer ur samlingen in i varje körning.
 	for hero_id in profile.worn:
@@ -379,6 +380,9 @@ const FIRST_DESCENT_ELITE := 0.8
 ## Karriärbotarna (docs/provspel/svarighetskurva.md) förlorade 74 % av den andra nedstigningen, de flesta vid våning 1:s
 ## elitgrupp eller Nemesis, med Paladinen och Imma på nivå 5 mot djup 2.
 const SMALL_PARTY_ELITE := 0.8
+## 0.30.21: hur många hjältar profilen äger (Paladinen + lärjungarna). Med fyra eller fler balanseras striderna mot
+## fyra oavsett hur många man tar med (CombatSim "full_party"); färre är spelarens eget val.
+var owned_heroes := 0
 ## 0.25: den första striden gör paladinen ensam (Imma smiter efter först efteråt). Den ska vara lika lätt som övningen:
 ## fienderna ×0,80 till (vårt val, mätt med botarna: tests/test_story.gd och BALANS=forsta).
 const FIRST_FIGHT_ALONE := 0.80
@@ -609,7 +613,9 @@ func battle_opts() -> Dictionary:
 			opts.stat_bonus *= FIRST_FIGHT_ALONE
 		if floor == 0 and (r.get("elite", false) or r.get("nemesis", false)):
 			opts.stat_bonus *= FIRST_DESCENT_ELITE
-	elif party.size() <= 2 and floor == 0 and (r.get("elite", false) or r.get("nemesis", false)):
+	if owned_heroes >= 4:
+		opts.full_party = true
+	elif not first_descent and party.size() <= 2 and floor == 0 and (r.get("elite", false) or r.get("nemesis", false)):
 		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * SMALL_PARTY_ELITE
 	return opts
 
@@ -938,7 +944,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
-		"vow_breaks_on", "vow_max_commons", "commons_fought"]
+		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes"]
 
 
 func to_dict() -> Dictionary:

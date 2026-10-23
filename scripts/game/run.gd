@@ -445,6 +445,7 @@ func _resume_run() -> void:
 	if saved == null or saved.map == null or saved.finished:
 		return
 	state = saved
+	state.owned_heroes = profile.recruited.size() + 1  # 0.30.21: körningar sparade före fältet
 	if state.battle_pending:
 		# Appen stängdes under en strid: striden börjar om, som om man just gått in i rummet.
 		get_tree().change_scene_to_file.call_deferred(BATTLE_SCENE)
@@ -661,6 +662,7 @@ func rescue_prisoner() -> String:
 		avg += float(profile.hero(data, id).level)
 	avg /= maxi(state.party.size(), 1)
 	profile.recruit(data, hero_id, avg)
+	state.owned_heroes = profile.recruited.size() + 1
 	last_recruit = hero_id
 	var h: Dictionary = data.heroes[hero_id]
 	var p: Dictionary = data.personalities.get(profile.hero(data, hero_id).personality, {})
