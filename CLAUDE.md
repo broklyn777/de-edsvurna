@@ -428,6 +428,10 @@ godot --path .
 # Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var), och per kall
 godot --headless --path . --script res://tests/balance_report.gd
 
+# Buggjakt med botar (0.30.16, tests/soak.gd): tusentals hela körningar med slumpade val och kontroller efter varje drag
+# (körfel, fastlåsning, eviga strider, sparning och inläsning, silver, samling, Charges). --seed=N --verbose återskapar ett fel.
+godot --headless --path . --script res://tests/soak.gd -- --runs=1000
+
 # Granskningen av siffrorna (0.23.3): räknar om varje skada, helning och undvikande i 432 seedade strider med en
 # oberoende formelmodul (tests/numbers_reference.gd) och listar avvikelser. AUDIT_SEEDS=n ändrar antalet frön.
 godot --headless --path . --script res://tests/numbers_audit_report.gd
