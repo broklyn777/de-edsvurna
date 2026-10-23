@@ -115,8 +115,19 @@ var finished := false
 var trait_totals := {}
 ## Fynden i körningen (0.20), visas på rumskartan: bärnsten, trick och Nether Stones.
 var found := {"amber": 0, "trick": 0, "nether": 0}
-## 0.24: replikerna som redan har sagts den här körningen (Dialog.bark upprepar dem inte).
+## 0.24: replikerna som redan har sagts den här körningen (Dialog.bark upprepar dem inte). Replikminnet: nycklar
+## (Dialog.line_key), inte texter.
 var barks_used: Array = []
+## Replikernas budget (levande repliker steg 3, vårt val): högst BARK_BUDGET per nedstigning, aldrig i två rum i rad
+## (rooms_entered räknar nya rutor och våningar; bark_room = rummet med den senaste repliken). Starka lägen (STRONG_BARKS)
+## går före både budgeten och spärren. Vanliga lägen sägs med BARK_CHANCE. Tystnad hellre än upprepning.
+const BARK_BUDGET := 5
+const STRONG_BARKS := ["boss", "fallen", "alone", "rare_find", "rescue", "new_realm"]
+const BARK_CHANCE := {"cave": 0.6, "elite": 0.6, "back": 0.4, "treasure": 0.5, "stairs": 0.6, "hard_fight": 0.7,
+		"campfire": 0.8}
+var barks_said := 0
+var bark_room := -10
+var rooms_entered := 0
 ## 0.24: profilens första nedstigning (FIRST_DESCENT_RAMP).
 var first_descent := false
 ## 0.25.1: den som ansluter när sällskapet är tillbaka på rumskartan (Imma som smiter efter den första striden), eller "".
@@ -485,6 +496,7 @@ func start_floor(data: Dictionary) -> void:
 			prisoners.get(str(floor), {}), data.realms[realm].get("elite_pools", []), data.realms[realm].get("objects", []))
 	pos = map.start
 	visited = [map.start]
+	rooms_entered += 1
 	seen = []
 	revealed = []
 	came_from = -1
@@ -621,6 +633,7 @@ func step(i: int) -> Array[int]:
 	pos = i
 	if not visited.has(i):
 		visited.append(i)
+		rooms_entered += 1
 	if map.has_group(i) and not seen.has(i):
 		seen.append(i)
 	return walk
@@ -1070,12 +1083,28 @@ func object_won() -> Dictionary:
 	return out
 
 
+# --- Replikernas budget ---------------------------------------------------------
+
+## Sant om ett läge får ge en replik nu (budgeten, två rum i rad, chansen).
+func bark_allowed(kind: String, rng: RandomNumberGenerator) -> bool:
+	if STRONG_BARKS.has(kind):
+		return true
+	if barks_said >= BARK_BUDGET or rooms_entered - bark_room <= 1:
+		return false
+	return rng.randf() < float(BARK_CHANCE.get(kind, 1.0))
+
+
+func note_bark() -> void:
+	barks_said += 1
+	bark_room = rooms_entered
+
+
 # --- Sparning (user://run.cfg) -------------------------------------------------
 
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
-		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
+		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken", "growth", "twisted",
 		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour"]
 

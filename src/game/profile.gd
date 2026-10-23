@@ -130,6 +130,12 @@ var growth_last := {}
 var chronicle: Array = []
 var chron_stats := {}
 var chron_said: Array = []
+## Replikminnet (levande repliker): nyckel (replikens id, annars "t:<hash>") -> nedstigningen då den senast sades, hur
+## många gånger den har sagts, och den senaste vardagsrepliken per person (ingen sägs två gånger i rad).
+## "news:<person>" = hemkomsten då personen senast sade en nyhet. Gamla profiler läses tomma.
+var said := {}
+var said_times := {}
+var last_idle := {}
 var homecoming := {}
 ## Titlar (data/titles.json, vårt val): vald titel ("" = ingen) och de upplåsta, i den ordning de förtjänades.
 var title := ""
@@ -165,6 +171,21 @@ func choose_depth(d: int) -> void:
 func set_hero_name(n: String) -> void:
 	n = n.strip_edges().substr(0, NAME_MAX).strip_edges()
 	hero_name = n if n != "" else DEFAULT_NAME
+
+
+## Replikminnet: repliken sades i nedstigning n.
+func note_said(key: String, n: int) -> void:
+	said[key] = n
+	said_times[key] = int(said_times.get(key, 0)) + 1
+
+
+func times_said(key: String) -> int:
+	return int(said_times.get(key, 0))
+
+
+## Nedstigningar sedan repliken sades senast (INF om aldrig).
+func rest(key: String, n: int) -> float:
+	return float(n - int(said[key])) if said.has(key) else INF
 
 
 func total_descents() -> int:
@@ -630,6 +651,9 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "chronicle", chronicle)
 	cfg.set_value("progress", "chron_stats", chron_stats)
 	cfg.set_value("progress", "chron_said", chron_said)
+	cfg.set_value("progress", "said", said)
+	cfg.set_value("progress", "said_times", said_times)
+	cfg.set_value("progress", "last_idle", last_idle)
 	cfg.set_value("progress", "homecoming", homecoming)
 	cfg.set_value("progress", "title", title)
 	cfg.set_value("progress", "titles", titles)
@@ -716,6 +740,9 @@ static func load_from(path: String) -> Profile:
 	p.chronicle = cfg.get_value("progress", "chronicle", [])
 	p.chron_stats = cfg.get_value("progress", "chron_stats", {})
 	p.chron_said = cfg.get_value("progress", "chron_said", [])
+	p.said = cfg.get_value("progress", "said", {})
+	p.said_times = cfg.get_value("progress", "said_times", {})
+	p.last_idle = cfg.get_value("progress", "last_idle", {})
 	p.homecoming = cfg.get_value("progress", "homecoming", {})
 	p.titles = cfg.get_value("progress", "titles", [])
 	p.title = String(cfg.get_value("progress", "title", ""))

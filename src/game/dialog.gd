@@ -81,23 +81,52 @@ static func applies(data: Dictionary, profile: Profile, when: Dictionary) -> boo
 	return true
 
 
-## Vardagsrepliken som personen säger nu. Repliker med villkor (det som har hänt) kommer först; sedan växlar
-## de allmänna. turn = hur många gånger man har pratat med personen (Profile.talks).
+## Vardagsrepliken som personen säger nu (och minns den i profilen, Profile.said).
+## Replikminnet (levande repliker steg 2, docs/research/levande-repliker.md §5): en nyhet (en replik med "when") sägs
+## högst NEWS_TIMES gånger (eller "times", "once" = 1), sedan vilar den; högst en nyhet per person och hemkomst, och den
+## kommer i första samtalet efter hemkomsten. Annars de allmänna: den som vilat längst (aldrig sagd först), aldrig samma
+## två gånger i rad; lika gamla turas om efter turn (Profile.talks).
+const NEWS_TIMES := 2
+
+
 static func idle_line(data: Dictionary, profile: Profile, id: String, turn: int) -> String:
 	var lines: Array = person(data, id).get("idle", [])
+	var n := profile.total_descents()
 	var news: Array = []
 	var plain: Array = []
 	for l in lines:
 		var when: Dictionary = l.get("when", {})
 		if when.is_empty():
-			plain.append(l.text)
-		elif applies(data, profile, when):
-			news.append(l.text)
-	var all := news + plain
-	if all.is_empty():
+			plain.append(l)
+		elif applies(data, profile, when) and profile.times_said(line_key(l)) < line_times(l, NEWS_TIMES):
+			news.append(l)
+	var news_key := "news:" + id
+	if not news.is_empty() and int(profile.said.get(news_key, -1)) != n:
+		# Aldrig sagda först, sedan den som sagts färst gånger; datans ordning avgör lika.
+		var best: Dictionary = news[0]
+		for l in news:
+			if profile.times_said(line_key(l)) < profile.times_said(line_key(best)):
+				best = l
+		profile.said[news_key] = n
+		profile.note_said(line_key(best), n)
+		profile.last_idle[id] = line_key(best)
+		return String(best.text)
+	if plain.is_empty():
 		return ""
-	# En ny händelse sägs först (de två första gångerna efter att den hänt), sedan blandas den in.
-	return all[posmod(turn, all.size())]
+	var last := String(profile.last_idle.get(id, ""))
+	var pool := plain.filter(func(l: Dictionary) -> bool: return line_key(l) != last) if plain.size() > 1 else plain
+	# Den som vilat längst; bland lika gamla börjar turordningen på turn.
+	var best_l: Dictionary = {}
+	var best_rest := -INF
+	for k in pool.size():
+		var l: Dictionary = pool[posmod(turn + k, pool.size())]
+		var rest := profile.rest(line_key(l), n)
+		if rest > best_rest:
+			best_rest = rest
+			best_l = l
+	profile.note_said(line_key(best_l), n)
+	profile.last_idle[id] = line_key(best_l)
+	return String(best_l.text)
 
 
 ## Den första hälsningen ("Så du är den nya", "Du måste vara {namn}") gäller bara första mötet (turn 0); sedan
@@ -146,35 +175,129 @@ const BARK_KINDS := ["hard_fight", "campfire", "rare_find", "rescue", "new_realm
 
 
 ## En replik (eller ett kort samtal mellan två) för läget: {lines: [{who, text}]}, eller {} om ingen passar.
-## Imma först om hon är med; samtal mellan två hjältar ibland; inget upprepas samma körning (used).
+## Imma först om hon är med; samtal mellan två hjältar ibland; inget upprepas samma körning (used, replikernas nycklar).
 ## 0.28.1: en replik är en text eller {id, text} (fasta id:n för eventuella röster senare).
+## Replikminnet (levande repliker steg 1): med en profil minns grottans repliker mellan körningarna (Profile.said, n =
+## nedstigningens nummer). En replik som sagts för färre än sin vila sedan hoppas över; vilan är "cooldown" på repliken,
+## annars BARK_REST_PER_LINE × poolens storlek (lägets repliker för sällskapet), högst BARK_COOLDOWN. Aldrig sagda
+## först, sedan den som vilat längst. Vilar alla: tystnad, utom för starka lägen (fallback), där den som vilat längst sägs.
+## Valfria fält på en replik: "once" (en gång per profil), "cooldown" (nedstigningar), "chance" (0–1).
 static func line_text(entry: Variant) -> String:
 	return String(entry.get("text", "")) if entry is Dictionary else String(entry)
 
 
-static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng: RandomNumberGenerator) -> Dictionary:
+## Replikens nyckel i minnet: id:t, annars en hash av texten (äldre repliker utan id).
+static func line_key(entry: Variant) -> String:
+	if entry is Dictionary and entry.has("id"):
+		return String(entry.id)
+	return "t:%d" % line_text(entry).hash()
+
+
+static func pair_key(pair: Dictionary) -> String:
+	if pair.has("id"):
+		return String(pair.id)
+	return "pair:%d" % (pair.heroes[0] + pair.heroes[1] + String(pair.lines[0][1])).hash()
+
+
+## Hur många gånger en nyhet får sägas ("once" = 1, "times" = n, annars standard).
+static func line_times(entry: Variant, standard: int) -> int:
+	if entry is Dictionary:
+		if entry.get("once", false):
+			return 1
+		if entry.has("times"):
+			return int(entry.times)
+	return standard
+
+
+const BARK_COOLDOWN := 10
+## Vilan efter poolens storlek: en replik vilar så många nedstigningar per replik i läget (för sällskapet), högst
+## BARK_COOLDOWN. Två repliker i ett läge ger vila 4: läget hörs ungefär varannan nedstigning, aldrig samma rad två i rad.
+const BARK_REST_PER_LINE := 2
+
+
+## Sant om repliken får sägas nu (chance rullas här).
+static func _bark_ok(entry: Variant, key: String, used: Array, profile: Profile, rng: RandomNumberGenerator) -> bool:
+	if used.has(key):
+		return false
+	if entry is Dictionary:
+		if entry.get("once", false) and profile != null and profile.said.has(key):
+			return false
+		if entry.has("chance") and rng.randf() >= float(entry.chance):
+			return false
+	return true
+
+
+static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng: RandomNumberGenerator,
+		profile: Profile = null, fallback := true) -> Dictionary:
 	var d: Dictionary = data.get("dialog", {})
+	var n := profile.total_descents() if profile != null else 0
+	# Kandidaterna: {key, entry, who, pair, rest}; rest = nedstigningar sedan senast (INF = aldrig).
+	var cands: Array = []
+	var pool := 0
 	for pair in d.get("pairs", []):
-		var key := "pair:%s:%s" % [pair.heroes[0], pair.heroes[1]]
-		if pair.get("kind", "") == kind and party.has(pair.heroes[0]) and party.has(pair.heroes[1]) \
-				and not used.has(key) and rng.randf() < 0.5:
-			used.append(key)
-			return {"lines": pair.lines.map(func(l: Array) -> Dictionary: return {"who": l[0], "text": l[1]})}
-	var speakers: Array = []
+		if pair.get("kind", "") == kind and party.has(pair.heroes[0]) and party.has(pair.heroes[1]):
+			pool += 1
+			var key := pair_key(pair)
+			if _bark_ok(pair, key, used, profile, rng):
+				cands.append({"key": key, "entry": pair, "who": "", "pair": true})
 	for id in party:
 		if id == "paladin":
 			continue
-		var lines: Array = d.get("barks", {}).get(id, {}).get(kind, []).map(line_text)
-		if lines.any(func(t: String) -> bool: return not used.has(t)):
-			speakers.append(id)
-	if speakers.is_empty():
+		for e in d.get("barks", {}).get(id, {}).get(kind, []):
+			pool += 1
+			var key := line_key(e)
+			if _bark_ok(e, key, used, profile, rng):
+				cands.append({"key": key, "entry": e, "who": id, "pair": false})
+	if cands.is_empty():
 		return {}
-	# Imma säger det mesta, men de andra får ordet ibland.
-	var who: String = speakers[0] if speakers.size() == 1 else ""
-	if who == "":
-		var others := speakers.filter(func(id: String) -> bool: return id != "imma")
-		who = "imma" if speakers.has("imma") and rng.randf() >= 0.3 else String(others[rng.randi() % others.size()])
-	var fresh: Array = d.barks[who][kind].map(line_text).filter(func(t: String) -> bool: return not used.has(t))
-	var text: String = fresh[rng.randi() % fresh.size()]
-	used.append(text)
-	return {"lines": [{"who": who, "text": text}]}
+	var limit := clampi(pool * BARK_REST_PER_LINE, 1, BARK_COOLDOWN)
+	var rested: Array = []
+	for c in cands:
+		c.rest = profile.rest(c.key, n) if profile != null else INF
+		var cd: int = int(c.entry.cooldown) if c.entry is Dictionary and c.entry.has("cooldown") else limit
+		if c.rest >= cd:
+			rested.append(c)
+	if rested.is_empty():
+		if not fallback:
+			return {}  # tystnad hellre än upprepning
+		rested = cands
+	var pick: Dictionary = {}
+	var pairs := rested.filter(func(c: Dictionary) -> bool: return c.pair)
+	if not pairs.is_empty() and rng.randf() < 0.5:
+		pick = _freshest(pairs, rng)
+	else:
+		var singles := rested.filter(func(c: Dictionary) -> bool: return not c.pair)
+		if singles.is_empty():
+			pick = _freshest(pairs, rng) if not pairs.is_empty() else {}
+		else:
+			var speakers: Array = []
+			for c in singles:
+				if not speakers.has(c.who):
+					speakers.append(c.who)
+			# Imma säger det mesta, men de andra får ordet ibland.
+			var who: String = speakers[0] if speakers.size() == 1 else ""
+			if who == "":
+				var others := speakers.filter(func(id: String) -> bool: return id != "imma")
+				who = "imma" if speakers.has("imma") and rng.randf() >= 0.3 else String(others[rng.randi() % others.size()])
+			pick = _freshest(singles.filter(func(c: Dictionary) -> bool: return c.who == who), rng)
+	if pick.is_empty():
+		return {}
+	used.append(pick.key)
+	if profile != null:
+		profile.note_said(pick.key, n)
+	if pick.pair:
+		return {"lines": pick.entry.lines.map(func(l: Array) -> Dictionary: return {"who": l[0], "text": l[1]})}
+	return {"lines": [{"who": pick.who, "text": line_text(pick.entry)}]}
+
+
+## Den som vilat längst (aldrig sagda först); slumpen avgör lika.
+static func _freshest(cands: Array, rng: RandomNumberGenerator) -> Dictionary:
+	var best_rest := -INF
+	var best: Array = []
+	for c in cands:
+		if c.rest > best_rest:
+			best_rest = c.rest
+			best = [c]
+		elif c.rest == best_rest:
+			best.append(c)
+	return best[rng.randi() % best.size()] if not best.is_empty() else {}

@@ -49,6 +49,7 @@ func test_news_comes_first_in_the_idle_lines() -> void:
 	p.descents = {"crypt": 1}
 	assert_true(Dialog.idle_line(_data, p, "gorm", 0).contains("Alva"), "Gorm nämner ryktet om Alva efter första nedstigningen")
 	p.recruit(_data, "alva")
+	p.descents = {"crypt": 2}  # replikminnet: en nyhet per person och hemkomst
 	assert_true(Dialog.idle_line(_data, p, "gorm", 0).contains("förband"), "och något annat när hon har kommit")
 
 

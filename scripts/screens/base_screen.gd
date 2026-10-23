@@ -568,11 +568,14 @@ func _arrive(station: String) -> void:
 			lines.push_front(greeting)
 		_talk(who, lines, station, true)
 		return
-	var extra := Dialog.idle_line(data, run.profile, who, turn) if turn % 3 != 2 else ""
-	# Den levande världen: det som pågår (en händelse, en följd, handelsmannen) sägs varannan gång.
+	# Den levande världen: det som pågår (en händelse, en följd, handelsmannen) sägs varannan gång. Vardagsrepliken
+	# hämtas bara när den visas (Dialog.idle_line minns den i Profile.said).
 	var news := WorldEvents.ongoing_line(run.profile, data, who, turn / 2)
+	var extra := ""
 	if news != "" and turn % 2 == 0:
 		extra = news
+	elif turn % 3 != 2:
+		extra = Dialog.idle_line(data, run.profile, who, turn)
 	_talk(who, [(greeting + " " + extra).strip_edges()], station, true)
 
 

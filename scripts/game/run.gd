@@ -909,14 +909,16 @@ func _bark_after_battle(sim: CombatSim) -> void:
 
 
 ## Replikerna under nedstigningen (0.24, Dialog.bark): högst en per rum, aldrig i striden, inget upprepas samma
-## körning. Den väntar i pending_bark tills rumskartan visar den.
+## körning; replikminnet mellan körningarna (Profile.said) och budgeten per nedstigning (RunState.bark_allowed). Den väntar i pending_bark tills rumskartan visar den.
 var pending_bark := {}
 
 
 func bark(kind: String) -> void:
-	if not pending_bark.is_empty() or state.practice:
+	if not pending_bark.is_empty() or state.practice or not state.bark_allowed(kind, rng):
 		return
-	pending_bark = Dialog.bark(data, kind, state.party, state.barks_used, rng)
+	pending_bark = Dialog.bark(data, kind, state.party, state.barks_used, rng, profile, RunState.STRONG_BARKS.has(kind))
+	if not pending_bark.is_empty():
+		state.note_bark()
 
 
 ## Efter lägret: tillbaka till grottan, eller hem när bossen är besegrad.
