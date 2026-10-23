@@ -126,6 +126,10 @@ func _draw_deciders(w: float, h: float, a: float) -> void:
 		return
 	var x := 30.0
 	var y := h * 0.45 - 40.0
+	# En mörk platta, så att raderna går att läsa ovanpå sällskapets ramar (tre eller fyra hjältar).
+	var plate := Rect2(x - 14, y - 26, 358, 48 + deciders.size() * 64)
+	draw_rect(plate, Color(0.03, 0.03, 0.05, 0.92 * a))
+	draw_rect(plate, Color(UiStyle.TRAIT_GOLD, 0.35 * a), false, 1.5)
 	UiStyle.text(self, Vector2(x, y), "DET HÄR AVGJORDE STRIDEN", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, 330, 4)
 	for i in deciders.size():
 		var d: Dictionary = deciders[i]
@@ -251,6 +255,7 @@ func _draw() -> void:
 		var pop := 1.0 + 0.6 * maxf(0.0, 1.0 - _big_t / 0.18)
 		var a := 1.0 if mode != "countdown" else clampf(1.0 - (_big_t - 0.6) / 0.35, 0.0, 1.0)
 		var col := UiStyle.GOLD if mode != "defeat" else Color("#e0412e")
+		_draw_deciders(w, h, a)  # före rubriken, så att plattan inte täcker den
 		draw_set_transform(Vector2(w / 2, h * 0.45), 0, Vector2.ONE * pop)
 		UiStyle.text(self, Vector2(-w / 2, 0), big_text, 72, Color(col, a), HORIZONTAL_ALIGNMENT_CENTER, w, 10)
 		draw_set_transform(Vector2.ZERO)
@@ -262,7 +267,6 @@ func _draw() -> void:
 					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 		_draw_level_ups(w, h, a)
 		_draw_finds(w, h, a)
-		_draw_deciders(w, h, a)
 		if mode in ["victory", "defeat"] and _big_t > 1.0:
 			var blink := 0.6 + 0.4 * sin(_t * 4.0)
 			UiStyle.text(self, Vector2(0, h - 16), "Tryck för att fortsätta", 20, Color(1, 1, 1, blink),

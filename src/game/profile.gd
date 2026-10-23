@@ -598,12 +598,13 @@ static func load_from(path: String) -> Profile:
 	p.intro_step = int(cfg.get_value("progress", "intro_step", 0))
 	# 0.30: smedjan kommer före övningsgården. En profil som stod på övningsstriden (1) eller svärdet (2) i den gamla
 	# ordningen börjar på svärdet; den som inte fick Stigs hundra silver får dem nu (eden ger dem i den nya ordningen).
+	p.intro_talked = bool(cfg.get_value("progress", "intro_talked", false))
 	if int(cfg.get_value("progress", "intro_order", 1)) < INTRO_ORDER and p.intro_step in [1, 2]:
 		if p.intro_step == 1:
 			p.silver += 100
 		p.intro_step = 1
+		p.intro_talked = false  # svärdssteget börjar med Heddas samtal
 	p.inn_seen = int(cfg.get_value("progress", "inn_seen", p.recruited.size()))
-	p.intro_talked = bool(cfg.get_value("progress", "intro_talked", false))
 	p.set_hero_name(String(cfg.get_value("progress", "hero_name", DEFAULT_NAME)))
 	p.talks = cfg.get_value("progress", "talks", {})
 	p.home_runs = cfg.get_value("progress", "home_runs", {})

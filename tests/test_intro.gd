@@ -121,6 +121,7 @@ func test_old_profiles_move_to_the_new_order() -> void:
 		var p := Profile.new()
 		p.intro_step = old
 		p.silver = 0 if old == 1 else 100
+		p.intro_talked = true
 		p.save(path)
 		var cfg := ConfigFile.new()
 		cfg.load(path)
@@ -129,6 +130,7 @@ func test_old_profiles_move_to_the_new_order() -> void:
 		var q := Profile.load_from(path)
 		assert_eq(q.intro_step, 1, "börjar på svärdet")
 		assert_eq(q.silver, 100, "har silver till svärdet")
+		assert_true(not q.intro_talked, "svärdssteget börjar med samtalet")
 		q.save(path)
 		assert_eq(Profile.load_from(path).intro_step, 1, "flyttas bara en gång")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

@@ -65,6 +65,8 @@ func _pick_hero(hero_id: String) -> void:
 	var art: Dictionary = run.profile.artifact(hero)
 	type = art.get("type", "sword")
 	ability = art.get("ability", "")
+	if art.is_empty() and not run.profile.intro_done and hero == "paladin":
+		ability = "holy_smite"  # 0.30: introts svärd ska slå till av sig självt, och kombinationen behöver slaget
 	tab = 0 if not art.is_empty() else 1
 	slot = {}
 	pending = ""
