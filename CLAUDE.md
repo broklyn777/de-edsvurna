@@ -249,7 +249,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   elitgrupp (alla vinns med fulla Charges – svårigheten kommer av nötningen över körningen).
 - **Trollfolket** (0.30.23, `docs/plan/troll.md`, ännu utan Realm; `--encounter=troll_1a` … `troll_3`): familjen `troll_kin`
   med artregeln Trollhud (en förmåga stoppar läkningen, `troll_scorched`), sju troll med var sin egen förmåga och trofé, bossen
-  Bergakungen Grumse (Stenhjärta). Modellerna `troll*.glb` ur Drakvalvets ogre, färgade per troll med `colors`.
+  Bergakungen (Stenhjärta). Modellerna `troll*.glb` ur Drakvalvets ogre, färgade per troll med `colors`.
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens kall, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.

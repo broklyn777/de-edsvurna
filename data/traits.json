@@ -2227,9 +2227,9 @@
 		]
 	},
 	"porridge_greed": {
-		"name": "Sju sorters gröt",
+		"name": "Grytans hunger",
 		"enemy": true,
-		"text": "Varje gång en hjälte helas blir Gudrun mättare: +10 % Attack (högst 3 gånger).",
+		"text": "Varje gång en hjälte helas växer Grytmoderns hunger: +10 % Attack (högst 3 gånger).",
 		"trigger": "heal",
 		"when": {
 			"target": "enemy"
@@ -2248,7 +2248,7 @@
 	"troll_envy": {
 		"name": "Avund",
 		"enemy": true,
-		"text": "När en hjälte får en buff får Gunnar samma buff (en gång per tur).",
+		"text": "När en hjälte får en buff får Avundsjätten samma buff (en gång per tur).",
 		"trigger": "aura_applied",
 		"when": {
 			"unit": "enemy",
@@ -2266,7 +2266,7 @@
 	"troll_club": {
 		"name": "Klubban",
 		"enemy": true,
-		"text": "Kalles anfall mot en hjälte som Försvarar gör dubbel skada.",
+		"text": "Stenkrossarens anfall mot en hjälte som Försvarar gör dubbel skada.",
 		"trigger": "modify_damage",
 		"when": {
 			"target_has_aura": "defend",
@@ -2297,7 +2297,7 @@
 	"stone_heart": {
 		"name": "Stenhjärta",
 		"enemy": true,
-		"text": "Gör sällskapet samma sorts handling två gånger i rad (anfall efter anfall, förmåga efter förmåga) tar Grumse 60 % mindre skada. Variera!",
+		"text": "Gör sällskapet samma sorts handling två gånger i rad (anfall efter anfall, förmåga efter förmåga) tar Bergakungen 60 % mindre skada. Variera!",
 		"trigger": "modify_damage_taken",
 		"when": {
 			"source_repeats_team_action": true
@@ -2327,7 +2327,7 @@
 	},
 	"porridge_bowl": {
 		"combo": {"needs": "enemy_heal", "creates": "attack_up", "scope": "self"},
-		"name": "Grötskål",
+		"name": "Grytskärva",
 		"trophy": true,
 		"rarity": "common",
 		"text": "När en fiende helas får bäraren +10 % Attack (högst 3 gånger per strid).",
@@ -2368,7 +2368,7 @@
 	},
 	"kalles_club": {
 		"combo": {"needs": "enemy_defend", "creates": "damage_bonus", "scope": "enemy"},
-		"name": "Kalles klubba",
+		"name": "Krossarens klubba",
 		"trophy": true,
 		"rarity": "common",
 		"text": "Bärarens anfall mot en fiende som Försvarar gör +50 % skada.",
