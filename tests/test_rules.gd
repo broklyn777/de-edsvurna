@@ -290,3 +290,56 @@ func test_phantasm_grows_with_uses() -> void:
 		if m.has("damage_mult_per_use"):
 			factors.append(1.0 + m.damage_mult_per_use * alva.ability_uses.judgement)
 	assert_eq(factors, [1.4])
+
+
+# --- Utmattning (0.30.20) -------------------------------------------------------
+
+## Ingen kan skada någon: utmattningen avgör striden efter tur 100, långt före den rena förlusten vid 300.
+func _stalemate() -> CombatSim:
+	var sim := _sim()
+	for u in sim.units:
+		u.attack = 0.0
+		u.intelligence = 0.0
+		u.defense = 1000.0
+		u.base_stats.attack = 0.0
+		u.base_stats.intelligence = 0.0
+		u.base_stats.defense = 1000.0
+	return sim
+
+
+func _play(sim: CombatSim, steps: int) -> Array:
+	var events := []
+	for i in steps:
+		if sim.outcome != "":
+			break
+		if sim.needs_input():
+			sim.act("attack", sim.default_target(sim.current, "attack"))
+		else:
+			sim.ai_act()
+		events.append_array(sim.drain_events())
+	return events
+
+
+func test_exhaustion_ends_a_stalemate() -> void:
+	var sim := _stalemate()
+	var events := _play(sim, 2000)
+	assert_true(sim.outcome != "", "striden tog slut")
+	assert_true(sim.turn_no > CombatSim.EXHAUSTION_TURN and sim.turn_no < CombatSim.EXHAUSTION_LOSS,
+			"utmattningen avgjorde den (tur %d)" % sim.turn_no)
+	var starts := events.filter(func(e: Dictionary) -> bool: return e.type == "exhaustion_start")
+	assert_eq(starts.size(), 1, "en skylt när utmattningen börjar")
+	assert_true(events.any(func(e: Dictionary) -> bool: return e.type == "exhaustion"))
+
+
+func test_no_exhaustion_before_turn_100() -> void:
+	var sim := _stalemate()
+	var events := _play(sim, 80)
+	assert_true(sim.turn_no <= CombatSim.EXHAUSTION_TURN)
+	assert_true(not events.any(func(e: Dictionary) -> bool: return e.type.begins_with("exhaustion")))
+
+
+func test_turn_300_is_a_loss() -> void:
+	var sim := _stalemate()
+	sim.turn_no = CombatSim.EXHAUSTION_LOSS
+	_play(sim, 5)
+	assert_eq(sim.outcome, "defeat")
