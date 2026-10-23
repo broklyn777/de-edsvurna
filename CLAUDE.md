@@ -289,6 +289,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   ALLA AUTO, ett tryck på en hjältes ram byter den hjälten (`battle.gd` `_auto_heroes`); passar ingen rad väntar hjälten.
   Knappen MAKRON i striden öppnar redigeraren ovanpå den pausade striden (`macro_screen` `embedded`; ändringarna gäller
   direkt; `--battle-macros`).
+  **Radeditorn** (0.30.24, VD): ett sökfält filtrerar alla fyra kolumnerna (alla ord måste finnas; det valda syns alltid),
+  villkoren har grupper (Vanliga, Liv, Status, Egenskaper, Charges, Artefakt, Alla; Vanliga utan de hundratals
+  egenskaperna), högre rader och en bred rullningslist. `--macros "--macro-search=liv 30"` för skärmdumpar.
   **Spara som order** (0.30, prototyp): väljer spelaren själv något som makrot inte hade valt (en helning på en skadad,
   eller en förmåga mot en status den slår hårdare mot) visar striden en guldknapp i 9 sekunder som lägger en sådan rad
   överst i hjältens makro (`battle.gd` `_offer_order`, `_save_order`; `--offer-order`).
