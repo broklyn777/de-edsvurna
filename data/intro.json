@@ -78,7 +78,7 @@
 			"talk": [
 				"Inte illa. Dockan reser sig inte igen, i alla fall.",
 				"Men nere i kryptan hinner du inte tänka på varje hugg. Gorm lär ut makron vid kartbordet, i kammaren bredvid kapellet.",
-				"Skriv din första rad där. Till exempel: anfall den svagaste fienden. Sedan kommer du hit och provar den."
+				"Skriv din första rad där. Till exempel: anfall den svagaste fienden. Sedan kan du prova den här när du vill."
 			],
 			"quest": "Skriv din första makrorad i Gorms kammare.",
 			"at": {
@@ -167,7 +167,7 @@
 				],
 				[
 					"gorm",
-					"Du svor eden i går – då är det här din sak. Se efter och vänd. Slåss bara om du måste."
+					"Du svor eden i dag – då är det här din sak. Se efter och vänd. Slåss bara om du måste."
 				],
 				[
 					"gorm",
@@ -287,7 +287,7 @@
 		"practice": "Övningsgården väntar. Men först det Gorm bad dig om – han har bättre minne än han låter.",
 		"altar": "Altaret är tyst. Gör klart det du håller på med först.",
 		"smith": "Kom tillbaka när du har något att smida. Och silver. Mest silver.",
-		"macros": "Makrona kommer när du har hållit ett riktigt svärd.",
+		"macros": "Makrona kommer när du har prövat ett riktigt svärd hos Stig.",
 		"library": "Böckerna springer ingenstans. De har inga ben. Gör klart det du håller på med.",
 		"inn": "Kom tillbaka när du har någon som behöver husrum. Då dukar jag fram."
 	},

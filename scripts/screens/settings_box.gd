@@ -121,8 +121,14 @@ func _paint() -> void:
 		_view.draw_rect(b, Color(1, 1, 1, 0.08))
 		_view.draw_rect(Rect2(b.position, Vector2(b.size.x * values[i], b.size.y)), Color(UiStyle.GOLD, 0.75))
 		_view.draw_rect(b, Color(UiStyle.GOLD, 0.6), false, 1.5)
+		# Ett handtag vid värdet, så att det syns att stapeln går att dra i.
+		var hx: float = b.position.x + b.size.x * float(values[i])
+		_view.draw_rect(Rect2(hx - 9, b.position.y - 8, 18, b.size.y + 16), Color(0.95, 0.9, 0.75))
+		_view.draw_rect(Rect2(hx - 9, b.position.y - 8, 18, b.size.y + 16), Color(UiStyle.GOLD), false, 2.0)
 		var pct := "AV" if values[i] <= 0.0 else "%d %%" % roundi(values[i] * 100.0)
 		UiStyle.text(_view, b.position + Vector2(0, 26), pct, 18, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, b.size.x)
+	UiStyle.text(_view, r.position + Vector2(0, 84), "Dra i staplarna för att ändra.", 15, Color(1, 1, 1, 0.55),
+			HORIZONTAL_ALIGNMENT_CENTER, W)
 	var m := _moments_rect()
 	_view.draw_rect(m, Color(0, 0, 0, 0.5))
 	_view.draw_rect(m, Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)

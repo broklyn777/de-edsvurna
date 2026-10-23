@@ -115,7 +115,7 @@ func _draw() -> void:
 		var col := Color(UiStyle.TRAIT_GOLD, 0.6).lerp(Color.WHITE, _trait_flash * 0.8)
 		if _trait_flash > 0.0:
 			draw_rect(Rect2(6, 80, size.x - 12, 16), Color(UiStyle.TRAIT_GOLD, 0.25 * _trait_flash))
-		UiStyle.text(self, Vector2(10, 93), trait_name, 13, col)
+		UiStyle.text(self, Vector2(10, 93), UiStyle.fit(trait_name, 13, size.x - 20), 13, col)
 
 	if not unit.artifact.is_empty():
 		var kind: Dictionary = sim.data.artifacts.get(unit.artifact.type, {})

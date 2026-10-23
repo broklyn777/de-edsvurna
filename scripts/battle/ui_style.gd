@@ -48,6 +48,16 @@ static func text(ci: CanvasItem, pos: Vector2, s: String, size: int, color: Colo
 	ci.draw_string(bold(), pos, s, align, width, size, color)
 
 
+## Kortar texten med "…" så att den ryms på en rad i bredden (draw_string klipper inte själv).
+static func fit(s: String, size: int, width: float) -> String:
+	size = maxi(size, MIN_SIZE)
+	if bold().get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x <= width:
+		return s
+	while s.length() > 1 and bold().get_string_size(s + "…", HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width:
+		s = s.substr(0, s.length() - 1)
+	return s.strip_edges() + "…"
+
+
 static func bar(ci: CanvasItem, rect: Rect2, pct: float, color: Color, ghost := -1.0) -> void:
 	ci.draw_rect(rect, Color(0, 0, 0, 0.55))
 	if ghost > pct:

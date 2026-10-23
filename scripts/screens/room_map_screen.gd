@@ -152,7 +152,7 @@ func _tap(p: Vector2) -> void:
 		run.profile.room_moments = not run.profile.room_moments
 		run.save()
 		return
-	if _home_rect().has_point(p):
+	if _can_leave() and _home_rect().has_point(p):
 		_dialog = _leave_dialog()
 		return
 	if state.at_group():
@@ -407,10 +407,15 @@ func _home_rect() -> Rect2:
 	return Rect2(_moments_rect().position.x - 14 - 160, size.y - 66, 160, 48)
 
 
+## Inte under introts första nedstigning: hemkomsten där hör till berättelsen (Imma smiter efter, Gorm skäller).
+func _can_leave() -> bool:
+	return run.profile.intro_done
+
+
 func _leave_dialog() -> Dictionary:
-	return {"title": "Gå hem till borgen?", "text": "Körningen och questens belöning går förlorade; det ni redan har vunnit "
-			+ "behåller ni. Vill du bara pausa: stäng spelet, körningen sparas.",
-			"options": [{"label": "GÅ HEM", "action": "leave"}, {"label": "STANNA"}]}
+	return {"title": "Gå hem till borgen?", "text": "Körningen och questens belöning går förlorade; det du redan har vunnit "
+			+ "behåller du. Vill du bara pausa: stäng spelet, körningen sparas.",
+			"options": [{"label": "STANNA"}, {"label": "GÅ HEM", "action": "leave"}]}
 
 
 func _dialog_rect() -> Rect2:
@@ -469,7 +474,8 @@ func _draw() -> void:
 		UiStyle.para(self, Vector2(_grid_rect().position.x, size.y - 50), msg, 16, Parchment.INK,
 				_home_rect().position.x - _grid_rect().position.x - 20, 2)
 	small_button(_macro_rect(), "MAKRON")
-	small_button(_home_rect(), "GÅ HEM")
+	if _can_leave():
+		small_button(_home_rect(), "GÅ HEM")
 	small_button(_moments_rect(), "RUMSÖGONBLICK: " + ("PÅ" if run.profile.room_moments else "AV"))
 	if not _dialog.is_empty():
 		_draw_dialog()
