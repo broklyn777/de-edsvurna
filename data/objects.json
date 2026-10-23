@@ -108,5 +108,54 @@
 				"label": "LÅT DET VARA"
 			}
 		]
+	},
+	"cocoon": {
+		"name": "Kokong",
+		"text": "Något rör sig därinne. Skär ni upp den vaknar en spindelvakt (lite starkare än vanligt) – men kokongen har samlat byte: dubbel skatt.",
+		"options": [
+			{
+				"id": "knock",
+				"label": "SKÄR UPP"
+			},
+			{
+				"id": "leave",
+				"label": "LÅT DEN HÄNGA"
+			}
+		]
+	},
+	"dew_web": {
+		"name": "Daggnät",
+		"text": "Ett nät fullt av dagg som speglar hela raden. Rör ni vid tråden ser ni allt längs den – men tråden darrar, och nästa grupp är beredd.",
+		"options": [
+			{
+				"id": "pull",
+				"label": "RÖR VID TRÅDEN"
+			},
+			{
+				"id": "leave",
+				"label": "GÅ FÖRBI"
+			}
+		],
+		"results": {
+			"pull": "Daggen glittrar längs hela raden. Nästa grupp ni möter är beredd (+15 % styrka)."
+		}
+	},
+	"silk_trail": {
+		"name": "Silkesspår",
+		"text": "Någon har släpat något tungt genom lunden. Spåret delar sig: ett mot bytet, ett mot de som släpade.",
+		"options": [
+			{
+				"id": "valuables",
+				"label": "MOT BYTET"
+			},
+			{
+				"id": "neighbours",
+				"label": "MOT SPINDLARNA"
+			}
+		],
+		"results": {
+			"found": "Spåret leder fram till",
+			"none": "Spåret tar slut i snåren. Inget nytt."
+		}
 	}
 }

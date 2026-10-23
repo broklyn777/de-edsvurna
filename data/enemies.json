@@ -2030,5 +2030,453 @@
 			}
 		},
 		"trophy": "mountain_crown"
+	},
+	"snare_spider": {
+		"name": "Snärjspindel",
+		"family": "spider_kin",
+		"color": "#c8bca0",
+		"stats": {
+			"health": 36,
+			"attack": 10,
+			"intelligence": 8,
+			"defense": 1,
+			"speed": 13
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "snare_bite",
+		"traits": [
+			"spider_snare"
+		],
+		"visual": {
+			"model": "spindel",
+			"scale": 0.5,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"colors": {
+				"Sp_Body": "#5a4c3c",
+				"Sp_Mark": "#d8ccb0",
+				"Sp_Band": "#d8ccb0",
+				"Sp_Bristle": "#5a4c3c"
+			},
+			"emit": {
+				"Sp_Eye": "#ff6a3a"
+			}
+		},
+		"trophy": "thread_spool",
+		"elite": {
+			"name": "Silkesnärjaren",
+			"trophy": "silk_noose",
+			"trait": "silk_noose",
+			"tint": "#fff0d0",
+			"glow": "#c0a060",
+			"colors": {
+				"Sp_Body": "#d8ccb0",
+				"Sp_Mark": "#fff4dc",
+				"Sp_Band": "#fff4dc",
+				"Sp_Bristle": "#c8b890"
+			}
+		},
+		"rules": [
+			{
+				"ability": "web_shot"
+			}
+		]
+	},
+	"venom_spider": {
+		"name": "Gifttandsspindel",
+		"family": "spider_kin",
+		"color": "#8ac040",
+		"stats": {
+			"health": 38,
+			"attack": 11,
+			"intelligence": 8,
+			"defense": 1,
+			"speed": 10
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "venom_bite",
+		"traits": [
+			"venom_thread"
+		],
+		"visual": {
+			"model": "spindel",
+			"scale": 0.52,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"colors": {
+				"Sp_Body": "#2a3a22",
+				"Sp_Mark": "#8ac040",
+				"Sp_Band": "#8ac040",
+				"Sp_Bristle": "#2a3a22"
+			},
+			"emit": {
+				"Sp_Eye": "#a0ff40"
+			}
+		},
+		"trophy": "venom_fang",
+		"elite": {
+			"name": "Smaragdtanden",
+			"trophy": "emerald_venom",
+			"trait": "emerald_venom",
+			"tint": "#a0ffa0",
+			"glow": "#208a40",
+			"colors": {
+				"Sp_Body": "#1a5a3a",
+				"Sp_Mark": "#60ff90",
+				"Sp_Band": "#60ff90",
+				"Sp_Bristle": "#1a5a3a"
+			},
+			"emit": {
+				"Sp_Eye": "#60ff90",
+				"Sp_Mark": "#208a40"
+			}
+		},
+		"rules": [
+			{
+				"ability": "venom_strike"
+			}
+		]
+	},
+	"dust_spider": {
+		"name": "Dammspindel",
+		"family": "spider_kin",
+		"color": "#b8b0a0",
+		"stats": {
+			"health": 34,
+			"attack": 10,
+			"intelligence": 8,
+			"defense": 1.5,
+			"speed": 11
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "dust_bite",
+		"traits": [
+			"dust_eyes"
+		],
+		"visual": {
+			"model": "spindel",
+			"scale": 0.48,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"colors": {
+				"Sp_Body": "#7a7264",
+				"Sp_Mark": "#b8b0a0",
+				"Sp_Band": "#b8b0a0",
+				"Sp_Bristle": "#7a7264"
+			},
+			"emit": {
+				"Sp_Eye": "#ffd080"
+			}
+		},
+		"trophy": "dust_tuft",
+		"elite": {
+			"name": "Askspindeln",
+			"trophy": "ash_cloud",
+			"trait": "ash_cloud",
+			"tint": "#c0c0c0",
+			"glow": "#606060",
+			"colors": {
+				"Sp_Body": "#3a3a3a",
+				"Sp_Mark": "#e0e0e0",
+				"Sp_Band": "#909090",
+				"Sp_Bristle": "#3a3a3a"
+			},
+			"emit": {
+				"Sp_Eye": "#ffffff"
+			}
+		},
+		"rules": [
+			{
+				"ability": "dust_puff"
+			}
+		]
+	},
+	"barb_spider": {
+		"name": "Hullingspindel",
+		"family": "spider_kin",
+		"color": "#c04030",
+		"stats": {
+			"health": 44,
+			"attack": 11,
+			"intelligence": 8,
+			"defense": 2,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "barb_bite",
+		"traits": [
+			"spider_barbs"
+		],
+		"visual": {
+			"model": "spindel",
+			"scale": 0.55,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"colors": {
+				"Sp_Body": "#3a1e18",
+				"Sp_Mark": "#b03020",
+				"Sp_Band": "#b03020",
+				"Sp_Bristle": "#1a0c08"
+			},
+			"emit": {
+				"Sp_Eye": "#ff4020"
+			}
+		},
+		"trophy": "barbed_thread",
+		"elite": {
+			"name": "Blodtaggen",
+			"trophy": "rose_thorn",
+			"trait": "rose_thorn",
+			"tint": "#ffb0c0",
+			"glow": "#a02040",
+			"colors": {
+				"Sp_Body": "#6a1a2a",
+				"Sp_Mark": "#ff7090",
+				"Sp_Band": "#ff7090",
+				"Sp_Bristle": "#3a0a14"
+			},
+			"emit": {
+				"Sp_Eye": "#ff7090"
+			}
+		},
+		"rules": [
+			{
+				"ability": "barb_throw"
+			}
+		]
+	},
+	"sleep_weaver": {
+		"name": "Sömnvävaren",
+		"family": "spider_kin",
+		"color": "#9090e0",
+		"stats": {
+			"health": 70,
+			"attack": 13,
+			"intelligence": 12,
+			"defense": 2,
+			"speed": 12
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "weaver_bite",
+		"traits": [
+			"weaver_lull"
+		],
+		"visual": {
+			"model": "spindel",
+			"scale": 0.6,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"colors": {
+				"Sp_Body": "#2a2a44",
+				"Sp_Mark": "#a0a0e8",
+				"Sp_Band": "#a0a0e8",
+				"Sp_Bristle": "#2a2a44"
+			},
+			"emit": {
+				"Sp_Eye": "#8080ff"
+			},
+			"light": "#8080ff",
+			"light_energy": 0.7
+		},
+		"trophy": "lull_web",
+		"rank": "elite",
+		"rules": [
+			{
+				"ability": "lullaby"
+			}
+		]
+	},
+	"devourer_spider": {
+		"name": "Slukaren",
+		"family": "spider_kin",
+		"color": "#a02020",
+		"stats": {
+			"health": 80,
+			"attack": 15,
+			"intelligence": 8,
+			"defense": 2.5,
+			"speed": 8
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "devour_bite",
+		"traits": [
+			"devour"
+		],
+		"visual": {
+			"model": "spindel",
+			"scale": 0.66,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"colors": {
+				"Sp_Body": "#1e1010",
+				"Sp_Mark": "#801818",
+				"Sp_Band": "#801818",
+				"Sp_Bristle": "#1e1010"
+			},
+			"emit": {
+				"Sp_Eye": "#ff3020"
+			},
+			"light": "#ff3020",
+			"light_energy": 0.5
+		},
+		"trophy": "devour_maw",
+		"rank": "elite",
+		"rules": [
+			{
+				"ability": "devour_lunge"
+			}
+		]
+	},
+	"old_knot": {
+		"name": "Strypvävaren",
+		"family": "spider_kin",
+		"color": "#c8c0b0",
+		"stats": {
+			"health": 140,
+			"attack": 13,
+			"intelligence": 12,
+			"defense": 3,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "knot_bite",
+		"traits": [
+			"resistant",
+			"knot_end"
+		],
+		"visual": {
+			"model": "spindel",
+			"scale": 0.72,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"colors": {
+				"Sp_Body": "#4a4236",
+				"Sp_Mark": "#c8c0b0",
+				"Sp_Band": "#c8c0b0",
+				"Sp_Bristle": "#d8d0c0"
+			},
+			"emit": {
+				"Sp_Eye": "#ffb040"
+			},
+			"light": "#ffb040",
+			"light_energy": 0.8
+		},
+		"trophy": "knot_eye",
+		"rank": "miniboss",
+		"counter": {
+			"trait": "arachnophobia",
+			"min_depth": 1
+		},
+		"rules": [
+			{
+				"ability": "cocoon_revive",
+				"if": {
+					"dead_ally": true
+				}
+			},
+			{
+				"ability": "knot_strangle"
+			}
+		]
+	},
+	"web_mother": {
+		"name": "Vävmodern",
+		"family": "spider_kin",
+		"color": "#d0b0ff",
+		"stats": {
+			"health": 135,
+			"attack": 13,
+			"intelligence": 13,
+			"defense": 2,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "mother_bite",
+		"traits": [
+			"resistant",
+			"mother_thread"
+		],
+		"visual": {
+			"model": "spindel",
+			"scale": 0.92,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Spell_Simple_Shoot"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			},
+			"colors": {
+				"Sp_Body": "#16101c",
+				"Sp_Mark": "#d0c0e8",
+				"Sp_Band": "#d0c0e8",
+				"Sp_Bristle": "#16101c"
+			},
+			"emit": {
+				"Sp_Eye": "#e040ff"
+			},
+			"light": "#c060ff",
+			"light_energy": 1.4
+		},
+		"trophy": "mother_silk",
+		"boss": true,
+		"boss_text": "Resistent. Spinner in hela sällskapet var femte tur; den som sliter sig loss förgiftas.",
+		"rules": [
+			{
+				"ability": "cocoon_storm"
+			}
+		]
 	}
 }

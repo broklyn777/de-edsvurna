@@ -29,6 +29,7 @@ klädda och beväpnade i Blender för Drakvalvet:
 | domare.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: vit och guld dräkt, silverhår, domarmössa, vit mantel (7 anims, utan UV) | Ragnhild Ljusdom, domare |
 | svardsdansare.glb | Quaternius "Adventurer" (poly.pizza/m/5EGWBMpuXq), Drakvalvets `qt-hjalte-human-m.glb` i Blender: sandfärgad dräkt, turban, turkost skärp (8 anims, utan UV) | Sefir av Sanden, svärdsdansare |
 | imma.glb | Quaternius "Adventurer" kvinna (poly.pizza/m/ZwF0K7WBmu), Drakvalvets `qt-hjalte-human-f.glb` i Blender: kopparrosa hår, läderdräkt, kort lila mantel, koger (6 anims, utan UV) | Imma, Paladinens barndomsvän |
+| spindel.glb | Egen modell, byggd helt i Blender av Drakvalvets skript `Monster/jattespindel.py` (egen rigg `SpiderArmature`, 7 klipp: Idle_Loop, Walk_Loop, Run_Loop, Sword_Attack, Spell_Simple_Shoot, Hit_Chest, Death01), ingen Quaternius-del; `qt-jattespindel.glb` uppackad med gltf-transform | Alla spindlar i Sidenlunden (0.31), färgade per material |
 | vapen.glb | Vapen från Drakvalvet – **källa ej bekräftad, kontrollera före release** | Vapen i händerna |
 
 Animationerna kommer från Quaternius "Universal Animation Library" (CC0). Alla figurer har samma rigg
@@ -66,3 +67,10 @@ altaret, buren, stentavlan, lägerelden och portalen byggs av former i kod. Stat
 - `assets/audio/voice/*.mp3` – användarens egna röstrepliker, gjorda i ElevenLabs.
   **Kontrollera att ElevenLabs-planen tillåter kommersiell användning före release.**
 - `assets/models/troll.glb`, `troll_mossrygg.glb`, `troll_grumse.glb` – användarens egen ogre ur Drakvalvet (`~/Desktop/Blender-Test/Drakvalvet/Monster/ogre.blend`), omgjord till troll i Blender 2026-10-23 (näsa, mossa, stenkrona).
+
+# Illustrationer
+
+`assets/illustrations/graskogen.webp` (0.31, Sidenlundens vinjett på kampanjkartan tills en egen finns) kommer från
+Drakvalvets illustrationer (`~/drakvalvet/public/illustrations/graskogen.webp`), samma källa som stendorren, vaktaren,
+under-tornet, nattlägret och sigillet.
+

@@ -306,15 +306,17 @@ func _place(node: TextureRect, r: Rect2, zoom: float, focus: Vector2) -> void:
 	node.size = r.size * zoom
 
 
-## Dekoren i marginalen: kompassros, drake i hörnet, svärd i sten och skelett vid kryptan (häxan vid
-## kapellet och Väktaren är vinjetter).
+## Dekoren i marginalen: kompassros, drake i hörnet, svärd i sten, skelett vid kryptan och en spindel vid Lunden
+## (häxan vid kapellet och Väktaren är vinjetter). 0.31: kompassen och draken flyttade för Sidenlunden.
 func _draw_decor() -> void:
 	var ink := Color(InkArt.INK, 0.6)
 	var k := _scale()
-	InkArt.icon(self, "compass", Vector2(700, 470) * k, 130 * k.y, 0.8)
-	InkArt.icon(self, "dragon", Vector2(720, 640) * k, 130 * k.y, 0.8)
-	InkArt.icon(self, "sword_in_stone", Vector2(560, 640) * k, 120 * k.y, 0.75)
+	InkArt.icon(self, "compass", Vector2(88, 300) * k, 110 * k.y, 0.8)
+	InkArt.icon(self, "dragon", Vector2(772, 672) * k, 88 * k.y, 0.8)
+	InkArt.icon(self, "sword_in_stone", Vector2(530, 660) * k, 96 * k.y, 0.75)
 	InkArt.icon(self, "skeleton", Vector2(78, 596) * k, 150 * k.y, 0.8)
+	if run.data.realms.has("grove"):
+		InkArt.spider(self, Vector2(805, 392) * k, 46 * k.y, ink)
 
 
 ## Ett område: vinjetten (egen nod), fördärvets bläckflöde, ram, kartusch med namnet och bossens sigill.
