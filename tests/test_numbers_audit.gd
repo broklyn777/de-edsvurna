@@ -65,7 +65,7 @@ func test_defense_never_below_a_fifth() -> void:
 	assert_near(p.defense_now(), Ref.defense_now(p.defense, p.base_stats.defense, [0.65, 0.1]), 1e-9)
 
 
-## Kärnan: varje skada, helning och undvikande i 72 strider räknas om och ska stämma med det spelet visade.
+## Kärnan: varje skada, helning och undvikande i 108 strider (0.31: alla tre Realms) räknas om och ska stämma med det spelet visade.
 func test_every_number_in_seeded_battles() -> void:
 	var audit := Audit.new(_data)
 	for setup in Audit.setups(_data):

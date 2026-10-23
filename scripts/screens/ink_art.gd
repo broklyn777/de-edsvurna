@@ -279,6 +279,30 @@ static func skeleton(ci: CanvasItem, c: Vector2, s: float, color: Color) -> void
 	ci.draw_line(c + Vector2(s * 0.32, -s * 0.05), c + Vector2(s * 0.45, -s * 0.5), color, 2.5, true)
 
 
+## 0.31 (Sidenlunden): en spindel som hänger i sin tråd, med ett litet nät bakom.
+static func spider(ci: CanvasItem, c: Vector2, s: float, color: Color) -> void:
+	var hub := c + Vector2(-s * 0.15, -s * 0.2)
+	for i in 6:
+		var a := i * TAU / 6.0 + 0.3
+		ci.draw_line(hub, hub + Vector2(cos(a), sin(a)) * s * 0.75, Color(color, 0.35), 1.0, true)
+	for r in [0.25, 0.45, 0.65]:
+		var ring := PackedVector2Array()
+		for i in 7:
+			var a := i * TAU / 6.0 + 0.3
+			ring.append(hub + Vector2(cos(a), sin(a)) * s * r)
+		ci.draw_polyline(ring, Color(color, 0.3), 1.0, true)
+	var body := c + Vector2(s * 0.15, s * 0.25)
+	ci.draw_line(c + Vector2(s * 0.15, -s * 0.9), body + Vector2(0, -s * 0.12), color, 1.4, true)
+	ci.draw_circle(body + Vector2(0, -s * 0.06), s * 0.09, color)
+	ci.draw_circle(body + Vector2(0, s * 0.12), s * 0.15, color)
+	for side in [-1.0, 1.0]:
+		for i in 4:
+			var root := body + Vector2(side * s * 0.05, -s * 0.06 + i * s * 0.03)
+			var knee := root + Vector2(side * s * 0.22, -s * 0.16 + i * s * 0.1)
+			var foot := knee + Vector2(side * s * 0.1, s * 0.2 + i * s * 0.04)
+			ci.draw_polyline(PackedVector2Array([root, knee, foot]), color, 1.6, true)
+
+
 static func witch(ci: CanvasItem, c: Vector2, s: float, color: Color) -> void:
 	var hat := PackedVector2Array([c + Vector2(-s * 0.3, -s * 0.38), c + Vector2(s * 0.05, -s * 0.95),
 			c + Vector2(s * 0.12, -s * 0.6), c + Vector2(s * 0.3, -s * 0.38)])

@@ -97,7 +97,7 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 |---|---|---|---|
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
 | Våning | floor, `FLOORS`, `stat_mult` i encounters.json | – (en del av en Realm) | Våning 2 och 3 har starkare fiender (×1,08, ×1,10). |
-| Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs på kampanjkartan: Kryptan eller Det fördärvade kapellet. |
+| Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs på kampanjkartan: Kryptan, Det fördärvade kapellet eller Sidenlunden (0.31). |
 | Nivå | level, `Profile.heroes[id].level`, `HeroStats` | Level | +30 % av basvärdet per nivå, inget tak. Fiendernas nivå följer djup och våning. |
 | Erfarenhet | xp, `HeroStats.battle_xp()`, `add_xp()` | Experience | Per vunnen strid efter rumstyp och djup²; hela sällskapet får den. 5 · L² + 10 till nästa nivå. |
 | Personlighet | personality, `data/personalities.json` | Personality | 20 sorter: en stat växer 40 %, en annan 20 %. Byts i Biblioteket (Personality Tome) mot silver. |
@@ -125,7 +125,12 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Livvakt | `guard_family` i traits.json, händelsen `guarded`, `calc.guarded` | bodyguard-traits (Sandstone Imler) | Kultens förman tar 50 % av den färdiga skadan mot andra ur kulten. |
 | Läkning (Grumlad välsignelse), Förhör, Struntar i Defense | villkoren `target_in_family`, `self_family`, `self_not_acted`, `unit_repeated_ability`, regeln `self_last_attacked`, modifieraren `ignore_defense` | – | 0.28: kapellets villkor och Lansspetsen. |
 | Elitgrupp | `elite_group` i encounters.json, `elite_pools` i realms.json | – (vårt val) | En grupp med en elitfiende i rollen; ingen påtvingad elitvariant. Första våningens elit i kryptan är Kolossens vakt. |
-| Familj, Benfolket, Kultens folk, De fallna | `family` i enemies.json (bone_kin, cult_kin, fallen_kin), `CombatSim.family_count()` | Race (Undead …) | Ingen gemensam egenskap, som i Siralim: medlemmarnas egna egenskaper räknar familjen. |
+| Familj, Benfolket, Kultens folk, De fallna, Spindelfolket | `family` i enemies.json (bone_kin, cult_kin, fallen_kin, spider_kin), `CombatSim.family_count()` | Race (Undead …) | Ingen gemensam egenskap, som i Siralim: medlemmarnas egna egenskaper räknar familjen. |
+| Sidenlunden, Lunden | `grove` i realms.json, `"style": "grove"` (`CryptWorld.style`) | Realm | Realm 3 (0.31, `docs/plan/spindlar.md`): Spindelfolket kring Vävmodern. Föremål Kokong, Daggnät, Silkesspår. |
+| Snärjspindel, Gifttandsspindel, Dammspindel, Hullingspindel | snare_spider, venom_spider, dust_spider, barb_spider | Arachnalisk (förebild) | Lundens vanliga fiender, kedjan Snärjd → gift → blind → blödning: Fästtråd, Gift i tråden, Damm i ögonen, Hullingar. Elitvarianter Silkesnärjaren, Smaragdtanden, Askspindeln, Rosentaggen. |
+| Sömnvävaren, Slukaren | sleep_weaver, devourer_spider (`"rank": "elite"`) | Ancient Arachnalisk (Consume) | Lundens elitfiender: Vaggande nät (söver den Snärjda), Sluka (dubbel skada mot den Snärjda, helar, snaran släpper). |
+| Gamla Knut, Vävmodern | old_knot (`"rank": "miniboss"`), web_mother (boss) | – (egna) | Trådens slut (snärjer den överst på tidslinjen) med motdraget Spindelskräck (Woolly Arachnalisk: Arachnophobia); Moderns tråd och Kokongstorm. |
+| Villkor och mål för spindlarna | `source_has_aura`, effekten `remove_aura`, målet `top_enemy`, förmågornas `pick_aura` | – | 0.31: Hullingar, Sluka, Trådens slut och avsikter som visar offret. |
 | Motdrag | `counter` i enemies.json, `CombatSim.counter_for()`, `"counter": true` i traits.json | counter-trait (Satyr Guardian …) | Högst ett per grupp, bara i elitgrupper och bossmöten, från ett visst djup. Kryptan: Sista klangen, Dimmans tyngd, Sista vaktens ilska. Kapellet: Ordensregeln (`limit_enemy_heals`, händelsen `heal_blocked`), Skrattande låga. |
 | Dimmig | dulled (`int_mult`) | – (Dragon Revenants sänkning) | −20 % Intelligence i 2 turer. |
 | Resistent | resistant, `CombatUnit.resistant` | Resistant | Bara statusarna med en Resistant-version verkar svagare på bossen (Blöder, Frusen, Tystad, Hånad, Sover, Snärjd, Förstenad); andra debuffar verkar fullt. |

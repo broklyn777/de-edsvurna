@@ -1479,6 +1479,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		if float(src.auras[aura_id].get("leech", 0.0)) > 0.0:
 			leech += float(src.auras[aura_id].leech)
 			leech_id = aura_id
+	# 0.31: en sömn som träffen själv lägger (Dimmans slöja, Vaggande nät) väcks inte av samma träff.
+	var was_asleep := tgt.auras.has("sleeping")
 	_emit({"type": "damage", "source": src.id, "target": tgt.id, "amount": lost, "absorbed": absorbed,
 			"crit": crit, "school": school, "kind": kind, "ability": ability_id, "direct": direct, "calc": calc,
 			"landed": landed})
@@ -1500,7 +1502,7 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 				var hit := from.stat("intelligence") * root * int(tgt.auras[aura_id].get("stacks", 1))
 				_deal_damage(from, src, hit, "nature", aura_id, false, false, "indirect")
 	# Sover: vaknar av skada.
-	if landed and tgt.alive and tgt.auras.has("sleeping"):
+	if landed and tgt.alive and was_asleep and tgt.auras.has("sleeping"):
 		_remove_aura(tgt, "sleeping", "woke")
 	# Speglande ben (våningsregel): en del av skadan från hjältarnas direkta träffar studsar tillbaka.
 	if direct and landed and src.team == 0 and tgt.team == 1 and src.alive and _rule("mirror_bones"):
@@ -2139,6 +2141,13 @@ func _trait_targets(owner: CombatUnit, where: String, e: Dictionary, ability_tar
 			var kin := _family(owner)
 			if not kin.is_empty():
 				out = [kin[rng.randi() % kin.size()]]
+		# 0.31 (Trådens slut): den fiende som står överst på tidslinjen.
+		"top_enemy":
+			for id in order:
+				var x := unit(id)
+				if x and x.alive and x.team != owner.team:
+					out = [x]
+					break
 		_:
 			if unit(e.get(where, "")) != null:
 				out = [unit(e[where])]
@@ -2189,6 +2198,10 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_add_stack(tgt, effect, e)
 		"dispel", "purge", "to_top", "to_bottom", "step_down":
 			_status_effect(effect, tgt)
+		"remove_aura":
+			# 0.31 (Sluka): en bestämd status släpper.
+			if tgt.auras.has(effect.aura):
+				_remove_aura(tgt, effect.aura, "consumed")
 		"raise_stat":
 			if effect.has("pct_per_family"):
 				# 0.28 (Fastan): mer för varje annan ur familjen.
@@ -2304,6 +2317,11 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 					return false
 			"target_has_aura":
 				var t := unit(e.get("target", ""))
+				if t == null or not t.auras.has(want):
+					return false
+			# 0.31 (Hullingar): den som orsakade händelsen har statusen.
+			"source_has_aura":
+				var t := unit(e.get("source", ""))
 				if t == null or not t.auras.has(want):
 					return false
 			"target_has_any_aura":
@@ -2513,6 +2531,11 @@ func _pick_targets(caster: CombatUnit, ab: Dictionary) -> Array:
 		for x in pool:
 			if x.auras.keys().any(func(a: String) -> bool: return data.auras[a].get("taunt", false)):
 				return [x.id]
+	# 0.31 (spindlarna): "pick_aura" – helst en som har statusen (Slukaren tar den Snärjda), sedan "pick" bland dem.
+	if ab.has("pick_aura"):
+		var marked := pool.filter(func(x: CombatUnit) -> bool: return x.auras.has(ab.pick_aura))
+		if not marked.is_empty():
+			pool.assign(marked)
 	match ab.get("pick", "lowest"):
 		"random":
 			return [pool[rng.randi() % pool.size()].id]

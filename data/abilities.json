@@ -769,11 +769,14 @@
 	"lullaby": {
 		"name": "Vaggvisa",
 		"target": "enemy",
+		"pick": "lowest",
+		"pick_aura": "snared",
 		"kind": "spell",
-		"charges": 5,
-		"icon": "diamond",
-		"button_color": "#9fd3ff",
-		"text": "En fiende somnar i högst 2 turer (vaknar av skada).",
+		"school": "shadow",
+		"anim": "Spell_Simple_Shoot",
+		"cooldown": 3,
+		"sound": "shadow_hit",
+		"text": "Gungar nätet: en Snärjd somnar (tills den tar skada).",
 		"effects": [
 			{
 				"type": "aura",
@@ -1361,6 +1364,285 @@
 			{
 				"type": "heal",
 				"pct_max_hp": 0.3
+			}
+		]
+	},
+	"snare_bite": {
+		"name": "Fästbett",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"venom_bite": {
+		"name": "Giftbett",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"dust_bite": {
+		"name": "Dammbett",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		],
+		"pick_aura": "poisoned"
+	},
+	"barb_bite": {
+		"name": "Hullingbett",
+		"target": "enemy",
+		"pick": "random",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"weaver_bite": {
+		"name": "Vaggbett",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		],
+		"pick_aura": "snared"
+	},
+	"devour_bite": {
+		"name": "Slukbett",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		],
+		"pick_aura": "snared"
+	},
+	"knot_bite": {
+		"name": "Knutens bett",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"mother_bite": {
+		"name": "Moderns bett",
+		"target": "enemy",
+		"pick": "lowest",
+		"melee": true,
+		"sound": "k_boss_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			},
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"chance": 0.3
+			}
+		]
+	},
+	"cocoon_storm": {
+		"name": "Kokongstorm",
+		"target": "all_enemies",
+		"kind": "spell",
+		"school": "nature",
+		"tier": "small",
+		"cooldown": 5,
+		"sound": "shadow_hit",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "snared",
+				"duration": 2
+			}
+		],
+		"anim": "Spell_Simple_Shoot",
+		"text": "Spinner in hela sällskapet: alla blir Snärjda."
+	},
+	"web_shot": {
+		"name": "Nätskott",
+		"target": "enemy",
+		"pick": "highest_attack",
+		"kind": "spell",
+		"school": "nature",
+		"tier": "small",
+		"travel": 0.35,
+		"anim": "Spell_Simple_Shoot",
+		"cooldown": 4,
+		"sound": "nature_hit",
+		"text": "Skjuter ett nät: målet blir Snärjt (längst ned på tidslinjen).",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.4
+			},
+			{
+				"type": "aura",
+				"aura": "snared",
+				"duration": 2
+			}
+		]
+	},
+	"venom_strike": {
+		"name": "Gifthugg",
+		"target": "enemy",
+		"pick": "lowest",
+		"pick_aura": "snared",
+		"melee": true,
+		"cooldown": 2,
+		"sound": "nature_hit",
+		"bonus_vs": {
+			"aura": "snared",
+			"mult": 1.5
+		},
+		"text": "Ett djupt bett: förgiftar, och slår 50 % hårdare mot en Snärjd.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.9
+			},
+			{
+				"type": "aura",
+				"aura": "poisoned"
+			}
+		]
+	},
+	"dust_puff": {
+		"name": "Dammpust",
+		"target": "enemy",
+		"pick": "lowest",
+		"pick_aura": "poisoned",
+		"kind": "spell",
+		"school": "nature",
+		"tier": "small",
+		"travel": 0.3,
+		"anim": "Spell_Simple_Shoot",
+		"cooldown": 3,
+		"sound": "nature_hit",
+		"text": "Blåser damm i ögonen: målet blir Förblindat.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.3
+			},
+			{
+				"type": "aura",
+				"aura": "blind",
+				"duration": 2
+			}
+		]
+	},
+	"barb_throw": {
+		"name": "Hullingkast",
+		"target": "enemy",
+		"pick": "random",
+		"kind": "spell",
+		"school": "physical",
+		"tier": "small",
+		"travel": 0.3,
+		"anim": "Spell_Simple_Shoot",
+		"cooldown": 3,
+		"sound": "arrow_hit",
+		"text": "Kastar en tråd full av hullingar: 50 % chans att målet börjar blöda.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.7
+			},
+			{
+				"type": "aura",
+				"aura": "bleeding",
+				"duration": 1,
+				"chance": 0.5
+			}
+		]
+	},
+	"devour_lunge": {
+		"name": "Slukarens språng",
+		"target": "enemy",
+		"pick": "lowest",
+		"pick_aura": "snared",
+		"melee": true,
+		"cooldown": 2,
+		"sound": "k_boss_hit",
+		"text": "Kastar sig över den svagaste Snärjda.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.3
+			}
+		]
+	},
+	"knot_strangle": {
+		"name": "Trådstrypning",
+		"target": "enemy",
+		"pick": "lowest",
+		"pick_aura": "snared",
+		"melee": true,
+		"cooldown": 2,
+		"sound": "k_boss_hit",
+		"bonus_vs": {
+			"aura": "snared",
+			"mult": 1.5
+		},
+		"text": "Drar åt tråden: 50 % hårdare mot en Snärjd.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.1
+			}
+		]
+	},
+	"cocoon_revive": {
+		"name": "Kokongen",
+		"target": "dead_ally",
+		"kind": "spell",
+		"anim": "Spell_Simple_Shoot",
+		"cooldown": 4,
+		"sound": "renew",
+		"text": "Spinner in en fallen spindel i en kokong; den kryper fram med 40 % liv.",
+		"effects": [
+			{
+				"type": "revive",
+				"pct": 0.4
 			}
 		]
 	}

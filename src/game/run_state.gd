@@ -48,7 +48,7 @@ var perks: Array = []
 ## Paladinen först, sedan följeslagarna.
 var party: Array[String] = ["paladin", "brokk", "alva", "eira"]
 var floor := 0
-## Realm (Siralim): "crypt" eller "chapel" (data/realms.json) och dess våningar.
+## Realm (Siralim): "crypt", "chapel" eller "grove" (data/realms.json) och dess våningar.
 var realm := "crypt"
 var floor_ids: Array = FLOORS
 ## 0.27: två våningar per körning (den första slutar vid en trappa, den andra vid bossen). Realmens tre möten i
@@ -851,6 +851,8 @@ func barricade_target() -> int:
 func use_object(data: Dictionary, choice: String, rng: RandomNumberGenerator) -> Dictionary:
 	var r := current_room()
 	var out := {"text": "", "fight": false, "silver": 0}
+	# 0.31: ett föremål kan låna ett annat föremåls val med egen text ("results" i objects.json, Lundens föremål).
+	var results: Dictionary = data.get("objects", {}).get(r.get("obj", ""), {}).get("results", {})
 	var tier := mini(floor + (1 if Grotto.dist(pos, map.start) >= Grotto.FAR_TIER_DIST else 0), 2)
 	var pools: Array = data.realms[realm].get("pools", [floor_ids])
 	var pool: Array = pools[clampi(tier, 0, pools.size() - 1)]
@@ -882,8 +884,9 @@ func use_object(data: Dictionary, choice: String, rng: RandomNumberGenerator) ->
 			for i in found.slice(0, 2):
 				revealed.append(i)
 			r.done = true
-			out.text = "Registret pekar ut %d %s." % [mini(found.size(), 2), "skatter" if choice == "valuables" else "grupper"] \
-					if not found.is_empty() else "Registret har inget nytt att berätta."
+			out.text = "%s %d %s." % [results.get("found", "Registret pekar ut"), mini(found.size(), 2),
+					"skatter" if choice == "valuables" else "grupper"] \
+					if not found.is_empty() else results.get("none", "Registret har inget nytt att berätta.")
 		"pull":
 			var row := Grotto.xy(pos).y
 			for x in Grotto.SIZE:
@@ -892,7 +895,7 @@ func use_object(data: Dictionary, choice: String, rng: RandomNumberGenerator) ->
 					revealed.append(i)
 			next_stat_mult = 1.15
 			r.done = true
-			out.text = "Ljuset faller över hela raden. Nästa grupp ni möter är beredd (+15 % styrka)."
+			out.text = results.get("pull", "Ljuset faller över hela raden. Nästa grupp ni möter är beredd (+15 % styrka).")
 		"scout":
 			var t := scout_target()
 			var paid := _richest_charge()

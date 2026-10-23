@@ -736,5 +736,295 @@
 		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Helar och renar"
+	},
+	"grove_1": {
+		"name": "Lundens bryn",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"venom_spider",
+			"dust_spider",
+			"barb_spider"
+		],
+		"stat_mult": 1.0
+	},
+	"grove_2": {
+		"name": "Kokongsalen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"venom_spider",
+			"barb_spider",
+			"dust_spider"
+		],
+		"stat_mult": 1.06
+	},
+	"grove_3": {
+		"name": "Vävmoderns krona",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"web_mother",
+			"snare_spider",
+			"dust_spider",
+			"barb_spider"
+		],
+		"stat_mult": 1.0
+	},
+	"grove_1a": {
+		"name": "Första tråden",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"venom_spider"
+		],
+		"stat_mult": 0.64
+	},
+	"grove_1b": {
+		"name": "Damm i snåren",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"dust_spider"
+		],
+		"stat_mult": 0.64
+	},
+	"grove_1c": {
+		"name": "Giftbuskarna",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"venom_spider",
+			"dust_spider"
+		],
+		"stat_mult": 0.64
+	},
+	"grove_2a": {
+		"name": "Kedjan",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"venom_spider",
+			"dust_spider"
+		],
+		"stat_mult": 0.69,
+		"template": "Kedjan"
+	},
+	"grove_2b": {
+		"name": "Hullingarnas snår",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"dust_spider",
+			"barb_spider",
+			"venom_spider"
+		],
+		"stat_mult": 0.69,
+		"template": "Straffar anfall"
+	},
+	"grove_2c": {
+		"name": "Tvillingtrådarna",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"snare_spider",
+			"venom_spider"
+		],
+		"stat_mult": 0.69,
+		"template": "Familj"
+	},
+	"grove_2d": {
+		"name": "Taggiga grenar",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"barb_spider"
+		],
+		"stat_mult": 0.69
+	},
+	"grove_3a": {
+		"name": "Hela väven",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"venom_spider",
+			"dust_spider",
+			"barb_spider"
+		],
+		"stat_mult": 0.7,
+		"template": "Kedjan"
+	},
+	"grove_3b": {
+		"name": "Giftets nötning",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"venom_spider",
+			"venom_spider",
+			"snare_spider"
+		],
+		"stat_mult": 0.7,
+		"template": "Nötning"
+	},
+	"grove_3c": {
+		"name": "Blinda hullingar",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"snare_spider",
+			"venom_spider",
+			"barb_spider"
+		],
+		"stat_mult": 0.7,
+		"template": "Straffar anfall"
+	},
+	"grove_3d": {
+		"name": "Dammets ridå",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"dust_spider",
+			"dust_spider",
+			"venom_spider",
+			"snare_spider"
+		],
+		"stat_mult": 0.7,
+		"template": "Kedjan"
+	},
+	"grove_e1": {
+		"name": "Sömnvävarens bädd",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"sleep_weaver",
+			"snare_spider",
+			"venom_spider"
+		],
+		"stat_mult": 0.9,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Döda öppnaren"
+	},
+	"grove_e2": {
+		"name": "Slukarens bord",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"devourer_spider",
+			"snare_spider",
+			"dust_spider"
+		],
+		"stat_mult": 0.8,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Skördaren"
+	},
+	"grove_e3": {
+		"name": "Gamla Knuts nät",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"old_knot",
+			"venom_spider",
+			"dust_spider"
+		],
+		"stat_mult": 0.76,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Väljer offret"
+	},
+	"grove_e4": {
+		"name": "Två vävare",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"sleep_weaver",
+			"devourer_spider",
+			"snare_spider"
+		],
+		"stat_mult": 0.72,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Två som skördar"
 	}
 }

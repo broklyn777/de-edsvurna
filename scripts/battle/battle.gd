@@ -196,6 +196,7 @@ func _build_scene() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
 	world = CryptWorld.new()
+	world.style = data.realms.get(run.state.realm, {}).get("style", "crypt")
 	add_child(world)
 	for u in sim.units:
 		var vis: Dictionary = (data.heroes[u.id] if u.team == 0 else data.enemies[u.kind]).visual
@@ -206,6 +207,11 @@ func _build_scene() -> void:
 			vis.tint = elite.get("tint", "#ffd36a")
 			vis.glow = elite.get("glow", "#a06a00")
 			vis.scale = float(vis.get("scale", 1.0)) * 1.15
+			# 0.31 (spindlarna): en figur som färgas per material får elitens egna färger och glöd.
+			if elite.has("colors"):
+				vis.colors = elite.colors
+			if elite.has("emit"):
+				vis.emit = elite.emit
 		var m := UnitModel.new()
 		world.add_child(m)
 		m.setup(u, sim, vis)
@@ -930,13 +936,13 @@ func _on_action(e: Dictionary) -> void:
 	var school: String = ab.get("school", "physical")
 	var cue := _cue(e.unit, e.ability, ab)
 	if ab.get("melee", false):
-		m.attack(target_pos, 0.9)
+		m.attack(target_pos, 0.9, ab.get("anim", ""))
 		_cursor = m.last_impact_delay
 		# vapenljudets träff ligger ~0,18 s in i filen: starta det så att träffen landar med slaget
 		_after(maxf(_cursor - 0.18, 0.0), sfx.play.bind(cue, -7.0, 0.06))
 		cue = ""
 	elif ab.get("travel", 0.0) > 0.0:
-		m.attack(target_pos, 0.15)
+		m.attack(target_pos, 0.15, ab.get("anim", ""))
 		var release := maxf(m.last_impact_delay, 0.15)
 		if cue == "bow_shot":  # strängen släpps när pilen far iväg
 			_after(maxf(release - 0.05, 0.0), sfx.play.bind(cue, -6.0, 0.05))
@@ -951,7 +957,7 @@ func _on_action(e: Dictionary) -> void:
 		m.set_blocking(true)
 		_cursor = 0.15
 	else:
-		m.attack(target_pos, 0.1)
+		m.attack(target_pos, 0.1, ab.get("anim", ""))
 		_cursor = maxf(m.last_impact_delay, 0.25)
 	if cue != "":
 		sfx.play(cue, -6.0, 0.05)

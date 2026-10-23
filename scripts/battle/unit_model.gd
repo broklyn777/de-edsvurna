@@ -147,10 +147,13 @@ func face(target: Vector3) -> void:
 
 # --- Rörelser ---------------------------------------------------------------
 
-func attack(toward: Vector3, lunge := 0.25) -> void:
+## 0.31: own_anim väljer en egen animation för förmågan (abilities.json "anim", t.ex. spindelns nätskott).
+func attack(toward: Vector3, lunge := 0.25, own_anim := "") -> void:
 	if _dead:
 		return
 	var list: Array = anims.get("attack", [])
+	if own_anim != "" and _player.has_animation(own_anim):
+		list = [own_anim]
 	last_impact_delay = 0.0
 	if not list.is_empty():
 		var anim_name: String = list[randi() % list.size()]
