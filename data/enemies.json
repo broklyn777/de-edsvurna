@@ -1745,7 +1745,7 @@
 			}
 		],
 		"visual": {
-			"model": "troll",
+			"model": "troll_slev",
 			"scale": 0.95,
 			"anims": {
 				"idle": "Idle_Loop",
@@ -1758,9 +1758,6 @@
 				"walk": "Walk_Loop",
 				"cast": "Spell_Simple_Shoot"
 			},
-			"hide": [
-				"Troll_Club"
-			],
 			"colors": {
 				"Troll_Skin": "#d0a080",
 				"Troll_Green": "#d0a080",
