@@ -356,6 +356,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Strid:** Siralims tidslinje – snabbheten avgör startplatsen, den som agerat läggs längst ned, inga
   rundor. Hjältar väljer Anfall, Förmåga (2–3 per hjälte, med Charges som räcker hela körningen),
   Försvara, Provocera eller Makro. Fiender visar sin avsikt och väljer nästa i slutet av sin tur.
+  **Uppställning** (bara utseende, `UnitModel.formation`): högst Defense vid stridens början står närmast fienderna,
+  sedan fallande (Brokk fram, Imma och Alva bak); sällskapet är flyttat bakåt i bilden (`PARTY_LIFT`) så att ringen
+  inte hamnar bakom MAKROLOGG. Fienderna står kvar som förut (deras plats ska inte avslöja den svagaste).
+  En engångsrörelse som också är en loop (Alvas Spell_Simple_Shoot är både anfall och kast) spelas som kopia utan
+  loop (`UnitModel._once`), så att figuren går tillbaka till vilan.
 - **Makron** (kärnsystem, som i Siralim): upp till 20 rader per makro, subjekt + villkor + handling (+ mål),
   uppifrån och ned, första raden som passar och går att utföra vinner. Tilldelas per hjälte, med
   AUTO eller MANUELL per hjälte i striden (0.29.5): striden börjar på MANUELL; knappen växlar MANUELL → AUTO (följeslagarna) →
