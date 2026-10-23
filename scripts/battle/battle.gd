@@ -869,6 +869,8 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e), _on_trait.bind(e))
 		"rule":
 			_after(_effect_delay(e), _on_rule.bind(e.rule))
+		"chaos_calm":
+			_after(_cursor + 0.1, _float.bind(e.unit, "KAOSVINDEN LÄGGER SIG", UiStyle.TRAIT_GOLD, 18, true))
 		"elite":
 			_after(_cursor + 0.6, _on_elite.bind(e.unit))
 		"release":

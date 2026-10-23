@@ -57,7 +57,7 @@
 	},
 	"chaos_wind": {
 		"name": "Kaosvind",
-		"text": "Hjältarnas Attack och Defense byter plats när striden börjar.",
+		"text": "Hjältarnas Attack och Defense byter plats när striden börjar och byter tillbaka efter var och ens tredje tur.",
 		"silver": 0.6,
 		"original": "Stats are Swapped",
 		"min_instability": 3

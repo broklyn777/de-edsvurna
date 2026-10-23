@@ -53,9 +53,15 @@ static func fit(s: String, size: int, width: float) -> String:
 	size = maxi(size, MIN_SIZE)
 	if bold().get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x <= width:
 		return s
-	while s.length() > 1 and bold().get_string_size(s + "…", HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width:
-		s = s.substr(0, s.length() - 1)
-	return s.strip_edges() + "…"
+	var lo := 0
+	var hi := s.length()
+	while lo < hi:  # längsta början som ryms med "…" (binärsökning, ritas varje bildruta)
+		var mid := (lo + hi + 1) / 2
+		if bold().get_string_size(s.substr(0, mid) + "…", HORIZONTAL_ALIGNMENT_LEFT, -1, size).x <= width:
+			lo = mid
+		else:
+			hi = mid - 1
+	return s.substr(0, lo).strip_edges() + "…"
 
 
 static func bar(ci: CanvasItem, rect: Rect2, pct: float, color: Color, ghost := -1.0) -> void:
