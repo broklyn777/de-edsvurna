@@ -91,7 +91,8 @@ func setup(u: CombatUnit, s: CombatSim, vis: Dictionary) -> void:
 	for part_name in vis.get("hide", []):
 		var hidden := _model.find_child(part_name, true, false)
 		if hidden:
-			hidden.queue_free()
+			hidden.get_parent().remove_child(hidden)  # direkt, innan materialen kopieras (annars fel om material som saknas)
+			hidden.free()
 	for part in vis.get("parts", []):
 		_attach_part(part if part is Dictionary else {"part": part})
 	_attach_weapons(vis.get("weapons", {}))

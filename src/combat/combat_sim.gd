@@ -959,6 +959,7 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 	if cooldown > 0.0:
 		u.cooldowns[ability_id] = cooldown + 1.0  # räknas ned i början av egna turer
 	_emit({"type": "action", "unit": u.id, "action": action, "ability": ability_id, "targets": targets})
+	_note_team_action(u, action, ability_id)
 	_apply_effects(u, ability_id, targets)
 	# Fiender agerar med "intent": deras grundanfall räknas som Anfall, resten som förmågor.
 	if action == "attack" or (action == "intent" and ability_id == u.attack_ability):
@@ -975,6 +976,30 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 	if u.alive:
 		_emit({"type": "acted", "unit": u.id, "action": action, "ability": ability_id, "targets": targets,
 				"ability_kind": ab.get("kind", "attack")})
+
+
+## 0.30.23 (Trollfolket, Bergakungens Stenhjärta): de två senaste handlingarnas sort per lag (attack, ability, defend,
+## provoke), så att en egenskap kan se när laget gör samma sorts handling två gånger i rad.
+var _team_actions := {0: [], 1: []}
+var _last_attacker := {}
+
+
+func action_sort(u: CombatUnit, action: String, ability_id: String) -> String:
+	if action == "attack" or ability_id == u.attack_ability:
+		return "attack"
+	return ability_id if ability_id in ["defend", "provoke"] else "ability"
+
+
+func _note_team_action(u: CombatUnit, action: String, ability_id: String) -> void:
+	var list: Array = _team_actions[u.team]
+	list.append(action_sort(u, action, ability_id))
+	while list.size() > 2:
+		list.pop_front()
+
+
+func team_repeats(team: int) -> bool:
+	var list: Array = _team_actions.get(team, [])
+	return list.size() == 2 and list[0] == list[1]
 
 
 ## En förmåga som kastas automatiskt (artefakt): kostar inga Charges och sätter ingen nedkylning,
@@ -1030,6 +1055,9 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 			# En effekt kan ha en chans (0.22: t.ex. 25 % att Blöda); slås per mål.
 			if effect.has("chance") and rng.randf() >= float(effect.chance):
 				continue
+			# 0.30.23 (Trollmors Vaggvisa): bara mål vars senaste handling var en förmåga.
+			if effect.get("if_target_cast", false) and not last_was_ability(t):
+				continue
 			match effect.type:
 				"damage":
 					var amount := _amount(caster, effect)
@@ -1058,9 +1086,28 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 					_status_effect(effect, t)
 				"family_to_top":
 					_group_to_top(_family(t))
+				"drain_charge":
+					_drain_charge(t)
 	_release_bonus = {}
 	for r in releases:
 		_run_release(caster, r, targets)
+
+
+## 0.30.23: senaste handlingen var en förmåga (inte grundanfallet, Försvara eller Provocera).
+func last_was_ability(u: CombatUnit) -> bool:
+	return u.last_ability != "" and u.last_ability != u.attack_ability and not u.last_ability in ["defend", "provoke"]
+
+
+## 0.30.23 (Broms Tull): målet tappar en Charge ur den förmåga som har flest kvar.
+func _drain_charge(t: CombatUnit) -> void:
+	var best := ""
+	for id in t.charges:
+		if int(t.charges[id]) > 0 and (best == "" or int(t.charges[id]) > int(t.charges[best])):
+			best = id
+	if best == "":
+		return
+	t.charges[best] = int(t.charges[best]) - 1
+	_emit({"type": "charge_drained", "unit": t.id, "ability": best})
 
 
 ## En effekts belopp: "power" (modifierare mot stats, räknas i formeln), "min"/"max" eller
@@ -1449,6 +1496,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	var landed := lost > 0.0 or (absorbed <= 0.0 and dmg + additional > 0.0)
 	if direct and landed:
 		tgt.times_hit += 1
+		if src.team != tgt.team:
+			_last_attacker[tgt.id] = src.id  # 0.30.23: Broms Tull
 	if landed:
 		tgt.hit_log[log_key] = int(tgt.hit_log.get(log_key, 0)) + 1
 	var leech := 0.0
@@ -1611,6 +1660,11 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 				if cap >= 0 and int(_team_heals.get(tgt.team, 0)) >= cap:
 					_emit({"type": "heal_blocked", "unit": tgt.id, "by": x.id, "trait": trait_id})
 					return
+	# 0.30.23 Trollhud: en status med "no_heal" stoppar helningen (trollens läkning efter en förmåga).
+	var sealed := flag_aura(tgt, "no_heal")
+	if sealed != "":
+		_emit({"type": "heal_blocked", "unit": tgt.id, "aura": sealed})
+		return
 	_team_heals[tgt.team] = int(_team_heals.get(tgt.team, 0)) + 1
 	# Fördärvad (0.22): kan inte helas; helningen gör i stället skada (50 %).
 	var blight := flag_aura(tgt, "blight")
@@ -2334,6 +2388,17 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 			"unit_repeated_ability":
 				if not repeated_ability(unit(e.get("unit", "")), e):
 					return false
+			# 0.30.23 (Trollhud): träffen kom från en förmåga, inte grundanfallet eller en egenskap.
+			"source_used_ability":
+				var src := unit(e.get("source", ""))
+				var used: String = e.get("ability", "")
+				if src == null or used == src.attack_ability or not data.abilities.has(used) \
+						or used in ["defend", "provoke"]:
+					return false
+			"source_repeats_team_action":
+				var src := unit(e.get("source", ""))
+				if src == null or e.get("from_trait", false) or not team_repeats(src.team):
+					return false
 			"source_new_ability":
 				var src := unit(e.get("source", ""))
 				if src == null or e.get("from_trait", false) or src.last_ability == "" \
@@ -2514,6 +2579,11 @@ func _pick_targets(caster: CombatUnit, ab: Dictionary) -> Array:
 			var c := unit(_last_caster.get(1 - caster.team, ""))
 			if c != null and pool.has(c):
 				return [c.id]
+		# 0.30.23: den som senast skadade kastaren med en direkt träff (Broms Tull).
+		"last_attacker":
+			var la := unit(_last_attacker.get(caster.id, ""))
+			if la != null and pool.has(la):
+				return [la.id]
 	var best := pool[0]
 	for x in pool:
 		if x.hp_pct() < best.hp_pct():

@@ -333,5 +333,12 @@
 		"debuff_immune": true,
 		"text": "Skrattande låga: kan inte få debuffar; skickas längst ned på tidslinjen när den träffas.",
 		"glyph": "diamond"
+	},
+	"troll_scorched": {
+		"name": "Svedd hud",
+		"duration": 1,
+		"no_heal": true,
+		"text": "Svedd hud: trollet läker inte förrän efter sin nästa tur.",
+		"glyph": "flame"
 	}
 }
