@@ -74,5 +74,15 @@
 		"name": "Den som alltid vänder åter",
 		"text": "Har gått ned tjugofem gånger och kommit hem varje gång.",
 		"cond": {"descents": 25}
+	},
+	"feast_breaker": {
+		"name": "Den som bröt högtiden",
+		"text": "Fällde biskopen innan kulten hann hålla sin svarta mässa.",
+		"cond": {"stat": {"ev_cult_feast": 1}}
+	},
+	"land_ward": {
+		"name": "Landets värn",
+		"text": "Har stoppat tre händelser i landet i tid.",
+		"cond": {"stat": {"events_won": 3}}
 	}
 }

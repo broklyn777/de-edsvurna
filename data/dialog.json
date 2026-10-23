@@ -280,6 +280,26 @@
 					"text": "Valvet får vänta. Jag går inte ned dit igen förrän klockorna har tystnat."
 				}
 			]
+		},
+		"merchant": {
+			"name": "Handelsmannen",
+			"title": "Handelsman",
+			"where": "på gården",
+			"color": "#8a6a3a",
+			"greet": [
+				"God dag, god dag."
+			],
+			"idle": []
+		},
+		"pilgrim": {
+			"name": "Pilgrimen",
+			"title": "Pilgrim",
+			"where": "i värdshuset",
+			"color": "#b9b2a0",
+			"greet": [
+				"Frid åt er."
+			],
+			"idle": []
 		}
 	},
 	"stations": {
@@ -393,6 +413,21 @@
 				{
 					"label": "Visa hjältebladet",
 					"open": "sheet"
+				}
+			]
+		},
+		"merchant": {
+			"person": "merchant",
+			"name": "Handelsmannen",
+			"tag": "Bärnsten och trick",
+			"options": [
+				{
+					"label": "Köp bärnsten",
+					"open": "buy_amber"
+				},
+				{
+					"label": "Köp ett trick",
+					"open": "buy_trick"
 				}
 			]
 		}
@@ -2310,7 +2345,7 @@
 		"hedda_reward": "Här. {belöning} silver för att du tog hem det i stället för att sälja det på vägen."
 	},
 	"chronicle": {
-		"_comment": "Krönikan (Chronicle): 1–2 repliker vid hemkomsten för det viktigaste som har hänt. key = händelsen, who = talaren ('subject' = den det handlar om), subject = bara när händelsen gäller den hjälten. {namn}, {titel} (bara om spelaren har en titel), {ny_titel}, {hjälte}, {plats}/{Plats}, {boss}, {antal}, {djup}. Följeslagare talar bara om de var med. Ragnhild citerar bara 1917 års bibel (ref, docs/ideer/ragnhild-bibelord.md).",
+		"_comment": "Krönikan (Chronicle): 1–2 repliker vid hemkomsten för det viktigaste som har hänt. key = händelsen, who = talaren ('subject' = den det handlar om), subject = bara när händelsen gäller den hjälten. {namn}, {titel} (bara om spelaren har en titel), {ny_titel}, {hjälte}, {plats}/{Plats}, {boss}, {antal}, {djup}. Följeslagare talar bara om de var med. Ragnhild citerar bara 1917 års bibel (ref, docs/ideer/ragnhild-bibelord.md). Den levande världen (WorldEvents): nycklarna map_*, cost_on/cost_off, gift, ev_start/ev_won/ev_half/ev_lost och advice, med villkoren realm, step (steg eller [min, max]), event, outcome, advice och min_streak (gånger i rad i Realmen); {gånger}, {grupp}, {trofé}, {fiende}, {annan}.",
 		"lines": [
 			{
 				"id": "elin_fell_1",
@@ -2781,6 +2816,531 @@
 				"key": "home_left",
 				"who": "gorm",
 				"text": "Att vända i tid är också en sorts mod. Det är bara inte lika roligt att berätta om."
+			},
+			{
+				"id": "imma_down_crypt_1",
+				"key": "map_down",
+				"who": "imma",
+				"realm": "crypt",
+				"step": [
+					0,
+					1
+				],
+				"text": "Benfolket har krupit tillbaka till de nedre gravarna. Arbetarna går ned igen, i par."
+			},
+			{
+				"id": "tor_down_crypt_1",
+				"key": "map_down",
+				"who": "tor",
+				"realm": "crypt",
+				"step": [
+					0,
+					1
+				],
+				"text": "Mina karlar var nere i övre valvet i går. Tyst som i en kyrka. Den goda sortens tyst, {namn}."
+			},
+			{
+				"id": "tor_down_crypt_2",
+				"key": "map_down",
+				"who": "tor",
+				"realm": "crypt",
+				"step": [
+					2,
+					3
+				],
+				"text": "Ni har tryckt dem bakåt, men de är kvar i sidogångarna. Jag hör dem skrapa när det är tyst."
+			},
+			{
+				"id": "tor_down_crypt_streak",
+				"key": "map_down",
+				"who": "tor",
+				"realm": "crypt",
+				"min_streak": 2,
+				"text": "{gånger} i rad i kryptan nu. Benfolket lär sig vem du är, {namn}. Det märks på hur tyst det är."
+			},
+			{
+				"id": "alva_down_crypt_1",
+				"key": "map_down",
+				"who": "alva",
+				"realm": "crypt",
+				"text": "Jag tände ett ljus vid gravkoret när vi gick upp. Det brann fortfarande när vi nådde trappan. Det brukar det inte göra."
+			},
+			{
+				"id": "elin_down_chapel_1",
+				"key": "map_down",
+				"who": "elin",
+				"realm": "chapel",
+				"step": [
+					0,
+					1
+				],
+				"text": "Pilgrimerna vågar sig förbi kapellet igen. En av dem lämnade honung åt dig, {namn}. Jag har gömt den för Imma."
+			},
+			{
+				"id": "elin_down_chapel_2",
+				"key": "map_down",
+				"who": "elin",
+				"realm": "chapel",
+				"step": [
+					2,
+					3
+				],
+				"text": "Kultens folk har dragit sig in bakom koret. Det är inte över, men vägen förbi går att gå i dagsljus."
+			},
+			{
+				"id": "imma_down_chapel_1",
+				"key": "map_down",
+				"who": "imma",
+				"realm": "chapel",
+				"text": "Klockorna i kapellet har slutat ringa på nätterna. Jag sov en hel natt. Det var konstigt. Bra konstigt."
+			},
+			{
+				"id": "ragnhild_down_chapel_1",
+				"key": "map_down",
+				"who": "ragnhild",
+				"realm": "chapel",
+				"ref": "Ps. 119:105",
+				"text": "»Ditt ord är mina fötters lykta och ett ljus på min stig.« Det lyser i kapellets fönster igen. Vi röjde bara vägen."
+			},
+			{
+				"id": "alrik_down_chapel_streak",
+				"key": "map_down",
+				"who": "alrik",
+				"realm": "chapel",
+				"min_streak": 2,
+				"text": "Kapellet {gånger} i rad. Jag har börjat skriva det med större bokstäver i krönikan, {namn}."
+			},
+			{
+				"id": "hedda_down_grove_1",
+				"key": "map_down",
+				"who": "hedda",
+				"realm": "grove",
+				"step": [
+					0,
+					1
+				],
+				"text": "Kärrkarlarna kom med järn i dag. Vägen genom lunden är fri från nät igen. Jag har eld i ässjan och humör därefter."
+			},
+			{
+				"id": "hedda_down_grove_2",
+				"key": "map_down",
+				"who": "hedda",
+				"realm": "grove",
+				"step": [
+					2,
+					3
+				],
+				"text": "Ni har bränt bort de värsta näten. Kärrorna kommer, men långsamt. Ett par vändor till, så går det som förr."
+			},
+			{
+				"id": "sven_down_grove_streak",
+				"key": "map_down",
+				"who": "sven",
+				"realm": "grove",
+				"min_streak": 2,
+				"text": "Ni har varit i lunden {gånger} nu. Vägen till byn är fri från nät igen, säger kärrkarlarna. Jag har inte sett det själv, men jag tror dem."
+			},
+			{
+				"id": "eira_down_grove_1",
+				"key": "map_down",
+				"who": "eira",
+				"realm": "grove",
+				"text": "Jag gick sista biten och såg efter. Spindlarna har flyttat in mot mitten av lunden. Kanterna är våra igen."
+			},
+			{
+				"id": "imma_down_grove_1",
+				"key": "map_down",
+				"who": "imma",
+				"realm": "grove",
+				"text": "Jag har spindelväv i håret fortfarande. Men lunden andas lite lättare, och det gör jag också."
+			},
+			{
+				"id": "gorm_down_1",
+				"key": "map_down",
+				"who": "gorm",
+				"text": "{Plats} har fått känna av er, {namn}. Det håller inte för evigt, men det håller en tid."
+			},
+			{
+				"id": "brokk_down_1",
+				"key": "map_down",
+				"who": "brokk",
+				"text": "{Plats} är lite tommare nu. Min sköld är lite bucklig. Det är ett rimligt byte."
+			},
+			{
+				"id": "sven_up_crypt_1",
+				"key": "map_up",
+				"who": "sven",
+				"realm": "crypt",
+				"text": "Arbetarna säger att det skrapar under golvet i kryptans övre valv igen. Jag säger inget. Jag stänger bara porten."
+			},
+			{
+				"id": "alrik_up_chapel_1",
+				"key": "map_up",
+				"who": "alrik",
+				"realm": "chapel",
+				"text": "Någon har tänt ljus i kapellet igen, och det var inte vi. Kultens folk samlas när ingen ser efter."
+			},
+			{
+				"id": "sven_up_grove_1",
+				"key": "map_up",
+				"who": "sven",
+				"realm": "grove",
+				"text": "Kärrkarlarna tar omvägen runt lunden igen. Nya nät över stigen, säger de."
+			},
+			{
+				"id": "gorm_up_1",
+				"key": "map_up",
+				"who": "gorm",
+				"text": "Medan vi var borta har {plats} vuxit. Det är inte ditt fel, {namn}. Men det är din sak."
+			},
+			{
+				"id": "gorm_warn_1",
+				"key": "map_warn",
+				"who": "gorm",
+				"text": "{Plats} har fått vara i fred för länge. Gå dit snart, annars vaknar något som inte borde."
+			},
+			{
+				"id": "tor_wake_crypt_1",
+				"key": "map_wake",
+				"who": "tor",
+				"realm": "crypt",
+				"text": "Ingen går ned längre. Något har satt sig på Benfurstens stol, och det är svartare än han. Jag skickar inte mina karlar dit förrän du har varit där."
+			},
+			{
+				"id": "imma_wake_1",
+				"key": "map_wake",
+				"who": "imma",
+				"text": "Arbetarna vägrar gå ned i {plats}. Jag skämtar inte om det här, {namn}."
+			},
+			{
+				"id": "alrik_calm_twisted_1",
+				"key": "map_calm_twisted",
+				"who": "alrik",
+				"text": "Den svärtade är slagen. Jag har strukit hans namn på krönikans sista sida och skrivit ditt där i stället."
+			},
+			{
+				"id": "gorm_calm_twisted_1",
+				"key": "map_calm_twisted",
+				"who": "gorm",
+				"text": "Det som vaknade är slaget. Skriv ned vad du såg, {namn}. Allt."
+			},
+			{
+				"id": "hedda_cost_grove_1",
+				"key": "cost_on",
+				"who": "hedda",
+				"realm": "grove",
+				"text": "Järnet kommer inte fram. Nät över vägen genom lunden. Rensa den, så smider jag billigare igen."
+			},
+			{
+				"id": "hedda_cost_grove_2",
+				"key": "cost_on",
+				"who": "hedda",
+				"realm": "grove",
+				"text": "Kärrkarlarna vänder vid lunden. Jag har det järn jag har, och det kostar mer nu. Gå dit, {namn}, så sänker jag priset samma dag."
+			},
+			{
+				"id": "tor_cost_crypt_1",
+				"key": "cost_on",
+				"who": "tor",
+				"realm": "crypt",
+				"text": "Mina karlar vägrar gå ned. Benfolket står i övre valvet igen. Jag skickar ingen bärnsten förrän kryptan är lugnare. Förlåt, {namn}."
+			},
+			{
+				"id": "tor_cost_crypt_2",
+				"key": "cost_on",
+				"who": "tor",
+				"realm": "crypt",
+				"text": "Arbetarna sitter på gården och väntar. De går inte ned förrän någon har trängt tillbaka benfolket. Det är du, om jag får säga så."
+			},
+			{
+				"id": "elin_cost_chapel_1",
+				"key": "cost_on",
+				"who": "elin",
+				"realm": "chapel",
+				"text": "Pilgrimerna har slutat komma förbi kapellet, och med dem förbanden. Nästa gång får helarna hushålla med en laddning mindre."
+			},
+			{
+				"id": "elin_cost_chapel_2",
+				"key": "cost_on",
+				"who": "elin",
+				"realm": "chapel",
+				"text": "Mina hyllor gapar, {namn}. Kultens folk står på pilgrimsvägen. Rensa kapellet, så kommer salvorna tillbaka."
+			},
+			{
+				"id": "hedda_cost_off_grove_1",
+				"key": "cost_off",
+				"who": "hedda",
+				"realm": "grove",
+				"text": "Kärrorna är tillbaka! Järn, kol, till och med lite tenn. Priserna är som förr, och jag är på bättre humör än förr."
+			},
+			{
+				"id": "tor_cost_off_crypt_1",
+				"key": "cost_off",
+				"who": "tor",
+				"realm": "crypt",
+				"text": "Mina karlar går ned igen. Inte långt, men de går. Då skickar jag bärnsten som förr."
+			},
+			{
+				"id": "elin_cost_off_chapel_1",
+				"key": "cost_off",
+				"who": "elin",
+				"realm": "chapel",
+				"text": "Förband på hyllan igen. Pilgrimerna kom med två kärror. Jag grät lite, men säg inget till Gorm."
+			},
+			{
+				"id": "sven_gift_grove_1",
+				"key": "gift",
+				"who": "sven",
+				"realm": "grove",
+				"text": "En handelsman väntar på gården. Han kom genom lunden utan en enda tråd på sig och vill sälja bärnsten. Han frågade efter dig, {namn}."
+			},
+			{
+				"id": "tor_gift_crypt_1",
+				"key": "gift",
+				"who": "tor",
+				"realm": "crypt",
+				"text": "Arbetarna hittade något i övre valvet när det blev lugnt. Bärnsten och lite silver. Det är ditt; utan dig hade de aldrig gått ned."
+			},
+			{
+				"id": "elin_gift_chapel_1",
+				"key": "gift",
+				"who": "elin",
+				"realm": "chapel",
+				"text": "En pilgrim kom förbi med en välsignelse åt sällskapet och ett par lindor extra. Helarna får en laddning till nästa gång."
+			},
+			{
+				"id": "ragnhild_gift_chapel_1",
+				"key": "gift",
+				"who": "ragnhild",
+				"realm": "chapel",
+				"ref": "Rom. 12:13",
+				"text": "»Varen angelägna om att bevisa gästvänlighet.« Pilgrimen fick soppa och en säng, och vi fick en välsignelse. Rättvist byte."
+			},
+			{
+				"id": "alrik_ev_start_feast",
+				"key": "ev_start",
+				"who": "alrik",
+				"event": "cult_feast",
+				"text": "Kultens folk samlas till högtid i kapellet. En svart mässa, om två nedstigningar. Fäll biskopen innan dess, {namn}, annars hörs klockorna ända hit."
+			},
+			{
+				"id": "sven_ev_start_caravan",
+				"key": "ev_start",
+				"who": "sven",
+				"event": "caravan",
+				"text": "En karavan sitter fast i lundens nät. Järn och salt, och kuskar som inte har sett dagsljus på en vecka. Klara questen där innan de ger upp."
+			},
+			{
+				"id": "tor_ev_start_bell",
+				"key": "ev_start",
+				"who": "tor",
+				"event": "bell_tolls",
+				"text": "Gravklockan ringer. Ingen drar i repet. Gå ned och slå tillbaka det som vaknar, fyra grupper eller fler, innan klockan väcker resten."
+			},
+			{
+				"id": "elin_ev_start_pilgrims",
+				"key": "ev_start",
+				"who": "elin",
+				"event": "pilgrims",
+				"text": "Pilgrimer är på väg genom kapellets dal, med barn och kärror. Klara questen i kapellet så att vägen är fri innan de kommer dit."
+			},
+			{
+				"id": "gorm_ev_start_fronts",
+				"key": "ev_start",
+				"who": "gorm",
+				"event": "two_fronts",
+				"text": "Både kryptan och lunden rör sig. Du hinner inte allt, {namn}. Välj en, fäll bossen där, och låt mig oroa mig för den andra."
+			},
+			{
+				"id": "alrik_ev_won_feast",
+				"key": "ev_won",
+				"who": "alrik",
+				"event": "cult_feast",
+				"text": "Högtiden bröts innan första psalmen. Jag skrev in det med rött bläck: kulten fick ingen mässa i år."
+			},
+			{
+				"id": "imma_ev_won_feast",
+				"key": "ev_won",
+				"who": "imma",
+				"event": "cult_feast",
+				"text": "Ingen svart mässa! Kulten får äta sin festmat själva. Om de har festmat. Jag hoppas att de inte har det."
+			},
+			{
+				"id": "hedda_ev_won_caravan",
+				"key": "ev_won",
+				"who": "hedda",
+				"event": "caravan",
+				"text": "Karavanen kom fram, och handelsmannen själv väntar på gården. Han har bärnsten och dåligt minne för priser. Utnyttja det."
+			},
+			{
+				"id": "tor_ev_won_bell",
+				"key": "ev_won",
+				"who": "tor",
+				"event": "bell_tolls",
+				"text": "Klockan tystnade. Under den låg en sten som de döda vaktade. Den är din, {namn}. Jag vill inte ha något som de döda tyckte om."
+			},
+			{
+				"id": "elin_ev_won_pilgrims",
+				"key": "ev_won",
+				"who": "elin",
+				"event": "pilgrims",
+				"text": "Pilgrimerna kom fram! Förband, salvor och en hel kärra linne. Helarna får en laddning extra de två närmaste gångerna."
+			},
+			{
+				"id": "gorm_ev_won_fronts",
+				"key": "ev_won",
+				"who": "gorm",
+				"event": "two_fronts",
+				"text": "Båda fronterna stoppade. Det var inte möjligt, och du gjorde det ändå. Jag säger det en gång: bra gjort."
+			},
+			{
+				"id": "gorm_ev_half_fronts",
+				"key": "ev_half",
+				"who": "gorm",
+				"event": "two_fronts",
+				"text": "Du stoppade den ena fronten. Den andra växte medan vi var borta. Så är det, {namn}: man väljer, och sedan går man dit."
+			},
+			{
+				"id": "elin_ev_lost_feast",
+				"key": "ev_lost",
+				"who": "elin",
+				"event": "cult_feast",
+				"text": "Mässan hölls. Vi hörde klockorna ända hit. Kapellet har vuxit och biskopen är starkare nästa gång, men det går att vända. Det har det alltid gjort."
+			},
+			{
+				"id": "gorm_ev_lost_feast",
+				"key": "ev_lost",
+				"who": "gorm",
+				"event": "cult_feast",
+				"text": "Mässan hölls. Biskopen väntar med mer kraft nästa gång, men han väntar. Gå dit när du är redo, {namn}, så tar vi tillbaka kapellet."
+			},
+			{
+				"id": "hedda_ev_lost_caravan",
+				"key": "ev_lost",
+				"who": "hedda",
+				"event": "caravan",
+				"text": "Karavanen kom aldrig loss. Järnet blir dyrt en tid, några nedstigningar. Det är inte ditt fel, {namn}. Rensa lunden, så kommer nästa fram."
+			},
+			{
+				"id": "tor_ev_lost_bell",
+				"key": "ev_lost",
+				"who": "tor",
+				"event": "bell_tolls",
+				"text": "Klockan ringde tills fler vaknade. Nästa gång i kryptan står de tätare. Jag har sett värre, men inte ofta. Det går att slå tillbaka."
+			},
+			{
+				"id": "elin_ev_lost_pilgrims",
+				"key": "ev_lost",
+				"who": "elin",
+				"event": "pilgrims",
+				"text": "Pilgrimerna kom aldrig fram. Jag dukade för dem två kvällar. Kapellet växte medan vi väntade. Vi får göra vägen säker för nästa skara."
+			},
+			{
+				"id": "sven_ev_lost_fronts",
+				"key": "ev_lost",
+				"who": "sven",
+				"event": "two_fronts",
+				"text": "Båda fronterna rörde sig. Kryptan och lunden har vuxit. Jag stängde porten två gånger i kväll. Det går att vända, säger Gorm. Jag tror honom."
+			},
+			{
+				"id": "stig_advice_practice_1",
+				"key": "advice",
+				"who": "stig",
+				"advice": "practice",
+				"text": "Två gånger fälld i rad. Gå till Övningsgården och möt {grupp} där tills det sitter. Ingen dör hos mig."
+			},
+			{
+				"id": "stig_advice_practice_2",
+				"key": "advice",
+				"who": "stig",
+				"advice": "practice",
+				"text": "{grupp} fällde er. Bra, nu vet vi vad vi ska öva på. I Övningsgården ställer jag upp samma grupp så många gånger du vill, {namn}."
+			},
+			{
+				"id": "alrik_advice_trophy_1",
+				"key": "advice",
+				"who": "alrik",
+				"advice": "trophy",
+				"text": "Jag har läst om {fiende}. Du äger {trofé}, och den är gjord för just det här. Ge den till någon vid nästa lägereld."
+			},
+			{
+				"id": "alrik_advice_trophy_2",
+				"key": "advice",
+				"who": "alrik",
+				"advice": "trophy",
+				"text": "{trofé} ligger i din samling och samlar damm. Mot {fiende} är den värd mer än guld, {namn}."
+			},
+			{
+				"id": "gorm_advice_depth_1",
+				"key": "advice",
+				"who": "gorm",
+				"advice": "depth",
+				"text": "Gå ett djup grundare ett tag, till djup {djup}. Det är ingen skam att vässa svärdet innan man hugger igen."
+			},
+			{
+				"id": "gorm_advice_realm_1",
+				"key": "advice",
+				"who": "gorm",
+				"advice": "realm",
+				"text": "Pröva {annan} ett tag. Där är det lugnare just nu, och sällskapet behöver vinna en gång innan det glömmer hur det känns."
+			},
+			{
+				"id": "elin_lost_2",
+				"key": "lost",
+				"who": "elin",
+				"outcome": "loss",
+				"text": "De bar in er en efter en. Alla andas. Lägg dig nu, {namn}; fördärvet väntar till i morgon, och det gör jag också."
+			},
+			{
+				"id": "elin_lost_forfeit",
+				"key": "lost",
+				"who": "elin",
+				"outcome": "forfeit",
+				"text": "Du vände i tid. Det är klokt, inte svagt. Sitt ned, jag har värmt vatten."
+			},
+			{
+				"id": "gorm_lost_2",
+				"key": "lost",
+				"who": "gorm",
+				"text": "Ni förlorade. Det har jag också gjort, fler gånger än jag har vunnit. Ät, sov, och tänk sedan på vad som fällde er."
+			},
+			{
+				"id": "imma_lost_2",
+				"key": "lost",
+				"who": "imma",
+				"text": "Jag har räknat ut att vi fortfarande leder mot gröten, {namn}. Ett mot noll. Det är en början."
+			},
+			{
+				"id": "brokk_lost_1",
+				"key": "lost",
+				"who": "brokk",
+				"text": "Skölden höll inte. Jag gör om remmarna i kväll. I morgon håller den."
+			},
+			{
+				"id": "elin_home_left_1",
+				"key": "home_left",
+				"who": "elin",
+				"text": "Hemma före mörkret. Kloka barn. Det finns bröd på bordet och ingen som frågar varför."
+			},
+			{
+				"id": "sven_home_left_1",
+				"key": "home_left",
+				"who": "sven",
+				"text": "Redan tillbaka? Bra. Jag hade inte ens hunnit somna. Nästan inte."
+			},
+			{
+				"id": "gorm_lost_forfeit",
+				"key": "lost",
+				"who": "gorm",
+				"outcome": "forfeit",
+				"text": "Du drog dig ur striden medan alla kunde gå. Det är ett beslut, inte ett nederlag. Vi tar det därifrån i morgon."
+			},
+			{
+				"id": "imma_lost_forfeit",
+				"key": "lost",
+				"who": "imma",
+				"outcome": "forfeit",
+				"text": "Taktisk reträtt. Jag har bestämt att det heter så. Det låter mycket bättre med soppa till."
 			}
 		]
 	},
@@ -2861,6 +3421,193 @@
 					"text": "Det som vaknade är slaget. Skriv ned vad du såg, {namn}. Allt."
 				}
 			]
+		},
+		"summary": {
+			"_comment": "Hemkomstens sammanfattning per Realm (LivingMap.news): down (trycktes tillbaka), quest (questen klarad), zero (nu stilla), up (växte), warn (steg 3), utan siffror. Turas om.",
+			"crypt": {
+				"down": [
+					"Ni slogs i kryptan. Benfolket drog sig ned mot de nedre gravarna.",
+					"Kryptans övre valv är tystare efter er."
+				],
+				"quest": [
+					"Ni klarade questen i kryptan. Benfolket drog sig långt ned.",
+					"Kryptans quest är klar, och de döda håller sig i djupet."
+				],
+				"zero": [
+					"Där är det nu stilla en tid; arbetarna går ned igen."
+				],
+				"up": [
+					"Ingen gick till kryptan. Det skrapar i övre valvet igen.",
+					"Benfolket i kryptan har kommit upp ett valv."
+				],
+				"warn": [
+					"Ingen gick till kryptan. Benfolket blir djärvare; nästa gång kan något vakna där nere."
+				]
+			},
+			"chapel": {
+				"down": [
+					"Ni slogs i kapellet. Kultens folk drog sig in bakom koret.",
+					"Kapellets klockor ringer mer sällan efter er."
+				],
+				"quest": [
+					"Ni klarade questen i kapellet. Kultens folk drog sig långt tillbaka.",
+					"Kapellets quest är klar, och pilgrimsvägen är friare."
+				],
+				"zero": [
+					"Där är det nu stilla en tid; pilgrimerna går förbi igen."
+				],
+				"up": [
+					"Ingen gick till kapellet. Någon har tänt ljus där igen.",
+					"Kultens folk samlas tätare i kapellet."
+				],
+				"warn": [
+					"Ingen gick till kapellet. Kultens folk står på pilgrimsvägen."
+				]
+			},
+			"grove": {
+				"down": [
+					"Ni slogs i lunden. Spindelfolket drog sig in mot mitten.",
+					"Näten i lundens utkant är brända."
+				],
+				"quest": [
+					"Ni klarade questen i lunden. Spindelfolket drog sig långt in.",
+					"Lundens quest är klar, och vägen till byn är fri från nät."
+				],
+				"zero": [
+					"Där är det nu stilla en tid; kärrorna går genom lunden."
+				],
+				"up": [
+					"Ingen gick till lunden. Nya nät över stigen.",
+					"Spindelfolket har spunnit sig närmare vägen."
+				],
+				"warn": [
+					"Ingen gick till lunden. Näten når handelsvägen."
+				]
+			}
+		}
+	},
+	"world": {
+		"_comment": "Den levande världen (WorldEvents, data/world_events.json). ongoing: vad borgens folk säger medan en händelse (event), en följd (cost) eller handelsmannen (merchant) pågår. cost_map: kampanjkartans rad om vad Realmen kostar hemma. cost_on/cost_off/gift/tor: hemkomstens sammanfattning. merchant: handelsmannen på gården.",
+		"ongoing": [
+			{
+				"id": "hedda_ongoing_grove",
+				"who": "hedda",
+				"cost": "grove",
+				"text": "Nät över handelsvägen, och järnet kostar därefter. Rensa lunden, så sänker jag priset."
+			},
+			{
+				"id": "hedda_ongoing_caravan",
+				"who": "hedda",
+				"event": "caravan",
+				"text": "Karavanen sitter fast i lunden. Kommer den loss får jag järn för ett år."
+			},
+			{
+				"id": "tor_ongoing_crypt",
+				"who": "tor",
+				"cost": "crypt",
+				"text": "Vi går inte ned. Inte förrän benfolket är tillbakatryckt. Säg till när det är gjort, {namn}."
+			},
+			{
+				"id": "tor_ongoing_bell",
+				"who": "tor",
+				"event": "bell_tolls",
+				"text": "Hör du den? Klockan. Den har ringt sedan i morse, och ingen drar i repet."
+			},
+			{
+				"id": "elin_ongoing_chapel",
+				"who": "elin",
+				"cost": "chapel",
+				"text": "Jag lindar med det jag har. Pilgrimerna kommer inte förbi kapellet så länge kulten står där."
+			},
+			{
+				"id": "elin_ongoing_pilgrims",
+				"who": "elin",
+				"event": "pilgrims",
+				"text": "Jag har bäddat för pilgrimerna. Se till att de kommer fram, {namn}."
+			},
+			{
+				"id": "alrik_ongoing_feast",
+				"who": "alrik",
+				"event": "cult_feast",
+				"text": "Kulten räknar dagarna till högtiden. Jag räknar också. Fäll biskopen innan de är klara."
+			},
+			{
+				"id": "gorm_ongoing_feast",
+				"who": "gorm",
+				"event": "cult_feast",
+				"text": "Kapellet förbereder sin högtid. Det är ett skäl att gå dit, inte ett skäl att vara rädd."
+			},
+			{
+				"id": "gorm_ongoing_fronts",
+				"who": "gorm",
+				"event": "two_fronts",
+				"text": "Kryptan eller lunden. Välj och gå. Den du inte väljer får jag oroa mig för."
+			},
+			{
+				"id": "sven_ongoing_caravan",
+				"who": "sven",
+				"event": "caravan",
+				"text": "Kärrkarlarna står vid porten och väntar på sina kamrater i lunden. Jag har gett dem te."
+			},
+			{
+				"id": "sven_ongoing_merchant",
+				"who": "sven",
+				"merchant": true,
+				"text": "Handelsmannen väntar på gården. Han säger att han har bärnsten. Han säger mycket."
+			},
+			{
+				"id": "stig_ongoing_bell",
+				"who": "stig",
+				"event": "bell_tolls",
+				"text": "Klockan i kryptan stör mina dockor. Gå ned och tysta den, {namn}."
+			},
+			{
+				"id": "stig_ongoing_fronts",
+				"who": "stig",
+				"event": "two_fronts",
+				"text": "Två fronter. Öva på den ena gruppen här, slå den andra där nere. Så gör man."
+			},
+			{
+				"id": "elin_ongoing_feast",
+				"who": "elin",
+				"event": "cult_feast",
+				"text": "Jag hör att kulten samlas. Ät ordentligt innan du går dit. Det är allt jag kan göra, så gör det."
+			}
+		],
+		"cost_map": {
+			"grove": "Hemma: nät över handelsvägen – smedjan kostar mer.",
+			"crypt": "Hemma: arbetarna vägrar gå ned – Tor skickar ingen bärnsten.",
+			"chapel": "Hemma: inga pilgrimer – helarna får en Charge mindre."
+		},
+		"cost_on": {
+			"grove": "Nät över handelsvägen: Hedda får inget järn, och smedjan kostar mer tills lunden trycks tillbaka.",
+			"crypt": "Arbetarna vägrar gå ned i kryptan: Tor skickar ingen bärnsten tills benfolket trycks tillbaka.",
+			"chapel": "Pilgrimerna slutar komma: Mor Elin har ont om förband, och helarna får en Charge mindre tills kapellet trycks tillbaka."
+		},
+		"cost_off": {
+			"grove": "Handelsvägen är fri: smedjan kostar som förr.",
+			"crypt": "Arbetarna går ned i kryptan igen.",
+			"chapel": "Pilgrimerna kommer igen: Mor Elin har förband."
+		},
+		"gift": {
+			"grove": "En handelsman har kommit genom lunden och väntar på gården.",
+			"crypt": "Arbetarna hittade bärnsten och silver i kryptan.",
+			"chapel": "En pilgrim gav sällskapet en välsignelse: helarna får en Charge extra nästa körning."
+		},
+		"tor": "Tors arbetare skickade en {bärnsten} från kryptan.",
+		"merchant": {
+			"name": "Handelsmannen",
+			"greet": [
+				"Bärnsten, ädla paladin! Och trick, för den som vet vad den gör. Vägen genom lunden var fri, tack vare er.",
+				"Ni räddade min karavan. Det glömmer jag inte, och inte mina priser heller: halva, för er."
+			],
+			"bought": "Ett gott köp. Jag går vidare innan vägen stängs igen. Lycka till där nere.",
+			"poor": "Silvret räcker inte, ser jag. Jag väntar en stund till."
+		},
+		"pilgrim": "Vi kom förbi kapellet utan att någon hindrade oss. Det är er förtjänst. Ta välsignelsen med er ned; den räcker till ett par extra lindor.",
+		"smith": {
+			"grove": "Nät över handelsvägen genom lunden, så järnet kostar mer. Rensa lunden, så smider jag billigare igen.",
+			"caravan": "Karavanen gick förlorad, och järnet är dyrt en tid."
 		}
 	}
 }

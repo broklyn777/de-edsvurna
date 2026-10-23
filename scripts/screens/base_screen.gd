@@ -104,6 +104,17 @@ var _option_rects: Array[Rect2] = []
 ## En kort text mitt på skärmen (en plats utan person som är stängd), och hur länge den syns.
 var _toast_text := ""
 var _toast_t := 0.0
+## Den levande världen: hemkomsten (Profile.homecoming, Chronicle). Den som det viktigaste angår går från sin plats
+## fram till paladinen och pratar i samtalsrutan; nästa kommer efter. Sist en kort sammanfattning. Ett tryck hoppar fram.
+var _home_pending := false
+var _home_queue: Array = []
+## Den som går fram just nu: {who, from, to, t}.
+var _visitor := {}
+## De som har sagt sitt och står kvar tills sammanfattningen stängs: [{who, at}].
+var _visitors: Array = []
+var _home_summary := false
+const VISIT_TIME := 1.1
+const VISIT_SPOTS := [Vector2(-125, -30), Vector2(125, -30), Vector2(0, -120)]
 
 
 func _ready() -> void:
@@ -125,8 +136,12 @@ func _ready() -> void:
 	_trail.append(pal)
 	run.audio.start_ambience("ambience_home", -16.0)
 	_start_dialog()
+	_home_pending = _has_homecoming()
 	# Utvecklarflagga för skärmdumpar: --talk=<station> står vid stationen och pratar.
 	for arg in OS.get_cmdline_user_args():
+		if arg == "--home-summary" and _home_pending:
+			_home_pending = false  # hemkomstens sammanfattning direkt (skärmdumpar)
+			_home_summary = true
 		if arg == "--settings":
 			SettingsBox.open.call_deferred(self)  # 0.30: inställningarna öppna (skärmdumpar)
 		if arg.begins_with("--talk="):
@@ -210,6 +225,7 @@ func _process(delta: float) -> void:
 	super(delta)
 	_layout()
 	_walk(delta)
+	_visit(delta)
 	_toast_t = maxf(0.0, _toast_t - delta)
 	_plan_layer.queue_redraw()
 	_ui_layer.queue_redraw()
@@ -233,6 +249,146 @@ func _walk(delta: float) -> void:
 			_trail = _trail.slice(_trail.size() - 120)
 	if _path.is_empty() and _walking_to != "":
 		_arrive(_walking_to)
+
+
+# --- Hemkomsten (den levande världen) ---------------------------------------------
+
+func _has_homecoming() -> bool:
+	var h: Dictionary = run.profile.homecoming
+	return not h.get("remarks", []).is_empty() or not h.get("titles", []).is_empty() \
+			or not h.get("summary", []).is_empty()
+
+
+func _start_homecoming() -> void:
+	_home_pending = false
+	pal = _v(keep.yard.home)
+	_trail.append(pal)
+	_home_queue = Array(run.profile.homecoming.get("remarks", [])).duplicate()
+	_next_visitor()
+
+
+## Nästa person går fram; när alla har pratat visas sammanfattningen (om det finns något att sammanfatta).
+func _next_visitor() -> void:
+	if _home_queue.is_empty():
+		var h: Dictionary = run.profile.homecoming
+		if not h.get("summary", []).is_empty() or not h.get("titles", []).is_empty():
+			_home_summary = true
+		else:
+			_home_done()
+		return
+	var r: Dictionary = _home_queue.pop_front()
+	var who := String(r.speaker)
+	var spot: Vector2 = VISIT_SPOTS[mini(_visitors.size(), VISIT_SPOTS.size() - 1)]
+	_visitor = {"who": who, "text": String(r.get("text", "")), "from": _person_pos(who), "to": pal + spot, "t": 0.0}
+
+
+func _visit(delta: float) -> void:
+	if _home_pending and _conv.is_empty() and _path.is_empty():
+		_start_homecoming()
+	if _visitor.is_empty():
+		return
+	_visitor.t = float(_visitor.t) + delta / VISIT_TIME
+	if float(_visitor.t) >= 1.0:
+		_visitor_arrives()
+
+
+func _visitor_arrives() -> void:
+	var v := _visitor
+	_visitor = {}
+	_visitors.append({"who": v.who, "at": v.to})
+	_talk(String(v.who), [String(v.text)], "", false, _next_visitor)
+
+
+func _home_done() -> void:
+	_home_summary = false
+	_visitors.clear()
+	_visitor = {}
+	run.profile.homecoming = {}
+	run.profile.growth_news = {}
+	run._save()
+
+
+## Var personen står i planen (varifrån hen går): sin plats i borgen, sin plats i raden, en stol i värdshuset, annars
+## porten (Tor och handelsmannen kommer utifrån).
+func _person_pos(who: String) -> Vector2:
+	for id in keep.rooms:
+		if Intro.who_at(run.data, run.profile, id) == who and keep.rooms[id].has("person"):
+			return _v(keep.rooms[id].person)
+	var party: Array = _followers()
+	if party.has(who):
+		return _follower_pos(party.find(who))
+	var lodgers := _lodgers()
+	if lodgers.has(who) and lodgers.find(who) < keep.inn_seats.size():
+		return _v(keep.inn_seats[lodgers.find(who)])
+	if who == "tor" and _tor_here():
+		return TOR_AT
+	return _v(keep.rooms.gate.door)
+
+
+## Är personen på väg fram eller står vid paladinen (då ritas hen inte på sin plats)?
+func _away(who: String) -> bool:
+	if not _visitor.is_empty() and _visitor.who == who:
+		return true
+	for v in _visitors:
+		if v.who == who:
+			return true
+	return false
+
+
+## Tor och arbetarna på gården: när kryptan står på steg 3+ (de vägrar gå ned) eller gravklockan ringer.
+func _tor_here() -> bool:
+	if not run.profile.intro_done:
+		return false
+	return WorldEvents.has_cost(run.profile, "crypt") or String(WorldEvents.active(run.profile).get("id", "")) == "bell_tolls"
+
+
+const MERCHANT_AT := Vector2(700, 470)
+## Tor och arbetarna på gården (planens pixlar), en bit från paladinens plats vid porten.
+const TOR_AT := Vector2(615, 600)
+const WORKERS_AT := [Vector2(560, 655), Vector2(650, 680), Vector2(575, 545)]
+const PILGRIM_LINE := "pilgrim"
+
+
+## En pilgrim sitter i värdshuset medan välsignelsen väntar (kapellet trycktes tillbaka eller pilgrimerna kom fram).
+func _pilgrim_seat() -> int:
+	if int(run.profile.world.get("bless_runs", 0)) <= 0:
+		return -1
+	var i := _lodgers().size()
+	return i if i < keep.inn_seats.size() else -1
+
+
+func _talk_merchant() -> void:
+	var t: Dictionary = run.data.dialog.get("world", {}).get("merchant", {})
+	var greet: Array = t.get("greet", [""])
+	var grateful: bool = run.profile.world.get("merchant", {}).get("grateful", false)
+	_walk_to("yard", MERCHANT_AT + Vector2(70, 40))
+	_talk("merchant", [String(greet[mini(1 if grateful else 0, greet.size() - 1)])], "merchant", true)
+
+
+## Valen hos en station; handelsmannens med vara och pris.
+func _station_options(station: String) -> Array:
+	var opts := Dialog.options(run.data, station)
+	if station == "merchant":
+		var goods := WorldEvents.merchant_goods(run.profile, run.data)
+		for o in opts:
+			if o.get("open", "") == "buy_amber":
+				o.label = "%d %s – %d silver" % [WorldEvents.MERCHANT_AMBER, String(run.data.materials.amber[goods.amber].name).to_lower(),
+						WorldEvents.merchant_price(run.profile, "amber")]
+			elif o.get("open", "") == "buy_trick":
+				o.label = "%s – %d silver" % [String(run.data.materials.tricks[goods.trick].name),
+						WorldEvents.merchant_price(run.profile, "trick")]
+	return opts
+
+
+func _buy(what: String) -> void:
+	var t: Dictionary = run.data.dialog.get("world", {}).get("merchant", {})
+	if WorldEvents.merchant_buy(run.profile, run.data, what):
+		run.ui("ui_coins", -10.0)
+		run._save()
+		_talk("merchant", [String(t.get("bought", ""))], "", false)
+	else:
+		run.ui("ui_error", -14.0)
+		_talk("merchant", [String(t.get("poor", ""))], "merchant", true)
 
 
 # --- Vem som är var -------------------------------------------------------------
@@ -389,6 +545,10 @@ func _arrive(station: String) -> void:
 		_talk(who, lines, station, true)
 		return
 	var extra := Dialog.idle_line(data, run.profile, who, turn) if turn % 3 != 2 else ""
+	# Den levande världen: det som pågår (en händelse, en följd, handelsmannen) sägs varannan gång.
+	var news := WorldEvents.ongoing_line(run.profile, data, who, turn / 2)
+	if news != "" and turn % 2 == 0:
+		extra = news
 	_talk(who, [(greeting + " " + extra).strip_edges()], station, true)
 
 
@@ -442,7 +602,7 @@ func _advance() -> void:
 
 
 func _choose(i: int) -> void:
-	var opts := Dialog.options(run.data, _conv.station)
+	var opts := _station_options(_conv.station)
 	var open: String = opts[i].get("open", "")
 	_conv = {}
 	if open != "":
@@ -475,6 +635,10 @@ func _open(station: String) -> void:
 			run.go(run.CHRONICLE_SCENE)  # krönikan och titlarna (Chronicle)
 		"sheet":
 			run.open_sheet(_lodger, run.profile.recruited, run.BASE_SCENE)
+		"buy_amber":
+			_buy("amber")
+		"buy_trick":
+			_buy("trick")
 		"talk_trophies":
 			_talk("alrik", Dialog.person(run.data, "alrik").get("trophies", []), "library", true)
 
@@ -504,6 +668,12 @@ func _settings_rect() -> Rect2:
 
 
 func _tap(p: Vector2) -> void:
+	if _home_summary:
+		_home_done()
+		return
+	if not _visitor.is_empty():
+		_visitor_arrives()  # ett tryck hoppar fram
+		return
 	if not _conv.is_empty():
 		if _conv.menu and _conv.i == _conv.lines.size() - 1:
 			for i in _option_rects.size():
@@ -530,6 +700,16 @@ func _tap(p: Vector2) -> void:
 		if _v(keep.scene.people[who]).distance_to(q) < 50.0:
 			_talk_scene(who)
 			return
+	if WorldEvents.merchant_here(run.profile) and run.profile.intro_done and MERCHANT_AT.distance_to(q) < 50.0:
+		_talk_merchant()
+		return
+	if _tor_here() and TOR_AT.distance_to(q) < 50.0:
+		_talk_scene("tor")
+		return
+	var ps := _pilgrim_seat()
+	if ps >= 0 and _v(keep.inn_seats[ps]).distance_to(q) < 50.0:
+		_talk("pilgrim", [String(run.data.dialog.get("world", {}).get("pilgrim", ""))], "", false)
+		return
 	var party: Array = _followers()
 	for i in party.size():
 		if _follower_pos(i).distance_to(q) < 50.0:
@@ -580,8 +760,12 @@ func _talk_lodger(who: String) -> void:
 func _talk_scene(who: String) -> void:
 	_walk_to("yard", _v(keep.scene.people[who]) + Vector2(70, 40))
 	var at: Variant = Intro.at_lines(run.data, run.profile, who)
+	var news := WorldEvents.ongoing_line(run.profile, run.data, who, int(run.profile.talks.get(who, 0)))
 	if at != null:
 		_talk(who, (at as Array).duplicate() if at is Array else [String(at)], "", false)
+	elif news != "" and run.profile.intro_done:
+		_met(who)
+		_talk(who, [news], "", false)
 	else:
 		var turn := _met(who)
 		_talk(who, [(Dialog.greeting(run.data, who, turn) + " " + Dialog.idle_line(run.data, run.profile, who, turn)).strip_edges()],
@@ -643,9 +827,20 @@ func _paint_plan(ci: CanvasItem) -> void:
 	for id in keep.rooms:
 		var room: Dictionary = keep.rooms[id]
 		var who := Intro.who_at(data, run.profile, id)
-		if who == "" or not room.has("person"):
+		if who == "" or not room.has("person") or _away(who):
 			continue
 		DialogBox.portrait(ci, data, who, Rect2(_v(room.person) - Vector2(36, 36), Vector2(72, 72)))
+	# Den levande världen: arbetarna och Tor på gården, handelsmannen, en pilgrim i värdshuset.
+	if _tor_here():
+		for w in WORKERS_AT:
+			KeepArt.pawn(ci, w, 58.0, Color("#7d6b52"))
+		if not _away("tor"):
+			DialogBox.portrait(ci, data, "tor", Rect2(TOR_AT - Vector2(32, 32), Vector2(64, 64)))
+	if WorldEvents.merchant_here(run.profile) and run.profile.intro_done:
+		KeepArt.pawn(ci, MERCHANT_AT, 72.0, Color("#8a6a3a"))
+	var ps := _pilgrim_seat()
+	if ps >= 0:
+		KeepArt.pawn(ci, _v(keep.inn_seats[ps]), 60.0, Color("#b9b2a0"))
 	# 0.25: arbetarna från kryptan på gården: de skadade på marken och folket som tar hand om dem.
 	if Intro.scene(data, run.profile):
 		for w in keep.scene.wounded:
@@ -655,17 +850,43 @@ func _paint_plan(ci: CanvasItem) -> void:
 	# De som bor i värdshuset.
 	var lodgers := _lodgers()
 	for i in mini(lodgers.size(), keep.inn_seats.size()):
-		_token(ci, lodgers[i], _v(keep.inn_seats[i]), 64.0)
+		if not _away(lodgers[i]):
+			_token(ci, lodgers[i], _v(keep.inn_seats[i]), 64.0)
 	# Sällskapet i en rad bakom paladinen, sist paladinen själv.
 	var party: Array = _followers()
 	for i in range(party.size() - 1, -1, -1):
-		_token(ci, party[i], _follower_pos(i), 70.0)
+		if not _away(party[i]):
+			_token(ci, party[i], _follower_pos(i), 70.0)
+	# Hemkomsten: de som har gått fram till paladinen, och den som är på väg.
+	for v in _visitors:
+		_visit_token(ci, String(v.who), v.at)
+	if not _visitor.is_empty():
+		var t := _ease(float(_visitor.t))
+		var at: Vector2 = (_visitor.from as Vector2).lerp(_visitor.to, t) + Vector2(0, -absf(sin(t * PI * 4.0)) * 8.0)
+		_visit_token(ci, String(_visitor.who), at)
 	# Ett ljust sken under pjäsen, så att den syns mot en detaljerad bild.
 	for j in 3:
 		ci.draw_circle(pal + Vector2(0, -PIECE_H * 0.2), PIECE_H * (0.62 - j * 0.14), Color(1.0, 0.93, 0.74, 0.18 + j * 0.12))
 	var bob := sin(_t * 9.0) * 4.0 if not _path.is_empty() else sin(_t * 2.0) * 1.5
 	InkArt.icon(ci, "paladin", pal + Vector2(0, -PIECE_H * 0.35 + bob), PIECE_H)
 	ci.draw_set_transform(Vector2.ZERO)
+
+
+static func _ease(t: float) -> float:
+	t = clampf(t, 0.0, 1.0)
+	return t * t * (3.0 - 2.0 * t)
+
+
+## En person som går fram vid hemkomsten: porträttet (folket i borgen och följeslagarna), annars en tuschpjäs.
+func _visit_token(ci: CanvasItem, who: String, c: Vector2) -> void:
+	if run.data.heroes.has(who):
+		_token(ci, who, c, 74.0)
+	elif DialogBox.portrait_texture(who) != null:
+		var r := Rect2(c - Vector2(36, 50), Vector2(72, 72))
+		ci.draw_rect(r.grow(3), Color(0.93, 0.85, 0.66))
+		DialogBox.portrait(ci, run.data, who, r)
+	else:
+		KeepArt.pawn(ci, c, 72.0, Color(Dialog.person(run.data, who).get("color", "#6a6a6a")))
 
 
 ## Utvecklarflagga --keep-debug: rummens rutor, dörrar, gångar, platser och ljus, för att passa in en ny bild.
@@ -725,12 +946,26 @@ func _paint_ui(ci: CanvasItem) -> void:
 		ci.draw_rect(Rect2(lp, Vector2(lw, 22)), Color(0.93, 0.85, 0.66, 0.92))
 		UiStyle.text(ci, lp + Vector2(0, 17), label, 16, col, HORIZONTAL_ALIGNMENT_CENTER, lw)
 		var who := Intro.who_at(data, run.profile, id)
-		if who != "" and keep.rooms[id].has("person"):
+		if who != "" and keep.rooms[id].has("person") and not _away(who):
 			UiStyle.text(ci, to_screen(_v(keep.rooms[id].person) + Vector2(-90, 0)) + Vector2(0, 40 * scale_k + 16),
 					Dialog.display_name(data, who), 15, Color(1, 0.95, 0.85), HORIZONTAL_ALIGNMENT_CENTER, 180 * scale_k, 4)
 	for who in _scene_people():
 		UiStyle.text(ci, to_screen(_v(keep.scene.people[who]) + Vector2(-90, 0)) + Vector2(0, 36 * scale_k + 16),
 				Dialog.display_name(data, who), 15, Color(1, 0.95, 0.85), HORIZONTAL_ALIGNMENT_CENTER, 180 * scale_k, 4)
+	var world_names := []
+	if _tor_here() and not _away("tor"):
+		world_names.append(["Tor och arbetarna", TOR_AT + Vector2(0, 36)])
+	if WorldEvents.merchant_here(run.profile) and run.profile.intro_done:
+		world_names.append(["Handelsmannen", MERCHANT_AT + Vector2(0, 30)])
+	if _pilgrim_seat() >= 0:
+		world_names.append(["Pilgrimen", _v(keep.inn_seats[_pilgrim_seat()]) + Vector2(0, 30)])
+	# Hemkomsten: namnen under dem som har gått fram till paladinen.
+	for v in _visitors:
+		if not run.data.heroes.has(v.who):
+			world_names.append([Dialog.display_name(data, v.who), (v.at as Vector2) + Vector2(0, 30)])
+	for n in world_names:
+		UiStyle.text(ci, to_screen(n[1] + Vector2(-160, 0)) + Vector2(0, 16), n[0], 15, Color(1, 0.95, 0.85),
+				HORIZONTAL_ALIGNMENT_CENTER, 320 * scale_k, 4)
 	# Uppdraget eller ett rykte, som en rad överst.
 	var quest := _quest_line(data)
 	if quest != "":
@@ -764,8 +999,41 @@ func _paint_ui(ci: CanvasItem) -> void:
 			return
 		var box := DialogBox.box(ci, data, size, line.who, line.text, _t, not (last and _conv.menu))
 		if last and _conv.menu:
-			_option_rects = DialogBox.options(ci, box, Dialog.options(data, _conv.station).map(
+			_option_rects = DialogBox.options(ci, box, _station_options(_conv.station).map(
 					func(o: Dictionary) -> String: return o.label))
+	if _home_summary:
+		_paint_summary(ci, data)
+
+
+## Hemkomstens sammanfattning efter samtalet: kartans och världens ändringar, nya titlar och händelsen som pågår.
+func _paint_summary(ci: CanvasItem, data: Dictionary) -> void:
+	var prof: Profile = run.profile
+	var lines: Array = Array(prof.homecoming.get("summary", [])).duplicate()
+	var ongoing := WorldEvents.map_line(prof, data)
+	if ongoing != "":
+		lines.append("Pågår: " + ongoing + ".")
+	var titles: Array = prof.homecoming.get("titles", [])
+	var w := 780.0
+	var x := (size.x - w) / 2.0
+	var body := 0.0
+	for l in lines:
+		body += UiStyle.bold().get_multiline_string_size(String(l), HORIZONTAL_ALIGNMENT_LEFT, w - 64, 17).y + 8
+	var h := 96.0 + body + 34.0 * titles.size() + 30.0
+	var b := Rect2(x, maxf(20.0, (size.y - h) / 2.0), w, h)
+	ci.draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.45))
+	ci.draw_rect(b, Color(0.16, 0.11, 0.07, 0.97))
+	ci.draw_rect(b, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
+	UiStyle.text(ci, b.position + Vector2(0, 44), "MEDAN NI VAR BORTA", 22, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, w, 3)
+	var y := b.position.y + 72
+	for l in lines:
+		ci.draw_circle(Vector2(x + 30, y + 10), 3.5, UiStyle.TRAIT_GOLD)
+		y += UiStyle.para(ci, Vector2(x + 44, y + 16), String(l), 17, Color(1, 1, 1, 0.9), w - 64) + 8
+	for t in titles:
+		UiStyle.text(ci, Vector2(x + 24, y + 24), "Ny titel: " + Chronicle.title_name(data, t), 20, UiStyle.TRAIT_GOLD,
+				HORIZONTAL_ALIGNMENT_LEFT, w - 48, 3)
+		y += 34
+	UiStyle.text(ci, Vector2(x, b.end.y - 14), "Tryck för att fortsätta", 15, Color(1, 1, 1, 0.55),
+			HORIZONTAL_ALIGNMENT_CENTER, w)
 
 
 func _quest_line(data: Dictionary) -> String:

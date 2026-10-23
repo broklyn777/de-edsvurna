@@ -571,6 +571,10 @@ func _draw_artifact(data: Dictionary, profile: Profile, art: Dictionary) -> void
 	var cost := profile.artifact_level_cost(hero)
 	var label := "HÖGSTA NIVÅN" if cost == 0 else "NIVÅ %d – %d SILVER" % [level + 1, cost]
 	UiStyle.big_button(self, _button_rect(), label, _t, cost > 0 and profile.silver >= cost)
+	# Den levande världen: järnet kostar mer (nät över handelsvägen, en förlorad karavan); Hedda säger varför.
+	var why := WorldEvents.smith_reason(data, profile)
+	if why != "" and cost > 0:
+		UiStyle.para(self, _button_rect().position + Vector2(-440, 14), why, 16, Color("#f0b49a"), 420, 3)
 	if cost > 0:
 		var opens := Forge.unlock_text(level + 1)
 		var sub := ("Öppnar %s" % opens) if opens != "" else "Stärker allt med 10 %"
@@ -791,3 +795,4 @@ func _draw_forge(data: Dictionary, profile: Profile) -> void:
 	if cost > profile.silver:
 		UiStyle.text(self, _button_rect().position + Vector2(0, -10), "För lite silver", 16, Color("#ff8a6a"),
 				HORIZONTAL_ALIGNMENT_CENTER, _button_rect().size.x, 3)
+

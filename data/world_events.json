@@ -1,0 +1,64 @@
+{
+	"_comment": "Den levande världen (vårt val, ingen motsvarighet i Siralim): händelser med tidsgräns i nedstigningar (WorldEvents, src/game/world_events.gd). realms: var händelsen pågår (två = man måste välja). turns: nedstigningar man har på sig. win: boss (fäll Realmens boss), quest (klara den sista våningens quest) eller wins:N (minst N vunna strider där). on_win/on_lose: silver, growth (steg upp för Realmen), stone (en Nether Stone), merchant (en handelsman kommer, grateful = billigare), bless_runs (+1 Charge på helningsförmågorna i så många körningar), smith_runs (smedjans nivåer dyrare i så många nedstigningar), boss_mult (Realmens boss starkare nästa körning dit), stat_mult (alla grupper starkare nästa körning dit). Texterna utan siffror; mark = kampanjkartans rad.",
+	"cult_feast": {
+		"name": "Kulten samlas till högtid",
+		"realms": ["chapel"],
+		"turns": 2,
+		"win": "boss",
+		"text": "Kultens folk samlas i kapellet till en svart mässa. Fäll biskopen innan den hålls.",
+		"mark": "Kulten samlas till högtid – fäll biskopen",
+		"win_text": "Högtiden bröts innan den började. Kapellet tystnade.",
+		"lose_text": "Mässan hölls. Kapellet växte, och biskopen är starkare nästa gång.",
+		"on_win": {"silver": 60},
+		"on_lose": {"growth": 1, "boss_mult": 1.12}
+	},
+	"caravan": {
+		"name": "Spindlarna har tagit en karavan",
+		"realms": ["grove"],
+		"turns": 2,
+		"win": "quest",
+		"text": "En karavan med järn och salt sitter fast i lundens nät. Klara questen där innan kärrkarlarna ger upp.",
+		"mark": "En karavan sitter fast i näten – klara questen",
+		"win_text": "Karavanen kom loss. Handelsmannen kommer själv och tackar.",
+		"lose_text": "Karavanen gick förlorad. Järnet blir dyrt en tid.",
+		"on_win": {"silver": 40, "merchant": "grateful"},
+		"on_lose": {"smith_runs": 3}
+	},
+	"bell_tolls": {
+		"name": "Gravklockan ringer av sig själv",
+		"realms": ["crypt"],
+		"turns": 2,
+		"win": "wins:4",
+		"text": "Klockan i kryptan ringer utan att någon drar i repet. Gå ned och slå tillbaka de döda som vaknar.",
+		"mark": "Gravklockan ringer – slå fyra grupper där",
+		"win_text": "Klockan tystnade. Under den låg något som de döda vaktade.",
+		"lose_text": "Klockan ringde tills fler döda vaknade. Kryptan växte, och nästa gång är grupperna starkare.",
+		"on_win": {"stone": true},
+		"on_lose": {"growth": 1, "stat_mult": 1.06}
+	},
+	"pilgrims": {
+		"name": "En pilgrimsskara drar genom kapellets dal",
+		"realms": ["chapel"],
+		"turns": 3,
+		"win": "quest",
+		"text": "Pilgrimer på väg till borgen måste förbi kapellet. Klara questen där så att vägen är fri.",
+		"mark": "Pilgrimer på väg – klara questen i kapellet",
+		"win_text": "Pilgrimerna kom fram med förband och salvor till Mor Elin.",
+		"lose_text": "Pilgrimerna kom aldrig fram. Kapellet växte medan vi väntade.",
+		"on_win": {"silver": 30, "bless_runs": 2},
+		"on_lose": {"growth": 1}
+	},
+	"two_fronts": {
+		"name": "Benfolket och spindlarna rör sig samtidigt",
+		"realms": ["crypt", "grove"],
+		"turns": 2,
+		"win": "boss",
+		"text": "Både kryptan och lunden rör sig. Ni hinner bara stoppa den ena – fäll bossen där ni går.",
+		"mark": "Två fronter – fäll bossen i kryptan eller lunden",
+		"win_text": "Ni stoppade båda. Det var inte meningen att ni skulle hinna.",
+		"half_text": "Ni stoppade den ena fronten. Den andra växte.",
+		"lose_text": "Båda fronterna växte medan vi var på annat håll.",
+		"on_win": {"silver": 50},
+		"on_lose": {"growth": 1}
+	}
+}

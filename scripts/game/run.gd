@@ -402,9 +402,23 @@ func _dev_args() -> void:
 			dev_profile = true  # en påhittad krönika med titlar (sparas inte)
 			Chronicle.demo(profile, data)
 		elif arg.begins_with("--home="):
-			dev_profile = true  # --home=fell|boss3|rare|depth: hemkomstrutan på kampanjkartan (sparas inte)
+			# --home=fell|boss3|rare|depth|event_lost|event_won|start|loss|cost|gift: hemkomsten i borgen (sparas inte)
+			dev_profile = true
 			Chronicle.demo_home(profile, data, arg.get_slice("=", 1))
-			get_tree().change_scene_to_file.call_deferred(CAMPAIGN_SCENE)
+			get_tree().change_scene_to_file.call_deferred(BASE_SCENE)
+		elif arg.begins_with("--event="):
+			dev_profile = true  # --event=<id>: en världshändelse pågår (sparas inte); med --gate syns den på kampanjkartan
+			WorldEvents.demo_event(profile, data, arg.get_slice("=", 1))
+		elif arg == "--world-demo":
+			# --world-demo: lunden på steg 3 (smedjan dyrare), kryptan på 3 (Tor och arbetarna på gården), handelsmannen och en
+			# pilgrim i värdshuset (sparas inte)
+			dev_profile = true
+			profile.intro_done = true
+			for r in ["crypt", "chapel", "grove"]:
+				profile.descents[r] = maxi(int(profile.descents.get(r, 0)), 1)
+			profile.growth = {"crypt": 3, "chapel": 1, "grove": 3}
+			profile.world.merchant = {"grateful": false}
+			profile.world.bless_runs = 1
 		elif arg == "--chronicle":
 			get_tree().change_scene_to_file.call_deferred(CHRONICLE_SCENE)  # krönikan och titlarna hos Broder Alrik
 		elif arg == "--descents":
@@ -459,6 +473,7 @@ func start_run(party: Array[String]) -> void:
 	state.rules_hidden = pending_rules.hidden.duplicate()
 	roll_rules()  # nästa körning får nya regler
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
+	WorldEvents.begin_run(profile, state)  # välsignelsen och händelsernas styrka förbrukas
 	# 0.24: nedstigningarna räknas per Realm; första gången i en Realm säger någon något om den.
 	# 0.30.16: introts nedstigning är den första tills Imma har följt med (den som föll ensam får trappan igen).
 	state.first_descent = profile.total_descents() == 0 or Intro.current(data, profile).get("id", "") == "descent"
@@ -489,10 +504,17 @@ func start_run(party: Array[String]) -> void:
 func end_descent(outcome := "loss") -> void:
 	if state.practice or state.finished:
 		return
+	var before := {}
+	for r in data.realms:
+		before[r] = LivingMap.growth(profile, r)
 	var changes: Array = []
 	if not state.first_descent:
 		changes = LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
-	Chronicle.end(profile, data, state, outcome, changes)
+	# Den levande världen: händelsen, följderna i borgen och gåvorna (WorldEvents).
+	var world := WorldEvents.after_descent(profile, data, state.realm, outcome, state.wins, state.realm_quest_done, before)
+	if outcome in ["loss", "forfeit"] and state.map != null:
+		state.chron.lost_to = state.encounter()  # hemkomstens råd: mötet som fällde sällskapet
+	Chronicle.end(profile, data, state, outcome, changes, world)
 
 
 ## Sparar den pågående körningen (user://run.cfg).

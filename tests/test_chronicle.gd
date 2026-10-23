@@ -187,7 +187,7 @@ func test_patterns_same_realm_streak_and_comeback() -> void:
 func test_no_line_repeats_until_the_others_are_said() -> void:
 	var p := _profile()
 	var pool: Array = _data.dialog.chronicle.lines.filter(func(l: Dictionary) -> bool:
-			return l.key == "lost" and l.who in ["elin", "gorm", "imma"])
+			return l.key == "lost" and l.who in ["elin", "gorm", "imma", "brokk"] and not l.has("outcome"))
 	var seen: Array = []
 	for i in pool.size():
 		var r := Chronicle.line_for(p, _data, {"n": i, "party": PARTY, "realm": "crypt"}, {"key": "lost", "prio": 54, "realm": "crypt"})
@@ -198,7 +198,7 @@ func test_no_line_repeats_until_the_others_are_said() -> void:
 	assert_true(seen.has(again.id), "sedan börjar de om")
 
 
-func test_at_most_two_remarks_by_different_people() -> void:
+func test_at_most_three_remarks_by_different_people() -> void:
 	var p := _profile()
 	p.boss_wins["bone_lich"] = 2
 	p.chron_stats.falls = {"brokk": 4}
@@ -206,8 +206,12 @@ func test_at_most_two_remarks_by_different_people() -> void:
 			"rare": 1, "rescued": ["eira"], "clear": true, "trophies": ["rosary"]})
 	var r: Array = p.homecoming.remarks
 	assert_true(r.size() >= 1 and r.size() <= Chronicle.MAX_REMARKS)
-	if r.size() == 2:
-		assert_true(r[0].speaker != r[1].speaker)
+	var who := r.map(func(x: Dictionary) -> String: return x.speaker)
+	for s in who:
+		assert_eq(who.count(s), 1, "olika personer: %s" % str(who))
+	# Den tredje platsen bara för världen eller ett råd.
+	if r.size() == 3:
+		assert_true(Chronicle.WORLD_KEYS.has(r[2].key) or Chronicle.WORLD_KEYS.has(r[1].key), str(r))
 	# En lugn hemkomst: bara en replik.
 	var q := _profile()
 	Chronicle.simulate(q, _data, {"party": PARTY, "outcome": "boss"})
@@ -249,7 +253,8 @@ func test_titles_unlock_from_the_chronicle() -> void:
 	assert_eq(q.chronicle[-1].twisted, "bone_lich_black")
 	assert_eq(q.homecoming.remarks[0].key, "twisted_boss")
 	var ids := Chronicle.title_ids(_data)
-	assert_true(ids.size() >= 10 and ids.size() <= 15, "10–15 titlar (%d)" % ids.size())
+	# 15 i krönikan, två till för den levande världens händelser (Den som bröt högtiden, Landets värn).
+	assert_true(ids.size() >= 10 and ids.size() <= 17, "10–17 titlar (%d)" % ids.size())
 
 
 func test_living_map_remark_competes_with_the_chronicle() -> void:

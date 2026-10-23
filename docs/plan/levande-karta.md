@@ -93,3 +93,92 @@ första förvriden boss med 216 i liv och 13 i Attack (kryptan steg 4: 3/13 %).
 4. Ska kapellet och Lunden få egna förvridna bossar (förslag: Den svärtade biskopen, Vävmoderns förvridna drottning)?
 5. Bytet syns inte i siffror för spelaren (planens "utan siffror"). Räcker det att Imma säger att det är farligare och
    rikare, eller behövs en ledtråd om bättre fynd?
+
+## Levande värld (2026-10-24, grenen `levande-varld`, skuren från test-0.30)
+
+VD (2026-10-23): kommentarer som är levande. När spelaren kommer hem ska hen få bekräftat vad hen har gjort, personerna
+ska hålla koll på vad som verkligen händer, och det ska hända större saker som spelaren kan påverka. "Att det betyder
+något är ett måste." Viktigt för den som spelar ensam. Tillägg: någon möter en vid porten och berättar (samtalet är
+huvudsaken, listan en sammanfattning), och hemkomsten svarar även efter en förlust: tröst, vad det ledde till, vad man kan göra.
+
+Kartan (`LivingMap`) är motorn. Byggt: `src/game/world_events.gd` (`WorldEvents`, ren logik), `data/world_events.json`,
+`Profile.world` (ett lexikon; gamla profiler läses som {}), `RunState.world_heal_mod`, `world_boss_mult`, `world_stat_mult`,
+krönikans nya händelser och repliker (`dialog.json` "chronicle" och "world"), hemkomsten i borgen (`base_screen`).
+
+### 1. Bekräftelser med detaljer
+- Kartans ändringar är egna händelser i krönikan: `map_down` (Realmen man gick till trycktes tillbaka; repliker per Realm
+  och steg, `min_streak` för "två gånger i rad i lunden"), `map_up` (växte medan man var borta), `map_wake`,
+  `map_calm_twisted`. Tor talar om kryptan, Hedda om lunden (järnet), Mor Elin om kapellet (pilgrimerna), Sven om vägarna,
+  Broder Alrik om det som skrivs in, följeslagarna om de var med.
+- Sammanfattningen per Realm är varierad (`living_map.summary`, per Realm: down, quest, zero, up, warn) i stället för
+  "andas ut, fördärvet växer där".
+- Ingen replik upprepas förrän de andra med samma villkor har sagts (`chron_said`, samma mekanik som krönikan).
+- 86 nya repliker med fasta id:n: 72 i hemkomsten och 14 som borgens folk säger medan något pågår. `{namn}` i ungefär var
+  tredje. Ragnhild citerar Ps. 119:105 och Rom. 12:13 ur listan.
+
+### 2. Följder i borgen
+| Realm på steg 3+ | Följd (så länge den står där) | Syns | Tryckt tillbaka till 0–1 (en gång) |
+|---|---|---|---|
+| Lunden | nät över handelsvägen: smedjans nivåer +15 % | priset och Heddas rad vid knappen, hennes replik, kampanjkartan | en handelsman på gården: 5 bärnsten (60 silver) eller ett trick (80) |
+| Kryptan | arbetarna vägrar gå ned: ingen bärnsten från Tor (annars 1 per hemkomst) | Tor och arbetarna på gården, kampanjkartan | arbetarna hittar 3 bärnsten och 30 silver |
+| Kapellet | inga pilgrimer, Mor Elin har ont om förband: helningsförmågorna −1 Charge nästa körning | Mor Elins replik, kampanjkartan | en pilgrim i värdshuset: +1 Charge på helningarna nästa körning |
+
+Allt vänds av sig självt när Realmen trycks tillbaka. Gåvan laddas när Realmen står på 2+ (`armed`), så att den kommer
+efter ett verkligt arbete och bara en gång per gång.
+
+### 3. Händelser med tidsgräns
+Tidigast efter 4 nedstigningar, sedan 3–5 mellan starterna, aldrig två samtidigt. Den som har legat längst sedan sist väljs,
+bland dem vars Realms man har besökt.
+
+| Händelse | Realm | Tid | Lyckas | Belöning | Annars |
+|---|---|---|---|---|---|
+| Kulten samlas till högtid | kapellet | 2 | fäll biskopen | 60 silver, titeln Den som bröt högtiden | mässan hålls: +1 steg, biskopen ×1,12 nästa körning dit |
+| Spindlarna har tagit en karavan | lunden | 2 | klara questen | 40 silver, en tacksam handelsman (halva priset) | smedjan +10 % i tre nedstigningar |
+| Gravklockan ringer av sig själv | kryptan | 2 | vinn 4 strider där | en Nether Stone | +1 steg, alla grupper ×1,06 nästa körning dit |
+| En pilgrimsskara drar genom kapellets dal | kapellet | 3 | klara questen | 30 silver, välsignelse två körningar | +1 steg |
+| Benfolket och spindlarna rör sig samtidigt | kryptan + lunden | 2 | fäll bossen i båda | 50 silver | den som inte stoppades växer (`half` om en stoppades) |
+
+Titeln Landets värn för tre stoppade händelser.
+
+### Hemkomsten i borgen
+Rutan på kampanjkartan är borta (bara `--news`). I borgen går den som det viktigaste angår från sin plats (eller porten)
+fram till paladinen och pratar i samtalsrutan; den andra kommer efter, högst tre. Sist "Medan ni var borta" med kartans och
+världens rader, nya titlar och händelsen som pågår. Ett tryck hoppar fram. Efter en förlust (även GE UPP och GÅ HEM) kommer
+tröst först (Mor Elin, Gorm, Imma), sedan en sak om världen, och efter två förluster i rad ett konkret råd: Stig
+(Övningsgården mot mötet som fällde en), Broder Alrik (en ägd trofé vars `answers` nämner fienden eller dess egenskap) eller
+Gorm (ett djup grundare, eller den lugnaste andra Realmen). Högst ett råd.
+
+### Repliker: budget och ton (efter `docs/research/levande-repliker.md`)
+- Högst tre repliker; den tredje bara för det som är viktigt (`ESSENTIAL_KEYS`: händelser, följd, gåva, väckt boss, råd).
+- Samma ämne (samma Realm, samma händelse, tröst) ger bara en replik per hemkomst (`family`).
+- `{namn}`/`{titel}` aldrig två gånger i samma hemkomst (`line_for` `no_name`).
+- Efter en förlust: tröst, sedan världen bara om något ändrades, sist ett råd ur datan; efter tre förluster i rad bara tröst
+  och råd (`ONLY_COMFORT_AFTER`). GE UPP får bara repliker skrivna för det ("Du vände i tid"), aldrig "förlust".
+- Inte gjort: en egen nedkylning i nedstigningar per replik (`chron_said` turas om bland alla med samma villkor, över
+  körningarna, men en replik kan komma tillbaka när poolen är slut), och `{namn}` ligger i ungefär var fjärde av alla
+  hemkomstrepliker, inte var femte.
+
+### Botsiffror
+`SOAK=karriar` (40 profiler × 18 nedstigningar, Realm i tur), före (`VARLD=av`) och efter:
+
+| | före | efter |
+|---|---|---|
+| vinst per nedstigning, snitt | 48,2 % | 47,7 % |
+| nedstigning 4–18 | 47,3 % | 46,7 % |
+| djup efter 18 nedstigningar | 6,0 | 6,0 |
+| steg 4 (den förvridna bossen) | 1 nedstigning, 0,03 per profil | 11 nedstigningar, 0,15 per profil |
+
+- Händelser: 4,0 per profil på 18 nedstigningar (Kulten, karavanen, gravklockan och pilgrimerna en gång var; två fronter
+  hann aldrig starta). Utfall för botarna: kulten 23 stoppade / 17 inte, karavanen 37/3, gravklockan 31/9, pilgrimerna 29/0
+  (11 pågick fortfarande när profilen slutade). Botarna roterar Realm, så de går ofta dit av en slump.
+- Följder som började: kryptan 53, kapellet 8, lunden 1. Gåvor: kryptan 94, kapellet 29, lunden 3. Tors bärnsten 602 gånger.
+- Steg 4 kom oftare för att en förlorad händelse gav ett steg till; efter soaken ändrat så att den Realm man just gick till
+  inte växer av händelsen (bara de andra följderna). Soakens fel (`den förvridna bossen är kvar efter en nedstigning dit`)
+  kom av det och är borta (frö 12 igen: inga fel). Kontrollfelet "alva har inte fått agera" i crypt_3 är det kända (Benstormens frysning).
+
+### Frågor till VD
+1. Räcker det att Tor skickar en bärnsten per hemkomst när kryptan är lugn, eller ska det vara något annat (silver, ett fynd)?
+2. Ska en förlorad händelse också få växa i den Realm man gick till men misslyckades i (nu: nej, bara biskopen blir starkare)?
+3. Handelsmannen säljer en sak och går. Ska han stanna tills nästa nedstigning?
+4. Två fronter kommer först efter ungefär 20 nedstigningar med nuvarande ordning (den som legat längst). Ska den komma tidigare?
+5. Gåvan efter kapellet (en pilgrim och en välsignelse) är liten. Hellre ett rykte om nästa körnings quest-mål?

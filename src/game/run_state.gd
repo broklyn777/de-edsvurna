@@ -132,6 +132,11 @@ var wins := 0
 var realm_quest_done := false
 ## Krönikan (Chronicle.begin): profilen när körningen började och det som bara striden vet (vem som föll, sällsynta fynd).
 var chron := {}
+## Den levande världen (WorldEvents.apply_to_run): Charges på helningsförmågorna (+1/−1), och händelsernas styrka i
+## Realmen (bossen efter en svart mässa, alla grupper när gravklockan fick ringa).
+var world_heal_mod := 0
+var world_boss_mult := 1.0
+var world_stat_mult := 1.0
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -145,6 +150,7 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.set_realm(data, profile.realm)
 	s.set_growth(data, LivingMap.growth(profile, profile.realm))
 	s.fill_charges(data)
+	WorldEvents.apply_to_run(s, profile, data)
 	if profile.intro_done:
 		s.set_vow(data, profile.vow)
 	s.owned_heroes = profile.recruited.size() + 1
@@ -720,6 +726,10 @@ func battle_opts() -> Dictionary:
 	if grown != 1.0 and not first_descent:
 		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * grown
 		opts.growth = growth
+	# Den levande världen: en händelse som inte stoppades (bossen efter mässan, fler döda när klockan ringde).
+	var world := world_stat_mult * (world_boss_mult if r.get("boss", false) else 1.0)
+	if world != 1.0:
+		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * world
 	return opts
 
 
@@ -1054,7 +1064,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken", "growth", "twisted",
-		"wins", "realm_quest_done", "chron"]
+		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult"]
 
 
 func to_dict() -> Dictionary:

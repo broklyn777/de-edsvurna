@@ -28,16 +28,30 @@ const FELL_OFTEN := 3
 const STREAK_AT := 3
 ## Förluster i rad före en seger som räknas som att resa sig.
 const COMEBACK_AFTER := 3
-const MAX_REMARKS := 2
-## Den andra repliken bara för en händelse som är minst så här viktig.
-const SECOND_MIN_PRIO := 44
+## Högst tre repliker: den tredje bara om världen (händelse, följd, gåva, kartan) eller ett råd efter förluster.
+const MAX_REMARKS := 3
+## Den andra repliken bara för en händelse som är minst så här viktig (eller om världen eller ett råd).
+const SECOND_MIN_PRIO := 40
 ## Folket i borgen talar alltid; följeslagare bara om de var med (eller om händelsen handlar om dem).
-const KEEP_PEOPLE := ["gorm", "hedda", "alrik", "elin", "stig", "sven"]
+const KEEP_PEOPLE := ["gorm", "hedda", "alrik", "elin", "stig", "sven", "tor"]
+## Råd efter så här många förluster i rad (Stig, Broder Alrik eller Gorm), högst ett per hemkomst.
+const ADVICE_AFTER := 2
+## Världens händelser (den levande kartan och WorldEvents) och rådet: får den tredje platsen.
+const WORLD_KEYS := ["ev_won", "ev_half", "ev_lost", "ev_start", "cost_on", "cost_off", "gift", "map_wake", "map_warn",
+		"map_down", "map_up", "map_calm_twisted", "advice"]
+## Den tredje repliken bara för det som är viktigt (forskningen om repliker: tystnad slår upprepning).
+const ESSENTIAL_KEYS := ["ev_won", "ev_half", "ev_lost", "ev_start", "cost_on", "gift", "map_wake", "advice"]
+## Efter så många förluster i rad bara tröst och råd (ingen värld).
+const ONLY_COMFORT_AFTER := 3
+## Tröst efter en förlust: bara en av dem, och den kommer först (VD: tröst, sedan världen, sedan vad man kan göra).
+const CONSOLE_KEYS := ["fell", "fell_often", "lost", "streak_broken", "hurt", "home_left"]
 
 const PRIO := {"twisted_boss": 100, "boss_trophy": 92, "first_boss": 90, "new_depth": 80, "rescued": 75,
 		"rare_find": 70, "fell_often": 66, "fell": 62, "streak_broken": 58, "streak": 56, "lost": 54, "comeback": 53,
 		"vow_kept": 50, "vow_broken": 46, "nether": 44, "hurt": 42, "same_realm": 38, "boss_again": 36,
-		"new_trophy": 34, "new_title": 30, "home_won": 5, "home_left": 5}
+		"new_trophy": 34, "new_title": 30, "home_won": 5, "home_left": 33,
+		"ev_won": 88, "ev_half": 87, "ev_lost": 88, "ev_start": 78, "cost_on": 70, "gift": 68, "cost_off": 64,
+		"map_wake": 86, "map_calm_twisted": 60, "map_warn": 48, "map_down": 41, "map_up": 22, "advice": 52}
 ## Den levande kartans repliker (LivingMap.news) i samma skala.
 const MAP_PRIO := {"wake": 86, "calm_twisted": 60, "warn": 48, "calm": 20, "rise": 15}
 ## Händelser om samma sak: bara en av dem får en replik.
@@ -85,7 +99,8 @@ static func note_finds(chron: Dictionary, finds: Array) -> void:
 ## Nedstigningen är slut (Run.end_descent). outcome: "boss" (klarad), "loss", "forfeit" (gav upp i striden), "home" (gick
 ## hem). map_changes = LivingMap.after_descent. Skriver posten, räknarna, titlarna och hemkomstens repliker
 ## (Profile.homecoming). Returnerar posten.
-static func end(profile: Profile, data: Dictionary, state: RunState, outcome: String, map_changes: Array = []) -> Dictionary:
+static func end(profile: Profile, data: Dictionary, state: RunState, outcome: String, map_changes: Array = [],
+		world := {}) -> Dictionary:
 	var c: Dictionary = state.chron
 	var before_wins: Dictionary = c.get("boss_wins", profile.boss_wins)
 	var before_rec: Array = c.get("recruited", profile.recruited)
@@ -117,13 +132,35 @@ static func end(profile: Profile, data: Dictionary, state: RunState, outcome: St
 		entry.vow_result = "broken" if state.vow_broken else ("kept" if outcome == "boss" else "open")
 	entry.map = map_changes.map(func(m: Dictionary) -> Dictionary:
 			return {"realm": m.realm, "from": int(m.from), "to": int(m.to), "why": m.why})
+	entry.world = _world_entry(world)
+	entry.lost_to = String(c.get("lost_to", ""))
 	_count(profile, entry)
 	entry.titles = unlock_titles(profile, data)
 	profile.chronicle.append(entry)
 	while profile.chronicle.size() > MAX_ENTRIES:
 		profile.chronicle.pop_front()
 	profile.homecoming = homecoming(profile, data, entry, profile.growth_news)
+	profile.homecoming.summary = Array(profile.growth_news.get("lines", [])) + Array(world.get("lines", []))
 	return entry
+
+
+## Det krönikan sparar av världens rapport (WorldEvents.after_descent), utan stenar och sammanfattning.
+static func _world_entry(world: Dictionary) -> Dictionary:
+	var out := {}
+	var end: Dictionary = world.get("event_end", {})
+	if not end.is_empty():
+		out.event_end = {"id": end.id, "result": end.result, "realms": Array(end.get("realms", [])),
+				"grew": Array(end.get("gains", {}).get("grew", []))}
+	if not world.get("event_start", {}).is_empty():
+		out.event_start = {"id": world.event_start.id, "realms": Array(world.event_start.get("realms", []))}
+	for k in ["costs_on", "costs_off"]:
+		if not world.get(k, []).is_empty():
+			out[k] = Array(world[k])
+	if not world.get("gifts", []).is_empty():
+		out.gifts = world.gifts.map(func(g: Dictionary) -> Dictionary: return {"realm": g.realm, "id": g.id})
+	if String(world.get("tor", "")) != "":
+		out.tor = world.tor
+	return out
 
 
 ## Räknarna (Profile.chron_stats) efter posten; posten får de mönster som gäller nu.
@@ -165,6 +202,12 @@ static func _count(profile: Profile, entry: Dictionary) -> void:
 			st.vows_broken = int(st.get("vows_broken", 0)) + 1
 	if entry.alone:
 		st.alone_descents = int(st.get("alone_descents", 0)) + 1
+	var ended: Dictionary = entry.get("world", {}).get("event_end", {})
+	if not ended.is_empty():
+		var key := "events_" + String(ended.result)
+		st[key] = int(st.get(key, 0)) + 1
+		if ended.result == "won":
+			st["ev_" + String(ended.id)] = int(st.get("ev_" + String(ended.id), 0)) + 1
 
 
 # --- Hemkomstens repliker -----------------------------------------------------------
@@ -239,8 +282,13 @@ static func events(profile: Profile, data: Dictionary, entry: Dictionary) -> Arr
 		out.append(_ev("home_won"))
 	elif entry.outcome == "home":
 		out.append(_ev("home_left"))
+	out += world_events(profile, data, entry)
+	var advice := advice_event(profile, data, entry)
+	if not advice.is_empty():
+		out.append(advice)
 	for i in out.size():
-		out[i].realm = entry.realm
+		if not out[i].has("realm"):
+			out[i].realm = entry.realm
 		out[i].order = i
 	# Stabil sortering: högst prioritet först, annars i den ordning de lades till.
 	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
@@ -248,11 +296,121 @@ static func events(profile: Profile, data: Dictionary, entry: Dictionary) -> Arr
 	return out
 
 
+## Världens händelser efter nedstigningen: kartans ändringar per Realm (konkret: vilken Realm, vilket steg, hur många
+## gånger i rad), händelsen som slutade eller började, följderna i borgen och gåvorna. Samma Realm = samma familj.
+static func world_events(profile: Profile, data: Dictionary, entry: Dictionary) -> Array:
+	var out: Array = []
+	var world: Dictionary = entry.get("world", {})
+	var costs_on: Array = world.get("costs_on", [])
+	var end: Dictionary = world.get("event_end", {})
+	if not end.is_empty():
+		var realms: Array = end.get("realms", [])
+		out.append(_ev("ev_" + String(end.result), {"event": end.id, "realm": realms[0] if not realms.is_empty() else entry.realm,
+				"family": "event"}))
+	for r in costs_on:
+		out.append(_ev("cost_on", {"realm": r, "family": "realm_" + r}))
+	for g in world.get("gifts", []):
+		out.append(_ev("gift", {"realm": g.realm, "family": "realm_" + g.realm}))
+	for r in world.get("costs_off", []):
+		out.append(_ev("cost_off", {"realm": r, "family": "realm_" + r}))
+	if not world.get("event_start", {}).is_empty():
+		var realms: Array = world.event_start.get("realms", [])
+		out.append(_ev("ev_start", {"event": world.event_start.id, "realm": realms[0] if not realms.is_empty() else entry.realm,
+				"family": "event_start"}))
+	for m in entry.get("map", []):
+		var r := String(m.realm)
+		var fam := "realm_" + r
+		var twisted := LivingMap.twisted_boss(data, r)
+		match String(m.why):
+			"fought", "quest":
+				if int(m.from) >= LivingMap.GROWTH_MAX and twisted != "":
+					out.append(_ev("map_calm_twisted", {"realm": r, "family": fam, "step": int(m.to)}))
+				else:
+					var e := _ev("map_down", {"realm": r, "family": fam, "step": int(m.to),
+							"antal": int(entry.get("realm_streak", 1)) if r == entry.realm else 1})
+					if m.why == "quest":
+						e.prio += 5
+					out.append(e)
+			"neglect":
+				if int(m.to) >= LivingMap.GROWTH_MAX and twisted != "":
+					out.append(_ev("map_wake", {"realm": r, "family": fam, "step": int(m.to)}))
+				elif int(m.to) == LivingMap.WARN_AT and not costs_on.has(r):
+					out.append(_ev("map_warn", {"realm": r, "family": fam, "step": int(m.to)}))
+				elif int(m.to) == 2:
+					out.append(_ev("map_up", {"realm": r, "family": fam, "step": int(m.to)}))
+	return out
+
+
+## Ett konkret råd efter ADVICE_AFTER förluster i rad (VD): Stig föreslår Övningsgården mot gruppen som fällde en,
+## Broder Alrik en ägd trofé vars "answers" nämner en av fienderna eller deras egenskaper, Gorm ett lägre djup eller en
+## lugnare Realm. Turas om efter förlusternas antal; {} om inget råd passar.
+static func advice_event(profile: Profile, data: Dictionary, entry: Dictionary) -> Dictionary:
+	if not entry.outcome in ["loss", "forfeit"]:
+		return {}
+	var streak := int(profile.chron_stats.get("loss_streak", 0))
+	if streak < ADVICE_AFTER:
+		return {}
+	var options: Array = []
+	var enc_id := String(entry.get("lost_to", ""))
+	var enc: Dictionary = data.encounters.get(enc_id, {})
+	if not enc.is_empty():
+		options.append({"advice": "practice", "grupp": String(enc.get("name", enc_id)), "encounter": enc_id})
+	var trophy := answering_trophy(profile, data, enc_id)
+	if trophy != "":
+		options.append({"advice": "trophy", "trofé": String(data.traits[trophy].name), "trophy": trophy,
+				"fiende": _answered_enemy(data, enc_id, trophy)})
+	if int(entry.get("depth", 1)) > 1:
+		options.append({"advice": "depth", "djup": int(entry.depth) - 1})
+	else:
+		var calm := ""
+		for r in data.realms:
+			if r != entry.realm and int(profile.descents.get(r, 0)) > 0 \
+					and (calm == "" or LivingMap.growth(profile, r) < LivingMap.growth(profile, calm)):
+				calm = r
+		if calm != "":
+			options.append({"advice": "realm", "annan": calm})
+	if options.is_empty():
+		return {}
+	var pick: Dictionary = options[posmod(streak - ADVICE_AFTER, options.size())]
+	return _ev("advice", pick.merged({"family": "advice"}))
+
+
+## En trofé i samlingen vars "answers" nämner en fiende i mötet (namnet) eller en av fiendernas egenskaper; helst en
+## som ingen bär. "" om ingen.
+static func answering_trophy(profile: Profile, data: Dictionary, enc_id: String) -> String:
+	if not data.encounters.has(enc_id):
+		return ""
+	var worn: Array = profile.worn.values()
+	var best := ""
+	for t in profile.collection:
+		var answers := String(data.traits.get(t, {}).get("answers", ""))
+		if answers == "" or _answered_enemy(data, enc_id, t) == "":
+			continue
+		if best == "" or (worn.has(best) and not worn.has(t)):
+			best = t
+	return best
+
+
+## Det i mötet som trofén svarar på (fiendens namn eller en av dess egenskaper), eller "".
+static func _answered_enemy(data: Dictionary, enc_id: String, trophy: String) -> String:
+	var answers := String(data.traits.get(trophy, {}).get("answers", "")).to_lower()
+	for kind in data.encounters.get(enc_id, {}).get("enemies", []):
+		var e: Dictionary = data.enemies.get(kind, {})
+		var names: Array = [String(e.get("name", ""))]
+		for tr in e.get("traits", []):
+			names.append(String(data.traits.get(tr, {}).get("name", "")))
+		for n in names:
+			if n.length() >= 4 and answers.contains(n.to_lower()):
+				return String(n)
+	return ""
+
+
 ## Hemkomstens ruta: {remarks: [{speaker, id, text}], titles: [id], n}. growth_news = den levande kartans nyheter (dess
 ## replik tävlar med krönikans).
 static func homecoming(profile: Profile, data: Dictionary, entry: Dictionary, growth_news := {}) -> Dictionary:
 	var map_remark := {}
-	if String(growth_news.get("speaker", "")) != "":
+	# Kartans ändringar är egna händelser nu (world_events); dess gamla replik används bara när posten saknar kartan.
+	if String(growth_news.get("speaker", "")) != "" and entry.get("map", []).is_empty():
 		var lid := String(growth_news.get("line_id", ""))
 		map_remark = {"speaker": growth_news.speaker, "id": lid, "text": String(growth_news.get("text", "")),
 				"prio": int(MAP_PRIO.get(_map_key(lid), 20)), "map": true}
@@ -281,10 +439,37 @@ static func pick_remarks(profile: Profile, data: Dictionary, entry: Dictionary, 
 	var out: Array = []
 	var families: Array = []
 	var speakers: Array = []
+	var lost: bool = entry.get("outcome", "") in ["loss", "forfeit"]
+	if lost:
+		# Efter en förlust (VD): tröst först, sedan en sak om världen, sist ett råd; resten bara om det finns plats.
+		var groups := [[], [], [], []]
+		for ev in evs:
+			var g := 3
+			if CONSOLE_KEYS.has(ev.key):
+				g = 0
+			elif ev.key == "advice":
+				g = 2
+			elif WORLD_KEYS.has(ev.key) or ev.key == "map":
+				g = 1
+			groups[g].append(ev)
+		evs = groups[0] + groups[1] + groups[2] + groups[3]
+	var worlds := 0
 	for ev in evs:
-		if out.size() >= MAX_REMARKS or (not out.is_empty() and int(ev.prio) < SECOND_MIN_PRIO):
+		if out.size() >= MAX_REMARKS:
 			break
-		var fam := String(FAMILY.get(ev.key, ev.key))
+		var worldly := WORLD_KEYS.has(ev.key)
+		if lost and worldly and ev.key != "advice" and worlds >= 1:
+			continue
+		if lost and worldly and ev.key != "advice" \
+				and int(profile.chron_stats.get("loss_streak", 0)) >= ONLY_COMFORT_AFTER:
+			continue
+		if not out.is_empty() and int(ev.prio) < SECOND_MIN_PRIO and not worldly:
+			continue
+		if out.size() == 2 and not ESSENTIAL_KEYS.has(ev.key):
+			continue
+		var fam := String(ev.get("family", FAMILY.get(ev.key, ev.key)))
+		if lost and CONSOLE_KEYS.has(ev.key):
+			fam = "console"
 		if families.has(fam):
 			continue
 		var r: Dictionary
@@ -293,13 +478,24 @@ static func pick_remarks(profile: Profile, data: Dictionary, entry: Dictionary, 
 			if speakers.has(r.speaker):
 				continue
 		else:
-			r = line_for(profile, data, entry, ev, speakers)
+			# {namn}/{titel} aldrig två gånger i samma hemkomst.
+			var named := out.any(func(x: Dictionary) -> bool: return bool(x.get("named", false)))
+			r = line_for(profile, data, entry, ev, speakers, named)
 		if r.is_empty():
 			continue
+		r.phase = 0 if CONSOLE_KEYS.has(r.key) and lost else (2 if r.key == "advice" else 1)
+		if worldly and r.key != "advice":
+			worlds += 1
 		out.append(r)
 		families.append(fam)
 		speakers.append(r.speaker)
-	return out
+	# Tröst först, sedan världen, sist vad man kan göra (stabil ordning inom varje del).
+	var ordered: Array = []
+	for phase in 3:
+		for r in out:
+			if int(r.phase) == phase:
+				ordered.append(r)
+	return ordered
 
 
 ## Talaren för repliken ("subject" = den händelsen handlar om), eller "" om den inte kan säga den.
@@ -319,7 +515,8 @@ static func _speaker(profile: Profile, entry: Dictionary, ev: Dictionary, line: 
 
 ## En replik för händelsen ur dialog.json "chronicle": de som gäller just den hjälten först, annars de allmänna; ingen
 ## upprepas förrän de andra har sagts (Profile.chron_said). {speaker, id, text, key} eller {}.
-static func line_for(profile: Profile, data: Dictionary, entry: Dictionary, ev: Dictionary, busy := []) -> Dictionary:
+static func line_for(profile: Profile, data: Dictionary, entry: Dictionary, ev: Dictionary, busy := [],
+		no_name := false) -> Dictionary:
 	var specific: Array = []
 	var plain: Array = []
 	for line in data.get("dialog", {}).get("chronicle", {}).get("lines", []):
@@ -327,10 +524,14 @@ static func line_for(profile: Profile, data: Dictionary, entry: Dictionary, ev: 
 			continue
 		if String(line.text).contains("{titel}") and profile.title == "":
 			continue
+		if not _line_fits(line, entry, ev):
+			continue
+		if no_name and (String(line.text).contains("{namn}") or String(line.text).contains("{titel}")):
+			continue
 		var who := _speaker(profile, entry, ev, line)
 		if who == "" or busy.has(who):
 			continue
-		(specific if line.has("subject") else plain).append(line)
+		(specific if line.has("subject") or line.has("min_streak") else plain).append(line)
 	var pool := specific if not specific.is_empty() else plain
 	if pool.is_empty():
 		return {}
@@ -342,10 +543,38 @@ static func line_for(profile: Profile, data: Dictionary, entry: Dictionary, ev: 
 	var line: Dictionary = fresh[posmod(int(entry.get("n", 0)) * 7 + ev.key.length(), fresh.size())]
 	profile.chron_said.append(line.id)
 	return {"speaker": _speaker(profile, entry, ev, line), "id": line.id, "key": ev.key,
-			"text": fill(String(line.text), profile, data, ev)}
+			"text": fill(String(line.text), profile, data, ev),
+			"named": String(line.text).contains("{namn}") or String(line.text).contains("{titel}")}
 
 
-## {namn}, {titel} (titeln, annars namnet), {ny_titel}, {hjälte}, {plats}/{Plats}, {boss}, {antal}, {djup}.
+## Villkoren på en replik utöver händelsen: realm, step (ett steg eller [min, max]), event, outcome, advice, min_streak.
+static func _line_fits(line: Dictionary, entry: Dictionary, ev: Dictionary) -> bool:
+	if line.has("realm") and String(line.realm) != String(ev.get("realm", "")):
+		return false
+	if line.has("event") and String(line.event) != String(ev.get("event", "")):
+		return false
+	if line.has("outcome") and String(line.outcome) != String(entry.get("outcome", "")):
+		return false
+	# GE UPP är aldrig en förlust i tonen: bara repliker skrivna för det.
+	if String(entry.get("outcome", "")) == "forfeit" and String(ev.get("key", "")) == "lost" and not line.has("outcome"):
+		return false
+	if line.has("advice") and String(line.advice) != String(ev.get("advice", "")):
+		return false
+	if line.has("min_streak") and int(ev.get("antal", 0)) < int(line.min_streak):
+		return false
+	if line.has("step"):
+		var st: Variant = line.step
+		var g := int(ev.get("step", -1))
+		if st is Array:
+			if g < int(st[0]) or g > int(st[1]):
+				return false
+		elif g != int(st):
+			return false
+	return true
+
+
+## {namn}, {titel} (titeln, annars namnet), {ny_titel}, {hjälte}, {plats}/{Plats}, {boss}, {antal}, {djup}, {grupp},
+## {trofé}, {fiende}, {annan}/{Annan} (en annan Realm), {gånger} ("två gånger").
 static func fill(text: String, profile: Profile, data: Dictionary, ctx := {}) -> String:
 	var short := String(data.realms.get(ctx.get("realm", ""), {}).get("short", ""))
 	# "Den fallne biskopen" mitt i en mening blir "den fallne biskopen".
@@ -358,6 +587,10 @@ static func fill(text: String, profile: Profile, data: Dictionary, ctx := {}) ->
 			.replace("{antal}", str(ctx.get("antal", 0))).replace("{djup}", str(ctx.get("djup", 0))) \
 			.replace("{ny_titel}", title_name(data, String(ctx.get("ny_titel", "")))) \
 			.replace("{titel}", title_or_name(profile, data))
+	var other := String(data.realms.get(ctx.get("annan", ""), {}).get("short", ""))
+	text = text.replace("{grupp}", String(ctx.get("grupp", ""))).replace("{trofé}", String(ctx.get("trofé", ""))) \
+			.replace("{fiende}", String(ctx.get("fiende", ""))).replace("{Annan}", other) \
+			.replace("{annan}", other.to_lower()).replace("{gånger}", times(int(ctx.get("antal", 0))))
 	text = Dialog.fill(text, profile.hero_name)
 	return text.substr(0, 1).to_upper() + text.substr(1)
 
@@ -510,13 +743,18 @@ static func entry_body(profile: Profile, data: Dictionary, entry: Dictionary) ->
 	if not map.is_empty():
 		var line := "; ".join(map) + "."
 		parts.append(line.substr(0, 1).to_upper() + line.substr(1))
+	var wend: Dictionary = entry.get("world", {}).get("event_end", {})
+	if not wend.is_empty():
+		var info := WorldEvents.event_data(data, String(wend.id))
+		parts.append("%s: %s." % [info.get("name", ""), {"won": "stoppad", "half": "halvt stoppad",
+				"lost": "hann inte stoppas"}.get(String(wend.result), "")])
 	var titles: Array = entry.get("titles", []).map(func(t: String) -> String: return title_name(data, t))
 	if titles.size() == 1:
 		parts.append("Ny titel: %s." % titles[0])
 	elif titles.size() > 1:
 		parts.append("Nya titlar: %s." % " och ".join(titles))
 	if parts.is_empty():
-		parts.append({"loss": "Sällskapet bars hem.", "forfeit": "Ni gav upp i striden och tog er hem.",
+		parts.append({"loss": "Sällskapet bars hem.", "forfeit": "Ni drog er ur striden och tog er hem.",
 				"home": "Ni vände hem i tid."}.get(entry.get("outcome", ""), "En lugn nedstigning."))
 	return " ".join(parts)
 
@@ -552,10 +790,18 @@ static func simulate(profile: Profile, data: Dictionary, spec: Dictionary) -> Di
 	s.vow_broken = bool(spec.get("vow_broken", false))
 	s.wins = int(spec.get("wins", 3))
 	s.realm_quest_done = bool(spec.get("quest", false))
+	var before := {}
+	for r in data.realms:
+		before[r] = LivingMap.growth(profile, r)
 	var changes: Array = []
 	if spec.get("map", false):
 		changes = LivingMap.after_descent(profile, data, s.realm, s.wins, s.realm_quest_done)
-	return end(profile, data, s, outcome, changes)
+	# Den levande världen (WorldEvents) körs med kartan, eller med "world": true.
+	var world := {}
+	if spec.get("world", spec.get("map", false)):
+		world = WorldEvents.after_descent(profile, data, s.realm, outcome, s.wins, s.realm_quest_done, before)
+	s.chron.lost_to = String(spec.get("lost_to", ""))
+	return end(profile, data, s, outcome, changes, world)
 
 
 ## --chronicle-demo: en påhittad krönika med tolv nedstigningar och några titlar (sparas inte).
@@ -589,9 +835,11 @@ static func demo(profile: Profile, data: Dictionary) -> void:
 	choose_title(profile, "bone_trapper")
 
 
-## --home=<sort>: som efter en hemkomst, för hemkomstrutan på kampanjkartan (sparas inte). fell: Brokk föll igen och
+## --home=<sort>: som efter en hemkomst, för hemkomsten i borgen (sparas inte). fell: Brokk föll igen och
 ## sällskapet förlorade; boss3: tredje segern mot Benfursten (bosstrofé och ny titel); rare: Ragnhild befriad och en
-## sällsynt sten; depth: ett nytt djup och ett hållet löfte.
+## sällsynt sten; depth: ett nytt djup och ett hållet löfte. Den levande världen: event_lost (mässan hölls), event_won
+## (karavanen räddad), start (en händelse börjar), loss (andra förlusten i rad, med ett råd), cost (lunden når steg 3,
+## Hedda får inget järn), gift (kryptan trycks tillbaka, arbetarna hittar något).
 static func demo_home(profile: Profile, data: Dictionary, kind: String) -> void:
 	profile.intro_done = true
 	for id in ["imma", "brokk", "alva"]:
@@ -600,7 +848,48 @@ static func demo_home(profile: Profile, data: Dictionary, kind: String) -> void:
 	profile.descents["crypt"] = maxi(int(profile.descents.get("crypt", 0)), 2)
 	profile.descents["chapel"] = maxi(int(profile.descents.get("chapel", 0)), 1)
 	var party := ["paladin", "imma", "brokk", "alva"]
+	profile.world.next = 99  # ingen ny händelse mitt i en demo (utom start)
+	if kind in ["start", "cost", "gift"]:
+		profile.boss_wins["bone_lich"] = 1  # bossen är ingen nyhet; världen är det
 	match kind:
+		"event_lost":
+			# Mässan hölls: kulten samlades i kapellet, men sällskapet gick till kryptan.
+			profile.boss_wins["bone_lich"] = 1
+			WorldEvents.start(profile, data, "cult_feast", profile.total_descents())
+			profile.world.event.left = 1
+			profile.world.next = 99
+			simulate(profile, data, {"party": party, "outcome": "boss", "bosses": ["bone_lich"], "map": true})
+		"event_won":
+			# Karavanen räddad: questen i lunden klarad.
+			profile.descents["grove"] = 1
+			profile.boss_wins["web_mother"] = 1
+			WorldEvents.start(profile, data, "caravan", profile.total_descents())
+			profile.world.next = 99
+			simulate(profile, data, {"party": party, "realm": "grove", "outcome": "boss", "bosses": ["web_mother"],
+					"quest": true, "map": true})
+		"start":
+			profile.descents["grove"] = 1
+			profile.world.erase("next")
+			profile.world.last = {"cult_feast": 0, "caravan": 0, "bell_tolls": 0, "pilgrims": 0}  # två fronter står på tur
+			simulate(profile, data, {"party": party, "outcome": "boss", "bosses": ["bone_lich"], "map": true})
+		"loss":
+			# Andra förlusten i rad mot Glödgraven, med en trofé i samlingen som svarar på den.
+			profile.chron_stats.loss_streak = 1
+			profile.add_trophy("lance_tip")
+			profile.growth = {"crypt": 2, "chapel": 2}
+			simulate(profile, data, {"party": party, "depth": 1, "outcome": "loss", "fell": {"brokk": 1}, "map": true,
+					"lost_to": "crypt_2", "wins": 2})
+		"cost":
+			# Lunden växer till steg 3 medan sällskapet är i kryptan: nät över handelsvägen, Hedda får inget järn.
+			profile.descents["grove"] = 1
+			profile.growth = {"crypt": 2, "chapel": 1, "grove": 2}
+			profile.growth_last = {"crypt": 3, "chapel": 2, "grove": 0}
+			simulate(profile, data, {"party": party, "outcome": "boss", "bosses": ["bone_lich"], "map": true})
+		"gift":
+			# Kryptan trycks från steg 2 till 0 med questen: arbetarna hittar bärnsten och silver.
+			profile.growth = {"crypt": 2, "chapel": 1}
+			profile.world.armed = {"crypt": true}
+			simulate(profile, data, {"party": party, "outcome": "boss", "bosses": ["bone_lich"], "quest": true, "map": true})
 		"fell":
 			profile.chron_stats.falls = {"brokk": 2}
 			simulate(profile, data, {"party": party, "depth": 2, "outcome": "loss", "fell": {"brokk": 2, "alva": 1}, "map": true})

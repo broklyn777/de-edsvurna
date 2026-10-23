@@ -42,6 +42,8 @@ var silver_floor := 0  # silvret får inte bli lägre än så här (boten spende
 var collection_floor: Array = []
 var run_fights := 0  # strider i körningen (karriärläget)
 var lost_at := ""  # var körningen förlorades (karriärläget)
+## Den levande världen (WorldEvents): hur ofta händelserna startar och hur de slutar, följder och gåvor. VARLD=av stänger av.
+var world_stats := {"started": {}, "results": {}, "costs_on": {}, "gifts": {}, "tor": 0}
 
 
 ## Samlar skriptfel och motorfel medan ett drag körs.
@@ -226,6 +228,8 @@ func _start_run() -> void:
 	state.rules_visible = rules.visible.duplicate()
 	state.rules_hidden = rules.hidden.duplicate()
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
+	if OS.get_environment("VARLD") != "av":
+		WorldEvents.begin_run(profile, state)
 	state.first_descent = profile.total_descents() == 0 or Intro.current(data, profile).get("id", "") == "descent"
 	var seen := int(profile.descents.get(state.realm, 0))
 	profile.descents[state.realm] = seen + 1
@@ -650,6 +654,22 @@ func _end_descent() -> void:
 	for r in data.realms:
 		before[r] = LivingMap.growth(profile, r)
 	var list := LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
+	if OS.get_environment("VARLD") != "av":
+		var outcome := "boss" if state.floor_cleared() and state.is_last_floor() else "loss"
+		var w := WorldEvents.after_descent(profile, data, state.realm, outcome, state.wins, state.realm_quest_done, before)
+		if not w.event_start.is_empty():
+			world_stats.started[w.event_start.id] = int(world_stats.started.get(w.event_start.id, 0)) + 1
+		if not w.event_end.is_empty():
+			var key := "%s:%s" % [w.event_end.id, w.event_end.result]
+			world_stats.results[key] = int(world_stats.results.get(key, 0)) + 1
+		for r in w.costs_on:
+			world_stats.costs_on[r] = int(world_stats.costs_on.get(r, 0)) + 1
+		for g in w.gifts:
+			world_stats.gifts[g.realm] = int(world_stats.gifts.get(g.realm, 0)) + 1
+		if String(w.tor) != "":
+			world_stats.tor += 1
+		if WorldEvents.active(profile).size() > 0 and int(WorldEvents.active(profile).left) <= 0:
+			_fail("levande värld", "händelsen har gått ut men pågår: %s" % str(WorldEvents.active(profile)))
 	if state.wins == 0 and not list.is_empty():
 		_fail("levande karta", "fördärvet ändrades utan en vunnen strid: %s" % str(list))
 	for r in data.realms:
@@ -1188,3 +1208,10 @@ func _living_print(rows: Array, runs: int, descents: int) -> void:
 			parts.append("%.1f" % (x / maxi(rows[d].size(), 1)))
 		line += " %d:%s" % [d + 1, "/".join(parts)]
 	print(line)
+	print("")
+	print("  Den levande världen (%s): händelser som startade %s" % ["av" if OS.get_environment("VARLD") == "av" else "på",
+			str(world_stats.started)])
+	print("    utfall %s" % str(world_stats.results))
+	print("    följder som började %s, gåvor %s, Tors bärnsten %d gånger, %.2f händelser per profil" % [
+			str(world_stats.costs_on), str(world_stats.gifts), world_stats.tor,
+			float(world_stats.started.values().reduce(func(a: int, b: int) -> int: return a + b, 0)) / maxi(runs, 1)])

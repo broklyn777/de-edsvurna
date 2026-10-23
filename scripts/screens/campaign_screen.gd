@@ -64,7 +64,9 @@ var _news_open := false
 func _ready() -> void:
 	super()
 	_vow_open = "--vows" in OS.get_cmdline_user_args()  # 0.30.17: löftesrutan öppen (skärmdumpar)
-	_news_open = not run.profile.growth_news.get("lines", []).is_empty() or _has_homecoming(run.profile)
+	# Den levande världen: hemkomsten visas i borgen (base_screen); rutan här bara för --news (äldre skärmdumpar).
+	_news_open = "--news" in OS.get_cmdline_user_args() and (not run.profile.growth_news.get("lines", []).is_empty()
+			or _has_homecoming(run.profile))
 	# 0.25: djup och instabilitet förklaras efter den första nedstigningen (den första hålls enkel).
 	if run.profile.total_descents() > 0:
 		HelpBox.offer(self, ["depth", "instability"])
@@ -304,6 +306,7 @@ func _draw() -> void:
 	small_button(back_rect(), "‹ BASEN")
 	silver_label()
 	_draw_panel(data, prof)
+	_draw_event_strip(data, prof)
 	if _vow_open:
 		_draw_vow_box(data)
 	elif _news_open:
@@ -358,6 +361,8 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 		draw_rect(r.grow(12), Color(UiStyle.GOLD.darkened(0.2), 0.25 + 0.35 * glow), false, 4.0)
 	if _living(realm_id):
 		_draw_growth_marks(realm_id, r, g)
+	if WorldEvents.in_event(prof, run.data, realm_id):
+		_draw_event_mark(r)
 	var name: String = run.data.realms[realm_id].name
 	var cart := Rect2(center.x - 190, r.end.y + 2, 380, 58)
 	draw_texture_rect(InkArt.icon_texture("cartouche"), cart, false)
@@ -414,6 +419,34 @@ func _draw_growth_marks(realm_id: String, r: Rect2, g: int) -> void:
 		draw_circle(c, 34.0, Color(0.05, 0.0, 0.02, 0.8))
 		draw_arc(c, 36.0, 0, TAU, 40, Color(0.75, 0.1, 0.1, 0.5 + 0.4 * pulse), 3.0, true)
 		InkArt.skull(self, c, 40.0, Color(0.85, 0.18, 0.15, 0.85))
+
+
+## Den levande världen: en pågående händelse (WorldEvents) i området – ett pulserande rött sigill med ett timglas.
+func _draw_event_mark(r: Rect2) -> void:
+	var at := Vector2(r.position.x + 26, r.position.y + 26)
+	var pulse := 0.5 + 0.5 * sin(_t * 3.2)
+	draw_circle(at, 24.0 + 4.0 * pulse, Color(0.75, 0.12, 0.08, 0.25 + 0.2 * pulse))
+	draw_circle(at, 19.0, Color(0.55, 0.06, 0.05, 0.95))
+	draw_arc(at, 19.0, 0, TAU, 32, UiStyle.GOLD, 2.0, true)
+	var gold := Color(UiStyle.GOLD)
+	draw_colored_polygon(PackedVector2Array([at + Vector2(-8, -11), at + Vector2(8, -11), at]), gold)
+	draw_colored_polygon(PackedVector2Array([at + Vector2(-8, 11), at + Vector2(8, 11), at]), gold)
+	draw_line(at + Vector2(-9, -12), at + Vector2(9, -12), gold, 2.0)
+	draw_line(at + Vector2(-9, 12), at + Vector2(9, 12), gold, 2.0)
+
+
+## Den levande världen: händelsen som pågår, som en rad längst ned på kartan (panelen är redan full).
+func _draw_event_strip(data: Dictionary, prof: Profile) -> void:
+	var line := WorldEvents.map_line(prof, data) if prof.intro_done else ""
+	if line == "":
+		return
+	var r := Rect2(20, size.y - 46, _panel().position.x - 40, 36)
+	draw_rect(r, Color(0.12, 0.05, 0.04, 0.88))
+	draw_rect(r, Color(UiStyle.GOLD, 0.7), false, 1.5)
+	var pulse := 0.5 + 0.5 * sin(_t * 3.2)
+	draw_circle(r.position + Vector2(20, 18), 7.0, Color(0.85, 0.15, 0.1, 0.6 + 0.4 * pulse))
+	UiStyle.text(self, r.position + Vector2(36, 25), UiStyle.fit("HÄNDELSE: " + line, 16, r.size.x - 48), 16,
+			Color("#ffcf9a"), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 48, 3)
 
 
 ## Krönikan: hemkomstens repliker eller nya titlar (Profile.homecoming).
@@ -535,11 +568,17 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 		# 0.29.5: radbryts (förr klipptes den av när fler än en satt fången).
 		y += UiStyle.para(self, Vector2(x, y + 46), "Sägs sitta fången här: " + ", ".join(captives), 15, Color("#ffd27a"), w, 3)
 	# Den levande kartan: en rad före avfärd om vad som händer här och på andra håll (utan siffror).
+	# Den levande världen: händelsen som pågår (alla Realms) och vad den här Realmen kostar hemma.
+	var event_line := WorldEvents.map_line(prof, data) if prof.intro_done else ""
+	var cost := WorldEvents.cost_line(prof, data, prof.realm)
+	var yy := y + 54
 	if prof.intro_done and _living(prof.realm):
-		var room := _prep_rect().position.y - 34 - (y + 40)
-		UiStyle.para(self, Vector2(x, y + 54), LivingMap.departure_line(prof, data, prof.realm), 15,
-				Color("#f0b49a") if LivingMap.awake(prof, data, prof.realm) else Color(1, 1, 1, 0.85), w,
-				clampi(int(room / 19.0), 1, 4))
+		var room := _prep_rect().position.y - 30 - yy
+		var text := ("" if cost == "" else cost + " ") + LivingMap.departure_line(prof, data, prof.realm)
+		if room >= 16:
+			UiStyle.para(self, Vector2(x, yy), text, 15,
+					Color("#f0b49a") if LivingMap.awake(prof, data, prof.realm) or cost != "" else Color(1, 1, 1, 0.85), w,
+					clampi(int(room / 19.0), 1, 5))
 
 	var companions: Array = prof.party.map(func(id: String) -> String: return data.heroes[id].name)
 	UiStyle.text(self, Vector2(x, _prep_rect().position.y - 10), "Sällskap: " + ", ".join(companions), 13,

@@ -180,26 +180,30 @@ static func news(profile: Profile, data: Dictionary, realm_id: String, list: Arr
 					key = "calm_twisted"
 					rank = 3
 				elif c.why == "quest":
-					lines.append("Ni klarade questen i %s. %s drar sig långt tillbaka." % [_in(name), f])
+					lines.append(_summary(profile, data, c.realm, "quest",
+							"Ni klarade questen i %s. %s drar sig långt tillbaka." % [_in(name), f]))
 					key = "calm"
 					rank = 1
 				else:
-					lines.append("Ni slogs i %s. %s drar sig lite tillbaka." % [_in(name), f])
+					lines.append(_summary(profile, data, c.realm, "down",
+							"Ni slogs i %s. %s drar sig lite tillbaka." % [_in(name), f]))
 					key = "calm"
 					rank = 1
 				if int(c.to) == 0:
-					lines[-1] += " Där är det nu stilla en tid."
+					lines[-1] += " " + _summary(profile, data, c.realm, "zero", "Där är det nu stilla en tid.")
 			"neglect":
 				if int(c.to) >= GROWTH_MAX and twisted_boss(data, c.realm) != "":
 					lines.append("Ingen gick till %s. Där nere har %s vaknat." % [_in(name), data.enemies[twisted_boss(data, c.realm)].name])
 					key = "wake"
 					rank = 4
 				elif int(c.to) == WARN_AT and twisted_boss(data, c.realm) != "":
-					lines.append("Ingen gick till %s. %s blir djärvare; nästa gång kan något vakna där nere." % [_in(name), f])
+					lines.append(_summary(profile, data, c.realm, "warn",
+							"Ingen gick till %s. %s blir djärvare; nästa gång kan något vakna där nere." % [_in(name), f]))
 					key = "warn"
 					rank = 2
 				else:
-					lines.append("Ingen gick till %s, och %s andas ut. Fördärvet växer där." % [_in(name), f])
+					lines.append(_summary(profile, data, c.realm, "up",
+							"Ingen gick till %s, och %s andas ut. Fördärvet växer där." % [_in(name), f]))
 					key = "rise"
 					rank = 0 if int(c.to) < 2 else 1
 			"rest":
@@ -212,6 +216,14 @@ static func news(profile: Profile, data: Dictionary, realm_id: String, list: Arr
 		var said := _line(profile, data, String(top.key), String(top.realm))
 		out.merge(said)
 	return out
+
+
+## En rad ur dialog.json living_map.summary för Realmen (turas om efter antalet nedstigningar), annars fallback.
+static func _summary(profile: Profile, data: Dictionary, realm_id: String, kind: String, fallback: String) -> String:
+	var pool: Array = data.get("dialog", {}).get("living_map", {}).get("summary", {}).get(realm_id, {}).get(kind, [])
+	if pool.is_empty():
+		return fallback
+	return String(pool[posmod(profile.total_descents(), pool.size())])
 
 
 ## En replik ur dialog.json "living_map" (Imma om hon är med i profilen, annars Gorm): {speaker, line_id, text}.

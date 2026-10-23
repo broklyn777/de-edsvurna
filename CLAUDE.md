@@ -204,7 +204,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   replik tävlar om platserna (`MAP_PRIO`). Titlar (`data/titles.json`, vårt val, 15 st, `Profile.title`, `titles`,
   `Chronicle.unlock_titles`; den första bärs direkt); `{titel}` (faller tillbaka till namnet; repliker med `{titel}` väljs
   bara med en titel). Broder Alrik: "Krönikan och titlarna" (`chronicle_screen`, de senaste 10 i tusch, titlarna att bära).
-  Flaggor: `--chronicle-demo` (påhittad krönika), `--home=fell|boss3|rare|depth` (hemkomstrutan), `--chronicle`,
+  Flaggor: `--chronicle-demo` (påhittad krönika), `--home=fell|boss3|rare|depth` (hemkomsten i borgen), `--chronicle`,
   `--title-focus=<id>`. Tester: `tests/test_chronicle.gd`.
 - **Den levande kartan** (prov, grenen `levande-karta`, `docs/plan/levande-karta.md`, `src/game/living_map.gd`; avviker från
   Siralim): varje Realm man har gått ned i har ett fördärv 0–4 (`Profile.growth`, start 1, `growth_rest`, `growth_news`).
@@ -220,6 +220,32 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `--growth-home=chapel[:quest]` (som efter en hemkomst), `--twisted` (strid mot den förvridna bossen). Botarna:
   `BALANS=levande` (vinst per steg), `SOAK=karriar` skriver kartans läge (`LEVANDE=av`, `KARRIAR_REALM=lagst|hogst`).
   Tester: `tests/test_living_map.gd`.
+- **Den levande världen** (grenen `levande-varld`, `docs/plan/levande-karta.md` "Levande värld", `src/game/world_events.gd`,
+  `WorldEvents`, `data/world_events.json`, `Profile.world`; VD: "att det betyder något är ett måste"). Kartan är motorn.
+  **Följder** (en besökt Realm på steg 3+, vänds när den trycks tillbaka): lunden = nät över handelsvägen, smedjans nivåer
+  +15 % (`smith_mult`, `Profile.artifact_level_cost`, Heddas rad vid knappen, `smith_reason`); kryptan = arbetarna vägrar gå
+  ned, Tor och arbetarna står på gården och skickar ingen bärnsten (annars 1 per hemkomst, `tor_sends`); kapellet = inga
+  pilgrimer, helningsförmågorna −1 Charge nästa körning (`heal_charge_mod`, `apply_to_run` i `RunState.new_run`).
+  **Gåvor** (en gång när en Realm som stått på 2+ trycks till 0–1, `armed`): lunden = en handelsman på gården (5 bärnsten
+  eller ett trick för silver, `merchant_buy`, stationen "merchant"), kryptan = arbetarna hittar 3 bärnsten + 30 silver,
+  kapellet = en pilgrim i värdshuset, +1 Charge på helningar nästa körning (`bless_runs`). **Händelser** (5 st, tidigast efter
+  4 nedstigningar, sedan 3–5 mellan starterna, aldrig två samtidigt, `pick_event`, `start`, `after_descent`): Kulten samlas
+  till högtid (fäll biskopen; annars +1 steg och biskopen ×1,12 nästa körning, `world_boss_mult`), Spindlarna har tagit en
+  karavan (questen; tacksam handelsman eller smedjan +10 % i 3 nedstigningar), Gravklockan ringer (4 strider; en Nether
+  Stone eller +1 steg och grupperna ×1,06, `world_stat_mult`), Pilgrimer genom dalen (questen; 2 välsignelser), Två fronter
+  (krypta och lund, man hinner bara den ena: `half`). Kampanjkartan: ett rött timglassigill över området, raden
+  "HÄNDELSE: … (två nedstigningar kvar)" och vad Realmen kostar hemma. Borgens folk nämner det som pågår
+  (`dialog.json` "world" "ongoing", `ongoing_line`). Titlar: Den som bröt högtiden, Landets värn.
+  **Hemkomsten i borgen** (`base_screen` `_start_homecoming`): den som det viktigaste angår går från sin plats till paladinen
+  och pratar i samtalsrutan, nästa kommer efter (högst tre), sist rutan "Medan ni var borta" (kartan, världen, nya titlar,
+  händelsen som pågår); ett tryck hoppar fram. Krönikans nya händelser: `map_down` (per Realm och steg, `min_streak` för
+  gånger i rad), `map_up`, `map_wake`, `cost_on`/`cost_off`, `gift`, `ev_start`/`ev_won`/`ev_half`/`ev_lost`, `advice`;
+  replikvillkor `realm`, `step`, `event`, `outcome`, `advice`, `min_streak`. Efter en förlust: tröst först (Mor Elin, Gorm,
+  Imma), sedan världen, sist ett råd efter två förluster i rad (Stig: Övningsgården mot mötet som fällde en,
+  `chron.lost_to`; Broder Alrik: en ägd trofé vars `answers` nämner fienden, `answering_trophy`; Gorm: ett djup grundare
+  eller en lugnare Realm). Flaggor: `--home=event_lost|event_won|start|loss|cost|gift` (och de gamla), `--event=<id>`,
+  `--world-demo`, `--news` (den gamla rutan på kampanjkartan). Botarna: `SOAK=karriar` skriver händelserna (`VARLD=av`).
+  Tester: `tests/test_world_events.gd`.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,

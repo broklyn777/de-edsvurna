@@ -105,9 +105,16 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Instabilitet | `Profile.instability`, `RunState.instability`, `roll_rules()` | Realm Instability | 0–3 på kampanjkartan: n synliga och n dolda våningsregler, mer silver och troféchans. |
 | Den levande kartan, fördärvet (steg 0–4) | `LivingMap`, `Profile.growth`, `growth_rest`, `growth_news`, `RunState.growth` | – (vårt prov; Siralim har ingen värld som ändras mellan körningarna) | Den Realm man går till sjunker, de andra man har besökt växer. Visas utan siffror på kampanjkartan. docs/plan/levande-karta.md. |
 | Krönikan | `Chronicle`, `Profile.chronicle`, `chron_stats`, `chron_said`, `RunState.chron` | – (vårt tillägg) | En kort post per nedstigning och räknare för mönster; Broder Alrik visar de senaste tio. |
-| Hemkomsten (repliker) | `Profile.homecoming`, `dialog.json` "chronicle", `Chronicle.PRIO` | – | 1–2 repliker i rutan "Medan ni var borta" av den det angår. |
+| Hemkomsten (repliker) | `Profile.homecoming`, `dialog.json` "chronicle", `Chronicle.PRIO`, `base_screen` `_start_homecoming` | – | 1–3 repliker i borgen: den det angår går fram till paladinen och pratar; sedan sammanfattningen "Medan ni var borta". |
 | Titel | `data/titles.json`, `Profile.title`, `titles`, `{titel}` | – (okänt om Siralim har spelartitlar; vårt val) | Förtjänas genom bedrifter, väljs hos Broder Alrik. |
 | Vilar | `Profile.growth_rest` | – | En Realm som når 0 växer inte nästa nedstigning. |
+| Den levande världen | `WorldEvents`, `Profile.world`, `data/world_events.json` | – (vårt tillägg) | Följder i borgen, gåvor och händelser med tidsgräns som kartan driver. |
+| Följd | `WorldEvents.costs()`, `has_cost()`, `smith_mult()`, `heal_charge_mod()`, `tor_sends()` | – | En Realm på steg 3+ kostar något litet hemma (smedjan, Tors bärnsten, helarnas Charges) tills den trycks tillbaka. |
+| Gåva | `WorldEvents._gift()`, `armed` | – | En gång när en Realm som stått på 2+ trycks ned till 0–1: handelsmannen, arbetarnas fynd, pilgrimens välsignelse. |
+| Händelse (i världen) | `WorldEvents.start()`, `active()`, `after_descent()`, `event_end` (won/half/lost) | – | Händelse med tidsgräns i nedstigningar, t.ex. Kulten samlas till högtid. Aldrig två samtidigt. |
+| Handelsmannen | `WorldEvents.merchant_buy()`, stationen `merchant` | – | Står på gården efter en gåva från lunden eller en räddad karavan; säljer bärnsten eller ett trick en gång. |
+| Välsignelse | `Profile.world.bless_runs`, `RunState.world_heal_mod` | – | +1 Charge på helningsförmågorna i nästa körning (pilgrimerna). |
+| Råd (hemkomsten) | `Chronicle.advice_event()`, `answering_trophy()`, `chron.lost_to` | – | Efter två förluster i rad: Stig, Broder Alrik eller Gorm föreslår något konkret ur spelets data. |
 | Den förvridna bossen, Den svärtade Benfursten | `twisted` i enemies.json (`bone_lich_black`), `realms.json` "growth": "twisted", mötet `crypt_twisted`, `RunState.twisted` | – (närmast en Nether-boss) | Visar sig på steg 4 och tar den vanliga bossens plats. Trofén Den krossade svarta kronan (`black_crown`) ges direkt. Egenskapen Svart märg (`black_marrow`). |
 | Våningsregel | `data/floor_rules.json`, `CombatSim.rules`, händelsen `rule` | Realm Property | T.ex. De döda vaknar (Resurrect on Death), Förseglade ord (Gems Sealed After Casting), Speglande ben (Reflect Damage Taken), Kaosvind (Stats are Swapped). |
 | Dold regel | `rules_hidden`, `rules_revealed` | hidden Realm Property | Syns först när den slår till. |

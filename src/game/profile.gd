@@ -134,6 +134,9 @@ var homecoming := {}
 ## Titlar (data/titles.json, vårt val): vald titel ("" = ingen) och de upplåsta, i den ordning de förtjänades.
 var title := ""
 var titles: Array = []
+## Den levande världen (WorldEvents): händelsen som pågår, när nästa kan starta, loggen, gåvor som väntar (handelsmannen),
+## välsignelser och följder med tidsgräns. Ett lexikon, så att gamla profiler läses som {}.
+var world := {}
 
 
 static func reward(floor: int, at_depth := 1) -> int:
@@ -219,7 +222,8 @@ func artifact(hero_id: String) -> Dictionary:
 ## Silver till nästa artefaktnivå (0 = högsta nivån eller ingen artefakt).
 func artifact_level_cost(hero_id: String) -> int:
 	var art := artifact(hero_id)
-	return 0 if art.is_empty() else Forge.level_cost(int(art.level))
+	# Den levande världen: nät över handelsvägen (lunden på steg 3+) eller en förlorad karavan gör järnet dyrare.
+	return 0 if art.is_empty() else roundi(Forge.level_cost(int(art.level)) * WorldEvents.smith_mult(self))
 
 
 ## Höjer artefaktens nivå. Returnerar vad nivån öppnade ("" om den bara stärker), eller null om det inte gick.
@@ -629,6 +633,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "homecoming", homecoming)
 	cfg.set_value("progress", "title", title)
 	cfg.set_value("progress", "titles", titles)
+	cfg.set_value("progress", "world", world)
 	return cfg.save(path)
 
 
@@ -714,6 +719,7 @@ static func load_from(path: String) -> Profile:
 	p.homecoming = cfg.get_value("progress", "homecoming", {})
 	p.titles = cfg.get_value("progress", "titles", [])
 	p.title = String(cfg.get_value("progress", "title", ""))
+	p.world = cfg.get_value("progress", "world", {})
 	if not p.titles.has(p.title):
 		p.title = ""
 	p.choose_depth(int(cfg.get_value("progress", "depth", 1)))
