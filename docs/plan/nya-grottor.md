@@ -152,3 +152,20 @@ Ingen av dem kräver mer kod i grottan än C och F. Spindelsessionen behöver ba
 3. Ska ledtråden vara gratis och alltid synlig (A), eller köpas med en Charge som timglaset?
 4. Specialvåningar på våning 1 som slump, eller bara med instabilitet? Och ska de ersätta våning 1 eller vara en frivillig
    sidodörr (Siralims Nether-dörr, mer kod: en våning i våningen)?
+
+## Byggt (0.30.22-test): A och B
+- **Rykten:** varje mål för questen får en röd ring över 3×3 rutor där det står (`RunState.quest_hints`, `active_hints`);
+  ringen försvinner när målet syns eller är klart. När questen är klar visar en gyllene streckad stig vägen till målet.
+- **Spåren:** går man vidare när questen är klar får man 75 % av erfarenheten och silvret från de vanliga grupper som står
+  kvar (`RunState.TRAIL_SHARE`, `take_trail`, `Run._pay_trail`). Boten "direct" backar från vanliga grupper.
+
+Botarna (`BALANS=grotta`, djup 1, 100 körningar, MACRO; rensa allt / direkt):
+
+| | 0,5 | 0,75 | 1,0 |
+|---|---|---|---|
+| Kryptan, 4 hjältar | 34 / 26 % | 36 / **35 %** | 37 / 48 % |
+| Kryptan, Paladinen + Imma | 83 / 35 % | 86 / 47 % | – |
+| Kapellet, 4 hjältar | 43 / 17 % | 46 / 22 % | – |
+
+I kryptan är det nu ett riktigt val (6,5 strider i stället för 9,6, samma vinst). I kapellet lönar det sig fortfarande
+att rensa: dess boss kräver nivåerna. Det får VD:s provspel avgöra.
