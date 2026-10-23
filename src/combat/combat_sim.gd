@@ -653,6 +653,9 @@ func _next_turn() -> void:
 			continue
 		current = u
 		turn_no += 1
+		if turn_no > EXHAUSTION_LOSS:
+			_exhausted_loss()
+			return
 		u.turns_taken += 1
 		if u.team == 0 and _rule("chaos_wind") and u.turns_taken == CHAOS_WIND_TURNS + 1:
 			_calm_chaos_wind(u)
@@ -662,6 +665,8 @@ func _next_turn() -> void:
 		_emit({"type": "turn_start", "unit": u.id})
 		_break_snares()
 		_tick_turn_start(u)
+		if u.alive and turn_no > EXHAUSTION_TURN:
+			_exhaust(u)
 		_check_outcome()
 		if u.alive and _wakes_or_thaws(u):
 			return
@@ -795,6 +800,40 @@ func _calm_chaos_wind(u: CombatUnit) -> void:
 	u.base_stats.attack = u.attack
 	u.base_stats.defense = u.defense
 	_emit({"type": "chaos_calm", "unit": u.id})
+
+
+## 0.30.20 Utmattning (vårt val; Siralim har ingen turgräns, och där fastnar strider ibland tills man ger upp): från tur
+## 100 förlorar den som står på tur en andel av sitt maximala liv i början av turen, som växer med varje tur (förbi
+## Barriär och immunitet), så att striden avgörs av sig själv. Tur 300 är en ren förlust, som Ge upp. Botarna: hälften av
+## striderna är klara på 15 turer, 99 av 100 på 69, den längsta 190 (karriären, 3 781 strider).
+const EXHAUSTION_TURN := 100
+const EXHAUSTION_STEP := 0.004
+const EXHAUSTION_LOSS := 300
+
+
+func exhaustion_pct() -> float:
+	return minf(1.0, EXHAUSTION_STEP * (turn_no - EXHAUSTION_TURN)) if turn_no > EXHAUSTION_TURN else 0.0
+
+
+func _exhaust(u: CombatUnit) -> void:
+	if not exhausting:
+		exhausting = true
+		_emit({"type": "exhaustion_start"})
+	var pct := exhaustion_pct()
+	var amount := minf(u.hp, roundf(u.max_hp * pct))
+	u.hp -= amount
+	_emit({"type": "exhaustion", "unit": u.id, "amount": amount, "pct": pct})
+	if u.hp <= 0.0:
+		_kill(u)
+
+
+var exhausting := false
+
+
+func _exhausted_loss() -> void:
+	outcome = "defeat"
+	current = null
+	_emit({"type": "outcome", "result": outcome, "exhausted": true})
 
 
 ## En regel slog till: första gången i striden blir det en händelse (dolda regler avslöjas).

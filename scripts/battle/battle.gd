@@ -51,6 +51,7 @@ var _recent_numbers: Array = []
 var _calc_open := false
 var _dev_calc := false
 var _dev_statuses := false
+var _dev_exhaust := 0
 var _dev_order := false
 var _dev_combo := false  # 0.30: --combo förblindar fienderna vid start och kör ALLA AUTO (kombinationens ruta)
 ## --combo-first: som --combo, men Paladinen agerar först, så att rutan "Kombination!" kommer i första turen. Rutan visas
@@ -108,6 +109,8 @@ func _ready() -> void:
 			warp_turns = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--seed="):
 			seed_value = int(arg.get_slice("=", 1))
+		elif arg.begins_with("--exhaust="):
+			_dev_exhaust = int(arg.get_slice("=", 1))  # 0.30.20: striden börjar på den turen (skärmdumpar av utmattningen)
 		elif arg == "--statuses":
 			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
 		elif arg == "--settings":
@@ -345,6 +348,8 @@ func _process(delta: float) -> void:
 			sim.begin()
 			if _dev_combo_first and pal_unit != null:
 				pal_unit.speed = pal_speed
+			if _dev_exhaust > 0:
+				sim.turn_no = _dev_exhaust
 			if _dev_statuses:
 				_give_dev_statuses()
 			if _dev_combo:
@@ -547,6 +552,12 @@ func _on_rule(rule_id: String) -> void:
 		overlay.announce("Dold regel: %s!" % data.floor_rules[rule_id].name)
 		sfx.play("bone_crush", -6.0, 0.0)
 	_update_rules_text()
+
+
+## 0.30.20: striden har dragit ut för länge; alla tappar liv i början av sin tur tills den avgörs.
+func _on_exhaustion_start() -> void:
+	overlay.announce("Facklorna falnar – ingen orkar länge till")
+	sfx.play("room_lock", -6.0, 0.0)
 
 
 ## En elitvariant är med i striden: skylt och ljudsignal.
@@ -884,6 +895,10 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e), _on_trait.bind(e))
 		"rule":
 			_after(_effect_delay(e), _on_rule.bind(e.rule))
+		"exhaustion_start":
+			_after(_cursor + 0.1, _on_exhaustion_start)
+		"exhaustion":
+			_after(_cursor + 0.2, _float.bind(e.unit, "−%d" % int(e.amount), Color("#c9a77a"), 18, false))
 		"chaos_calm":
 			_after(_cursor + 0.1, _float.bind(e.unit, "KAOSVINDEN LÄGGER SIG", UiStyle.TRAIT_GOLD, 18, true))
 		"elite":
