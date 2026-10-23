@@ -43,3 +43,27 @@ func test_the_oath_counts_once_under_the_paladin() -> void:
 	assert_eq(rows.size(), 1)
 	assert_eq(rows[0].who, sim.heroes[0].name)
 	assert_eq(rows[0].text, "49 helning · 16 gånger")
+
+
+## 0.30.16: troféer som kunde ta en trofés plats: inte den själv, de med samma roll först, och vem som bär dem.
+func test_alternatives_prefer_same_role() -> void:
+	var data := GameData.load_all()
+	var owned := ["bone_finger"]
+	var heal_id := ""
+	var dmg_id := ""
+	for id in data.traits:
+		var t: Dictionary = data.traits[id]
+		if not t.get("trophy", false) or id == "bone_finger":
+			continue
+		var r := BattleSummary.roles(t)
+		if heal_id == "" and r.has("helning") and not r.has("skada"):
+			heal_id = id
+		if dmg_id == "" and r.has("skada") and not r.has("helning"):
+			dmg_id = id
+	owned.append(heal_id)
+	owned.append(dmg_id)
+	var alts := BattleSummary.alternatives(data, "bone_finger", owned, {"imma": dmg_id}, {"imma": "Imma"})
+	assert_eq(alts.size(), 2, "alla utom den själv")
+	assert_eq(alts[0].id, dmg_id, "samma roll (skada) först")
+	assert_eq(alts[0].wearer, "Imma")
+	assert_eq(alts[1].wearer, "")

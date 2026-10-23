@@ -25,6 +25,11 @@ var level_ups: Array = []
 var finds: Array = []
 ## 0.30: "Det här avgjorde striden" till vänster (BattleSummary.deciders): [{name, tag, who, text}].
 var deciders: Array = []
+## 0.30.16: fingeravtryckets andra halva. Radindex -> troféer man äger som kunde ta dess plats (BattleSummary.alternatives);
+## ett tryck på raden öppnar listan, ett tryck utanför stänger den.
+var alternatives := {}
+var alt_open := -1
+var alt_hint := "Byt troféer vid en lägereld."
 var data: Dictionary = {}
 ## Våningsreglerna som gäller (visas uppe till höger under knapparna).
 var rules_text := ""
@@ -125,7 +130,7 @@ func _draw_deciders(w: float, h: float, a: float) -> void:
 	if deciders.is_empty():
 		return
 	var x := 30.0
-	var y := h * 0.45 - 40.0
+	var y := _deciders_top(h)
 	# En mörk platta, så att raderna går att läsa ovanpå sällskapets ramar (tre eller fyra hjältar).
 	var plate := Rect2(x - 14, y - 26, 358, 48 + deciders.size() * 64)
 	draw_rect(plate, Color(0.03, 0.03, 0.05, 0.92 * a))
@@ -142,6 +147,41 @@ func _draw_deciders(w: float, h: float, a: float) -> void:
 		UiStyle.text(self, p + Vector2(0, 20), d.name, 17, Color(col.lightened(0.2), a * t), HORIZONTAL_ALIGNMENT_LEFT, 330, 4)
 		UiStyle.text(self, p + Vector2(0, 40), "%s · %s" % [d.who, d.text], 15, Color(1, 1, 1, 0.75 * a * t),
 				HORIZONTAL_ALIGNMENT_LEFT, 330, 4)
+		if alternatives.has(i):
+			var open := alt_open == i
+			if open:
+				draw_rect(_decider_rect(i), Color(UiStyle.GOLD, 0.12 * a * t))
+			# Efter taggen, till vänster om resultatets rubrik (som ritas ovanpå plattans högra del).
+			UiStyle.text(self, p + Vector2(62, 0), "· ANDRA TROFÉER ▸" if not open else "· STÄNG ◂", 15,
+					Color(UiStyle.GOLD, 0.85 * a * t), HORIZONTAL_ALIGNMENT_LEFT, 200, 4)
+
+
+func _deciders_top(h: float) -> float:
+	return h * 0.45 - 40.0
+
+
+func _decider_rect(i: int) -> Rect2:
+	return Rect2(16, _deciders_top(size.y) + 12 + i * 64, 356, 62)
+
+
+## Listan bredvid raden: de troféer man äger som kunde ta dess plats, med vem som bär dem nu.
+func _draw_alternatives(h: float, a: float) -> void:
+	var list: Array = alternatives[alt_open]
+	var r := Rect2(384, _deciders_top(h) - 26, 440, 52 + list.size() * 66)
+	draw_rect(r, Color(0.03, 0.03, 0.05, 0.96 * a))
+	draw_rect(r, Color(UiStyle.GOLD, 0.6 * a), false, 2.0)
+	UiStyle.text(self, r.position + Vector2(14, 26), "KUNDE TA DESS PLATS", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT,
+			r.size.x - 28, 4)
+	for i in list.size():
+		var o: Dictionary = list[i]
+		var p := r.position + Vector2(14, 56 + i * 66)
+		UiStyle.text(self, p, UiStyle.fit(o.name, 17, 250), 17, Color(UiStyle.TRAIT_GOLD.lightened(0.2), a), HORIZONTAL_ALIGNMENT_LEFT,
+				r.size.x - 28, 4)
+		var who: String = "ingen bär den" if o.wearer == "" else "bärs av " + String(o.wearer)
+		UiStyle.text(self, p, who, 15, Color(1, 1, 1, 0.55 * a), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 28, 4)
+		UiStyle.para(self, p + Vector2(0, 22), o.text, 15, Color(1, 1, 1, 0.8 * a), r.size.x - 28, 2)
+	UiStyle.text(self, Vector2(r.position.x, r.end.y + 22), alt_hint, 15, Color(1, 1, 1, 0.55 * a),
+			HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 4)
 
 
 ## Fynden till höger om resultatet: en ädelsten i fyndets färg och namnet, ett i taget.
@@ -225,8 +265,17 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 		return
 	if mode in ["victory", "defeat"] and _big_t > 1.0 and event is InputEventMouseButton and event.pressed:
-		restart_requested.emit()
 		accept_event()
+		for i in alternatives:
+			if _decider_rect(i).has_point(event.position):
+				alt_open = -1 if alt_open == i else i
+				queue_redraw()
+				return
+		if alt_open >= 0:
+			alt_open = -1  # ett tryck utanför stänger listan först
+			queue_redraw()
+			return
+		restart_requested.emit()
 
 
 func _process(delta: float) -> void:
@@ -267,6 +316,8 @@ func _draw() -> void:
 					HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 		_draw_level_ups(w, h, a)
 		_draw_finds(w, h, a)
+		if alt_open >= 0 and alternatives.has(alt_open):
+			_draw_alternatives(h, a)  # sist, ovanpå rubriken
 		if mode in ["victory", "defeat"] and _big_t > 1.0:
 			var blink := 0.6 + 0.4 * sin(_t * 4.0)
 			UiStyle.text(self, Vector2(0, h - 16), "Tryck för att fortsätta", 20, Color(1, 1, 1, blink),
