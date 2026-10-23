@@ -50,10 +50,13 @@ void fragment() {
 """
 ## Kamerans glidning in i området när körningen startar (−1 = ingen).
 var _zoom_t := -1.0
+## 0.30.17: rutan där löftet väljs (data/vows.json) är öppen.
+var _vow_open := false
 
 
 func _ready() -> void:
 	super()
+	_vow_open = "--vows" in OS.get_cmdline_user_args()  # 0.30.17: löftesrutan öppen (skärmdumpar)
 	# 0.25: djup och instabilitet förklaras efter den första nedstigningen (den första hålls enkel).
 	if run.profile.total_descents() > 0:
 		HelpBox.offer(self, ["depth", "instability"])
@@ -107,6 +110,14 @@ func _tap(p: Vector2) -> void:
 	if _zoom_t >= 0.0:
 		return
 	var prof: Profile = run.profile
+	if _vow_open:
+		_tap_vow(p)
+		return
+	if _vows_on() and _vow_rect().has_point(p):
+		_vow_open = true
+		run.ui("ui_page", -10.0)
+		queue_redraw()
+		return
 	if back_rect().has_point(p):
 		run.go(run.BASE_SCENE)
 		return
@@ -178,7 +189,72 @@ func _instability_rect(dir: int) -> Rect2:
 
 func _prep_rect() -> Rect2:
 	var p := _panel()
-	return Rect2(p.position.x + 20, p.end.y - 140, p.size.x - 40, 48)
+	var w := p.size.x - 40
+	return Rect2(p.position.x + 20, p.end.y - 140, (w - 10) / 2.0 if _vows_on() else w, 48)
+
+
+## 0.30.17: LÖFTE bredvid FÖRBEREDELSER, efter introt (som Värdshuset).
+func _vows_on() -> bool:
+	return run.profile.intro_done and not run.data.get("vows", {}).is_empty()
+
+
+func _vow_rect() -> Rect2:
+	var r := _prep_rect()
+	return Rect2(r.end.x + 10, r.position.y, r.size.x, r.size.y)
+
+
+func _vow_ids() -> Array:
+	return [""] + run.data.vows.keys().filter(func(k: String) -> bool: return not k.begins_with("_"))
+
+
+func _vow_box() -> Rect2:
+	var n := _vow_ids().size()
+	var h := 96.0 + n * 84.0
+	return Rect2((size.x - 680) / 2.0, (size.y - h) / 2.0, 680, h)
+
+
+func _vow_option(i: int) -> Rect2:
+	var b := _vow_box()
+	return Rect2(b.position.x + 20, b.position.y + 70 + i * 84, b.size.x - 40, 76)
+
+
+func _tap_vow(p: Vector2) -> void:
+	var ids := _vow_ids()
+	for i in ids.size():
+		if _vow_option(i).has_point(p):
+			run.profile.vow = ids[i]
+			run.save()
+			run.ui("ui_confirm", -8.0)
+			break
+	_vow_open = false
+	queue_redraw()
+
+
+func _draw_vow_box(data: Dictionary) -> void:
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.45))
+	var b := _vow_box()
+	draw_rect(b, Color(0.16, 0.11, 0.07, 0.97))
+	draw_rect(b, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
+	UiStyle.text(self, b.position + Vector2(0, 44), "PALADINENS LÖFTE FÖR NEDSTIGNINGEN", 22, UiStyle.GOLD,
+			HORIZONTAL_ALIGNMENT_CENTER, b.size.x, 3)
+	var ids := _vow_ids()
+	for i in ids.size():
+		var r := _vow_option(i)
+		var on: bool = run.profile.vow == ids[i]
+		draw_rect(r, Color(0, 0, 0, 0.45) if not on else Color(UiStyle.GOLD, 0.18))
+		draw_rect(r, UiStyle.GOLD if on else Color(1, 1, 1, 0.2), false, 2.0 if on else 1.0)
+		if ids[i] == "":
+			UiStyle.text(self, r.position + Vector2(14, 28), "Inget löfte", 19, Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 28, 3)
+			UiStyle.para(self, r.position + Vector2(14, 50), "Nedstigningen som vanligt.", 15, Color(1, 1, 1, 0.7), r.size.x - 28, 1)
+			continue
+		var v: Dictionary = data.vows[ids[i]]
+		var silver := float(v.get("silver", 0.0))
+		UiStyle.text(self, r.position + Vector2(14, 28), v.name, 19, UiStyle.TRAIT_GOLD.lightened(0.2), HORIZONTAL_ALIGNMENT_LEFT,
+				r.size.x - 28, 3)
+		if silver > 0.0:
+			UiStyle.text(self, r.position + Vector2(14, 28), "silver +%d %% medan det hålls" % roundi(silver * 100.0), 15,
+					Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 28, 3)
+		UiStyle.para(self, r.position + Vector2(14, 50), v.text, 15, Color(1, 1, 1, 0.8), r.size.x - 28, 2)
 
 
 func _start_rect() -> Rect2:
@@ -213,6 +289,8 @@ func _draw() -> void:
 	small_button(back_rect(), "‹ BASEN")
 	silver_label()
 	_draw_panel(data, prof)
+	if _vow_open:
+		_draw_vow_box(data)
 
 
 ## Vinjetterna följer kamerans glidning (de ritas av egna noder bakom linjerna).
@@ -348,4 +426,7 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	UiStyle.text(self, Vector2(x, _prep_rect().position.y - 10), "Sällskap: " + ", ".join(companions), 13,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 	small_button(_prep_rect(), "FÖRBEREDELSER")
+	if _vows_on():
+		var vname := "INGET" if prof.vow == "" else String(data.vows[prof.vow].name).to_upper()
+		small_button(_vow_rect(), UiStyle.fit("LÖFTE: " + vname, 18, _vow_rect().size.x - 16))
 	UiStyle.big_button(self, _start_rect(), "IN I " + str(realm.short).to_upper(), _t, RunState.can_start(prof))

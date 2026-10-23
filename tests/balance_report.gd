@@ -40,6 +40,10 @@ func _init() -> void:
 		_grotto(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "loften":
+		_vows(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "elitgrupper":
 		_elite_groups(data)
 		quit()
@@ -439,3 +443,30 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 				roundi(100.0 * cleared / RUNS),
 				float(fights) / RUNS, float(fights_cleared) / maxi(cleared, 1), roundi(float(steps) / RUNS)]
 	print(line)
+
+
+## 0.30.17 Löften (BALANS=loften): vinst och hur ofta löftet hålls, för varje löfte mot inget löfte, i kryptan och kapellet
+## på väntad nivå (4 hjältar och Paladinen + Imma, startmakron).
+func _vows(data: Dictionary) -> void:
+	var fresh := Bot.new_profile_macros(data)
+	print("=== Löften (0.30.17), djup 1, %d körningar per rad: vinst · hållet · strider ===" % RUNS)
+	var vows: Array = [""] + data.vows.keys().filter(func(k: String) -> bool: return not k.begins_with("_"))
+	for realm_id in ["crypt", "chapel"]:
+		for party in [["paladin", "brokk", "alva", "eira"], ["paladin", "imma"]]:
+			var line := "  %-8s %-24s" % [data.realms[realm_id].short, "4 hjältar" if party.size() == 4 else "Paladinen + Imma"]
+			for vow in vows:
+				var cleared := 0
+				var kept := 0
+				var fights := 0
+				for seed_value in range(1, RUNS + 1):
+					var opts := {"levels": Bot.party_levels(data, 3, party), "grow": true, "party": party, "vow": vow}
+					if party.size() == 2:
+						opts.bot_macros = fresh
+					var r := Bot.run_expedition(data, seed_value, Bot.Skill.MACRO, {}, {}, 1, realm_id, opts, "simple")
+					cleared += 1 if r.cleared else 0
+					kept += 1 if r.cleared and r.get("vow_kept", false) else 0
+					fights += int(r.fights)
+				var name: String = "inget" if vow == "" else String(data.vows[vow].name)
+				line += "  %s %3d %% · %3d %% · %.1f" % [name, roundi(100.0 * cleared / RUNS), roundi(100.0 * kept / maxi(cleared, 1)),
+						float(fights) / RUNS]
+			print(line)

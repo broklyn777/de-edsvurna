@@ -2187,5 +2187,8 @@
 		"modify": {
 			"heal_mult": 0.8
 		}
-	}
+	},
+	"vow_no_fall_held": {"name": "Ingen ska falla", "vow": true, "text": "I början av striden får den svagaste i sällskapet en Barriär för 20 % av sitt liv.", "trigger": "battle_start", "effects": [{"type": "barrier", "pct_max_hp": 0.2, "target": "weakest_ally"}]},
+	"vow_no_fall_humble": {"name": "Den som föll reser sig", "vow": true, "text": "En gång under körningen: när någon i sällskapet faller väcks hen med 30 % liv.", "trigger": "death", "once_per_battle": true, "when": {"unit": "ally"}, "effects": [{"type": "revive", "pct": 0.3, "target": "unit"}]},
+	"vow_no_heal_held": {"name": "Jag helar inte", "vow": true, "text": "Paladinens direkta attacker helar den svagaste i sällskapet för 20 % av skadan.", "trigger": "damage", "when": {"source": "self", "direct": true}, "effects": [{"type": "heal", "pct_of_event": 0.2, "target": "weakest_ally"}]}
 }

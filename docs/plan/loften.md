@@ -1,4 +1,4 @@
-# Löften per nedstigning – plan (2026-10-23, inte beslutad)
+# Löften per nedstigning – plan (2026-10-23; provet byggt i 0.30.17-test)
 
 Underlag för VD:s beslut. Idén kom från Claude-chattarna två gånger (`docs/ideer/claude-kreativ-30-ideer.md`,
 `claude-kreativ-30-ideer-2.md`). Inget är byggt.
@@ -66,3 +66,20 @@ och vi lägger ned det.
 1. "Löfte" som namn, eller något annat?
 2. Ska stegen vara permanenta i profilen, eller bara synas i Biblioteket som en krönika?
 3. Raka vägen eller ett annat tredje löfte?
+
+## Provet (0.30.17-test)
+Byggt enligt planen utan steg. Avvikelser: Ingen ska falla ger en Barriär på 20 % (inte 10 %); Jag helar inte helar
+20 % och ger +10 % silver; Raka vägens extra fynd är inte med (bara questens silver dubbelt).
+
+Botarna (`BALANS=loften`, djup 1, startmakron, nivå 3, 100 körningar; vinst · hur ofta löftet hölls i klarade körningar):
+
+| | inget | Ingen ska falla | Jag helar inte | Raka vägen |
+|---|---|---|---|---|
+| Kryptan, 4 hjältar | 37 % | 36 % · 42 % | 25 % · 100 % | 28 % · 96 % |
+| Kryptan, Paladinen + Imma | 66 % | 70 % · 17 % | 75 % · 100 % | 61 % · 92 % |
+| Kapellet, 4 hjältar | 44 % | 47 % · 57 % | 34 % · 100 % | 23 % · 91 % |
+| Kapellet, Paladinen + Imma | 98 % | 98 % · 87 % | 97 % · 100 % | 98 % · 94 % |
+
+Läsning: Ingen ska falla kostar inget och hålls ibland – en fri chans till silver, men den ödmjuka formen gör att ett
+brott inte straffar. Jag helar inte är dyrt för ett lag med Alva och en fördel för ett lag utan helare (avsikten: löftet
+ska få en att bygga om). Raka vägen kostar mest, eftersom färre strider ger mindre erfarenhet.

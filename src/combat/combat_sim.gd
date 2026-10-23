@@ -157,6 +157,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	sim.data = game_data
 	sim.depth = maxi(depth, 1)
 	sim.rules = opts.get("rules", []).duplicate()
+	sim.no_heal = bool(opts.get("no_heal", false))
 	sim._start_auras = opts.get("start_auras", []).duplicate()
 	var forced := int(opts.get("force_elites", 0))
 	var enc_def: Dictionary = game_data.encounters[encounter_id]
@@ -544,6 +545,8 @@ func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 		return "silenced"
 	if action == "attack" and is_scorned(u):
 		return "scorned"
+	if action == "ability" and u.team == 0 and no_heal and is_heal_ability(id):
+		return "vowed"
 	if action == "ability" and u.sealed.has(id):
 		return "sealed"
 	if action in ["defend", "provoke"] and _rule("no_guard"):
@@ -759,6 +762,17 @@ func _end_turn() -> void:
 
 func _rule(rule_id: String) -> bool:
 	return rules.has(rule_id)
+
+
+## Löftet "Jag helar inte" (0.30.17): hjältarna kan inte välja förmågor som helar.
+var no_heal := false
+
+
+func is_heal_ability(ability_id: String) -> bool:
+	for e in data.abilities.get(ability_id, {}).get("effects", []):
+		if e.get("type", "") == "heal":
+			return true
+	return false
 
 
 ## Kaosvind (0.30.16, vårt val): bytet håller i hjältens tre första turer och lägger sig sedan, så att en strid där

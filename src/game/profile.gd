@@ -95,6 +95,8 @@ var best_depth := 0
 var realm := "crypt"
 ## Vald instabilitet 0–3 (RunState.MAX_INSTABILITY).
 var instability := 0
+## 0.30.17: löftet som väljs på kampanjkartan (data/vows.json), "" = inget.
+var vow := ""
 ## Segrar per boss (Siralims Masters): bosstrofén kräver RunState.BOSS_WINS_FOR_TROPHY.
 var boss_wins := {}
 ## Klarade Realm Quests, en per kombination av Realm och djup ("crypt:1").
@@ -558,6 +560,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "best_depth", best_depth)
 	cfg.set_value("progress", "realm", realm)
 	cfg.set_value("progress", "instability", instability)
+	cfg.set_value("progress", "vow", vow)
 	cfg.set_value("progress", "boss_wins", boss_wins)
 	cfg.set_value("progress", "quests_done", quests_done)
 	cfg.set_value("progress", "realm_depth", realm_depth)
@@ -626,6 +629,7 @@ static func load_from(path: String) -> Profile:
 	p.descents = cfg.get_value("progress", "descents", {"crypt": 1} if p.best_depth > 0 or p.recruited.size() > 1 else {})
 	p.realm = cfg.get_value("progress", "realm", "crypt")
 	p.instability = clampi(int(cfg.get_value("progress", "instability", 0)), 0, RunState.MAX_INSTABILITY)
+	p.vow = String(cfg.get_value("progress", "vow", ""))
 	p.boss_wins = cfg.get_value("progress", "boss_wins", {})
 	p.realm_depth = cfg.get_value("progress", "realm_depth", {})
 	p.room_moments = cfg.get_value("progress", "room_moments", true)

@@ -1,0 +1,28 @@
+{
+	"_comment": "0.30.17: Löften per nedstigning (prov, docs/plan/loften.md). Väljs på kampanjkartan; hållet ger 'held' (egenskap hos Paladinen) och silver, brutet blir 'humble'. breaks_on: death (en hjälte faller), commons (en tredje vanlig grupp per våning), \"\" (kan inte brytas).",
+	"vow_no_fall": {
+		"name": "Ingen ska falla",
+		"text": "I början av varje strid får den svagaste en Barriär för 20 % av sitt liv. Faller någon brister löftet, och en gång reser sig då den som faller.",
+		"held": "vow_no_fall_held",
+		"humble": "vow_no_fall_humble",
+		"humble_name": "Den som föll reser sig",
+		"breaks_on": "death",
+		"silver": 0.15
+	},
+	"vow_no_heal": {
+		"name": "Jag helar inte",
+		"text": "Helningsförmågor går inte att välja. Paladinens direkta attacker helar i stället den svagaste för 20 % av skadan.",
+		"held": "vow_no_heal_held",
+		"no_heal": true,
+		"breaks_on": "",
+		"silver": 0.1
+	},
+	"vow_straight": {
+		"name": "Raka vägen",
+		"text": "Högst två vanliga grupper per våning (elit, Nemesis, boss och questens grupper räknas inte). Hållet ger questens silver dubbelt.",
+		"humble_name": "Omvägen",
+		"breaks_on": "commons",
+		"max_commons": 2,
+		"silver": 0.0
+	}
+}
