@@ -1169,8 +1169,7 @@
 	},
 	"mist_sleep": {
 		"name": "Dimslöja",
-		"target": "enemy",
-		"pick": "highest_attack",
+		"target": "all_enemies",
 		"kind": "spell",
 		"school": "shadow",
 		"cooldown": 3,
@@ -1179,8 +1178,7 @@
 		"effects": [
 			{
 				"type": "aura",
-				"aura": "sleeping",
-				"duration": 1
+				"aura": "deep_sleep"
 			}
 		]
 	},

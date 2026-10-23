@@ -1,9 +1,10 @@
 extends TapScreen
 ## Smeden (Siralims Blacksmith, 0.20): en artefakt per hjälte, med nivå 1–10 och platser för material.
 ##
-## ARTEFAKT: nivåstegen visar vad varje nivå öppnar (Stat 2, Trick 3, Stat 5, Trick 7, Stat 9, Nether 10).
+## ARTEFAKT: nivåstegen visar vad varje nivå öppnar (Stat 2, Trick 3, Stat 5, Trofé 6, Trick 7, Stat 9, Nether 10).
 ## Tryck på en plats för att se förrådets material och jämföra med det som sitter där; tryck två gånger på
-## ett material för att sätta i det (det gamla förstörs, en Nether Stone går tillbaka till förrådet).
+## ett material för att sätta i det (det gamla förstörs, en Nether Stone går tillbaka till förrådet). Troféplatsen
+## (trofeplats) tar en trofé ur samlingen; den som bar den tappar den, och uttagen ligger den kvar i samlingen.
 ## SMIDE: typen höjer en stat och avgör när förmågan slår till (svärd vid Anfall, stav vid Förmåga, sköld vid
 ## Försvara, hjälm vid Provocera, stövlar i början av turen). Nivån och materialen följer med vid byte.
 
@@ -18,7 +19,7 @@ var hero := "paladin"
 var type := "sword"
 var ability := ""
 var tab := 0
-## Vald plats: {kind: "stat"|"trick"|"nether", i} eller {}.
+## Vald plats: {kind: "stat"|"trick"|"nether"|"trophy", i} eller {}.
 var slot := {}
 ## Valt alternativ i panelen (första trycket); det andra trycket sätter i det.
 var pending := ""
@@ -211,8 +212,14 @@ func _delayed_sound(sound: String, delay: float) -> void:
 
 
 func _insert(option: String) -> void:
-	var ok: bool = run.profile.socket_stone(hero, option) if slot.kind == "nether" \
-			else run.profile.socket(hero, slot.kind, int(slot.i), option)
+	var ok: bool
+	match slot.kind:
+		"nether":
+			ok = run.profile.socket_stone(hero, option)
+		"trophy":
+			ok = run.profile.set_artifact_trophy(hero, option)
+		_:
+			ok = run.profile.socket(hero, slot.kind, int(slot.i), option)
 	if not ok:
 		_say("Det räcker inte – en Stat-plats tar %d bärnsten" % Forge.AMBER_PER_SLOT if slot.kind == "stat" else "Det går inte")
 		run.ui("ui_error", -10.0)
@@ -227,6 +234,9 @@ func _remove(art: Dictionary) -> void:
 	if slot.kind == "nether":
 		run.profile.socket_stone(hero, "")
 		_say("Stenen ligger i förrådet igen")
+	elif slot.kind == "trophy":
+		run.profile.set_artifact_trophy(hero, "")
+		_say("Trofén ligger i samlingen igen")
 	else:
 		var name := ArtifactText.material_name(run.data, _current(art, slot))
 		run.profile.socket(hero, slot.kind, int(slot.i), "")
@@ -244,6 +254,7 @@ func _sockets() -> Array:
 	for i in Forge.TRICK_SLOT_LEVELS.size():
 		out.append({"kind": "trick", "i": i})
 	out.append({"kind": "nether", "i": 0})
+	out.append({"kind": "trophy", "i": 0})
 	return out
 
 
@@ -257,6 +268,8 @@ func _open_level(s: Dictionary) -> int:
 			return Forge.STAT_SLOT_LEVELS[s.i]
 		"trick":
 			return Forge.TRICK_SLOT_LEVELS[s.i]
+		"trophy":
+			return Forge.TROPHY_LEVEL
 	return Forge.NETHER_LEVEL
 
 
@@ -271,6 +284,8 @@ func _current(art: Dictionary, s: Dictionary) -> String:
 			return art.stat_slots[s.i]
 		"trick":
 			return art.trick_slots[s.i]
+		"trophy":
+			return art.trophy
 	return art.nether.get("id", "")
 
 
@@ -278,6 +293,13 @@ func _current(art: Dictionary, s: Dictionary) -> String:
 func _options(art: Dictionary) -> Array:
 	var profile: Profile = run.profile
 	var data: Dictionary = run.data
+	if slot.kind == "trophy":
+		# Samlingens troféer utom den som sitter här och den hjälten själv bär (samma egenskap två gånger går inte).
+		var mine: String = profile.worn.get(hero, "")
+		var free := profile.collection.filter(func(t: String) -> bool: return t != art.trophy and t != mine and data.traits.has(t))
+		# De som ingen bär eller har i en artefakt först.
+		free.sort_custom(func(a: String, b: String) -> bool: return int(_trophy_holder(a) == "") > int(_trophy_holder(b) == ""))
+		return free.slice(0, MAX_STONES)
 	if slot.kind == "nether":
 		var stones := profile.stones.duplicate()
 		stones.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.number) > int(b.number))
@@ -290,6 +312,18 @@ func _options(art: Dictionary) -> Array:
 	out.sort_custom(func(a: String, b: String) -> bool:
 		return int(profile.materials[a]) > int(profile.materials[b]))
 	return out.slice(0, MAX_OPTIONS)
+
+
+## Vem som har trofén nu (bär den eller har den i sin artefakt), "" om ingen.
+func _trophy_holder(trophy_id: String) -> String:
+	for h in run.profile.worn:
+		if run.profile.worn[h] == trophy_id:
+			return h
+	return run.profile.artifact_trophy_owner(trophy_id)
+
+
+func _hero_name(hero_id: String) -> String:
+	return String(run.data.heroes.get(hero_id, {}).get("name", hero_id))
 
 
 func _stone(id: String) -> Dictionary:
@@ -341,11 +375,12 @@ func _socket_center(s: Dictionary) -> Vector2:
 	var step := 104.0
 	var gap := 40.0 if idx >= 3 else 0.0
 	gap += 40.0 if idx >= 5 else 0.0
+	gap += 40.0 if idx >= 6 else 0.0
 	return Vector2(_x0() + 50 + idx * step + gap, 362)
 
 
 func _option_rect(i: int) -> Rect2:
-	if slot.get("kind", "") == "nether":
+	if slot.get("kind", "") in ["nether", "trophy"]:
 		var w := (_w() - 436 - GAP) / 2.0
 		return Rect2(_x0() + (i % 2) * (w + GAP), 476 + (i / 2) * 92, w, 84)
 	var w2 := (_w() - 436 - GAP) / 2.0
@@ -504,7 +539,7 @@ func _draw_artifact(data: Dictionary, profile: Profile, art: Dictionary) -> void
 					Color(UiStyle.TRAIT_GOLD, 1.0 if done else (0.95 if next else 0.5)), HORIZONTAL_ALIGNMENT_CENTER, 100, 2)
 	UiStyle.text(self, Vector2(x0, 290), what, 18, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, w, 3)
 	# Platserna.
-	var labels := {"stat": ["STAT", 0], "trick": ["TRICK", 3], "nether": ["NETHER", 5]}
+	var labels := {"stat": ["STAT", 0], "trick": ["TRICK", 3], "nether": ["NETHER", 5], "trophy": ["TROFÉ", 6]}
 	for kind in labels:
 		var s0: Dictionary = _sockets()[labels[kind][1]]
 		UiStyle.text(self, _socket_center(s0) + Vector2(-SOCKET_R, -SOCKET_R - 10), labels[kind][0], 15,
@@ -557,29 +592,45 @@ func _draw_socket(data: Dictionary, art: Dictionary, s: Dictionary, level: int) 
 	elif s.kind == "nether":
 		GemArt.draw_find(self, data, {"kind": "nether", "stone": art.nether}, c, 20.0, _t)
 		name = "%s (%d)" % [Forge.rarity_of(data, art.nether).name, art.nether.number]
+	elif s.kind == "trophy":
+		_draw_trophy_mark(c, 18.0, cur)
+		name = String(data.traits[cur].name)
 	else:
 		var kind := "amber" if s.kind == "stat" else "trick"
 		GemArt.draw_find(self, data, {"kind": kind, "id": cur, "count": 1}, c, 18.0, _t)
 		name = _short(ArtifactText.material_name(data, cur))
-	UiStyle.text(self, c + Vector2(-56, SOCKET_R + 20), name, 15, Color(1, 1, 1, 0.85 if open else 0.45),
+	UiStyle.text(self, c + Vector2(-56, SOCKET_R + 20), UiStyle.fit(name, 15, 112), 15, Color(1, 1, 1, 0.85 if open else 0.45),
 			HORIZONTAL_ALIGNMENT_CENTER, 112, 2)
+
+
+## Troféns märke i en plats: en sköld i sällsynthetens färg med begynnelsebokstaven.
+func _draw_trophy_mark(c: Vector2, r: float, trophy_id: String) -> void:
+	var t: Dictionary = run.data.traits.get(trophy_id, {})
+	var col: Color = {"boss": Color("#ff8a2a"), "elite": Color("#f2d04a")}.get(t.get("rarity", ""), Color("#c8c8c8"))
+	var pts := PackedVector2Array([c + Vector2(-r, -r * 0.8), c + Vector2(r, -r * 0.8), c + Vector2(r, r * 0.1),
+			c + Vector2(0, r), c + Vector2(-r, r * 0.1)])
+	draw_colored_polygon(pts, Color(col, 0.25))
+	pts.append(pts[0])
+	draw_polyline(pts, col, 2.0)
+	UiStyle.text(self, c + Vector2(-r, r * 0.35), String(t.get("name", "?")).left(1), int(r), col, HORIZONTAL_ALIGNMENT_CENTER, r * 2, 0)
 
 
 func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int) -> void:
 	var x0 := _x0()
 	var kind_name: String = {"stat": "BÄRNSTEN FÖR STAT-PLATS %d · 5 AV SAMMA FÄRG", "trick": "TRICK FÖR TRICK-PLATS %d",
-			"nether": "NETHER STONE"}[slot.kind]
+			"nether": "NETHER STONE", "trophy": "TROFÉ UR SAMLINGEN"}[slot.kind]
 	if "%d" in kind_name:
 		kind_name = kind_name % (int(slot.i) + 1)
 	UiStyle.text(self, Vector2(x0, 462), kind_name, 16, Color(1, 1, 1, 0.6))
 	var cur := _current(art, slot)
 	if cur != "":
-		small_button(_remove_rect(), "TA UT" if slot.kind == "nether" else "TA UT (förstörs)")
+		small_button(_remove_rect(), "TA UT" if slot.kind in ["nether", "trophy"] else "TA UT (förstörs)")
 	var opts := _options(art)
 	if opts.is_empty():
 		UiStyle.text(self, Vector2(x0, 490), "Inget i förrådet än. %s" % ({"stat": "Bärnsten hittas i alla strider och skattkammare.",
 				"trick": "Trick hittas i elitstrider, skattkammare, portaler och hos bossar – bara på det djupaste djupet.",
-				"nether": "Nether Stones hittas i skattkammare, portaler och hos bossar – bara på det djupaste djupet."}[slot.kind]),
+				"nether": "Nether Stones hittas i skattkammare, portaler och hos bossar – bara på det djupaste djupet.",
+				"trophy": "Troféer får man av besegrade fiender."}[slot.kind]),
 				18, Color(1, 1, 1, 0.65), HORIZONTAL_ALIGNMENT_LEFT, _w() - 460, 3)
 	for i in opts.size():
 		var r := _option_rect(i)
@@ -587,7 +638,18 @@ func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int
 		var on := pending == id
 		draw_rect(r, Color(0.09, 0.08, 0.12, 0.96) if on else Color(0.06, 0.055, 0.08, 0.85))
 		draw_rect(r, UiStyle.TRAIT_GOLD if on else Color(1, 1, 1, 0.15), false, 2.0 if on else 1.0)
-		if slot.kind == "nether":
+		if slot.kind == "trophy":
+			_draw_trophy_mark(r.position + Vector2(22, 28), 13.0, id)
+			var holder := _trophy_holder(id)
+			UiStyle.text(self, r.position + Vector2(44, 26), String(data.traits[id].name), 18, UiStyle.TRAIT_GOLD,
+					HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 50, 2)
+			# Kortet rymmer två rader; hela texten står i rutan till höger när man trycker.
+			if holder == "":
+				UiStyle.para(self, r.position + Vector2(44, 48), data.traits[id].text, 15, Color(1, 1, 1, 0.75), r.size.x - 52, 2)
+			else:
+				UiStyle.para(self, r.position + Vector2(44, 48), "Hos %s nu. Tryck för att läsa." % _hero_name(holder), 15,
+						Color("#ffb070"), r.size.x - 52, 2)
+		elif slot.kind == "nether":
 			var st := _stone(id)
 			var col := Color(Forge.rarity_of(data, st).color)
 			GemArt.draw_find(self, data, {"kind": "nether", "stone": st}, r.position + Vector2(22, 28), 14.0, _t)
@@ -636,13 +698,18 @@ func _draw_compare(data: Dictionary, art: Dictionary, level: int, cur: String) -
 			now_text = ", ".join(Forge.stone_lines(data, art.nether))
 		if pending != "":
 			new_text = ", ".join(Forge.stone_lines(data, _stone(pending)))
+	elif slot.kind == "trophy":
+		if cur != "":
+			now_text = "%s: %s" % [data.traits[cur].name, data.traits[cur].text]
+		if pending != "":
+			new_text = "%s: %s" % [data.traits[pending].name, data.traits[pending].text]
 	else:
 		if cur != "":
 			now_text = "%s: %s" % [ArtifactText.material_name(data, cur), ArtifactText.material_text(data, cur, level)]
 		if pending != "":
 			new_text = "%s: %s" % [ArtifactText.material_name(data, pending), ArtifactText.material_text(data, pending, level)]
 	UiStyle.text(self, Vector2(x, y), "NU", 15, Color(1, 1, 1, 0.5))
-	y += 6 + UiStyle.para(self, Vector2(x + 40, y), now_text, 16, Color(1, 1, 1, 0.85), w - 40, 2)
+	y += 6 + UiStyle.para(self, Vector2(x + 40, y), now_text, 16, Color(1, 1, 1, 0.85), w - 40, 3 if slot.kind == "trophy" else 2)
 	UiStyle.text(self, Vector2(x, y + 4), "VALT", 15, Color(1, 1, 1, 0.5))
 	if new_text == "":
 		UiStyle.text(self, Vector2(x + 52, y + 4), "Tryck på ett alternativ", 16, Color(1, 1, 1, 0.55))
@@ -657,6 +724,8 @@ func _draw_compare(data: Dictionary, art: Dictionary, level: int, cur: String) -
 			after.trick_slots[slot.i] = pending
 		"nether":
 			after.nether = _stone(pending)
+		"trophy":
+			after.trophy = pending
 	var before_t := _totals(data, art)
 	var after_t := _totals(data, after)
 	var changes: Array[String] = []
@@ -667,7 +736,13 @@ func _draw_compare(data: Dictionary, art: Dictionary, level: int, cur: String) -
 	if not changes.is_empty():
 		y += 4 + UiStyle.para(self, Vector2(x, y + 4), ", ".join(changes), 16, Color("#8fd18f"), w, 2)
 	var warn := "Tryck igen för att sätta i"
-	if cur != "" and slot.kind != "nether":
+	if slot.kind == "trophy":
+		var holder := _trophy_holder(pending)
+		if holder != "":
+			warn += " – %s tappar den" % _hero_name(holder)
+		if cur != "":
+			warn += "; %s går tillbaka till samlingen" % data.traits[cur].name
+	elif cur != "" and slot.kind != "nether":
 		warn += " – %s förstörs" % ArtifactText.material_name(data, cur)
 	elif cur != "":
 		warn += " – den gamla stenen går till förrådet"

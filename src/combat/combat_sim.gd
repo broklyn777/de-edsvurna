@@ -148,7 +148,8 @@ var _team_heals := {}
 ## opts: {"rules": [regel-id], "instability": n, "elite_chance": andel (annars elite_chance()),
 ##   "force_elites": n (de n första vanliga fienderna blir elit – Elit-rum och Nemesis), "nemesis": true
 ##   (den första eliten heter Nemesis), "stat_bonus": extra skalning (Portalens strid),
-##   "start_auras": [aura] som sällskapet börjar med (Helgedomens gåva),
+##   "start_auras": [aura] som sällskapet börjar med (Helgedomens gåva), "first_descent_elite": faktorn som redan
+##   ligger i stat_bonus för elitgruppen på första nedstigningen (byts mot mötets "first_descent_stat_mult"),
 ##   "levels": {hero_id: {level, personality}} (0.19) – hjältarnas nivåer; då har fienderna en nivå efter
 ##   djupet och "floor" (0–2, HeroStats.enemy_level), också i Speed}.
 static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
@@ -214,7 +215,14 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		var e := CombatUnit.from_data("%s_%d" % [kind, counts[kind]], game_data.enemies[kind], 1)
 		e.kind = kind
 		e.position = ENEMY_SLOTS[i]
-		scale_unit(e, enemy_mult(enc, sim.depth) * float(opts.get("stat_bonus", 1.0)))
+		var bonus := float(opts.get("stat_bonus", 1.0))
+		var mult := enemy_mult(enc, sim.depth)
+		# Elitgruppen på den första nedstigningen (RunState.FIRST_DESCENT_ELITE): mötets egen styrka ersätter stat_mult
+		# och den allmänna faktorn.
+		if opts.has("first_descent_elite") and enc.has("first_descent_stat_mult"):
+			bonus /= float(opts.first_descent_elite)
+			mult = float(enc.first_descent_stat_mult) * depth_mult(sim.depth)
+		scale_unit(e, mult * bonus)
 		if party_mult != 1.0:
 			e.max_hp = snap_stat(e.max_hp * party_mult)
 			e.hp = e.max_hp
@@ -1157,6 +1165,22 @@ func has_flag(u: CombatUnit, flag: String) -> bool:
 	return false
 
 
+## Egenskaper som gör bäraren immun mot vissa statusar ("immune_auras", t.ex. Dimmans slöja mot Sover).
+func _trait_immune(u: CombatUnit, aura_id: String) -> bool:
+	for trait_id in u.traits:
+		if aura_id in data.traits.get(trait_id, {}).get("immune_auras", []):
+			return true
+	return false
+
+
+## Bär någon levande i enhetens lag en egenskap med nyckeln (t.ex. Skrivarens penna: "ignore_repeat")?
+func _team_has_trait_key(u: CombatUnit, key: String) -> bool:
+	for a in (heroes if u.team == 0 else enemies):
+		if a.alive and a.traits.any(func(t: String) -> bool: return data.traits.get(t, {}).get(key, false)):
+			return true
+	return false
+
+
 ## Första statusen med flaggan, eller "".
 func flag_aura(u: CombatUnit, flag: String) -> String:
 	for id in u.auras:
@@ -1346,7 +1370,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		# 0.27: Benmur (mindre skada per levande ur familjen) och Antecknat (mindre per tidigare träff av samma sak).
 		if x.modify.has("damage_taken_mult_per_family") and family_count(tgt) > 0:
 			fx.append({"f": 1.0 - float(x.modify.damage_taken_mult_per_family) * family_count(tgt), "name": x.name})
-		if x.modify.has("damage_taken_less_per_repeat") and int(tgt.hit_log.get(log_key, 0)) > 0:
+		if x.modify.has("damage_taken_less_per_repeat") and int(tgt.hit_log.get(log_key, 0)) > 0 \
+				and not _team_has_trait_key(src, "ignore_repeat"):
 			var less := minf(float(x.modify.damage_taken_less_per_repeat) * int(tgt.hit_log[log_key]),
 					float(x.modify.get("repeat_max", 0.75)))
 			fx.append({"f": 1.0 - less, "name": x.name})
@@ -1614,7 +1639,7 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 		return
 	var d: Dictionary = data.auras[aura_id]
 	var kind := "buff" if d.get("buff", false) else ("debuff" if d.get("debuff", false) else "")
-	if kind == "debuff" and has_flag(tgt, "debuff_immune"):
+	if (kind == "debuff" and has_flag(tgt, "debuff_immune")) or _trait_immune(tgt, aura_id):
 		_emit({"type": "status_immune", "unit": tgt.id, "aura": aura_id})
 		return
 	# En status som tar bort andra (t.ex. Snabb tar bort Långsam).

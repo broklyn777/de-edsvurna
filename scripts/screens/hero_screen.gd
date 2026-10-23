@@ -284,6 +284,13 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 		list.append_array(h.get("traits", []))
 	if state.equipped.has(hero_id):
 		list.append(state.equipped[hero_id])
+	# trofeplats: den andra trofén, i artefaktens troféplats.
+	var slot_art := prof.artifact(hero_id)
+	var art_trophy := ""
+	if not slot_art.is_empty() and Forge.trophy_open(int(slot_art.level)) and slot_art.trophy != "" \
+			and data.traits.has(slot_art.trophy):
+		art_trophy = slot_art.trophy
+		list.append(art_trophy)
 	var y := 246.0
 	var seen := []
 	for trait_id in list:
@@ -299,7 +306,7 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 				stat += ", %d skada" % tot.damage
 			if float(tot.heal) > 0.0:
 				stat += ", %d helat" % tot.heal
-		var tag := "TROFÉ" if t.get("trophy", false) else ("KALL" if trait_id == prof.oath else ("PERK" if t.get("perk", false) else "EGEN"))
+		var tag := "ARTEFAKTENS TROFÉ" if trait_id == art_trophy else "TROFÉ" if t.get("trophy", false) else ("KALL" if trait_id == prof.oath else ("PERK" if t.get("perk", false) else "EGEN"))
 		var body: String = t.text + ("\n" + stat if stat != "" else "")
 		var lines := ceili(UiStyle.bold().get_string_size(t.text, HORIZONTAL_ALIGNMENT_LEFT, -1, UiStyle.BODY_SIZE).x
 				/ (_left_w() - 40)) + (1 if stat != "" else 0)
@@ -363,6 +370,17 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 		GemArt.draw_find(self, data, {"kind": "nether", "stone": st}, Vector2(x + 8, yr - 4), 6.0, _t)
 		UiStyle.text(self, Vector2(x + 20, yr), "%s Nether Stone (%d): %s" % [Forge.rarity_of(data, st).name, st.number,
 				", ".join(Forge.stone_lines(data, st))], 16, Color(Forge.rarity_of(data, st).color), HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
+	# trofeplats: troféplatsen (trofén själv står bland egenskaperna till vänster).
+	yr += 23
+	if not Forge.trophy_open(level):
+		UiStyle.text(self, Vector2(x + 20, yr), "Troféplats: öppnas på nivå %d" % Forge.TROPHY_LEVEL, 16, Color(1, 1, 1, 0.35),
+				HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
+	elif art.trophy == "" or not data.traits.has(art.trophy):
+		UiStyle.text(self, Vector2(x + 20, yr), "Troféplats: tom (sätts hos Smeden)", 16, Color(1, 1, 1, 0.55),
+				HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
+	else:
+		UiStyle.text(self, Vector2(x + 20, yr), "Troféplats: %s" % data.traits[art.trophy].name, 16, UiStyle.TRAIT_GOLD,
+				HORIZONTAL_ALIGNMENT_LEFT, wmax - 20, 0)
 
 
 func _draw_history(data: Dictionary, prog: Dictionary) -> void:

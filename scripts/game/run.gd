@@ -175,6 +175,11 @@ func _forge_demo() -> void:
 	profile.silver = 640
 	profile.materials = {"amber_red": 6, "amber_grey": 3, "amber_green": 8, "amber_yellow": 5, "amber_teal": 2,
 			"amber_orange": 5, "whetstone": 1, "slippery_stone": 2, "curio_vulnerable": 1}
+	# trofeplats: några troféer i samlingen, en buren och en i Brokks troféplats (nivå 7).
+	for t in ["bone_finger", "rosary", "mold_jaw", "coffin_nail", "mist_veil"]:
+		profile.add_trophy(t)
+	profile.wear("paladin", "bone_finger")
+	profile.set_artifact_trophy("brokk", "rosary")
 	var r := RandomNumberGenerator.new()
 	r.seed = 12
 	for d in [1, 2, 3, 4, 2]:

@@ -213,8 +213,9 @@ Fiendernas stats räknas i den här ordningen, och avrundas efter varje steg:
 
 **Profilens första nedstigning** (0.24.1, *vårt val*, `RunState.FIRST_DESCENT_RAMP`): den allra första körningen gör
 Paladinen och Imma ensamma, hela kryptan med dess tre våningar. Fienderna får en mjuk trappa per våning, som aldrig
-följer hjältarnas nivå: ×0,70 på våning 1, ×0,88 på våning 2 och ×0,81 för Benfursten (bossen är svår i sig, så hans
-tal är lägre än våning 2:s). Med en ny profils makron (botarna, `BALANS=forsta`, 200 körningar) vinns våning 1 nästan
+följer hjältarnas nivå: ×0,70 på våning 1, ×0,88 på våning 2 och ×0,83 för Benfursten (bossen är svår i sig, så hans
+tal är lägre än våning 2:s; elit-balans 2026-10-21: 0,81 → 0,83 när bossmötena blev mildare, Benfursten 1,06 → 1,02 och
+biskopen 1,08 → 1,06, så att fyra hjältar klarar en körning i ungefär 40 % och den första nedstigningen står kvar på 71–79 %). Med en ny profils makron (botarna, `BALANS=forsta`, 200 körningar) vinns våning 1 nästan
 alltid (100 %), våning 2 i 94 % av dem som når den och Benfursten i 88 %; hela nedstigningen i 83 %. Målet är ungefär
 80 %. Från den andra nedstigningen gäller vanliga siffror (då kommer Syster Alva).
 0.25: paladinen går ned ensam och Imma smiter efter först efter den första striden. Den striden gör paladinen ensam med
@@ -265,7 +266,7 @@ Talen i tabellen är från före 0.26 (tio gånger större än nu).
 | Blöder och Fördärvad | – | ingen Defense, men källans och målets modifierare | ja | vårt val |
 | Sällskapets storlek | finns inte | ×0,45 / 0,54 / 0,64 / 1,0 för 1–4 hjältar (0.23.3) | saknades i §9 | vårt val, nu dokumenterat |
 | Antalet fiender | mötet är detsamma | högst en fler än hjältarna (0.23.3) | – | vårt val, dokumenterat i §9. Övningsgårdens lista visade hela mötet: **rättat** (0.24) |
-| Första nedstigningen | finns inte | en trappa per våning: ×0,70 / ×0,88 / ×0,81 för Benfursten (Health, Attack, Int, Defense), bara profilens första körning (0.24.1; ×0,85 överallt i 0.24) | – | vårt val, dokumenterat i §9 |
+| Första nedstigningen | finns inte | en trappa per våning: ×0,70 / ×0,88 / ×0,83 för Benfursten (Health, Attack, Int, Defense), bara profilens första körning (0.24.1; ×0,85 överallt i 0.24) | – | vårt val, dokumenterat i §9 |
 | Brinner och Förgiftad | 30 % av Int / Attack | räknas när statusen läggs | – | vårt val, nu dokumenterat |
 | Helig kraft (+15 % per buff) | – | räknar inte Styrka/Välsignelse som förbrukas i samma träff | – | vårt val (ordningen i koden) |
 | Klass stark/svag ×2/×½ | finns | finns inte | – | vårt val (inga klasser) |
