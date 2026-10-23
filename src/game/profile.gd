@@ -117,6 +117,11 @@ var bonus_points := 0
 var bosses_defeated: Array[String] = []
 ## oath_id -> lånad perk_id.
 var anointed := {}
+## Den levande kartan (prov, LivingMap): fördärvet 0–4 per Realm (saknas = LivingMap.GROWTH_START), Realms som vilar
+## nästa nedstigning (nådde 0), och vad som ändrades efter den senaste hemkomsten (visas en gång på kampanjkartan).
+var growth := {}
+var growth_rest := {}
+var growth_news := {}
 
 
 static func reward(floor: int, at_depth := 1) -> int:
@@ -602,6 +607,9 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "bonus_points", bonus_points)
 	cfg.set_value("progress", "bosses_defeated", bosses_defeated)
 	cfg.set_value("progress", "anointed", anointed)
+	cfg.set_value("progress", "growth", growth)
+	cfg.set_value("progress", "growth_rest", growth_rest)
+	cfg.set_value("progress", "growth_news", growth_news)
 	return cfg.save(path)
 
 
@@ -676,5 +684,8 @@ static func load_from(path: String) -> Profile:
 	for kind in cfg.get_value("progress", "bosses_defeated", []):
 		p.bosses_defeated.append(kind)
 	p.anointed = cfg.get_value("progress", "anointed", {})
+	p.growth = cfg.get_value("progress", "growth", {})
+	p.growth_rest = cfg.get_value("progress", "growth_rest", {})
+	p.growth_news = cfg.get_value("progress", "growth_news", {})
 	p.choose_depth(int(cfg.get_value("progress", "depth", 1)))
 	return p

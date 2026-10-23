@@ -200,13 +200,16 @@ static func _trick_trait(data: Dictionary, trick_id: String, v: float) -> Dictio
 
 ## Fynden från ett rum: [{kind: "amber"|"trick", id, count} | {kind: "nether", stone}].
 ## kind: battle, elite, treasure, portal_battle, end eller boss. next_id numrerar nya stenar.
+## growth: Realmens fördärv (den levande kartan, LivingMap): från steg 2 mer bärnsten och oftare trick och Nether Stones.
 static func roll_finds(data: Dictionary, kind: String, depth: int, frontier: bool, instability: int,
-		rng: RandomNumberGenerator, next_id := 0) -> Array:
+		rng: RandomNumberGenerator, next_id := 0, growth := LivingMap.GROWTH_START) -> Array:
 	var f: Dictionary = FINDS.get(kind, FINDS.battle)
 	var out := []
 	var ambers: Array = data.materials.amber.keys()
-	if rng.randf() < float(f.amber_chance):
-		var count := rng.randi_range(int(f.amber[0]), int(f.amber[1])) + (0 if frontier else BELOW_FRONTIER_AMBER)
+	var grown := LivingMap.extra_steps(growth)
+	if rng.randf() < float(f.amber_chance) + LivingMap.AMBER_CHANCE_PER_STEP * grown:
+		var count := rng.randi_range(int(f.amber[0]), int(f.amber[1])) + (0 if frontier else BELOW_FRONTIER_AMBER) \
+				+ (1 if grown >= 2 else 0)
 		var by_color := {}
 		for i in count:
 			var id: String = ambers[rng.randi() % ambers.size()]
@@ -215,7 +218,7 @@ static func roll_finds(data: Dictionary, kind: String, depth: int, frontier: boo
 			out.append({"kind": "amber", "id": id, "count": by_color[id]})
 	if not frontier:
 		return out
-	var bonus := 1.0 + 0.5 * instability
+	var bonus := (1.0 + 0.5 * instability) * (1.0 + LivingMap.RARE_FIND_PER_STEP * grown)
 	if rng.randf() < float(f.trick) * minf(bonus, 2.0):
 		var tricks: Array = data.materials.tricks.keys()
 		out.append({"kind": "trick", "id": tricks[rng.randi() % tricks.size()], "count": 1})

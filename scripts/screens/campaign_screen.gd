@@ -14,6 +14,8 @@ const ZOOM_TIME := 0.7
 ## Hur mycket av området som är befriat per klarat djup (högst FREED_MAX).
 const FREED_PER_DEPTH := 0.18
 const FREED_MAX := 0.85
+## Den levande kartan: hur mycket närmare mitten bläcket når per steg av fördärvet (steg 1 = som förut).
+const GROWTH_INK := 0.09
 
 var parchment: Parchment
 ## Vinjetterna (TextureRect med en kantshader) per Realm, och Väktaren bredvid kryptan.
@@ -29,6 +31,8 @@ render_mode blend_mul;
 uniform float fade = 0.16;
 // Fördärvet: bläck som flyter in från kanterna ända in till "inner" (0 = mitten, 1 = bara kanten).
 uniform float inner = 1.2;
+// Den levande kartan: Realmens fördärv 0–4 gör bläcket tätare och mörkare.
+uniform float growth = 1.0;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
 	vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
@@ -44,7 +48,8 @@ void fragment() {
 	float n = fbm(UV * vec2(4.0, 3.0) + vec2(TIME * 0.02, -TIME * 0.035));
 	float veins = fbm(UV * vec2(14.0, 10.0) - vec2(0.0, TIME * 0.05));
 	float ink = smoothstep(inner - 0.05, inner + 0.05, d + (n - 0.5) * 0.9 + (veins - 0.5) * 0.25);
-	c = mix(c, vec3(0.14, 0.07, 0.12), ink * 0.85 * smoothstep(0.0, fade * 0.5, e));
+	float dense = 0.75 + 0.05 * growth;
+	c = mix(c, vec3(0.14, 0.07, 0.12) * (1.0 - 0.12 * growth), ink * dense * smoothstep(0.0, fade * 0.5, e));
 	COLOR = vec4(c, 1.0);
 }
 """
@@ -52,11 +57,14 @@ void fragment() {
 var _zoom_t := -1.0
 ## 0.30.17: rutan där löftet väljs (data/vows.json) är öppen.
 var _vow_open := false
+## Den levande kartan: hemkomstens nyheter (Profile.growth_news) visas i en ruta tills man trycker.
+var _news_open := false
 
 
 func _ready() -> void:
 	super()
 	_vow_open = "--vows" in OS.get_cmdline_user_args()  # 0.30.17: löftesrutan öppen (skärmdumpar)
+	_news_open = not run.profile.growth_news.get("lines", []).is_empty()
 	# 0.25: djup och instabilitet förklaras efter den första nedstigningen (den första hålls enkel).
 	if run.profile.total_descents() > 0:
 		HelpBox.offer(self, ["depth", "instability"])
@@ -110,6 +118,12 @@ func _tap(p: Vector2) -> void:
 	if _zoom_t >= 0.0:
 		return
 	var prof: Profile = run.profile
+	if _news_open:
+		_news_open = false
+		prof.growth_news = {}
+		run.save("ui_page")
+		queue_redraw()
+		return
 	if _vow_open:
 		_tap_vow(p)
 		return
@@ -291,6 +305,8 @@ func _draw() -> void:
 	_draw_panel(data, prof)
 	if _vow_open:
 		_draw_vow_box(data)
+	elif _news_open:
+		_draw_news(data, prof)
 
 
 ## Vinjetterna följer kamerans glidning (de ritas av egna noder bakom linjerna).
@@ -326,8 +342,11 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 	var center := r.get_center()
 	var cleared := int(prof.realm_depth.get(realm_id, 0))
 	# Fördärvet ritas av vinjettens shader: bläcket når in till "inner" och drar sig tillbaka per djup.
-	(_vignettes[realm_id].material as ShaderMaterial).set_shader_parameter("inner",
-			0.58 + 0.4 * minf(FREED_PER_DEPTH * cleared, FREED_MAX))
+	# Den levande kartan: fördärvet (0–4) drar bläcket närmare mitten.
+	var g := LivingMap.growth(prof, realm_id) if _living(realm_id) else LivingMap.GROWTH_START
+	var mat := _vignettes[realm_id].material as ShaderMaterial
+	mat.set_shader_parameter("inner", 0.58 + 0.4 * minf(FREED_PER_DEPTH * cleared, FREED_MAX) - GROWTH_INK * (g - 1))
+	mat.set_shader_parameter("growth", float(g))
 	var frame := r.grow(6)
 	var pts := PackedVector2Array([frame.position, Vector2(frame.end.x, frame.position.y), frame.end,
 			Vector2(frame.position.x, frame.end.y), frame.position])
@@ -336,6 +355,8 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 	if selected:
 		var glow := 0.5 + 0.5 * sin(_t * 3.0)
 		draw_rect(r.grow(12), Color(UiStyle.GOLD.darkened(0.2), 0.25 + 0.35 * glow), false, 4.0)
+	if _living(realm_id):
+		_draw_growth_marks(realm_id, r, g)
 	var name: String = run.data.realms[realm_id].name
 	var cart := Rect2(center.x - 190, r.end.y + 2, 380, 58)
 	draw_texture_rect(InkArt.icon_texture("cartouche"), cart, false)
@@ -351,6 +372,78 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 		draw_arc(at, 18, 0, TAU * wins / RunState.BOSS_WINS_FOR_TROPHY, 24, Parchment.SEAL, 4.0)
 		UiStyle.text(self, at + Vector2(-30, 6), "%d/%d" % [wins, RunState.BOSS_WINS_FOR_TROPHY], 14, Color.WHITE,
 				HORIZONTAL_ALIGNMENT_CENTER, 60, 2)
+
+
+## Den levande kartan visas för Realms man har gått ned i (efter introts första nedstigning).
+func _living(realm_id: String) -> bool:
+	return int(run.profile.descents.get(realm_id, 0)) > 0
+
+
+## Mörka märken över området efter fördärvet, utan siffror: bläckfläckar (steg 2+), fiendens eldar (steg 2+), och på
+## steg 4 den förvridna bossens sigill i rött. Platserna är fasta per Realm (samma varje gång).
+func _draw_growth_marks(realm_id: String, r: Rect2, g: int) -> void:
+	if g < 2:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(realm_id)
+	# Bläcket spiller över ramen ut på pergamentet (inne i området är det redan mörkt).
+	var ink := Color(0.08, 0.03, 0.06, 0.5 + 0.1 * g)
+	for i in (g - 1) * 4:
+		var side := rng.randi() % 4
+		var t := rng.randf_range(0.05, 0.95)
+		var out := rng.randf_range(4.0, 10.0 + 4.0 * g)
+		var at: Vector2
+		match side:
+			0: at = Vector2(r.position.x + t * r.size.x, r.position.y - out)
+			1: at = Vector2(r.end.x + out, r.position.y + t * r.size.y)
+			2: at = Vector2(r.position.x + t * r.size.x, r.end.y + out * 0.5)
+			_: at = Vector2(r.position.x - out, r.position.y + t * r.size.y)
+		var rad := rng.randf_range(3.0, 7.0) + g
+		draw_circle(at, rad, ink)
+		draw_circle(at + Vector2(rad * 0.8, rad * 0.4), rad * 0.45, ink)
+		draw_circle(at + Vector2(-rad * 0.5, rad * 0.7), rad * 0.3, ink)
+	for i in g - 1:
+		var at := r.position + Vector2(rng.randf_range(0.15, 0.85), rng.randf_range(0.55, 0.88)) * r.size
+		var flicker := 0.6 + 0.4 * sin(_t * 5.0 + i * 1.7)
+		draw_circle(at + Vector2(0, -4), 9.0, Color(1.0, 0.35, 0.1, 0.25 * flicker))
+		InkArt.campfire(self, at, 16.0, Color(0.9, 0.3, 0.1, 0.6 + 0.3 * flicker))
+	if LivingMap.awake(run.profile, run.data, realm_id):
+		var c := r.get_center()
+		var pulse := 0.5 + 0.5 * sin(_t * 2.0)
+		draw_circle(c, 34.0, Color(0.05, 0.0, 0.02, 0.8))
+		draw_arc(c, 36.0, 0, TAU, 40, Color(0.75, 0.1, 0.1, 0.5 + 0.4 * pulse), 3.0, true)
+		InkArt.skull(self, c, 40.0, Color(0.85, 0.18, 0.15, 0.85))
+
+
+## Hemkomstens ruta: vad som ändrades och varför, och högst en replik (Imma eller Gorm).
+func _draw_news(data: Dictionary, prof: Profile) -> void:
+	var news: Dictionary = prof.growth_news
+	var lines: Array = news.get("lines", [])
+	var speaker := String(news.get("speaker", ""))
+	var w := 720.0
+	var x := (size.x - w) / 2.0
+	var body := 0.0
+	for l in lines:
+		body += UiStyle.bold().get_multiline_string_size(String(l), HORIZONTAL_ALIGNMENT_LEFT, w - 64, 17).y + 8
+	var h := 96.0 + body + (120.0 if speaker != "" else 0.0) + 40.0
+	var b := Rect2(x, (size.y - h) / 2.0, w, h)
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.45))
+	draw_rect(b, Color(0.16, 0.11, 0.07, 0.97))
+	draw_rect(b, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
+	UiStyle.text(self, b.position + Vector2(0, 44), "MEDAN NI VAR BORTA", 22, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, w, 3)
+	var y := b.position.y + 72
+	for l in lines:
+		draw_circle(Vector2(x + 30, y + 10), 3.5, UiStyle.TRAIT_GOLD)
+		y += UiStyle.para(self, Vector2(x + 44, y + 16), String(l), 17, Color(1, 1, 1, 0.9), w - 64) + 8
+	if speaker != "":
+		y += 8
+		var pr := Rect2(x + 24, y, 96, 96)
+		DialogBox.portrait(self, data, speaker, pr)
+		UiStyle.text(self, Vector2(pr.end.x + 16, y + 22), Dialog.display_name(data, speaker), 18, UiStyle.GOLD)
+		UiStyle.para(self, Vector2(pr.end.x + 16, y + 48), Dialog.fill_for(String(news.get("text", "")), prof), 17,
+				Color(1, 1, 1, 0.9), w - 160, 3)
+	UiStyle.text(self, Vector2(x, b.end.y - 16), "Tryck för att fortsätta", 15, Color(1, 1, 1, 0.55),
+			HORIZONTAL_ALIGNMENT_CENTER, w)
 
 
 func _bosses(realm_id: String) -> Array:
@@ -422,7 +515,13 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 			captives.append("%s (djup %d)" % [data.heroes[d.hero].get("short", d.hero), int(d.depth)])
 	if not captives.is_empty():
 		# 0.29.5: radbryts (förr klipptes den av när fler än en satt fången).
-		UiStyle.para(self, Vector2(x, y + 46), "Sägs sitta fången här: " + ", ".join(captives), 15, Color("#ffd27a"), w, 3)
+		y += UiStyle.para(self, Vector2(x, y + 46), "Sägs sitta fången här: " + ", ".join(captives), 15, Color("#ffd27a"), w, 3)
+	# Den levande kartan: en rad före avfärd om vad som händer här och på andra håll (utan siffror).
+	if prof.intro_done and _living(prof.realm):
+		var room := _prep_rect().position.y - 34 - (y + 40)
+		UiStyle.para(self, Vector2(x, y + 54), LivingMap.departure_line(prof, data, prof.realm), 15,
+				Color("#f0b49a") if LivingMap.awake(prof, data, prof.realm) else Color(1, 1, 1, 0.85), w,
+				clampi(int(room / 19.0), 1, 4))
 
 	var companions: Array = prof.party.map(func(id: String) -> String: return data.heroes[id].name)
 	UiStyle.text(self, Vector2(x, _prep_rect().position.y - 10), "Sällskap: " + ", ".join(companions), 13,

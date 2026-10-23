@@ -291,6 +291,7 @@ func _dev_args() -> void:
 			var keep_realm := state.realm
 			state = RunState.new_run(profile, data)
 			state.set_realm(data, keep_realm)
+			state.set_growth(data, LivingMap.growth(profile, keep_realm))
 			state.start_expedition(data, 7)
 			get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
 		elif arg.begins_with("--encounter="):
@@ -345,6 +346,28 @@ func _dev_args() -> void:
 				narrate(kind)
 		elif arg.begins_with("--vow="):
 			profile.vow = arg.get_slice("=", 1)  # 0.30.17: löftet för nästa körning (före --map)
+		elif arg.begins_with("--growth="):
+			# Den levande kartan: --growth=crypt:3,chapel:1 sätter fördärvet (sparas inte) och räknar Realmerna som besökta
+			dev_profile = true
+			for part in arg.get_slice("=", 1).split(","):
+				var realm_id := part.get_slice(":", 0)
+				if data.realms.has(realm_id):
+					profile.growth[realm_id] = clampi(int(part.get_slice(":", 1)), 0, LivingMap.GROWTH_MAX)
+					profile.descents[realm_id] = maxi(int(profile.descents.get(realm_id, 0)), 1)
+			state.set_realm(data, state.realm)
+			state.set_growth(data, LivingMap.growth(profile, state.realm))
+		elif arg.begins_with("--growth-home="):
+			# --growth-home=crypt[:quest]: som efter en hemkomst från Realmen (en vunnen strid), för kampanjkartans nyheter
+			dev_profile = true
+			var home := arg.get_slice("=", 1)
+			LivingMap.after_descent(profile, data, home.get_slice(":", 0), 1, home.ends_with(":quest"))
+		elif arg == "--twisted":
+			# --twisted: en strid mot kryptans förvridna boss på steg 4 (sparas inte)
+			dev_profile = true
+			profile.growth["crypt"] = LivingMap.GROWTH_MAX
+			profile.descents["crypt"] = maxi(int(profile.descents.get("crypt", 0)), 1)
+			state = RunState.new_practice(profile, data, LivingMap.twisted_encounter(data, "crypt"))
+			get_tree().change_scene_to_file.call_deferred(BATTLE_SCENE)
 		elif arg == "--descents":
 			profile.descents = {"crypt": 1}  # som efter första nedstigningen (sparas inte om profilen är påhittad)
 		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn", "--handbook"]:
@@ -404,6 +427,7 @@ func start_run(party: Array[String]) -> void:
 	profile.descents[state.realm] = seen + 1
 	profile.count_home_runs()
 	pending_bark = {}
+	profile.growth_news = {}  # den levande kartan: hemkomstens nyheter är lästa
 	narrate("first_gate")
 	if seen == 0:
 		bark("new_realm")
@@ -415,6 +439,14 @@ func start_run(party: Array[String]) -> void:
 	vow_news = ""
 	save_run()
 	get_tree().change_scene_to_file(ROOM_MAP_SCENE)
+
+
+## Den levande kartan (prov): efter en nedstigning (förlust, ge upp, gå hem eller klarad) ändras Realmernas fördärv
+## (LivingMap.after_descent). Inte i Övningsgården och inte på profilens första nedstigning (introts trappa).
+func end_descent() -> void:
+	if state.practice or state.first_descent or state.finished:
+		return
+	LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
 
 
 ## Sparar den pågående körningen (user://run.cfg).
@@ -439,6 +471,7 @@ func _clear_run() -> void:
 ## förlorade och Realmen börjar om; det som redan är vunnet (silver, troféer, fynd, erfarenhet) finns kvar.
 func leave_run() -> void:
 	ui("ui_back", -12.0)
+	end_descent()
 	_clear_run()
 	_save()
 	get_tree().change_scene_to_file(BASE_SCENE)
@@ -542,7 +575,7 @@ func roll_finds(kind: String) -> Array:
 	if "--find-luck" in OS.get_cmdline_user_args():
 		kind = "boss"  # för skärmdumpar: fynden som efter en boss
 	var frontier := state.depth > profile.best_depth
-	var finds := Forge.roll_finds(data, kind, state.depth, frontier, state.instability, rng, profile.next_stone_id)
+	var finds := Forge.roll_finds(data, kind, state.depth, frontier, state.instability, rng, profile.next_stone_id, state.growth)
 	for f in finds:
 		if f.kind == "nether":
 			profile.next_stone_id += 1
@@ -816,6 +849,7 @@ func after_camp() -> void:
 		if state.is_last_floor():
 			_pay_trail()
 			profile.clear_depth(state.depth, state.realm)
+			end_descent()
 			state.finished = true
 			_clear_run()
 			_save()
@@ -873,6 +907,8 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		# 0.30.16: föll paladinen innan Imma smet efter börjar introts nedstigning om, med en egen kort hemkomst.
 		if Intro.current(data, profile).get("id", "") == "descent" and not profile.recruited.has("imma"):
 			pending_story += Intro.speech(data.intro.get("alone_home", {}).get("lines", []))
+		end_descent()
+		_save()
 		_clear_run()
 		get_tree().change_scene_to_file(BASE_SCENE)
 		return

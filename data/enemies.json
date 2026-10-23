@@ -2478,5 +2478,94 @@
 				"ability": "cocoon_storm"
 			}
 		]
+	},
+	"bone_lich_black": {
+		"name": "Den svärtade Benfursten",
+		"boss": true,
+		"color": "#cbbfe6",
+		"stats": {
+			"health": 216,
+			"attack": 13,
+			"intelligence": 13,
+			"defense": 2.5,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "lich_touch",
+		"traits": [
+			"resistant",
+			"lich_undying_wrath",
+			"black_marrow"
+		],
+		"trophy": "black_crown",
+		"boss_text": "Resistent. Fördärvet fick växa ostört i kryptan: när någon i hans följe faller får han en Barriär, och under 50 % liv vredgas han.",
+		"rules": [
+			{
+				"ability": "lich_doom",
+				"if": {
+					"self_hp_below": 0.5
+				}
+			},
+			{
+				"ability": "raise_dead",
+				"if": {
+					"dead_ally": true
+				}
+			},
+			{
+				"ability": "bone_storm"
+			}
+		],
+		"visual": {
+			"model": "skelett",
+			"scale": 2.15,
+			"tint": "#6a6470",
+			"glow": "#2a0610",
+			"anims_from": [
+				"torvald"
+			],
+			"hide": [
+				"Ske_Sword",
+				"Ske_Shield"
+			],
+			"parts": [
+				"kapa/Kult_Robe",
+				"rustning/Tom_Pauldron_L",
+				"rustning/Tom_Pauldron_R",
+				"rustning/Tom_Rerebrace_L",
+				"rustning/Tom_Rerebrace_R"
+			],
+			"crown": "#2c2a2e",
+			"colors": {
+				"Kult_Robe": "#0c0a0e",
+				"Kult_DarkBrown": "#3a0a12",
+				"Kult_Black": "#050406",
+				"Kult_LightBrown": "#0c0a0e",
+				"Kult_Metal": "#1e1a20",
+				"Tom_Steel": "#1a171c",
+				"Tom_Edge": "#7a1a22",
+				"Tom_Guard": "#121014"
+			},
+			"emit": {
+				"Kult_Glow": "#a01822",
+				"Ske_Eye": "#d02a2a"
+			},
+			"weapons": {
+				"grip_r": "Greatsword"
+			},
+			"light": "#8a1a1a",
+			"light_energy": 1.4,
+			"anims": {
+				"idle": "TwoHand_Idle",
+				"attack": [
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop"
+			}
+		},
+		"twisted": true
 	}
 }

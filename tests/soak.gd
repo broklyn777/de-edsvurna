@@ -150,6 +150,10 @@ func _roll_config() -> Dictionary:
 	c.policy = ["random", "bot", "bot_careful", "bot_greedy"][pick.randi() % 4]
 	c.p_random_action = [0.0, 0.25, 1.0][pick.randi() % 3]  # andel slumpade handlingar i striden
 	c.descents = pick.randi_range(0, 3)
+	# Den levande kartan: fördärvet per Realm (0–4; 4 i kryptan = den förvridna bossen).
+	c.growth = {}
+	for r in data.realms:
+		c.growth[r] = pick.randi_range(0, LivingMap.GROWTH_MAX)
 	return c
 
 
@@ -204,6 +208,10 @@ func _setup_profile() -> void:
 		profile.instability = cfg.instability
 		profile.vow = cfg.vow
 		profile.descents = {cfg.realm: cfg.descents}
+		profile.growth = cfg.growth.duplicate()
+		for r in data.realms:
+			if pick.randf() < 0.5:
+				profile.descents[r] = maxi(int(profile.descents.get(r, 0)), 1)  # andra Realms man har sett
 		profile.silver = pick.randi_range(0, 500)
 		macros = data.macros.duplicate(true)
 	silver_floor = profile.silver
@@ -248,6 +256,7 @@ func _tick(use_bot: bool) -> void:
 		_log("går hem")
 		stats.left += 1
 		ended = "left"
+		_end_descent()
 		RunState.delete_saved(TMP_RUN)
 		return
 	# Spara och läs in mitt i (som när appen stängs och öppnas igen).
@@ -558,7 +567,7 @@ func _award(sim: CombatSim, won: bool) -> void:
 
 func _roll_finds(kind: String) -> void:
 	var finds := Forge.roll_finds(data, kind, state.depth, state.depth > profile.best_depth, state.instability, rng,
-			profile.next_stone_id)
+			profile.next_stone_id, state.growth)
 	for f in finds:
 		if f.kind == "nether":
 			profile.next_stone_id += 1
@@ -575,6 +584,7 @@ func _battle_finished(victory: bool, forfeited: bool) -> void:
 				else ("elit" if lr.get("elite", false) else ("föremål" if lr.get("kind", "") == "object" else "vanlig")))]
 		stats.forfeit += 1 if forfeited else 0
 		stats.lost += 1
+		_end_descent()
 		RunState.delete_saved(TMP_RUN)
 		ended = "forfeit" if forfeited else "lost"
 		return
@@ -613,6 +623,7 @@ func _after_camp() -> void:
 	profile.keep_worn(state.equipped, state.party)
 	if state.floor_cleared() and state.is_last_floor():
 		profile.clear_depth(state.depth, state.realm)
+		_end_descent()
 		state.finished = true
 		RunState.delete_saved(TMP_RUN)
 		stats.cleared += 1
@@ -629,6 +640,28 @@ func _after_quest_check(just_done: bool) -> void:
 			profile.floor_quest_silver(state.depth)
 			return
 		profile.complete_quest(state.realm, state.depth)
+
+
+## Run.end_descent: den levande kartan efter en nedstigning, och dess invarianter.
+func _end_descent() -> void:
+	if state.practice or state.first_descent or state.finished:
+		return
+	var before := {}
+	for r in data.realms:
+		before[r] = LivingMap.growth(profile, r)
+	var list := LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
+	if state.wins == 0 and not list.is_empty():
+		_fail("levande karta", "fördärvet ändrades utan en vunnen strid: %s" % str(list))
+	for r in data.realms:
+		var g := int(profile.growth.get(r, LivingMap.GROWTH_START))
+		if g < 0 or g > LivingMap.GROWTH_MAX:
+			_fail("levande karta", "%s har fördärv %d" % [r, g])
+		if r == state.realm and state.wins > 0 and g > int(before[r]):
+			_fail("levande karta", "%s växte fast man gick dit (%d → %d)" % [r, before[r], g])
+		if r != state.realm and g < int(before[r]):
+			_fail("levande karta", "%s sjönk fast ingen gick dit (%d → %d)" % [r, before[r], g])
+	if state.twisted != "" and LivingMap.growth(profile, state.realm) >= LivingMap.GROWTH_MAX and state.wins > 0:
+		_fail("levande karta", "den förvridna bossen är kvar efter en nedstigning dit")
 
 
 ## Hem till borgen: introts hemkomst (base_screen) och kontrollen av berättelsen.
@@ -957,7 +990,20 @@ func _career_report(from: int, runs: int, descents: int) -> void:
 		var losses := 0
 		for d in descents:
 			var realm: String = String(data.realms.keys()[d % data.realms.size()]) if d > 0 else "crypt"  # 0.31: alla Realms i tur
+			# Den levande kartan: KARRIAR_REALM=lagst väljer den lugnaste Realmen (undviker fördärvet), =hogst den värsta.
+			var how := OS.get_environment("KARRIAR_REALM")
+			if d >= data.realms.size() and how in ["lagst", "hogst"]:
+				var keys: Array = data.realms.keys()
+				var order: Array = data.realms.keys()
+				keys.sort_custom(func(a: String, b: String) -> bool:
+						var ga := LivingMap.growth(profile, a)
+						var gb := LivingMap.growth(profile, b)
+						if ga != gb:
+							return ga < gb if how == "lagst" else ga > gb
+						return order.find(a) < order.find(b))
+				realm = keys[0]
 			profile.realm = realm
+			var growth_before := LivingMap.growth(profile, realm)
 			var before := profile.silver
 			var best_before := profile.best_depth
 			var party := Array(profile.party)
@@ -973,7 +1019,12 @@ func _career_report(from: int, runs: int, descents: int) -> void:
 			var won := ended == "cleared"
 			rows[d].append({"level": lv, "depth": profile.depth, "won": won, "fights": run_fights,
 					"silver": profile.silver - before, "heroes": party.size(), "lost_at": lost_at if not won else "",
-					"realm": realm, "best": best_before, "recruited": profile.recruited.size()})
+					"realm": realm, "best": best_before, "recruited": profile.recruited.size(),
+					"growth": growth_before if d > 0 else -1, "twisted": state.twisted != "",
+					"map": data.realms.keys().map(func(r: String) -> int: return LivingMap.growth(profile, r))})
+			if OS.get_environment("LEVANDE") == "av":
+				profile.growth = {}  # jämförelse: kartan står still
+				profile.growth_rest = {}
 			if verbose:
 				print("frö %d nedstigning %d: %s djup %d nivå %.1f %s %s strider %d silver +%d" % [s, d + 1, realm,
 						profile.depth, lv, str(party), ended, run_fights, profile.silver - before])
@@ -1098,3 +1149,42 @@ func _career_print(rows: Array, runs: int, descents: int) -> void:
 		print("    %-12s %4d körningar  vinst %3d %%  nivå %.1f" % [k, by[k].n, roundi(100.0 * by[k].won / by[k].n),
 				by[k].lv / by[k].n])
 	print("  På ett djup som redan är klarat (slipar): %d av %d nedstigningar" % [grind, total])
+	_living_print(rows, runs, descents)
+
+
+## Den levande kartan: vinst per steg i den Realm man gick till, den förvridna bossen och kartans läge per nedstigning.
+func _living_print(rows: Array, runs: int, descents: int) -> void:
+	print("")
+	print("  Den levande kartan (%s, Realm: %s):" % ["av" if OS.get_environment("LEVANDE") == "av" else "på",
+			OS.get_environment("KARRIAR_REALM") if OS.get_environment("KARRIAR_REALM") != "" else "rotera"])
+	var per := {}
+	var twisted := {"n": 0, "won": 0}
+	for d in descents:
+		for r in rows[d]:
+			if int(r.growth) < 0:
+				continue
+			var b: Dictionary = per.get(int(r.growth), {"n": 0, "won": 0})
+			b.n += 1
+			b.won += 1 if r.won else 0
+			per[int(r.growth)] = b
+			if r.twisted:
+				twisted.n += 1
+				twisted.won += 1 if r.won else 0
+	for g in range(0, LivingMap.GROWTH_MAX + 1):
+		if per.has(g):
+			print("    steg %d: %4d nedstigningar  vinst %3d %%" % [g, per[g].n, roundi(100.0 * per[g].won / per[g].n)])
+	print("    med den förvridna bossen: %d nedstigningar, %d klarade (%.2f per profil)" % [twisted.n, twisted.won,
+			float(twisted.n) / maxi(runs, 1)])
+	var line := "    kartan efter nedstigning (snitt %s):" % "/".join(data.realms.keys())
+	for d in descents:
+		var sums := []
+		for i in data.realms.size():
+			sums.append(0.0)
+		for r in rows[d]:
+			for i in data.realms.size():
+				sums[i] += float(r.map[i])
+		var parts := []
+		for x in sums:
+			parts.append("%.1f" % (x / maxi(rows[d].size(), 1)))
+		line += " %d:%s" % [d + 1, "/".join(parts)]
+	print(line)
