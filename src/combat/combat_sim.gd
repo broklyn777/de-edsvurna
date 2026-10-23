@@ -89,7 +89,9 @@ const MAX_TRAIT_CHAIN := 10
 ## Som i Siralim: per figur och pågående tur får egenskaper utlösa högst så många attacker,
 ## besvärjelser och mottagna helningar, plus en övergripande gräns.
 const TURN_LIMIT := 5
-## 0.23: fiendernas styrka efter sällskapets storlek (1–4 hjältar). Vårt val, mätt med botarna.
+## 0.23: fiendernas styrka efter sällskapets storlek (1–4 hjältar). Vårt val, mätt med botarna. 0.30.21 (VD): bara när
+## profilen äger färre än fyra hjältar; den som har fyra och väljer färre möter fiender som mot fyra
+## (opts "full_party", även antalet fiender).
 const PARTY_SCALE := {1: 0.45, 2: 0.54, 3: 0.64, 4: 1.0}
 const TURN_PROC_LIMIT := 60
 ## Handlingar en hjälte kan göra på sin tur ("ability" kräver vilken förmåga).
@@ -206,9 +208,10 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		sim._add(hero)
 		sim.heroes.append(hero)
 	# 0.23: ett mindre sällskap möter svagare fiender (Health, Attack och Intelligence; vårt val).
-	var party_mult := float(PARTY_SCALE[clampi(sim.heroes.size(), 1, 4)])
+	var scale_size := 4 if opts.get("full_party", false) else sim.heroes.size()
+	var party_mult := float(PARTY_SCALE[clampi(scale_size, 1, 4)])
 	var counts := {}
-	var lineup := enemy_lineup(game_data, enc.enemies, sim.heroes.size())
+	var lineup := enemy_lineup(game_data, enc.enemies, scale_size)
 	for i in lineup.size():
 		var kind: String = lineup[i]
 		counts[kind] = counts.get(kind, 0) + 1

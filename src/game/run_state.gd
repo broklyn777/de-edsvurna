@@ -138,6 +138,7 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	s.fill_charges(data)
 	if profile.intro_done:
 		s.set_vow(data, profile.vow)
+	s.owned_heroes = profile.recruited.size() + 1
 	s.place_prisoners(data, profile.recruited, int(profile.descents.get(profile.realm, 0)))
 	# 0.26.3 (Siralim): hjältarna bär sina troféer ur samlingen in i varje körning.
 	for hero_id in profile.worn:
@@ -384,6 +385,9 @@ const FIRST_DESCENT_ELITE := 0.8
 ## Karriärbotarna (docs/provspel/svarighetskurva.md) förlorade 74 % av den andra nedstigningen, de flesta vid våning 1:s
 ## elitgrupp eller Nemesis, med Paladinen och Imma på nivå 5 mot djup 2.
 const SMALL_PARTY_ELITE := 0.8
+## 0.30.21: hur många hjältar profilen äger (Paladinen + lärjungarna). Med fyra eller fler balanseras striderna mot
+## fyra oavsett hur många man tar med (CombatSim "full_party"); färre är spelarens eget val.
+var owned_heroes := 0
 ## 0.25: den första striden gör paladinen ensam (Imma smiter efter först efteråt). Den ska vara lika lätt som övningen:
 ## fienderna ×0,80 till (vårt val, mätt med botarna: tests/test_story.gd och BALANS=forsta).
 const FIRST_FIGHT_ALONE := 0.80
@@ -438,6 +442,7 @@ func start_floor(data: Dictionary) -> void:
 	rng.seed = run_seed * 977 + floor * 31 + 13
 	quest = roll_quest(rng, floor)
 	commons_fought = 0
+	trail_taken = false
 	var pools: Array = data.realms[realm].get("pools", [])
 	if pools.is_empty():
 		pools = [floor_ids]
@@ -451,6 +456,68 @@ func start_floor(data: Dictionary) -> void:
 	revealed = []
 	came_from = -1
 	battle_pending = false
+	_roll_hints(rng)
+
+
+## 0.30.22 Ledtråd (docs/plan/nya-grottor.md A, Siralims quests som pekar ut en plats): varje mål för questen (Nemesis,
+## elitgrupperna, föremålen) får ett rykte på kartan, en ring över ett 3×3-område där målet står. Exakt ruta stannar
+## under dimman. [{center, target}]
+var quest_hints: Array = []
+
+
+func quest_targets() -> Array[int]:
+	var out: Array[int] = []
+	if map == null:
+		return out
+	var type: String = quest.get("type", "")
+	for i in map.cells.size():
+		var c: Dictionary = map.cells[i]
+		if (type == "hunt" and c.get("nemesis", false)) or (type == "clear" and c.get("elite", false) and c.has("encounter")) \
+				or (type == "collect" and c.get("kind", "") == "item"):
+			out.append(i)
+	return out
+
+
+func _roll_hints(rng: RandomNumberGenerator) -> void:
+	quest_hints = []
+	for t in quest_targets():
+		var p := Grotto.xy(t)
+		var c := Vector2i(clampi(p.x + rng.randi_range(-1, 1), 1, Grotto.SIZE - 2),
+				clampi(p.y + rng.randi_range(-1, 1), 1, Grotto.SIZE - 2))
+		quest_hints.append({"center": Grotto.idx(c), "target": t})
+
+
+## Ryktena som fortfarande gäller: målet är varken hittat eller klart.
+func active_hints() -> Array:
+	if map == null or quest.get("done", false):
+		return []
+	return quest_hints.filter(func(h: Dictionary) -> bool:
+		var t := int(h.target)
+		var c := map.cell(t)
+		return not (visited.has(t) or seen.has(t) or revealed.has(t) or c.get("beaten", false) or c.get("done", false)))
+
+
+## 0.30.22 Spåren (nya-grottor.md B, vårt val): den som går ned när questen är klar får en del av erfarenheten och
+## silvret från de vanliga grupper som står kvar ("ni lärde er av spåren"), så att det inte alltid lönar sig att rensa allt.
+## 0,75: botarna i kryptan vinner lika ofta direkt som när de rensar allt (0,5 för lite, 1,0 för mycket).
+const TRAIL_SHARE := 0.75
+var trail_taken := false
+
+
+func take_trail(data: Dictionary) -> Dictionary:
+	if trail_taken or map == null or practice:
+		return {}
+	trail_taken = true
+	var groups := 0
+	var silver := 0.0
+	for c in map.cells:
+		if c.get("kind", "") == "battle" and c.has("encounter") and not c.get("beaten", false) and is_common_group(c):
+			groups += 1
+			silver += Profile.reward(int(c.get("tier", floor)), depth) * BATTLE_SILVER
+	if groups == 0:
+		return {}
+	return {"groups": groups, "xp": roundi(HeroStats.battle_xp("battle", depth) * TRAIL_SHARE * groups),
+			"silver": silver * TRAIL_SHARE}
 
 
 ## Rutan man står på (med "kind"; tom utanför en körning).
@@ -619,7 +686,9 @@ func battle_opts() -> Dictionary:
 			opts.first_descent_elite = FIRST_DESCENT_ELITE
 		elif r.get("elite", false) or r.get("nemesis", false):
 			opts.first_descent_elite = 1.0  # våning 2: bara mötets egen styrka, om den finns
-	elif party.size() <= 2 and floor == 0 and (r.get("elite", false) or r.get("nemesis", false)):
+	if owned_heroes >= 4:
+		opts.full_party = true
+	elif not first_descent and party.size() <= 2 and floor == 0 and (r.get("elite", false) or r.get("nemesis", false)):
 		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * SMALL_PARTY_ELITE
 	return opts
 
@@ -951,7 +1020,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
-		"vow_breaks_on", "vow_max_commons", "commons_fought"]
+		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken"]
 
 
 func to_dict() -> Dictionary:

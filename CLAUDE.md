@@ -204,6 +204,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   fann ett dödläge mot Asketen). **Svårighetskurvan** (`SOAK=karriar` i `tests/soak.gd` på testgrenen,
   `docs/provspel/svarighetskurva.md`): en profil genom 18 nedstigningar; djup 1 är en platå, taket kommer vid djup 6–7.
   Våning 1:s elitgrupp och Nemesis ×0,80 för högst två hjältar (`RunState.SMALL_PARTY_ELITE`, andra nedstigningen 26 → 41 %).
+  **Balanserat mot fyra** (0.30.21, VD): `PARTY_SCALE` och mildringen ovan gäller bara när profilen äger färre än fyra hjältar
+  (`RunState.owned_heroes`); den som har fyra och går med färre möter samma fiender som mot fyra (`full_party`), en bedrift.
 - **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
   namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
   (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.
@@ -212,6 +214,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   tas bort, `RunState.delete_saved`); erfarenhet, troféer, silver och material som redan är vunna finns kvar.
   `CombatSim.forfeit()`. `-- --ask-forfeit` visar frågan i en strid. **GÅ HEM** (0.30, Siralims återvändo till slottet) i grottan
   gör samma sak utanför striden, med en bekräftelse (`Run.leave_run`, `--ask-leave`); att stänga spelet pausar bara.
+- **Rykten och spår** (0.30.22, `docs/plan/nya-grottor.md` A och B): röda ringar över 3×3 visar ungefär var questens mål
+  står (`RunState.quest_hints`, `active_hints`); en gyllene stig till det öppna målet; den som går vidare får 75 % av
+  erfarenheten och silvret från vanliga grupper som står kvar (`TRAIL_SHARE`, `take_trail`, `Run._pay_trail`). Boten
+  `direct` i `BALANS=grotta`. Drakvalvets monster (29, alla riggade): `docs/research/drakvalvet-monster.md`.
 - **Grottans utseende** (0.28.3, efter skärmgranskningen): dimman är en sammanhängande tuschlavering med skraffering
   och svagt rutnät; besökta rutor ljust pergament med stenprickar; bergssidor i tusch där det kända möter dimman; ett
   varmt sken där man står; hörnmarkeringar på hela gränsen mot dimman (varje ruta man når med ett tryck). `--explore=<n>`

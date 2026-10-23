@@ -15,8 +15,9 @@ const Bot := preload("res://tests/combat_bot.gd")
 const RunScript := preload("res://scripts/game/run.gd")
 const MAX_ACTIONS := 2000
 const MAX_BATTLE_STEPS := 1500
-const TMP_RUN := "user://soak_run.cfg"
-const TMP_PROFILE := "user://soak_progress.cfg"
+## Egna filer per process: flera buggtester (andra arbetskopior av projektet) delar user:// och skrev förr över varandra.
+var TMP_RUN := "user://soak_run_%d.cfg" % OS.get_process_id()
+var TMP_PROFILE := "user://soak_progress_%d.cfg" % OS.get_process_id()
 
 var data: Dictionary
 var catcher := ErrorCatcher.new()
