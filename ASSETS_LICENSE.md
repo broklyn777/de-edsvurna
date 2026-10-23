@@ -65,3 +65,4 @@ altaret, buren, stentavlan, lägerelden och portalen byggs av former i kod. Stat
   `ui_forge` (impactMetal_heavy_000/002/004) ur "Impact Sounds". Hämtade från kenney.nl 2026-10-19.
 - `assets/audio/voice/*.mp3` – användarens egna röstrepliker, gjorda i ElevenLabs.
   **Kontrollera att ElevenLabs-planen tillåter kommersiell användning före release.**
+- `assets/models/troll.glb`, `troll_mossrygg.glb`, `troll_grumse.glb` – användarens egen ogre ur Drakvalvet (`~/Desktop/Blender-Test/Drakvalvet/Monster/ogre.blend`), omgjord till troll i Blender 2026-10-23 (näsa, mossa, stenkrona).
