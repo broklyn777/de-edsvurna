@@ -745,6 +745,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 			hint += " %s syns men är låst tills questen är klar." % ("Bossen" if state.map.last_floor else "Trappan")
 			if not state.active_hints().is_empty():
 				hint += " De röda ringarna visar ungefär var målen finns."
+			elif state.world_rumour and state.floor == 0:
+				hint += " Pilgrimens rykte visar var målen står."
 		else:
 			hint = "Questen är klar: %s är öppen (den gyllene stigen). Grupper ni låter vara lämnar spår: tre fjärdedelar av erfarenheten och silvret när ni går vidare." % ("bossen" if state.map.last_floor else "trappan")
 		UiStyle.para(self, Vector2(x, y + 28), hint, 16, Color(InkArt.INK, 0.8), w, 6)

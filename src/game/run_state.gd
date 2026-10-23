@@ -137,6 +137,8 @@ var chron := {}
 var world_heal_mod := 0
 var world_boss_mult := 1.0
 var world_stat_mult := 1.0
+## Pilgrimens rykte (WorldEvents.begin_run): den första våningens questmål syns från start.
+var world_rumour := false
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -516,6 +518,17 @@ func _roll_hints(rng: RandomNumberGenerator) -> void:
 		var c := Vector2i(clampi(p.x + rng.randi_range(-1, 1), 1, Grotto.SIZE - 2),
 				clampi(p.y + rng.randi_range(-1, 1), 1, Grotto.SIZE - 2))
 		quest_hints.append({"center": Grotto.idx(c), "target": t})
+
+
+## Pilgrimens rykte (den levande världen, kapellet trycktes tillbaka): varje mål för den här våningens quest syns
+## genom dimman från start, inte bara ringen runt det. Ringarna försvinner då av sig själva (active_hints).
+func apply_rumour() -> void:
+	if map == null:
+		return
+	world_rumour = true
+	for t in quest_targets():
+		if not visited.has(t) and not revealed.has(t):
+			revealed.append(t)
 
 
 ## Ryktena som fortfarande gäller: målet är varken hittat eller klart.
@@ -1064,7 +1077,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken", "growth", "twisted",
-		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult"]
+		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour"]
 
 
 func to_dict() -> Dictionary:

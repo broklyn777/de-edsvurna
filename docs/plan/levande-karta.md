@@ -119,9 +119,9 @@ krönikans nya händelser och repliker (`dialog.json` "chronicle" och "world"), 
 ### 2. Följder i borgen
 | Realm på steg 3+ | Följd (så länge den står där) | Syns | Tryckt tillbaka till 0–1 (en gång) |
 |---|---|---|---|
-| Lunden | nät över handelsvägen: smedjans nivåer +15 % | priset och Heddas rad vid knappen, hennes replik, kampanjkartan | en handelsman på gården: 5 bärnsten (60 silver) eller ett trick (80) |
+| Lunden | nät över handelsvägen: smedjans nivåer +15 % | priset och Heddas rad vid knappen, hennes replik, kampanjkartan | en handelsman på gården: 5 bärnsten (60 silver) och ett trick (80), en av varje; han stannar tills nästa nedstigning börjar |
 | Kryptan | arbetarna vägrar gå ned: ingen bärnsten från Tor (annars 1 per hemkomst) | Tor och arbetarna på gården, kampanjkartan | arbetarna hittar 3 bärnsten och 30 silver |
-| Kapellet | inga pilgrimer, Mor Elin har ont om förband: helningsförmågorna −1 Charge nästa körning | Mor Elins replik, kampanjkartan | en pilgrim i värdshuset: +1 Charge på helningarna nästa körning |
+| Kapellet | inga pilgrimer, Mor Elin har ont om förband: helningsförmågorna −1 Charge nästa körning | Mor Elins replik, kampanjkartan | en pilgrim i värdshuset med ett rykte: i nästa körning (vilken Realm som helst) syns den första våningens questmål från start |
 
 Allt vänds av sig självt när Realmen trycks tillbaka. Gåvan laddas när Realmen står på 2+ (`armed`), så att den kommer
 efter ett verkligt arbete och bara en gång per gång.
@@ -179,6 +179,8 @@ Gorm (ett djup grundare, eller den lugnaste andra Realmen). Högst ett råd.
 ### Frågor till VD
 1. Räcker det att Tor skickar en bärnsten per hemkomst när kryptan är lugn, eller ska det vara något annat (silver, ett fynd)?
 2. Ska en förlorad händelse också få växa i den Realm man gick till men misslyckades i (nu: nej, bara biskopen blir starkare)?
-3. Handelsmannen säljer en sak och går. Ska han stanna tills nästa nedstigning?
+3. ~~Handelsmannen säljer en sak och går.~~ Beslutat: han stannar tills nästa nedstigning (en av varje vara; allt sålt = han går).
 4. Två fronter kommer först efter ungefär 20 nedstigningar med nuvarande ordning (den som legat längst). Ska den komma tidigare?
-5. Gåvan efter kapellet (en pilgrim och en välsignelse) är liten. Hellre ett rykte om nästa körnings quest-mål?
+5. ~~Gåvan efter kapellet är liten.~~ Beslutat: pilgrimen ger ett rykte. Ringarna (nya-grottor.md A) syns redan alltid, så
+   ryktet visar själva målen på den första våningen genom dimman (`RunState.apply_rumour`, `revealed`); pilgrimsskarans
+   händelse ger fortfarande sin välsignelse (`bless_runs`).

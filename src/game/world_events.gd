@@ -9,8 +9,9 @@ extends RefCounted
 ##    (annars en per hemkomst). Kapellet: pilgrimerna slutar komma, Mor Elin har ont om förband, helningsförmågorna får en
 ##    Charge mindre i nästa körning. Allt vänder när Realmen trycks tillbaka.
 ## 2. **Gåvor** (gifts): en Realm som har stått på steg 2+ och trycks ned till GIFT_AT eller lägre ger något en gång.
-##    Lunden: en handelsman kommer med bärnsten och trick. Kryptan: arbetarna hittar bärnsten och silver. Kapellet: en
-##    pilgrim med en välsignelse (+1 Charge på helningsförmågorna nästa körning) och ett rykte.
+##    Lunden: en handelsman kommer med bärnsten och trick och stannar tills nästa nedstigning börjar. Kryptan: arbetarna
+##    hittar bärnsten och silver. Kapellet: en pilgrim i värdshuset med ett rykte: i nästa körning (vilken Realm som helst)
+##    syns den första våningens questmål från start (RunState.apply_rumour).
 ## 3. **Händelser** med tidsgräns (data/world_events.json): ibland, aldrig två samtidigt, startar en händelse i en eller två
 ##    Realms. Lyckas man (boss, quest eller strider där) ger den något; annars växer Realmen och något blir dyrare en tid.
 ## Tillståndet ligger i Profile.world (ett lexikon, så att gamla profiler läses som {}).
@@ -28,7 +29,8 @@ const TOR_AMBER := 1
 ## Arbetarnas fynd när kryptan trycks tillbaka.
 const WORKERS_AMBER := 3
 const WORKERS_SILVER := 30
-## Handelsmannen: 5 bärnsten (en färg) eller ett trick för silver; den tacksamma tar halva priset.
+## Handelsmannen: 5 bärnsten (en färg) och ett trick för silver, en av varje; den tacksamma tar halva priset. Han stannar
+## tills nästa nedstigning börjar (begin_run), eller tills han har sålt båda.
 const MERCHANT_AMBER := 5
 const MERCHANT_AMBER_PRICE := 60
 const MERCHANT_TRICK_PRICE := 80
@@ -149,9 +151,14 @@ static func _is_heal(data: Dictionary, ability_id: String) -> bool:
 	return false
 
 
-## Run.start_run: välsignelsen och händelsernas styrka förbrukas när körningen börjar.
+## Run.start_run (efter start_expedition, så att den första våningen finns): välsignelsen, pilgrimens rykte och
+## händelsernas styrka förbrukas när körningen börjar, och handelsmannen går vidare.
 static func begin_run(profile: Profile, s: RunState) -> void:
 	var w := profile.world
+	w.erase("merchant")
+	if w.get("rumour", false):
+		w.erase("rumour")
+		s.apply_rumour()
 	if int(w.get("bless_runs", 0)) > 0:
 		w.bless_runs = int(w.bless_runs) - 1
 	if String(w.get("boss_realm", "")) == s.realm:
@@ -364,7 +371,7 @@ static func _gift(profile: Profile, data: Dictionary, realm_id: String, n: int) 
 			profile.silver += WORKERS_SILVER
 			return {"realm": realm_id, "id": "workers_find", "amber": id, "silver": WORKERS_SILVER}
 		"chapel":
-			w.bless_runs = int(w.get("bless_runs", 0)) + 1
+			w.rumour = true
 			return {"realm": realm_id, "id": "pilgrim"}
 	return {"realm": realm_id, "id": ""}
 
@@ -388,9 +395,25 @@ static func merchant_goods(profile: Profile, data: Dictionary) -> Dictionary:
 	return {"amber": ambers[posmod(n * 5 + 3, ambers.size())], "trick": tricks[posmod(n * 3, tricks.size())]}
 
 
-## Köper av handelsmannen (what = amber eller trick); han går sedan. Falskt om silvret inte räcker.
+## Har handelsmannen redan sålt varan (amber eller trick)?
+static func merchant_sold(profile: Profile, what: String) -> bool:
+	return Array(profile.world.get("merchant", {}).get("sold", [])).has(what)
+
+
+## Pilgrimens rykte väntar på nästa körning.
+static func rumour_pending(profile: Profile) -> bool:
+	return profile.world.get("rumour", false)
+
+
+## Kampanjkartans rad om pilgrimens rykte ("" om inget).
+static func rumour_line(profile: Profile, data: Dictionary) -> String:
+	return String(_w(data).get("rumour_map", "")) if rumour_pending(profile) else ""
+
+
+## Köper av handelsmannen (what = amber eller trick), en av varje; när båda är sålda går han. Falskt om varan är
+## såld eller silvret inte räcker.
 static func merchant_buy(profile: Profile, data: Dictionary, what: String) -> bool:
-	if not merchant_here(profile):
+	if not merchant_here(profile) or merchant_sold(profile, what):
 		return false
 	var price := merchant_price(profile, what)
 	if profile.silver < price:
@@ -399,7 +422,10 @@ static func merchant_buy(profile: Profile, data: Dictionary, what: String) -> bo
 	profile.silver -= price
 	var id: String = goods[what]
 	profile.materials[id] = int(profile.materials.get(id, 0)) + (MERCHANT_AMBER if what == "amber" else 1)
-	profile.world.erase("merchant")
+	var m: Dictionary = profile.world.merchant
+	m.sold = Array(m.get("sold", [])) + [what]
+	if merchant_sold(profile, "amber") and merchant_sold(profile, "trick"):
+		profile.world.erase("merchant")
 	return true
 
 

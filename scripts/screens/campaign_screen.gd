@@ -574,7 +574,9 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	var yy := y + 54
 	if prof.intro_done and _living(prof.realm):
 		var room := _prep_rect().position.y - 30 - yy
-		var text := ("" if cost == "" else cost + " ") + LivingMap.departure_line(prof, data, prof.realm)
+		var rumour := WorldEvents.rumour_line(prof, data)
+		var text := ("" if cost == "" else cost + " ") + ("" if rumour == "" else rumour + " ") \
+				+ LivingMap.departure_line(prof, data, prof.realm)
 		if room >= 16:
 			UiStyle.para(self, Vector2(x, yy), text, 15,
 					Color("#f0b49a") if LivingMap.awake(prof, data, prof.realm) or cost != "" else Color(1, 1, 1, 0.85), w,
