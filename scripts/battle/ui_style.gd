@@ -116,9 +116,26 @@ const BODY_SIZE := 17
 static func para(ci: CanvasItem, pos: Vector2, s: String, size: int, color: Color, width: float, max_lines := -1) -> float:
 	size = maxi(size, MIN_SIZE)
 	var f := bold()
+	if max_lines > 0:
+		s = _clip_lines(f, s, size, width, max_lines)
 	ci.draw_multiline_string(f, pos, s, HORIZONTAL_ALIGNMENT_LEFT, width, size, max_lines, color)
 	var h := f.get_multiline_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, width, size, max_lines).y
 	return h
+
+
+## Texten kortad ord för ord med "…" när den inte ryms på max_lines rader, så att man ser att den fortsätter.
+static func _clip_lines(f: Font, s: String, size: int, width: float, max_lines: int) -> String:
+	var full := f.get_multiline_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, width, size).y
+	var limit := f.get_multiline_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, width, size, max_lines).y
+	if full <= limit + 0.5:
+		return s
+	var words := s.split(" ")
+	while words.size() > 1:
+		words.resize(words.size() - 1)
+		var t := " ".join(words).rstrip(",.;:–-") + "…"
+		if f.get_multiline_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, width, size).y <= limit + 0.5:
+			return t
+	return s
 
 
 ## Stor knapp (valskärmar).
