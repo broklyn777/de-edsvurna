@@ -1723,7 +1723,7 @@
 		"trophy": "moss_cloak"
 	},
 	"porridge_troll": {
-		"name": "Gröt-Gudrun",
+		"name": "Grytmodern",
 		"family": "troll_kin",
 		"color": "#c8a070",
 		"stats": {
@@ -1774,7 +1774,7 @@
 		"trophy": "porridge_bowl"
 	},
 	"grumpy_troll": {
-		"name": "Grinig-Gunnar",
+		"name": "Avundsjätten",
 		"family": "troll_kin",
 		"color": "#7a6a5a",
 		"stats": {
@@ -1824,7 +1824,7 @@
 		"trophy": "envy_stone"
 	},
 	"club_troll": {
-		"name": "Klubb-Kalle",
+		"name": "Stenkrossaren",
 		"family": "troll_kin",
 		"color": "#8a7a60",
 		"stats": {
@@ -1982,7 +1982,7 @@
 		"trophy": "grey_shawl"
 	},
 	"mountain_king": {
-		"name": "Bergakungen Grumse",
+		"name": "Bergakungen",
 		"family": "troll_kin",
 		"color": "#8a8a90",
 		"stats": {

@@ -1396,7 +1396,7 @@
 		]
 	},
 	"troll_ladle": {
-		"name": "Slevslag",
+		"name": "Grytslag",
 		"target": "enemy",
 		"pick": "lowest",
 		"sound": "bone_crush",
@@ -1408,7 +1408,7 @@
 		]
 	},
 	"hot_porridge": {
-		"name": "Het gröt",
+		"name": "Kokande gryta",
 		"target": "all_enemies",
 		"cooldown": 3,
 		"school": "fire",
@@ -1427,7 +1427,7 @@
 		]
 	},
 	"sour_glare": {
-		"name": "Sur blick",
+		"name": "Avundens blick",
 		"target": "enemy",
 		"pick": "highest_attack",
 		"ignore_taunt": true,
@@ -1492,7 +1492,7 @@
 		]
 	},
 	"knitting_needles": {
-		"name": "Stickor",
+		"name": "Gråluvans nålar",
 		"target": "enemy",
 		"pick": "lowest",
 		"travel": 0.3,

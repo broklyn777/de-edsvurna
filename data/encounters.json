@@ -751,7 +751,7 @@
 		]
 	},
 	"troll_1b": {
-		"name": "Söndagsgröt",
+		"name": "Grytans eld",
 		"party": [
 			"paladin",
 			"brokk",
@@ -764,7 +764,7 @@
 		]
 	},
 	"troll_1c": {
-		"name": "Sura grannar",
+		"name": "Avundens snår",
 		"party": [
 			"paladin",
 			"brokk",
@@ -791,7 +791,7 @@
 		]
 	},
 	"troll_2b": {
-		"name": "Grötkalaset",
+		"name": "Kittelgropen",
 		"party": [
 			"paladin",
 			"brokk",
@@ -805,7 +805,7 @@
 		]
 	},
 	"troll_e1": {
-		"name": "Barnkammaren",
+		"name": "Gråluvans stuga",
 		"party": [
 			"paladin",
 			"brokk",
