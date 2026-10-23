@@ -287,6 +287,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   står (`RunState.quest_hints`, `active_hints`); en gyllene stig till det öppna målet; den som går vidare får 75 % av
   erfarenheten och silvret från vanliga grupper som står kvar (`TRAIL_SHARE`, `take_trail`, `Run._pay_trail`). Boten
   `direct` i `BALANS=grotta`. Drakvalvets monster (29, alla riggade): `docs/research/drakvalvet-monster.md`.
+- **Den levande kartan syns** (karta-synlig, VD: "Jag såg inte levande kartan", `docs/plan/levande-karta.md`): hjälprutan
+  "Den levande kartan" första gången något har vuxit (`LivingMap.grown_realm`), med området ljust, en pulserande ring och en
+  pil (`HelpBox.focus`, `focus_panel_rect`); i handboken. Stegen utan siffror: 0 stilla och brunt bläck, 1 bläcket andas
+  (shaderns `breath`, `flow`) och svaga droppar vid ramen, 2 fläckar och eldar, 3 fler, 4 rött sigill. Ändrades inget på
+  kartan får "Medan ni var borta" en rad om det som växer härnäst (`LivingMap.quiet_line`, `next_to_grow`, `dialog.json`
+  living_map "quiet"/"lonely" med id:n, `chron_said`). `--home=quiet --home-summary`; stegen: `--growth=crypt:0,chapel:1,grove:2 --gate`.
 - **Grottans utseende** (0.28.3, efter skärmgranskningen): dimman är en sammanhängande tuschlavering med skraffering
   och svagt rutnät; besökta rutor ljust pergament med stenprickar; bergssidor i tusch där det kända möter dimman; ett
   varmt sken där man står; hörnmarkeringar på hela gränsen mot dimman (varje ruta man når med ett tryck). `--explore=<n>`

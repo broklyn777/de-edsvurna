@@ -33,6 +33,9 @@ uniform float fade = 0.16;
 uniform float inner = 1.2;
 // Den levande kartan: Realmens fördärv 0–4 gör bläcket tätare och mörkare.
 uniform float growth = 1.0;
+// karta-synlig: bläcket andas (når in och drar sig ut) i en levande Realm; 0 = stilla. flow 0 = bläcket flyter inte alls.
+uniform float breath = 0.0;
+uniform float flow = 1.0;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
 	vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
@@ -45,11 +48,17 @@ void fragment() {
 	float a = smoothstep(0.0, fade, e) * COLOR.a;
 	vec3 c = mix(vec3(1.0), t.rgb, a);
 	float d = max(abs(UV.x - 0.5), abs(UV.y - 0.5)) * 2.0;
-	float n = fbm(UV * vec2(4.0, 3.0) + vec2(TIME * 0.02, -TIME * 0.035));
-	float veins = fbm(UV * vec2(14.0, 10.0) - vec2(0.0, TIME * 0.05));
-	float ink = smoothstep(inner - 0.05, inner + 0.05, d + (n - 0.5) * 0.9 + (veins - 0.5) * 0.25);
-	float dense = 0.75 + 0.05 * growth;
-	c = mix(c, vec3(0.14, 0.07, 0.12) * (1.0 - 0.12 * growth), ink * dense * smoothstep(0.0, fade * 0.5, e));
+	float tm = TIME * flow;
+	float n = fbm(UV * vec2(4.0, 3.0) + vec2(tm * 0.02, -tm * 0.035));
+	float veins = fbm(UV * vec2(14.0, 10.0) - vec2(0.0, tm * 0.05));
+	// Andningen: långsam, med en ojämn rytm så att den inte ser ut som en maskin.
+	float b = breath * (0.65 * sin(TIME * 1.3) + 0.35 * sin(TIME * 2.9 + 1.0));
+	float ink = smoothstep(inner - 0.05, inner + 0.05, d + b + (n - 0.5) * 0.9 + (veins - 0.5) * 0.25);
+	// Steg 0 (lugnt): tunnare och brunare bläck, som gammal tusch; från steg 1 det mörka fördärvet.
+	float calm = 1.0 - clamp(growth, 0.0, 1.0);
+	float dense = 0.75 - 0.33 * calm + 0.05 * growth + breath * 1.5 * (0.5 + 0.5 * sin(TIME * 1.3));
+	vec3 ink_col = mix(vec3(0.14, 0.07, 0.12) * (1.0 - 0.12 * growth), vec3(0.45, 0.34, 0.22), calm);
+	c = mix(c, ink_col, ink * dense * smoothstep(0.0, fade * 0.5, e));
 	COLOR = vec4(c, 1.0);
 }
 """
@@ -67,9 +76,7 @@ func _ready() -> void:
 	# Den levande världen: hemkomsten visas i borgen (base_screen); rutan här bara för --news (äldre skärmdumpar).
 	_news_open = "--news" in OS.get_cmdline_user_args() and (not run.profile.growth_news.get("lines", []).is_empty()
 			or _has_homecoming(run.profile))
-	# 0.25: djup och instabilitet förklaras efter den första nedstigningen (den första hålls enkel).
-	if run.profile.total_descents() > 0:
-		HelpBox.offer(self, ["depth", "instability"])
+	_offer_help.call_deferred()
 	parchment = Parchment.new()
 	add_child(parchment)
 	if not run.data.realms.has(run.profile.realm):
@@ -80,6 +87,23 @@ func _ready() -> void:
 		_vignettes[realm_id] = _vignette_rect(run.data.realms[realm_id].map.vignette, shader)
 	_warden = _vignette_rect("vaktaren", shader)
 	_witch = _vignette_rect("haxan", shader)
+
+
+## Hjälprutorna: djup och instabilitet efter den första nedstigningen (0.25, den första hålls enkel), och första gången
+## något har vuxit på den levande kartan "Den levande kartan" med en pil mot området som växte (karta-synlig).
+func _offer_help() -> void:
+	var prof: Profile = run.profile
+	var wanted := []
+	if prof.total_descents() > 0:
+		wanted = ["depth", "instability"]
+	var grown := LivingMap.grown_realm(prof, run.data) if prof.intro_done else ""
+	if grown != "":
+		wanted.push_front("living_map")  # först: det är den nya (pilen pekar medan den syns)
+	if wanted.is_empty():
+		return
+	var box := HelpBox.offer(self, wanted)
+	if box != null and grown != "":
+		box.focus = {"living_map": _rect(grown)}
 
 
 ## En vinjett bakom kartans linjer (blandas med pergamentet så att den vita kanten försvinner).
@@ -351,6 +375,8 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 	var mat := _vignettes[realm_id].material as ShaderMaterial
 	mat.set_shader_parameter("inner", 0.58 + 0.4 * minf(FREED_PER_DEPTH * cleared, FREED_MAX) - GROWTH_INK * (g - 1))
 	mat.set_shader_parameter("growth", float(g))
+	mat.set_shader_parameter("breath", breath(g) if _living(realm_id) else 0.0)
+	mat.set_shader_parameter("flow", 0.0 if _living(realm_id) and g == 0 else 1.0)
 	var frame := r.grow(6)
 	var pts := PackedVector2Array([frame.position, Vector2(frame.end.x, frame.position.y), frame.end,
 			Vector2(frame.position.x, frame.end.y), frame.position])
@@ -380,6 +406,11 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 				HORIZONTAL_ALIGNMENT_CENTER, 60, 2)
 
 
+## karta-synlig: hur mycket bläcket andas per steg, utan siffror: 0 stilla och ljusare, 1 en svag andning, 2–4 tydligare.
+static func breath(g: int) -> float:
+	return [0.0, 0.09, 0.1, 0.12, 0.13][clampi(g, 0, LivingMap.GROWTH_MAX)]
+
+
 ## Den levande kartan visas för Realms man har gått ned i (efter introts första nedstigning).
 func _living(realm_id: String) -> bool:
 	return int(run.profile.descents.get(realm_id, 0)) > 0
@@ -388,10 +419,20 @@ func _living(realm_id: String) -> bool:
 ## Mörka märken över området efter fördärvet, utan siffror: bläckfläckar (steg 2+), fiendens eldar (steg 2+), och på
 ## steg 4 den förvridna bossens sigill i rött. Platserna är fasta per Realm (samma varje gång).
 func _draw_growth_marks(realm_id: String, r: Rect2, g: int) -> void:
-	if g < 2:
-		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(realm_id)
+	if g == 1:
+		# karta-synlig: på steg 1 lever området redan – några svaga droppar vid ramen som andas med bläcket.
+		var breathe := 0.5 + 0.5 * sin(_t * 1.3)
+		for i in 4:
+			var t := rng.randf_range(0.15, 0.85)
+			var at := Vector2(r.position.x + t * r.size.x, r.position.y - rng.randf_range(2.0, 7.0)) if i % 2 == 0 \
+					else Vector2(r.end.x + rng.randf_range(2.0, 7.0), r.position.y + t * r.size.y)
+			var rad := rng.randf_range(2.5, 4.5) * (0.85 + 0.3 * breathe)
+			draw_circle(at, rad, Color(0.08, 0.03, 0.06, 0.25 + 0.3 * breathe))
+		return
+	if g < 2:
+		return
 	# Bläcket spiller över ramen ut på pergamentet (inne i området är det redan mörkt).
 	var ink := Color(0.08, 0.03, 0.06, 0.5 + 0.1 * g)
 	for i in (g - 1) * 4:

@@ -135,6 +135,62 @@ static func after_descent(profile: Profile, data: Dictionary, realm_id: String, 
 	return list
 
 
+## Realmen som växer härnäst om man går till realm_id igen (den som legat orörd längst, inte en som vilar eller står på 4),
+## annars den orörda som inte är realm_id; "" om ingen annan Realm är besökt.
+static func next_to_grow(profile: Profile, data: Dictionary, realm_id: String) -> String:
+	for c in changes(profile, data, realm_id, false):
+		if c.why == "neglect":
+			return String(c.realm)
+	var best := ""
+	for other in unlocked(profile, data):
+		if other != realm_id and (best == "" or int(profile.growth_last.get(other, -1)) < int(profile.growth_last.get(best, -1))):
+			best = other
+	return best
+
+
+## Hjälprutan "Den levande kartan" (karta-synlig): Realmen som har vuxit (steg 2 eller mer; startvärdet är 1) och som
+## kampanjkartan pekar på, den med mest fördärv (vid lika den som legat orörd längst). "" om inget har vuxit än.
+static func grown_realm(profile: Profile, data: Dictionary) -> String:
+	var best := ""
+	for r in unlocked(profile, data):
+		var g := growth(profile, r)
+		if g < 2:
+			continue
+		if best == "" or g > growth(profile, best) or (g == growth(profile, best)
+				and int(profile.growth_last.get(r, -1)) < int(profile.growth_last.get(best, -1))):
+			best = r
+	return best
+
+
+## "Medan ni var borta" när kartan inte ändrades (karta-synlig): en rad om Realmen som växer härnäst (dialog.json
+## living_map "quiet"), eller med bara en besökt Realm en rad om att det finns fler ställen ("lonely"). Ingen rad upprepas
+## förrän de andra har sagts (Profile.chron_said). {id, text, realm} eller {}.
+static func quiet_line(profile: Profile, data: Dictionary, realm_id: String) -> Dictionary:
+	var d: Dictionary = data.get("dialog", {}).get("living_map", {})
+	var next := next_to_grow(profile, data, realm_id)
+	var pool: Array = []
+	if next != "":
+		var own: Array = d.get("quiet", []).filter(func(e: Dictionary) -> bool: return String(e.get("realm", "")) == next)
+		var any: Array = d.get("quiet", []).filter(func(e: Dictionary) -> bool: return not e.has("realm"))
+		pool = own + any
+	elif data.realms.size() > 1:
+		pool = d.get("lonely", [])
+	if pool.is_empty():
+		return {}
+	var fresh := pool.filter(func(e: Dictionary) -> bool: return not profile.chron_said.has(e.id))
+	if fresh.is_empty():
+		for e in pool:
+			profile.chron_said.erase(e.id)
+		fresh = pool
+	var e: Dictionary = fresh[posmod(profile.total_descents(), fresh.size())]
+	profile.chron_said.append(e.id)
+	var text := String(e.text)
+	var place := next if next != "" else realm_id
+	if data.realms.has(place):
+		text = text.replace("{plats}", _in(String(data.realms[place].short))).replace("{folk}", folk(data, place))
+	return {"id": String(e.id), "text": Dialog.fill(text, profile.hero_name), "realm": next}
+
+
 ## Raden före avfärd för vald Realm, utan siffror.
 static func departure_line(profile: Profile, data: Dictionary, realm_id: String) -> String:
 	var here := String(data.realms[realm_id].short)

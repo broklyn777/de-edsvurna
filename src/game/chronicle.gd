@@ -140,7 +140,13 @@ static func end(profile: Profile, data: Dictionary, state: RunState, outcome: St
 	while profile.chronicle.size() > MAX_ENTRIES:
 		profile.chronicle.pop_front()
 	profile.homecoming = homecoming(profile, data, entry, profile.growth_news)
-	profile.homecoming.summary = Array(profile.growth_news.get("lines", [])) + Array(world.get("lines", []))
+	var map_lines := Array(profile.growth_news.get("lines", []))
+	# karta-synlig (VD: "Jag såg inte levande kartan"): ändrades inget på kartan pekar en rad på det som växer härnäst.
+	if map_lines.is_empty() and not state.first_descent and profile.intro_done:
+		var quiet := LivingMap.quiet_line(profile, data, state.realm)
+		if not quiet.is_empty():
+			map_lines.append(quiet.text)
+	profile.homecoming.summary = map_lines + Array(world.get("lines", []))
 	return entry
 
 
@@ -890,6 +896,10 @@ static func demo_home(profile: Profile, data: Dictionary, kind: String) -> void:
 			profile.growth = {"crypt": 2, "chapel": 1}
 			profile.world.armed = {"crypt": true}
 			simulate(profile, data, {"party": party, "outcome": "boss", "bosses": ["bone_lich"], "quest": true, "map": true})
+		"quiet":
+			# karta-synlig: hem utan en vunnen strid; kartan ändras inte, och en rad pekar på kapellet som växer härnäst.
+			profile.growth_last = {"crypt": 3, "chapel": 0}
+			simulate(profile, data, {"party": party, "outcome": "home", "wins": 0, "map": true})
 		"fell":
 			profile.chron_stats.falls = {"brokk": 2}
 			simulate(profile, data, {"party": party, "depth": 2, "outcome": "loss", "fell": {"brokk": 2, "alva": 1}, "map": true})

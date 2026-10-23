@@ -184,3 +184,14 @@ Gorm (ett djup grundare, eller den lugnaste andra Realmen). Högst ett råd.
 5. ~~Gåvan efter kapellet är liten.~~ Beslutat: pilgrimen ger ett rykte. Ringarna (nya-grottor.md A) syns redan alltid, så
    ryktet visar själva målen på den första våningen genom dimman (`RunState.apply_rumour`, `revealed`); pilgrimsskarans
    händelse ger fortfarande sin välsignelse (`bless_runs`).
+
+## Kartan syns (2026-10-24, grenen `karta-synlig`, efter VD:s provspel av 0.30.30: "Jag såg inte levande kartan")
+- **Hjälprutan "Den levande kartan"** första gången en besökt Realm står på steg 2+ (`LivingMap.grown_realm`): kampanjkartan
+  lämnar området ljust med en pulserande guldring och en pil, rutan bredvid (`HelpBox.focus`). Först i kön före djup och
+  instabilitet. I Broder Alriks handbok.
+- **Stegen syns från 0:** 0 stilla och brunt (inget flöde, tunnare), 1 bläcket andas (`breath` i shadern, ojämn rytm) och
+  fyra svaga droppar vid ramen, 2–4 som förut. Obesökta Realms ser ut som förut. Inga siffror; balansen är orörd.
+- **"Medan ni var borta" när inget ändrades:** en rad om Realmen som växer härnäst (`LivingMap.quiet_line`, 3 per Realm och
+  2 allmänna, plus 2 när bara en Realm är besökt), ingen upprepning förrän alla är sagda (`chron_said`). Bara i
+  sammanfattningen, replikernas budget är densamma. Inte på första nedstigningen.
+- Skärmdumpar: `docs/provspel/karta-synlig/`.

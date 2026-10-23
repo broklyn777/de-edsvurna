@@ -1,6 +1,6 @@
 {
 	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
-	"order": ["timeline", "combo", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "forfeit"],
+	"order": ["timeline", "combo", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "living_map", "forfeit"],
 	"entries": {
 		"timeline": {
 			"title": "Tidslinjen",
@@ -119,6 +119,14 @@
 				"Varje förmåga har ett antal användningar, Charges. De räcker hela nedstigningen och fylls inte på mellan striderna.",
 				"Hur många som är kvar står på förmågans knapp i striden och överst i grottan.",
 				"Lägerelden fyller på tre per förmåga. När du kommer hem till borgen är alla fulla igen."
+			]
+		},
+		"living_map": {
+			"title": "Den levande kartan",
+			"text": [
+				"Fördärvet växer där ni inte går, i den Realm ni har lämnat i fred längst. Där bläcket ligger stilla är det lugnt; där det andas lever det.",
+				"Går ni dit trängs det tillbaka, och klarar ni questen där trängs det långt tillbaka. Tätare bläck betyder starkare fiender, men också bättre fynd.",
+				"Får det växa sig tätt kostar det något hemma i borgen. Får det växa ända ut kan en förvriden boss vakna."
 			]
 		}
 	}

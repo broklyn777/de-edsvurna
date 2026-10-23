@@ -210,3 +210,66 @@ func test_twisted_battle_can_be_played_to_the_end() -> void:
 		assert_true(r.outcome in ["victory", "defeat"], str(r.outcome))
 		won += 1 if r.outcome == "victory" else 0
 	assert_true(won >= 0)
+
+
+# --- karta-synlig: hjälprutan och raden när inget ändrades ------------------------------
+
+func test_help_box_points_at_the_realm_that_grew() -> void:
+	var p := _profile()
+	assert_eq(LivingMap.grown_realm(p, _data), "", "inget har vuxit vid start (steg 1)")
+	LivingMap.after_descent(p, _data, "crypt", 2, false)
+	assert_eq(LivingMap.grown_realm(p, _data), "chapel", "kapellet växte till steg 2 medan ni var i kryptan")
+	p.growth = {"crypt": 3, "chapel": 2}
+	assert_eq(LivingMap.grown_realm(p, _data), "crypt", "den med mest fördärv")
+	# En Realm man aldrig besökt räknas inte, och rutan finns i hjälpen och i handboken.
+	p.growth = {"crypt": 1, "chapel": 1, "grove": 4}
+	assert_eq(LivingMap.grown_realm(p, _data), "")
+	assert_true(not Help.entry(_data, "living_map").is_empty())
+	assert_true(Help.order(_data).has("living_map"), "Broder Alriks handbok listar rutan")
+	assert_eq(Help.take(_data, p, ["living_map"]), ["living_map"])
+	assert_eq(Help.take(_data, p, ["living_map"]), [], "en gång per profil")
+
+
+func test_quiet_homecoming_points_at_what_grows_next_without_repeats() -> void:
+	var p := _profile()
+	p.growth_last = {"crypt": 3, "chapel": 0}
+	assert_eq(LivingMap.next_to_grow(p, _data, "crypt"), "chapel")
+	var seen := {}
+	var pool: Array = _data.dialog.living_map.quiet.filter(func(e: Dictionary) -> bool:
+			return String(e.get("realm", "chapel")) == "chapel")
+	for i in pool.size():
+		var q := LivingMap.quiet_line(p, _data, "crypt")
+		assert_eq(q.realm, "chapel")
+		assert_true(not seen.has(q.id), "ingen upprepning innan alla är sagda: " + String(q.id))
+		assert_true(not String(q.text).contains("{"), q.text)
+		assert_true(not String(q.text).contains("kryptan"), "pekar på kapellet: " + String(q.text))
+		seen[q.id] = true
+	assert_eq(seen.size(), pool.size())
+	assert_true(not LivingMap.quiet_line(p, _data, "crypt").is_empty(), "sedan börjar poolen om")
+	# Bara en besökt Realm: en rad om att det finns fler ställen.
+	var lone := _profile(["crypt"])
+	var l := LivingMap.quiet_line(lone, _data, "crypt")
+	assert_true(String(l.id).begins_with("map_lonely"), str(l))
+	# Alla rader har egna id:n.
+	var ids := {}
+	for e in _data.dialog.living_map.quiet + _data.dialog.living_map.lonely:
+		assert_true(not ids.has(e.id), e.id)
+		ids[e.id] = true
+
+
+func test_summary_gets_a_hint_when_the_map_did_not_change() -> void:
+	var p := _profile()
+	p.world.next = 99
+	p.growth_last = {"crypt": 3, "chapel": 0}
+	Chronicle.simulate(p, _data, {"party": ["paladin", "imma"], "outcome": "home", "wins": 0, "map": true})
+	var summary: Array = p.homecoming.summary
+	assert_true(summary.size() >= 1, str(summary))
+	assert_true(_data.dialog.living_map.quiet.any(func(e: Dictionary) -> bool:
+			return String(summary[0]).begins_with(String(e.text).get_slice("{", 0))), "kartans rad först: " + str(summary))
+	assert_true(p.homecoming.remarks.size() <= Chronicle.MAX_REMARKS, "replikernas budget är densamma")
+	# När kartan ändrades kommer ingen extra rad.
+	var q := _profile()
+	q.world.next = 99
+	Chronicle.simulate(q, _data, {"party": ["paladin", "imma"], "outcome": "boss", "map": true})
+	for line in q.homecoming.summary:
+		assert_true(not _data.dialog.living_map.quiet.any(func(e: Dictionary) -> bool: return e.text == line), line)

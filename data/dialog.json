@@ -3345,7 +3345,7 @@
 		]
 	},
 	"living_map": {
-		"_comment": "Den levande kartan (prov, LivingMap): högst en replik efter hemkomsten, för den viktigaste ändringen. Imma om hon är rekryterad, annars Gorm. {plats} = kryptan/kapellet/lunden, {folk} = Benfolket …",
+		"_comment": "Den levande kartan (prov, LivingMap): högst en replik efter hemkomsten, för den viktigaste ändringen. Imma om hon är rekryterad, annars Gorm. {plats} = kryptan/kapellet/lunden, {folk} = Benfolket … \"quiet\" (karta-synlig): en rad i Medan ni var borta när kartan inte ändrades, om Realmen som växer härnäst ({plats}, {folk}); först de om den Realmen, sedan allmänna, ingen upprepas förrän alla är sagda (Profile.chron_said). \"lonely\": när bara en Realm är besökt.",
 		"imma": {
 			"rise": [
 				{
@@ -3484,7 +3484,72 @@
 					"Ingen gick till lunden. Näten når handelsvägen."
 				]
 			}
-		}
+		},
+		"quiet": [
+			{
+				"id": "map_quiet_crypt_1",
+				"realm": "crypt",
+				"text": "Kryptan har varit tyst länge. Det brukar inte betyda något gott."
+			},
+			{
+				"id": "map_quiet_crypt_2",
+				"realm": "crypt",
+				"text": "Tor säger att det skrapar under gravstenarna igen, fast ingen har varit nere på länge."
+			},
+			{
+				"id": "map_quiet_crypt_3",
+				"realm": "crypt",
+				"text": "Ingen har gått ned i kryptan på ett tag. Benfolket märker sådant."
+			},
+			{
+				"id": "map_quiet_chapel_1",
+				"realm": "chapel",
+				"text": "Kapellet har varit tyst länge. Det brukar inte betyda något gott."
+			},
+			{
+				"id": "map_quiet_chapel_2",
+				"realm": "chapel",
+				"text": "Pilgrimerna säger att det lyser i kapellets fönster om nätterna. Ingen av dem har tänt ljusen."
+			},
+			{
+				"id": "map_quiet_chapel_3",
+				"realm": "chapel",
+				"text": "Det var länge sedan någon gick till kapellet. Kultens folk har fått vara i fred."
+			},
+			{
+				"id": "map_quiet_grove_1",
+				"realm": "grove",
+				"text": "Lunden har varit tyst länge. Det brukar inte betyda något gott."
+			},
+			{
+				"id": "map_quiet_grove_2",
+				"realm": "grove",
+				"text": "Kuskarna säger att stigen genom lunden har blivit smalare. Näten växer där ingen går."
+			},
+			{
+				"id": "map_quiet_grove_3",
+				"realm": "grove",
+				"text": "Ingen har varit i lunden på länge. Spindelfolket spinner i lugn och ro."
+			},
+			{
+				"id": "map_quiet_any_1",
+				"text": "Ingenting ändrades den här gången. Men i {plats} har ingen varit på länge, och där växer fördärvet härnäst."
+			},
+			{
+				"id": "map_quiet_any_2",
+				"text": "Kartan ligger stilla i kväll. Bläcket kring {plats} andas ändå tyngre än förut."
+			}
+		],
+		"lonely": [
+			{
+				"id": "map_lonely_1",
+				"text": "Ingenting ändrades på kartan. Sven säger att vägarna går till fler platser än {plats}."
+			},
+			{
+				"id": "map_lonely_2",
+				"text": "Kartan ligger stilla. Men fördärvet finns på fler ställen än där ni har varit."
+			}
+		]
 	},
 	"world": {
 		"_comment": "Den levande världen (WorldEvents, data/world_events.json). ongoing: vad borgens folk säger medan en händelse (event), en följd (cost) eller handelsmannen (merchant) pågår. cost_map: kampanjkartans rad om vad Realmen kostar hemma. cost_on/cost_off/gift/tor: hemkomstens sammanfattning. merchant: handelsmannen på gården (bought: han stannar, sold_out: allt sålt). pilgrim_rumour: pilgrimen i värdshuset när kapellet trycktes tillbaka (ryktet om nästa körnings questmål); pilgrim: pilgrimsskarans välsignelse. rumour_map: kampanjkartans rad om ryktet.",

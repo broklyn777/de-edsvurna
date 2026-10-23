@@ -408,7 +408,7 @@ func _dev_args() -> void:
 			dev_profile = true  # en påhittad krönika med titlar (sparas inte)
 			Chronicle.demo(profile, data)
 		elif arg.begins_with("--home="):
-			# --home=fell|boss3|rare|depth|event_lost|event_won|start|loss|cost|gift: hemkomsten i borgen (sparas inte)
+			# --home=fell|boss3|rare|depth|event_lost|event_won|start|loss|cost|gift|quiet: hemkomsten i borgen (sparas inte)
 			dev_profile = true
 			Chronicle.demo_home(profile, data, arg.get_slice("=", 1))
 			get_tree().change_scene_to_file.call_deferred(BASE_SCENE)
