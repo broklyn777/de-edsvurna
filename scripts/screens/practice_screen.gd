@@ -168,7 +168,7 @@ func _draw() -> void:
 		for hero_id in profile.worn:
 			if profile.worn[hero_id] == t:
 				who = " · " + data.heroes[hero_id].name
-		chip(_chip_rect(i), data.traits[t].name + who, selected == t, 13)
+		chip(_chip_rect(i), UiStyle.fit(data.traits[t].name + who, 15, _chip_rect(i).size.x - 12), selected == t, 13)
 
 	_draw_log(data)
 	UiStyle.big_button(self, _fight_rect(), "STRID!", _t)
