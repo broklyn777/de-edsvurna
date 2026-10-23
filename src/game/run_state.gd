@@ -442,6 +442,7 @@ func start_floor(data: Dictionary) -> void:
 	rng.seed = run_seed * 977 + floor * 31 + 13
 	quest = roll_quest(rng, floor)
 	commons_fought = 0
+	trail_taken = false
 	var pools: Array = data.realms[realm].get("pools", [])
 	if pools.is_empty():
 		pools = [floor_ids]
@@ -455,6 +456,67 @@ func start_floor(data: Dictionary) -> void:
 	revealed = []
 	came_from = -1
 	battle_pending = false
+	_roll_hints(rng)
+
+
+## 0.30.22 Ledtråd (docs/plan/nya-grottor.md A, Siralims quests som pekar ut en plats): varje mål för questen (Nemesis,
+## elitgrupperna, föremålen) får ett rykte på kartan, en ring över ett 3×3-område där målet står. Exakt ruta stannar
+## under dimman. [{center, target}]
+var quest_hints: Array = []
+
+
+func quest_targets() -> Array[int]:
+	var out: Array[int] = []
+	if map == null:
+		return out
+	var type: String = quest.get("type", "")
+	for i in map.cells.size():
+		var c: Dictionary = map.cells[i]
+		if (type == "hunt" and c.get("nemesis", false)) or (type == "clear" and c.get("elite", false) and c.has("encounter")) \
+				or (type == "collect" and c.get("kind", "") == "item"):
+			out.append(i)
+	return out
+
+
+func _roll_hints(rng: RandomNumberGenerator) -> void:
+	quest_hints = []
+	for t in quest_targets():
+		var p := Grotto.xy(t)
+		var c := Vector2i(clampi(p.x + rng.randi_range(-1, 1), 1, Grotto.SIZE - 2),
+				clampi(p.y + rng.randi_range(-1, 1), 1, Grotto.SIZE - 2))
+		quest_hints.append({"center": Grotto.idx(c), "target": t})
+
+
+## Ryktena som fortfarande gäller: målet är varken hittat eller klart.
+func active_hints() -> Array:
+	if map == null or quest.get("done", false):
+		return []
+	return quest_hints.filter(func(h: Dictionary) -> bool:
+		var t := int(h.target)
+		var c := map.cell(t)
+		return not (visited.has(t) or seen.has(t) or revealed.has(t) or c.get("beaten", false) or c.get("done", false)))
+
+
+## 0.30.22 Spåren (nya-grottor.md B, vårt val): den som går ned när questen är klar får en del av erfarenheten och
+## silvret från de vanliga grupper som står kvar ("ni lärde er av spåren"), så att det inte alltid lönar sig att rensa allt.
+const TRAIL_SHARE := 0.5
+var trail_taken := false
+
+
+func take_trail(data: Dictionary) -> Dictionary:
+	if trail_taken or map == null or practice:
+		return {}
+	trail_taken = true
+	var groups := 0
+	var silver := 0.0
+	for c in map.cells:
+		if c.get("kind", "") == "battle" and c.has("encounter") and not c.get("beaten", false) and is_common_group(c):
+			groups += 1
+			silver += Profile.reward(int(c.get("tier", floor)), depth) * BATTLE_SILVER
+	if groups == 0:
+		return {}
+	return {"groups": groups, "xp": roundi(HeroStats.battle_xp("battle", depth) * TRAIL_SHARE * groups),
+			"silver": silver * TRAIL_SHARE}
 
 
 ## Rutan man står på (med "kind"; tom utanför en körning).
@@ -954,7 +1016,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
-		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes"]
+		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken"]
 
 
 func to_dict() -> Dictionary:
