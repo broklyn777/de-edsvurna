@@ -174,6 +174,13 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`user://settings.cfg`, ljudkanalerna "Music" och "Sfx" som `Sfx` och figurernas kastljud använder; 0 % stänger av)
   och rumsögonblicken (profilens). Knappen INSTÄLLNINGAR under ‹ PROFILER i borgen och LJUD i striden (pausar).
   `--settings` öppnar rutan i borgen eller striden.
+- **Löften** (0.30.17, prov, `docs/plan/loften.md`, `data/vows.json`): på kampanjkartan (LÖFTE bredvid FÖRBEREDELSER,
+  efter introt, `Profile.vow`) lovar Paladinen något för hela körningen. Hållet ger en egenskap hos Paladinen och silver;
+  brutet blir det en ödmjukare form (`RunState.vow`, `vow_broken`, `vow_trait`, `vow_after_battle`, `is_common_group`).
+  Ingen ska falla (Barriär till den svagaste; bryts när någon faller, då reser sig den som faller en gång), Jag helar inte
+  (helningsförmågor går inte att välja, `CombatSim.no_heal`, orsaken "vowed"; Paladinens attacker helar 20 %), Raka vägen
+  (högst två vanliga grupper per våning; questens silver dubbelt). Botarna: `BALANS=loften`. `--vow=<id>` före `--map`,
+  `--vows` öppnar valet på kampanjkartan.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,

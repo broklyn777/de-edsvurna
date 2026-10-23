@@ -133,6 +133,8 @@ func _ready() -> void:
 	var opts: Dictionary = state.battle_opts() if state.map != null and not state.practice \
 			else state.practice_opts(data)
 	opts.levels = run.profile.levels_for(data, state.party)  # 0.19: hjältarnas nivåer
+	if not state.practice:
+		state.apply_vow(data, opts)  # 0.30.17: Jag helar inte
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
 			state.artifacts, state.depth, opts)
 	data = sim.data  # med artefakternas egenskaper
@@ -573,6 +575,9 @@ func _update_rules_text() -> void:
 	for i in unknown:
 		names.append("?")
 	overlay.rules_text = ("Regler: " + " · ".join(names)) if not names.is_empty() else ""
+	if state.vow != "" and not state.practice:
+		var vow_txt := "Löfte: " + state.vow_name(data)
+		overlay.rules_text = vow_txt if overlay.rules_text == "" else overlay.rules_text + " · " + vow_txt
 
 
 ## Vilken trofé fienden kan lämna (Inspect): elitens egen, bossens med räknaren, eller den vanliga.

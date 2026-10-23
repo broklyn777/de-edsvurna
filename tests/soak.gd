@@ -124,6 +124,8 @@ func _roll_config() -> Dictionary:
 	c.realm = "crypt" if c.first else ["crypt", "chapel"][pick.randi() % 2]
 	c.depth = 1 if c.first else pick.randi_range(1, 3)
 	c.instability = 0 if c.first else pick.randi_range(0, 3)
+	var vows: Array = [""] + data.vows.keys().filter(func(k: String) -> bool: return not k.begins_with("_"))
+	c.vow = "" if c.first else String(vows[pick.randi() % vows.size()])  # 0.30.17: löftet
 	c.oath = data.oaths.keys()[pick.randi() % data.oaths.size()]
 	var companions: Array = data.heroes.keys().filter(func(h: String) -> bool: return h != "paladin")
 	c.party = []
@@ -188,6 +190,7 @@ func _setup_profile() -> void:
 		profile.depth = cfg.depth
 		profile.best_depth = cfg.depth
 		profile.instability = cfg.instability
+		profile.vow = cfg.vow
 		profile.descents = {cfg.realm: cfg.descents}
 		profile.silver = pick.randi_range(0, 500)
 		macros = data.macros.duplicate(true)
@@ -439,6 +442,7 @@ func _fight() -> void:
 			_fail("spara", "battle_pending försvann vid inläsningen")
 	var opts := state.battle_opts()
 	opts.levels = profile.levels_for(data, state.party)
+	state.apply_vow(data, opts)
 	var sim := CombatSim.create(data, state.encounter(), seed_now * 1000 + step_now, state.party, state.hero_traits(data),
 			state.charges, state.artifacts, state.depth, opts)
 	sim.begin()
@@ -502,6 +506,7 @@ func _award(sim: CombatSim, won: bool) -> void:
 		h.wins = int(h.wins) + (1 if won else 0)
 	if won:
 		var r := state.current_room()
+		state.vow_after_battle(data, sim)
 		_roll_finds("boss" if r.get("boss", false) else RunState.fight_kind(r))
 		profile.grant_xp(data, state.party, HeroStats.battle_xp(RunState.fight_kind(r), state.depth, r.get("boss", false)))
 

@@ -155,6 +155,8 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	if opts.has("party"):
 		state.party.assign(opts.party)  # 0.23: sällskap med 2–4 hjältar
 	state.fill_charges(data)
+	if opts.has("vow"):
+		state.set_vow(data, opts.vow)  # 0.30.17: löftet för hela körningen
 	if opts.has("recruited"):
 		state.place_prisoners(data, opts.recruited)  # 0.23: botarna befriar lärjungar som i spelet
 	state.start_expedition(data, seed_value)
@@ -189,11 +191,18 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
-			var result := run_fight(data, seed_value * 31 + fights, skill, state.encounter(), state.party, traits,
+			var fight_traits := traits
+			if state.vow_trait(data) != "":
+				fight_traits = traits.duplicate(true)
+				var own: Array = fight_traits.get("paladin", data.heroes.paladin.get("traits", [])).duplicate()
+				own.append(state.vow_trait(data))
+				fight_traits.paladin = own
+			state.apply_vow(data, battle_opts)
+			var result := run_fight(data, seed_value * 31 + fights, skill, state.encounter(), state.party, fight_traits,
 					state.charges, artifacts, depth, battle_opts)
 			fights += 1
 			if state.floor == 0:
@@ -204,6 +213,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 						"lost_at": "f%d_%s" % [state.floor, "end" if r.get("boss", false) else r.kind], "f0_fights": f0_fights,
 						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver}
 			silver += state.battle_silver(depth)
+			state.vow_after_battle(data, result.sim)
 			if opts.has("finds"):
 				_count_finds(finds, Forge.roll_finds(data, "boss" if r.get("boss", false) else RunState.fight_kind(r), depth,
 						opts.finds, state.instability, loot_rng))
@@ -255,13 +265,18 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			break
 		rooms += 1
 	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
-			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won, "finds": finds, "silver": silver}
+			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won, "finds": finds, "silver": silver,
+			"vow_kept": state.vow_kept(data)}
 
 
 ## Slåss boten mot gruppen den står på? Elitgrupper bara om questen kräver dem (eller med "greedy").
 static func _bot_wants_fight(state: RunState, r: Dictionary, policy: String) -> bool:
 	if policy == "greedy" or r.get("boss", false) or r.get("bot_must", false):
 		return true
+	# 0.30.17: Raka vägen – boten håller löftet och backar från fler vanliga grupper.
+	if state.vow_breaks_on == "commons" and not state.vow_broken and RunState.is_common_group(r) \
+			and state.commons_fought >= state.vow_max_commons:
+		return false
 	# "careful": backar från vanliga grupper och bevakade skatter så länge det finns en annan väg (färre strider).
 	if policy == "careful" and (r.kind == "battle" or (r.kind == "treasure" and not r.get("elite", false))):
 		return false

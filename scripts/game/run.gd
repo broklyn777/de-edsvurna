@@ -343,6 +343,8 @@ func _dev_args() -> void:
 			else:
 				profile.narrated.erase(kind)
 				narrate(kind)
+		elif arg.begins_with("--vow="):
+			profile.vow = arg.get_slice("=", 1)  # 0.30.17: löftet för nästa körning (före --map)
 		elif arg == "--descents":
 			profile.descents = {"crypt": 1}  # som efter första nedstigningen (sparas inte om profilen är påhittad)
 		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn", "--handbook"]:
@@ -410,6 +412,7 @@ func start_run(party: Array[String]) -> void:
 	_save()
 	quest_reward = {}
 	room_result = ""
+	vow_news = ""
 	save_run()
 	get_tree().change_scene_to_file(ROOM_MAP_SCENE)
 
@@ -478,9 +481,13 @@ func back_off() -> void:
 
 ## Striden mot gruppen på rutan (efter knappen ANFALL på gruppens kort).
 func fight_here() -> void:
+	var was_kept := state.vow_kept(data)
+	vow_news = ""
 	state.fight()
 	if not state.battle_pending:
 		return
+	if was_kept and not state.vow_kept(data):
+		vow_news = "Löftet brast. %s blir %s." % [data.vows[state.vow].name, state.vow_name(data)]
 	# 0.29.5: en mött elitgrupp går sedan att öva mot i Övningsgården.
 	if state.current_room().get("elite", false) and not profile.elites_met.has(state.encounter()):
 		profile.elites_met.append(state.encounter())
@@ -722,6 +729,10 @@ func shrine(option: Dictionary) -> String:
 ## Efter en strid (0.19): räkna strider, segrar, stupade och väckta per hjälte och egenskapernas
 ## statistik för körningen, och ge erfarenhet efter en vunnen strid (inte i Övningsgården).
 ## Returnerar nivåuppgångarna: [{hero, name, level, gains}].
+## 0.30.17: att löftet brast i senaste striden, för rumskartan (och Raka vägen när en tredje vanlig grupp anfalls).
+var vow_news := ""
+
+
 func award_battle(sim: CombatSim, victory: bool) -> Array:
 	for u in sim.heroes:
 		var h := profile.hero(data, u.id)
@@ -744,6 +755,8 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 		var xp := HeroStats.battle_xp(RunState.fight_kind(r), state.depth, r.get("boss", false))
 		last_xp = xp
 		var ups := profile.grant_xp(data, state.party, xp)
+		if state.vow_after_battle(data, sim) == "broke":
+			vow_news = "Löftet brast. %s blir %s." % [data.vows[state.vow].name, state.vow_name(data)]
 		_bark_after_battle(sim)
 		for hero_id in state.party:
 			for lv in ups.get(hero_id, []):
@@ -810,6 +823,10 @@ func _after_quest_check(just_done: bool) -> void:
 			return
 		quest_reward = profile.complete_quest(state.realm, state.depth)
 		room_result += " Questen är klar: +%d silver%s" % [quest_reward.silver, " och en perk-poäng!" if quest_reward.point else "!"]
+		# 0.30.17: Raka vägen hållet ger questens silver en gång till.
+		if state.vow == "vow_straight" and state.vow_kept(data):
+			profile.silver += int(quest_reward.silver)
+			room_result += " Raka vägen: +%d silver till." % int(quest_reward.silver)
 		_save()
 
 
