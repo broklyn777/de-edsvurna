@@ -247,6 +247,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `self_not_acted`, `unit_repeated_ability`, regeln `self_last_attacked`; modifieraren `ignore_defense`. Tester:
   `tests/test_enemies_chapel.gd`. `NIVA_REALM=chapel` begränsar `BALANS=grotta`; `BALANS=elitgrupper` kör en strid per
   elitgrupp (alla vinns med fulla Charges – svårigheten kommer av nötningen över körningen).
+- **Trollfolket** (0.30.23, `docs/plan/troll.md`, ännu utan Realm; `--encounter=troll_1a` … `troll_3`): familjen `troll_kin`
+  med artregeln Trollhud (en förmåga stoppar läkningen, `troll_scorched`), sju troll med var sin egen förmåga och trofé, bossen
+  Bergakungen Grumse (Stenhjärta). Modellerna `troll*.glb` ur Drakvalvets ogre, färgade per troll med `colors`.
 - **Död:** en död figurs egenskaper slutar verka, även Paladinens kall, och verkar igen när den väcks.
 - **Stats och skada** (0.13, som Siralim): Health, Attack, Intelligence, Defense, Speed. Attack =
   (max(Atk − Def, 0) + 1 % Atk) × mod, Spell = max(Int × nivå − Def, 0) × mod, Indirect = × mod − 20 % Def.
@@ -286,6 +289,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   ALLA AUTO, ett tryck på en hjältes ram byter den hjälten (`battle.gd` `_auto_heroes`); passar ingen rad väntar hjälten.
   Knappen MAKRON i striden öppnar redigeraren ovanpå den pausade striden (`macro_screen` `embedded`; ändringarna gäller
   direkt; `--battle-macros`).
+  **Radeditorn** (0.30.24, VD): ett sökfält filtrerar alla fyra kolumnerna (alla ord måste finnas; det valda syns alltid),
+  villkoren har grupper (Vanliga, Liv, Status, Egenskaper, Charges, Artefakt, Alla; Vanliga utan de hundratals
+  egenskaperna), högre rader och en bred rullningslist. `--macros "--macro-search=liv 30"` för skärmdumpar.
   **Spara som order** (0.30, prototyp): väljer spelaren själv något som makrot inte hade valt (en helning på en skadad,
   eller en förmåga mot en status den slår hårdare mot) visar striden en guldknapp i 9 sekunder som lägger en sådan rad
   överst i hjältens makro (`battle.gd` `_offer_order`, `_save_order`; `--offer-order`).

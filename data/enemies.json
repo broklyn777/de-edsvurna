@@ -1669,5 +1669,366 @@
 			"trait": "order_rule",
 			"min_depth": 1
 		}
+	},
+	"moss_troll": {
+		"name": "Mossrygg",
+		"family": "troll_kin",
+		"color": "#6f8f4a",
+		"stats": {
+			"health": 60,
+			"attack": 12,
+			"intelligence": 6,
+			"defense": 2,
+			"speed": 7
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "troll_club_swing",
+		"traits": [
+			"troll_hide",
+			"troll_moss"
+		],
+		"rules": [
+			{
+				"ability": "moss_throw"
+			}
+		],
+		"visual": {
+			"model": "troll_mossrygg",
+			"scale": 1.0,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"cast": "Spell_Simple_Shoot"
+			},
+			"colors": {
+				"Troll_Skin": "#6f9a48",
+				"Troll_Green": "#6f9a48",
+				"Troll_SkinDark": "#4f7a34",
+				"Troll_Black": "#4f7a34",
+				"Troll_Grey": "#4f7a34",
+				"Troll_LightGreen": "#8cb860",
+				"Troll_Moss": "#3f9a3a",
+				"Troll_MossLight": "#a8d65a",
+				"Troll_Brown": "#5a3d22",
+				"Troll_Brown2": "#7a5230",
+				"Troll_EyeGlint": "#ffe066"
+			}
+		},
+		"trophy": "moss_cloak"
+	},
+	"porridge_troll": {
+		"name": "Gröt-Gudrun",
+		"family": "troll_kin",
+		"color": "#c8a070",
+		"stats": {
+			"health": 52,
+			"attack": 11,
+			"intelligence": 10,
+			"defense": 1.5,
+			"speed": 8
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "troll_ladle",
+		"traits": [
+			"troll_hide",
+			"porridge_greed"
+		],
+		"rules": [
+			{
+				"ability": "hot_porridge"
+			}
+		],
+		"visual": {
+			"model": "troll_slev",
+			"scale": 0.95,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"cast": "Spell_Simple_Shoot"
+			},
+			"colors": {
+				"Troll_Skin": "#d0a080",
+				"Troll_Green": "#d0a080",
+				"Troll_SkinDark": "#a87a5c",
+				"Troll_Black": "#a87a5c",
+				"Troll_Grey": "#a87a5c",
+				"Troll_LightGreen": "#e4b898",
+				"Troll_Brown": "#b8463c",
+				"Troll_Brown2": "#efe3c4",
+				"Troll_Strap": "#7a4a2a",
+				"Troll_EyeGlint": "#ffcf70"
+			}
+		},
+		"trophy": "porridge_bowl"
+	},
+	"grumpy_troll": {
+		"name": "Grinig-Gunnar",
+		"family": "troll_kin",
+		"color": "#7a6a5a",
+		"stats": {
+			"health": 56,
+			"attack": 12,
+			"intelligence": 8,
+			"defense": 2,
+			"speed": 8
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "troll_club_swing",
+		"traits": [
+			"troll_hide",
+			"troll_envy"
+		],
+		"rules": [
+			{
+				"ability": "sour_glare"
+			}
+		],
+		"visual": {
+			"model": "troll",
+			"scale": 1.0,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"cast": "Spell_Simple_Shoot"
+			},
+			"colors": {
+				"Troll_Skin": "#7a8aa8",
+				"Troll_Green": "#7a8aa8",
+				"Troll_SkinDark": "#56647e",
+				"Troll_Black": "#56647e",
+				"Troll_Grey": "#56647e",
+				"Troll_LightGreen": "#93a2be",
+				"Troll_Brown": "#2f3f63",
+				"Troll_Brown2": "#4a5a80",
+				"Troll_EyeGlint": "#ff5a3a"
+			}
+		},
+		"trophy": "envy_stone"
+	},
+	"club_troll": {
+		"name": "Klubb-Kalle",
+		"family": "troll_kin",
+		"color": "#8a7a60",
+		"stats": {
+			"health": 58,
+			"attack": 14,
+			"intelligence": 5,
+			"defense": 2,
+			"speed": 7
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "troll_club_swing",
+		"traits": [
+			"troll_hide",
+			"troll_club"
+		],
+		"rules": [
+			{
+				"ability": "ground_slam"
+			}
+		],
+		"visual": {
+			"model": "troll",
+			"scale": 1.05,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"cast": "Spell_Simple_Shoot"
+			},
+			"colors": {
+				"Troll_Skin": "#c08c48",
+				"Troll_Green": "#c08c48",
+				"Troll_SkinDark": "#946a30",
+				"Troll_Black": "#946a30",
+				"Troll_Grey": "#946a30",
+				"Troll_LightGreen": "#d6a660",
+				"Troll_Brown": "#6a3a1a",
+				"Troll_Brown2": "#8a4a22",
+				"Troll_Wood": "#c89a62",
+				"Troll_EyeGlint": "#ffd060"
+			}
+		},
+		"trophy": "kalles_club"
+	},
+	"bridge_troll": {
+		"name": "Brom, broarnas väktare",
+		"rank": "miniboss",
+		"family": "troll_kin",
+		"color": "#5a6a7a",
+		"stats": {
+			"health": 120,
+			"attack": 15,
+			"intelligence": 8,
+			"defense": 3,
+			"speed": 8
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "toll_strike",
+		"traits": [
+			"troll_hide",
+			"bridge_toll"
+		],
+		"rules": [
+			{
+				"ability": "bridge_toll"
+			}
+		],
+		"visual": {
+			"model": "troll",
+			"scale": 1.3,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"cast": "Spell_Simple_Shoot"
+			},
+			"colors": {
+				"Troll_Skin": "#5f8a8e",
+				"Troll_Green": "#5f8a8e",
+				"Troll_SkinDark": "#3e6266",
+				"Troll_Black": "#3e6266",
+				"Troll_Grey": "#3e6266",
+				"Troll_LightGreen": "#7aa4a8",
+				"Troll_Brown": "#2a3a50",
+				"Troll_Brown2": "#3a4c66",
+				"Troll_Strap": "#d0a840",
+				"Troll_EyeGlint": "#ffe680"
+			}
+		},
+		"trophy": "toll_buckle"
+	},
+	"troll_mother": {
+		"name": "Trollmor Gråluva",
+		"rank": "elite",
+		"family": "troll_kin",
+		"color": "#9a9aa8",
+		"stats": {
+			"health": 70,
+			"attack": 9,
+			"intelligence": 15,
+			"defense": 2,
+			"speed": 9
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "knitting_needles",
+		"traits": [
+			"troll_hide",
+			"troll_lullaby"
+		],
+		"rules": [
+			{
+				"ability": "grey_lullaby"
+			}
+		],
+		"visual": {
+			"model": "troll",
+			"scale": 0.95,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"cast": "Spell_Simple_Shoot"
+			},
+			"hide": [
+				"Troll_Club"
+			],
+			"colors": {
+				"Troll_Skin": "#a898c0",
+				"Troll_Green": "#a898c0",
+				"Troll_SkinDark": "#7e6f98",
+				"Troll_Black": "#7e6f98",
+				"Troll_Grey": "#7e6f98",
+				"Troll_LightGreen": "#c0b2d4",
+				"Troll_Brown": "#6a4a8a",
+				"Troll_Brown2": "#9a7ac0",
+				"Troll_Strap": "#e8d8b0",
+				"Troll_EyeGlint": "#c8f0ff"
+			}
+		},
+		"trophy": "grey_shawl"
+	},
+	"mountain_king": {
+		"name": "Bergakungen Grumse",
+		"family": "troll_kin",
+		"color": "#8a8a90",
+		"stats": {
+			"health": 260,
+			"attack": 16,
+			"intelligence": 12,
+			"defense": 4,
+			"speed": 7
+		},
+		"crit_chance": 0.05,
+		"attack_ability": "mountain_club",
+		"traits": [
+			"resistant",
+			"troll_hide",
+			"stone_heart"
+		],
+		"rules": [
+			{
+				"ability": "mountain_wrath"
+			}
+		],
+		"boss": true,
+		"boss_text": "Resistent. Stenhjärta: tar mycket mindre skada om sällskapet gör samma sorts handling två gånger i rad. Bergets vrede var tredje tur.",
+		"visual": {
+			"model": "troll_grumse",
+			"scale": 1.2,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"cast": "Spell_Simple_Shoot"
+			},
+			"colors": {
+				"Troll_Skin": "#8e8c86",
+				"Troll_Green": "#8e8c86",
+				"Troll_LightGreen": "#a6a49c",
+				"Troll_CrownRim": "#e0b84a",
+				"Troll_EyeGlint": "#7fd8ff",
+				"Troll_Strap": "#6a5a48"
+			}
+		},
+		"trophy": "mountain_crown"
 	}
 }

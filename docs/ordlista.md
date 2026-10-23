@@ -125,7 +125,7 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Livvakt | `guard_family` i traits.json, händelsen `guarded`, `calc.guarded` | bodyguard-traits (Sandstone Imler) | Kultens förman tar 50 % av den färdiga skadan mot andra ur kulten. |
 | Läkning (Grumlad välsignelse), Förhör, Struntar i Defense | villkoren `target_in_family`, `self_family`, `self_not_acted`, `unit_repeated_ability`, regeln `self_last_attacked`, modifieraren `ignore_defense` | – | 0.28: kapellets villkor och Lansspetsen. |
 | Elitgrupp | `elite_group` i encounters.json, `elite_pools` i realms.json | – (vårt val) | En grupp med en elitfiende i rollen; ingen påtvingad elitvariant. Första våningens elit i kryptan är Kolossens vakt. |
-| Familj, Benfolket, Kultens folk, De fallna | `family` i enemies.json (bone_kin, cult_kin, fallen_kin), `CombatSim.family_count()` | Race (Undead …) | Ingen gemensam egenskap, som i Siralim: medlemmarnas egna egenskaper räknar familjen. |
+| Familj, Benfolket, Kultens folk, De fallna, Trollfolket | `family` i enemies.json (bone_kin, cult_kin, fallen_kin, troll_kin), `CombatSim.family_count()` | Race (Undead …) | Ingen gemensam egenskap, som i Siralim: medlemmarnas egna egenskaper räknar familjen. |
 | Motdrag | `counter` i enemies.json, `CombatSim.counter_for()`, `"counter": true` i traits.json | counter-trait (Satyr Guardian …) | Högst ett per grupp, bara i elitgrupper och bossmöten, från ett visst djup. Kryptan: Sista klangen, Dimmans tyngd, Sista vaktens ilska. Kapellet: Ordensregeln (`limit_enemy_heals`, händelsen `heal_blocked`), Skrattande låga. |
 | Dimmig | dulled (`int_mult`) | – (Dragon Revenants sänkning) | −20 % Intelligence i 2 turer. |
 | Resistent | resistant, `CombatUnit.resistant` | Resistant | Bara statusarna med en Resistant-version verkar svagare på bossen (Blöder, Frusen, Tystad, Hånad, Sover, Snärjd, Förstenad); andra debuffar verkar fullt. |
@@ -195,3 +195,5 @@ Källa: `docs/research/siralim.md`.
 | Hoppa över tur | skip | skip turn |
 | Den som matchade | that_unit | that creature |
 | Förklaring | macro log | – (vårt tillägg) |
+| Trollhud, Svedd hud | `troll_hide` i traits.json, auran `troll_scorched` (`no_heal`), villkoret `source_used_ability` | – (vårt val, research K) | En träff från en förmåga stoppar trollets läkning till efter dess nästa tur. |
+| Stenhjärta | `stone_heart`, villkoret `source_repeats_team_action`, `CombatSim.team_repeats()` | – | Bergakungen tar 60 % mindre skada när sällskapet gör samma sorts handling två gånger i rad. |

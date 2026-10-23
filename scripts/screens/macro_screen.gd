@@ -29,6 +29,13 @@ var _edit_line := {}
 var _lists := {}
 var _options := {}
 var _preview: Label
+## 0.30.24: sökfältet och villkorens grupper i radeditorn (VD: listan var för lång att rulla i).
+var _search: LineEdit
+var _group := "common"
+var _group_buttons := {}
+var _shown := {}  # kolumn → index i _options som syns
+const COND_GROUPS := [["common", "Vanliga"], ["hp", "Liv"], ["status", "Status"], ["trait", "Egenskaper"],
+		["charges", "Charges"], ["artifact", "Artefakt"], ["all", "Alla"]]
 
 
 func _ready() -> void:
@@ -52,6 +59,11 @@ func _ready() -> void:
 	_refresh_all()
 	if "--edit-line" in OS.get_cmdline_user_args():  # utvecklarflagga för skärmdumpar
 		_open_editor(0)
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--macro-search="):  # 0.30.24: sökningen ifylld (skärmdumpar)
+			_open_editor(0)
+			_search.text = arg.get_slice("=", 1)
+			_apply_filter()
 
 
 func _done() -> void:
@@ -159,7 +171,7 @@ func _build() -> void:
 
 func _build_editor() -> Control:
 	var shade := ColorRect.new()
-	shade.color = Color(0.03, 0.025, 0.045, 0.98)
+	shade.color = Color(0.03, 0.025, 0.045, 1.0)
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	shade.mouse_filter = Control.MOUSE_FILTER_STOP
 	var margin := MarginContainer.new()
@@ -174,7 +186,17 @@ func _build_editor() -> Control:
 	title.text = "REDIGERA RAD"
 	title.add_theme_font_size_override("font_size", 26)
 	title.add_theme_color_override("font_color", UiStyle.GOLD)
-	col.add_child(title)
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 12)
+	col.add_child(top)
+	top.add_child(title)
+	_search = LineEdit.new()
+	_search.placeholder_text = "Sök, t.ex. liv 30, förgiftad, mossa …"
+	_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_search.clear_button_enabled = true
+	_search.add_theme_font_size_override("font_size", 20)
+	_search.text_changed.connect(func(_t: String) -> void: _apply_filter())
+	top.add_child(_search)
 	var cols := HBoxContainer.new()
 	cols.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	cols.add_theme_constant_override("separation", 10)
@@ -185,12 +207,27 @@ func _build_editor() -> Control:
 		box.size_flags_stretch_ratio = 1.4 if key == "cond" or key == "action" else 1.0
 		cols.add_child(box)
 		box.add_child(_header({"subject": "OM …", "cond": "VILLKOR", "action": "HANDLING", "target": "MÅL"}[key]))
+		if key == "cond":
+			var groups := HFlowContainer.new()
+			groups.add_theme_constant_override("h_separation", 4)
+			groups.add_theme_constant_override("v_separation", 4)
+			box.add_child(groups)
+			for g in COND_GROUPS:
+				var b := Button.new()
+				b.text = g[1]
+				b.toggle_mode = true
+				b.add_theme_font_size_override("font_size", 15)
+				b.pressed.connect(_set_group.bind(g[0]))
+				groups.add_child(b)
+				_group_buttons[g[0]] = b
 		# Listan växer på höjden inuti en ScrollContainer, så att den går att dra med fingret.
 		var scroll := ScrollContainer.new()
 		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.scroll_deadzone = 8  # ett drag rullar, ett tryck väljer
 		box.add_child(scroll)
 		var list := ItemList.new()
+		list.add_theme_constant_override("v_separation", 10)  # högre rader, lättare att träffa
 		list.auto_height = true
 		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		list.add_theme_font_size_override("font_size", 18)
@@ -424,18 +461,82 @@ func _fill_lists() -> void:
 	for t in MacroRunner.TARGETS:
 		targets.append({"label": _cap(MacroRunner.target_name(t)), "target": t})
 	_options = {"subject": subjects, "cond": conds, "action": actions, "target": targets}
+	_search.text = ""
+	var sel: Dictionary = {}
+	for o in conds:
+		if _matches_option("cond", o):
+			sel = o
+	_group = "common" if sel.is_empty() or _cond_group(sel.cond) in ["common", "hp"] else _cond_group(sel.cond)
+	_apply_filter()
+	_update_preview()
+
+
+## Villkorets grupp (knapparna ovanför kolumnen). "common" är allt utom de långa listorna med egenskaper och statusar.
+static func _cond_group(cond: String) -> String:
+	if cond in ["hp_below", "hp_above", "lowest_hp"]:
+		return "hp"
+	if cond in ["has_status", "lacks_status"]:
+		return "status"
+	if cond in ["has_trait", "lacks_trait"]:
+		return "trait"
+	if cond == "has_charges":
+		return "charges"
+	if cond in ["has_artifact", "lacks_artifact"]:
+		return "artifact"
+	return "common"
+
+
+func _set_group(group: String) -> void:
+	_group = group
+	_apply_filter()
+
+
+## Sökordet för jämförelser: små bokstäver, utan tecken som %, < och >.
+static func _norm(text: String) -> String:
+	var out := text.to_lower()
+	for ch in ["%", "<", ">", "(", ")", ":", "→", ",", "."]:
+		out = out.replace(ch, " ")
+	return out
+
+
+## Visar det som passar sökningen (alla ord måste finnas) och, i villkorskolumnen, gruppen. Det valda syns alltid.
+## Med en sökning visas villkor ur alla grupper.
+func _apply_filter() -> void:
+	var words := _norm(_search.text).split(" ", false)
+	for g in _group_buttons:
+		(_group_buttons[g] as Button).set_pressed_no_signal(g == _group and words.is_empty())
 	for key in _options:
 		var list: ItemList = _lists[key]
 		list.clear()
-		var selected := -1
+		_shown[key] = []
 		for i in _options[key].size():
 			var o: Dictionary = _options[key][i]
-			list.add_item(o.label)
-			if _matches_option(key, o):
-				selected = i
-		if selected >= 0:
-			list.select(selected)
-	_update_preview()
+			var chosen := _matches_option(key, o)
+			var ok := true
+			if not words.is_empty():
+				var label := _norm(o.label)
+				for w in words:
+					if not label.contains(w):
+						ok = false
+						break
+				# En sökning som inte gäller den här kolumnen (t.ex. "förgiftad" för Handling) lämnar den orörd.
+				if not ok and not _options[key].any(func(x: Dictionary) -> bool: return _all_words(_norm(x.label), words)):
+					ok = true
+			elif key == "cond" and _group != "all":
+				var g := _cond_group(o.cond)
+				ok = g == _group or (_group == "common" and g == "hp")
+			if ok or chosen:
+				_shown[key].append(i)
+				list.add_item(o.label)
+				if chosen:
+					list.select(list.item_count - 1)
+
+
+static func _all_words(label: String, words: PackedStringArray) -> bool:
+	for w in words:
+		if not label.contains(w):
+			return false
+	return true
 
 
 func _values_for(cond: String) -> Array:
@@ -479,14 +580,17 @@ func _matches_option(key: String, o: Dictionary) -> bool:
 		"subject":
 			return o.subject == _edit_line.subject
 		"cond":
-			return o.cond == _edit_line.cond and str(o.value) == str(_edit_line.get("value", 0))
+			var v: Variant = _edit_line.get("value", 0)
+			if (typeof(v) == TYPE_FLOAT or typeof(v) == TYPE_INT) and (typeof(o.value) == TYPE_FLOAT or typeof(o.value) == TYPE_INT):
+				return o.cond == _edit_line.cond and is_equal_approx(float(o.value), float(v))  # JSON ger 0.0, listan 0
+			return o.cond == _edit_line.cond and str(o.value) == str(v)
 		"action":
 			return o.action == _edit_line.action and o.ability == _edit_line.get("ability", "")
 	return o.target == _edit_line.get("target", "that")
 
 
 func _on_pick(index: int, key: String) -> void:
-	var o: Dictionary = _options[key][index]
+	var o: Dictionary = _options[key][_shown[key][index]]
 	match key:
 		"subject":
 			_edit_line.subject = o.subject
@@ -563,4 +667,20 @@ func _make_theme() -> Theme:
 	t.set_stylebox("panel", "ItemList", panel)
 	t.set_stylebox("normal", "LineEdit", normal)
 	t.set_color("font_selected_color", "ItemList", UiStyle.GOLD)
+	# 0.30.24: en bred rullningslist som går att dra med tummen.
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(0.12, 0.11, 0.15)
+	track.content_margin_left = 11
+	track.content_margin_right = 11
+	var grab := StyleBoxFlat.new()
+	grab.bg_color = Color(UiStyle.TRAIT_GOLD, 0.55)
+	grab.set_corner_radius_all(6)
+	grab.content_margin_left = 11
+	grab.content_margin_right = 11
+	var grab_hi := grab.duplicate()
+	grab_hi.bg_color = Color(UiStyle.GOLD, 0.85)
+	t.set_stylebox("scroll", "VScrollBar", track)
+	t.set_stylebox("grabber", "VScrollBar", grab)
+	t.set_stylebox("grabber_highlight", "VScrollBar", grab_hi)
+	t.set_stylebox("grabber_pressed", "VScrollBar", grab_hi)
 	return t
