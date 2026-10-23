@@ -124,6 +124,27 @@ static func to_world(p: Vector2) -> Vector3:
 	return Vector3(p.x * WORLD_SCALE, 0, p.y * WORLD_SCALE)
 
 
+## Hur långt sällskapet flyttas bakåt i bilden (uppåt på skärmen), så att ringen under den som har turen inte
+## hamnar bakom MAKROLOGG nere till vänster. Bara utseende.
+const PARTY_LIFT := Vector2(45, -60)
+
+
+## Uppställningen (bara utseende): den med högst Defense står närmast fienderna (CombatSim.HERO_SLOTS[0]), sedan
+## fallande; lika behåller sin ordning. Stridens logik, tidslinjen och ramarna till vänster rörs inte.
+## Ger hjälte-id → plats på golvet (samma enheter som CombatUnit.position).
+static func formation(heroes: Array) -> Dictionary:
+	var order := range(heroes.size())
+	order.sort_custom(func(a: int, b: int) -> bool:
+		var da: float = heroes[a].defense_now()
+		var db: float = heroes[b].defense_now()
+		return da > db or (da == db and a < b))
+	var spots := {}
+	for rank in order.size():
+		var slot: Vector2 = CombatSim.HERO_SLOTS[mini(rank, CombatSim.HERO_SLOTS.size() - 1)]
+		spots[heroes[order[rank]].id] = slot + PARTY_LIFT
+	return spots
+
+
 ## Frigör den delade vapenmodellen och lånade figurer när striden stängs.
 static func free_shared() -> void:
 	if _weapon_kit:
@@ -371,7 +392,23 @@ func _play(anim_name: String, blend: float, speed := 1.0) -> void:
 
 func _play_oneshot(anim_name: String, blend: float, speed := 1.0) -> void:
 	_oneshot = true
-	_play(anim_name, blend, speed)
+	_play(_once(anim_name), blend, speed)
+
+
+## En engångsrörelse måste ta slut för att figuren ska gå tillbaka till vilan. Används samma animation också som
+## loop (Alvas Spell_Simple_Shoot är både anfall och kast; block är både vila under Försvara och träff), spelas en
+## kopia utan loop; annars viftade hon med armarna resten av striden.
+func _once(anim_name: String) -> String:
+	if not _player.has_animation(anim_name) and anim_name.ends_with("_Loop"):
+		anim_name = anim_name.trim_suffix("_Loop")
+	if not _player.has_animation(anim_name) or _player.get_animation(anim_name).loop_mode == Animation.LOOP_NONE:
+		return anim_name
+	var once := anim_name + "__once"
+	if not _player.has_animation(once):
+		var copy: Animation = _player.get_animation(anim_name).duplicate()
+		copy.loop_mode = Animation.LOOP_NONE
+		_player.get_animation_library("").add_animation(once, copy)
+	return once
 
 
 func _idle(blend: float) -> void:

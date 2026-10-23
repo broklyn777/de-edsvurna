@@ -198,6 +198,7 @@ func _build_scene() -> void:
 	world = CryptWorld.new()
 	world.style = data.realms.get(run.state.realm, {}).get("style", "crypt")
 	add_child(world)
+	var spots := UnitModel.formation(sim.heroes)  # sköldarna längst fram, bara utseende
 	for u in sim.units:
 		var vis: Dictionary = (data.heroes[u.id] if u.team == 0 else data.enemies[u.kind]).visual
 		if u.elite:
@@ -219,6 +220,8 @@ func _build_scene() -> void:
 		var m := UnitModel.new()
 		world.add_child(m)
 		m.setup(u, sim, vis)
+		if spots.has(u.id):
+			m.position = UnitModel.to_world(spots[u.id])
 		m.sfx = sfx
 		models[u.id] = m
 	for team in [0, 1]:

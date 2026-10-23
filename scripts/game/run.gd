@@ -256,6 +256,10 @@ func _dev_args() -> void:
 					profile.add_trophy(data.enemies[kind].trophy)
 			if not profile.collection.is_empty():
 				profile.wear("imma", profile.collection[0])
+			# och samma sällskap i körningen, så att --all-companions --floor=0 visar fyra hjältar i striden
+			state.party = profile.party.duplicate()
+			state.owned_heroes = profile.recruited.size() + 1
+			state.fill_charges(data)
 		elif arg == "--new-profile":
 			# --new-profile: börja som en ny spelare (sparas inte): Paladinen och Brokk
 			dev_profile = true
