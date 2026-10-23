@@ -25,3 +25,10 @@ Båda chattarna landade i samma riktning: **världen svarar på bygget**. Claude
 **Stora, senare (efter den levande kartan eller en kartform):** vägar som ändras (nr 1, beror på grotta eller stigkarta),
 fiender som minns (nr 3, risk att straffa framgång – begränsat och synligt), sömmar (nr 2, bra för fyra hjältar men
 svårt att visa), trofé på slagfältet (nr 4, kräver dubbelsidiga troféer), andra stridsmål (nr 5, makrona måste förstå dem).
+
+## Andra körningen (2026-10-23)
+ChatGPT gav i stort sett samma svar igen: samma fem bästa i samma ordning, samma satsning (familjerna förändrar vägarna)
+och samma nummer på fingeravtrycket (25), det misslyckade makrot (12), fiendens order (8) och bossens regel (30).
+Nya smådetaljer: sällskapets refräng (en handlingsföljd över tre hjältar), reträtten som spärrar en passage, fanan som
+fysisk bärare av familjens regel, dra en räddningslina mellan två hjältar. Slutsats: ChatGPT minns projektet eller den
+förra chatten, så en omkörning ger ingen ny kreativitet – byt chatt utan projekt, eller byt ämne helt.
