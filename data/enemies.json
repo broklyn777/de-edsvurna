@@ -397,7 +397,8 @@
 			{
 				"ability": "defend",
 				"if": {
-					"self_hp_below": 0.6
+					"self_hp_below": 0.6,
+					"self_last_attacked": true
 				}
 			}
 		],
@@ -1259,7 +1260,8 @@
 			{
 				"ability": "defend",
 				"if": {
-					"self_hp_below": 0.5
+					"self_hp_below": 0.5,
+					"self_last_attacked": true
 				}
 			}
 		],
@@ -1517,7 +1519,8 @@
 			{
 				"ability": "defend",
 				"if": {
-					"self_hp_below": 0.3
+					"self_hp_below": 0.3,
+					"self_last_attacked": true
 				}
 			}
 		],

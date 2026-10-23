@@ -317,3 +317,16 @@ func test_ragnhild_grace() -> void:
 	var grace := sim.unit("ragnhild").stat("intelligence") * 0.12
 	assert_true(brokk.hp > 5.0, "den svagaste helades")
 	assert_near(brokk.hp, 5.0 + roundf(grace), 1.0, "med 12 % av Ragnhilds Intelligence")
+
+
+## 0.30.19: den som försvarar sig vid lågt liv gör det varannan tur (karriärens dödläge mot Asketen, frö 30).
+func test_low_health_defenders_alternate_with_attacks() -> void:
+	var sim := _sim("chapel_e4", {}, 2)
+	var asc := _enemy(sim, "ascetic")
+	asc.hp = asc.max_hp * 0.1
+	asc.last_ability = asc.attack_ability
+	sim._choose_intent(asc)
+	assert_eq(asc.intent.ability, "defend", "efter ett anfall försvarar hen sig")
+	asc.last_ability = "defend"
+	sim._choose_intent(asc)
+	assert_eq(asc.intent.ability, asc.attack_ability, "efter att ha försvarat sig anfaller hen")
