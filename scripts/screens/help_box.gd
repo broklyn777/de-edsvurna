@@ -54,6 +54,7 @@ static func offer_custom(host: Node, id: String, e: Dictionary, pause := false) 
 func _ready() -> void:
 	layer = 60
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group(&"stops_playtime")  # speltiden står still medan rutan läses
 	_view = Control.new()
 	_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_view.mouse_filter = Control.MOUSE_FILTER_STOP

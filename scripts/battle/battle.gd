@@ -352,6 +352,9 @@ func _process(delta: float) -> void:
 			if _dev_combo_first and pal_unit != null:
 				pal_unit.speed = 9999.0  # överst på tidslinjen; snabbheten återställs när ordningen är lagd
 			sim.begin()
+			# Speltiden: striden räknas från första turen (inte i Övningsgården).
+			if not run.state.practice and run.state.map != null:
+				run.playtime.start_battle(Playtime.battle_kind(run.state.current_room(), run.state.is_last_floor()))
 			if _dev_combo_first and pal_unit != null:
 				pal_unit.speed = pal_speed
 			if _dev_exhaust > 0:
@@ -1122,6 +1125,7 @@ func _on_revive(unit_id: String) -> void:
 
 
 func _on_outcome(result: String) -> void:
+	run.playtime.end_battle(result == "victory", sim.turn_no, sim.forfeited)  # speltiden: striden är slut
 	action_bar.visible = false
 	forfeit_chip.visible = false
 	macro_chip.visible = false

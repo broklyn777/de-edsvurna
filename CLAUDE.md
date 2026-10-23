@@ -174,6 +174,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`user://settings.cfg`, ljudkanalerna "Music" och "Sfx" som `Sfx` och figurernas kastljud använder; 0 % stänger av)
   och rumsögonblicken (profilens). Knappen INSTÄLLNINGAR under ‹ PROFILER i borgen och LJUD i striden (pausar).
   `--settings` öppnar rutan i borgen eller striden.
+  **Speltid** (`src/game/playtime.gd`, `Playtime`, `Run.playtime`): aktiv tid per strid (första turen till resultatet),
+  våning och nedstigning (kampanjkartan till hemma: boss, förlust, GE UPP, GÅ HEM), i verklig tid; klockan står still i
+  bakgrunden, när trädet är pausat och när en ruta i gruppen `stops_playtime` är öppen (hjälprutan, inställningarna).
+  Övningsgården räknas inte. `user://playtime.cfg` för alla profiler (senaste 200 strider, 50 körningar; en pågående
+  körning per sparplats räknar vidare efter omstart). Snitten och NOLLSTÄLL SPELTID i inställningsrutan; `--playtime-demo`
+  visar påhittade siffror och sparar inte. Tester: `tests/test_playtime.gd`.
 - **Löften** (0.30.17, prov, `docs/plan/loften.md`, `data/vows.json`): på kampanjkartan (LÖFTE bredvid FÖRBEREDELSER,
   efter introt, `Profile.vow`) lovar Paladinen något för hela körningen. Hållet ger en egenskap hos Paladinen och silver;
   brutet blir det en ödmjukare form (`RunState.vow`, `vow_broken`, `vow_trait`, `vow_after_battle`, `is_common_group`).

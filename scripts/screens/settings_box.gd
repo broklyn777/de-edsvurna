@@ -2,17 +2,19 @@ class_name SettingsBox
 extends CanvasLayer
 ## Inställningarna (0.30): musikens och ljudeffekternas volym (för hela spelet, GameSettings) och rumsögonblicken
 ## (profilens). Läggs ovanpå borgen eller striden; i striden pausas spelet medan rutan är öppen. Tryck eller dra på en
-## stapel för att ändra, KLAR sparar och stänger.
+## stapel för att ändra, KLAR sparar och stänger. Under dem står speltiden (Playtime): snitt per strid och nedstigning,
+## med NOLLSTÄLL SPELTID (och en bekräftelse). Klockan står still medan rutan är öppen.
 
 signal closed
 
-const W := 620.0
-const H := 380.0
+const W := 680.0
+const H := 520.0
 const STEPS := 10
 
 var pause_tree := false
 var _view: Control
 var _drag := ""  # "music" | "sfx" medan fingret drar på en stapel
+var _confirm_reset := false  # frågan om att nollställa speltiden visas
 
 
 static func open(host: Node, pause := false) -> SettingsBox:
@@ -25,6 +27,7 @@ static func open(host: Node, pause := false) -> SettingsBox:
 func _ready() -> void:
 	layer = 61
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group(&"stops_playtime")
 	_view = Control.new()
 	_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_view.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -55,6 +58,15 @@ func _moments_rect() -> Rect2:
 	return Rect2(r.position.x + 40, r.position.y + 244, W - 80, 44)
 
 
+## Speltidens knapp (eller JA/AVBRYT i bekräftelsen: i = 0 och 1).
+func _reset_rect(i := -1) -> Rect2:
+	var r := _panel()
+	var y := r.position.y + 382
+	if i < 0:
+		return Rect2(r.position.x + (W - 300) / 2.0, y, 300, 44)
+	return Rect2(r.position.x + W / 2.0 - 250 + i * 270, y, 230, 44)
+
+
 func _done_rect() -> Rect2:
 	var r := _panel()
 	return Rect2(r.position.x + (W - 200) / 2.0, r.end.y - 66, 200, 46)
@@ -78,6 +90,16 @@ func _input_on(event: InputEvent) -> void:
 			if _moments_rect().has_point(p):
 				_run().profile.room_moments = not _run().profile.room_moments
 				_run().save()
+			elif _confirm_reset and _reset_rect(0).has_point(p):
+				_run().playtime.reset()
+				_confirm_reset = false
+				_run().ui("ui_confirm", -8.0)
+			elif _confirm_reset and _reset_rect(1).has_point(p):
+				_confirm_reset = false
+				_run().ui("ui_back", -12.0)
+			elif not _confirm_reset and _reset_rect().has_point(p):
+				_confirm_reset = true
+				_run().ui("ui_tap", -8.0)
 			elif _done_rect().has_point(p):
 				_close()
 		_view.queue_redraw()
@@ -134,4 +156,25 @@ func _paint() -> void:
 	_view.draw_rect(m, Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)
 	UiStyle.text(_view, m.position + Vector2(0, 29), "RUMSÖGONBLICK I GROTTAN: " + ("PÅ" if _run().profile.room_moments else "AV"),
 			18, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, m.size.x)
+	# Speltiden (alla profiler): snitt per strid och nedstigning, och per typ av strid.
+	var y := r.position.y + 316
+	_view.draw_line(Vector2(r.position.x + 40, y - 18), Vector2(r.end.x - 40, y - 18), Color(UiStyle.GOLD, 0.3), 1.0)
+	if _confirm_reset:
+		UiStyle.text(_view, Vector2(r.position.x, y + 12), "Nollställa all speltid? Det går inte att ångra.", 17,
+				Color(1, 0.85, 0.75), HORIZONTAL_ALIGNMENT_CENTER, W)
+		_small_button(_reset_rect(0), "JA, NOLLSTÄLL", Color(0.55, 0.12, 0.08, 0.95))
+		_small_button(_reset_rect(1), "AVBRYT", Color(0, 0, 0, 0.5))
+	else:
+		var lines: Array[String] = _run().playtime.summary_lines()
+		for i in lines.size():
+			UiStyle.text(_view, Vector2(r.position.x + 30, y + i * 26),
+					UiStyle.fit(lines[i], 17 if i == 0 else 16, W - 60), 17 if i == 0 else 16,
+					Color(1, 1, 1, 0.9 if i == 0 else 0.7), HORIZONTAL_ALIGNMENT_CENTER, W - 60)
+		_small_button(_reset_rect(), "NOLLSTÄLL SPELTID", Color(0, 0, 0, 0.5))
 	UiStyle.big_button(_view, _done_rect(), "KLAR", 0.0)
+
+
+func _small_button(b: Rect2, label: String, fill: Color) -> void:
+	_view.draw_rect(b, fill)
+	_view.draw_rect(b, Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)
+	UiStyle.text(_view, b.position + Vector2(0, 29), label, 17, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, b.size.x)

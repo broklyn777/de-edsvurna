@@ -70,12 +70,17 @@ var room_result := ""
 ## Musik och menyljud, som fortsätter mellan scenerna (striden har egna effektljud).
 var audio: Sfx
 var _ui_frame := -1
+## Speltidsmätningen (Playtime): strider och nedstigningar i aktiv tid, för alla profiler (user://playtime.cfg).
+var playtime := Playtime.new()
+var _focused := true
+var _clock_us := 0
 
 
 func _ready() -> void:
 	data = GameData.load_all()
 	rng.randomize()
 	GameSettings.load_and_apply()  # 0.30: volymen gäller hela spelet
+	playtime = Playtime.make_demo() if "--playtime-demo" in OS.get_cmdline_user_args() else Playtime.load_from()
 	audio = Sfx.new()
 	add_child(audio)
 	SaveSlots.migrate()
@@ -99,6 +104,7 @@ func _use_slot(i: int) -> void:
 ## Sparplatsskärmen väljer en plats: profilen, makrona och körningen laddas därifrån, och spelet fortsätter som
 ## förut (en pågående körning återupptas). En tom plats börjar introt.
 func choose_slot(i: int, new_name := "") -> void:
+	playtime.suspend()  # en körning på den förra platsen väntar i playtime.cfg
 	_use_slot(i)
 	SaveSlots.set_last(i)
 	state = RunState.new()
@@ -198,6 +204,29 @@ func _find_demo() -> void:
 			break
 	ui("find_rare", -2.0)
 	show_rare_finds([{"kind": "nether", "stone": stone}])
+
+
+## Speltidens klocka: verklig tid (inte Engine.time_scale), bara medan spelet är aktivt. Run står still när trädet är
+## pausat; en lucka på mer än en sekund (paus, bakgrund, scenbyte som hakar) räknas inte.
+func _process(_delta: float) -> void:
+	var now := Time.get_ticks_usec()
+	var dt := (now - _clock_us) / 1000000.0
+	_clock_us = now
+	if dt > 1.0 or not _focused or not playtime.active():
+		return
+	if get_tree().get_first_node_in_group(&"stops_playtime") != null:
+		return  # en hjälpruta eller inställningsrutan är öppen
+	playtime.tick(dt)
+
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_WM_CLOSE_REQUEST:
+			_focused = false
+			playtime.save()  # appen kan dödas i bakgrunden
+		NOTIFICATION_APPLICATION_RESUMED, NOTIFICATION_APPLICATION_FOCUS_IN:
+			_focused = true
+			_clock_us = Time.get_ticks_usec()
 
 
 ## Utvecklarargument (efter `--`): --floor=<n> startar striden på våning n (0–2), --depth=<n> väljer
@@ -414,6 +443,7 @@ func start_run(party: Array[String]) -> void:
 	room_result = ""
 	vow_news = ""
 	save_run()
+	playtime.start_run(slot, state.realm, state.depth)  # klockan går tills man är hemma igen
 	get_tree().change_scene_to_file(ROOM_MAP_SCENE)
 
 
@@ -439,6 +469,7 @@ func _clear_run() -> void:
 ## förlorade och Realmen börjar om; det som redan är vunnet (silver, troféer, fynd, erfarenhet) finns kvar.
 func leave_run() -> void:
 	ui("ui_back", -12.0)
+	playtime.finish_run("home")
 	_clear_run()
 	_save()
 	get_tree().change_scene_to_file(BASE_SCENE)
@@ -451,6 +482,7 @@ func _resume_run() -> void:
 		return
 	state = saved
 	state.owned_heroes = profile.recruited.size() + 1  # 0.30.21: körningar sparade före fältet
+	playtime.resume_run(slot, state.floor)  # löptiden fortsätter där den slutade
 	if state.battle_pending:
 		# Appen stängdes under en strid: striden börjar om, som om man just gått in i rummet.
 		get_tree().change_scene_to_file.call_deferred(BATTLE_SCENE)
@@ -506,6 +538,7 @@ func descend() -> void:
 	ui("room_door", -6.0)
 	var trail := _pay_trail()
 	state.next_floor(data)
+	playtime.next_floor()
 	bark("cave")
 	room_result = "Ni går ned till våning %d." % (state.floor + 1) + ("  " + trail if trail != "" else "")
 	save_run()
@@ -817,6 +850,7 @@ func after_camp() -> void:
 			_pay_trail()
 			profile.clear_depth(state.depth, state.realm)
 			state.finished = true
+			playtime.finish_run("boss")
 			_clear_run()
 			_save()
 			get_tree().change_scene_to_file(BASE_SCENE)
@@ -873,6 +907,7 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		# 0.30.16: föll paladinen innan Imma smet efter börjar introts nedstigning om, med en egen kort hemkomst.
 		if Intro.current(data, profile).get("id", "") == "descent" and not profile.recruited.has("imma"):
 			pending_story += Intro.speech(data.intro.get("alone_home", {}).get("lines", []))
+		playtime.finish_run("forfeit" if playtime.last_forfeit else "loss")
 		_clear_run()
 		get_tree().change_scene_to_file(BASE_SCENE)
 		return
