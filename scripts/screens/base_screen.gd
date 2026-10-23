@@ -471,6 +471,8 @@ func _open(station: String) -> void:
 			_rename()
 		"handbook":
 			run.go(run.HANDBOOK_SCENE)
+		"chronicle":
+			run.go(run.CHRONICLE_SCENE)  # krönikan och titlarna (Chronicle)
 		"sheet":
 			run.open_sheet(_lodger, run.profile.recruited, run.BASE_SCENE)
 		"talk_trophies":

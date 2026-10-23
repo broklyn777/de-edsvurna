@@ -187,6 +187,20 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (helningsförmågor går inte att välja, `CombatSim.no_heal`, orsaken "vowed"; Paladinens attacker helar 20 %), Raka vägen
   (högst två vanliga grupper per våning; questens silver dubbelt). Botarna: `BALANS=loften`. `--vow=<id>` före `--map`,
   `--vows` öppnar valet på kampanjkartan.
+- **Krönikan och titlarna** (grenen `kronika`, `src/game/chronicle.gd`, `Chronicle`; VD: "så man känner att man inte är ensam"):
+  `Profile.chronicle` får en kort post per nedstigning (Realm, djup, utfall, bossar, vem som föll, befriade, sällsynta fynd,
+  nya troféer, löftet, kartans ändringar; `RunState.chron` = `Chronicle.begin` i `start_run`, `note_battle`, `note_finds`,
+  `Chronicle.end` i `Run.end_descent(outcome)`, även första nedstigningen) och räknare i `chron_stats` (Realm i rad, segrar
+  och förluster i rad, fall per hjälte, hållna löften …). Hemkomsten: rutan "Medan ni var borta" visar nya titlar och 1–2
+  repliker (`Profile.homecoming`) av den det angår (`dialog.json` "chronicle", `{id, key, who, subject, text}`, `PRIO`):
+  Mor Elin när någon föll, Hedda vid en sällsynt sten, Alrik vid troféer, den befriade första gången hemma, Gorm vid ett nytt
+  djup, Imma vid stora saker och som standard, följeslagare som var med om varandra; mönster (tredje gången i rad, första
+  segern, tre segrar mot en boss, faller ofta, rader); ingen upprepas förrän de andra har sagts (`chron_said`); kartans
+  replik tävlar om platserna (`MAP_PRIO`). Titlar (`data/titles.json`, vårt val, 15 st, `Profile.title`, `titles`,
+  `Chronicle.unlock_titles`; den första bärs direkt); `{titel}` (faller tillbaka till namnet; repliker med `{titel}` väljs
+  bara med en titel). Broder Alrik: "Krönikan och titlarna" (`chronicle_screen`, de senaste 10 i tusch, titlarna att bära).
+  Flaggor: `--chronicle-demo` (påhittad krönika), `--home=fell|boss3|rare|depth` (hemkomstrutan), `--chronicle`,
+  `--title-focus=<id>`. Tester: `tests/test_chronicle.gd`.
 - **Den levande kartan** (prov, grenen `levande-karta`, `docs/plan/levande-karta.md`, `src/game/living_map.gd`; avviker från
   Siralim): varje Realm man har gått ned i har ett fördärv 0–4 (`Profile.growth`, start 1, `growth_rest`, `growth_news`).
   Efter en nedstigning med minst en vunnen strid (`Run.end_descent`, `LivingMap.after_descent`; inte första nedstigningen)

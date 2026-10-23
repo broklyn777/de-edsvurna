@@ -26,6 +26,7 @@ const SLOTS_SCENE := "res://scenes/slots.tscn"
 const HERO_SCENE := "res://scenes/hero.tscn"
 const INN_SCENE := "res://scenes/inn.tscn"
 const HANDBOOK_SCENE := "res://scenes/handbook.tscn"
+const CHRONICLE_SCENE := "res://scenes/chronicle.tscn"
 
 var data: Dictionary
 var state := RunState.new()
@@ -397,6 +398,15 @@ func _dev_args() -> void:
 			profile.descents["crypt"] = maxi(int(profile.descents.get("crypt", 0)), 1)
 			state = RunState.new_practice(profile, data, LivingMap.twisted_encounter(data, "crypt"))
 			get_tree().change_scene_to_file.call_deferred(BATTLE_SCENE)
+		elif arg == "--chronicle-demo":
+			dev_profile = true  # en påhittad krönika med titlar (sparas inte)
+			Chronicle.demo(profile, data)
+		elif arg.begins_with("--home="):
+			dev_profile = true  # --home=fell|boss3|rare|depth: hemkomstrutan på kampanjkartan (sparas inte)
+			Chronicle.demo_home(profile, data, arg.get_slice("=", 1))
+			get_tree().change_scene_to_file.call_deferred(CAMPAIGN_SCENE)
+		elif arg == "--chronicle":
+			get_tree().change_scene_to_file.call_deferred(CHRONICLE_SCENE)  # krönikan och titlarna hos Broder Alrik
 		elif arg == "--descents":
 			profile.descents = {"crypt": 1}  # som efter första nedstigningen (sparas inte om profilen är påhittad)
 		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn", "--handbook"]:
@@ -457,6 +467,8 @@ func start_run(party: Array[String]) -> void:
 	profile.count_home_runs()
 	pending_bark = {}
 	profile.growth_news = {}  # den levande kartan: hemkomstens nyheter är lästa
+	profile.homecoming = {}
+	state.chron = Chronicle.begin(profile, state.party)  # krönikan jämför med profilen när körningen slutar
 	narrate("first_gate")
 	if seen == 0:
 		bark("new_realm")
@@ -473,10 +485,14 @@ func start_run(party: Array[String]) -> void:
 
 ## Den levande kartan (prov): efter en nedstigning (förlust, ge upp, gå hem eller klarad) ändras Realmernas fördärv
 ## (LivingMap.after_descent). Inte i Övningsgården och inte på profilens första nedstigning (introts trappa).
-func end_descent() -> void:
-	if state.practice or state.first_descent or state.finished:
+## Krönikan (Chronicle.end) skriver en post för varje nedstigning, även den första; outcome: boss, loss, forfeit, home.
+func end_descent(outcome := "loss") -> void:
+	if state.practice or state.finished:
 		return
-	LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
+	var changes: Array = []
+	if not state.first_descent:
+		changes = LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
+	Chronicle.end(profile, data, state, outcome, changes)
 
 
 ## Sparar den pågående körningen (user://run.cfg).
@@ -502,7 +518,7 @@ func _clear_run() -> void:
 func leave_run() -> void:
 	ui("ui_back", -12.0)
 	playtime.finish_run("home")
-	end_descent()
+	end_descent("home")
 	_clear_run()
 	_save()
 	get_tree().change_scene_to_file(BASE_SCENE)
@@ -614,6 +630,7 @@ func roll_finds(kind: String) -> Array:
 			profile.next_stone_id += 1
 		state.found[f.kind] = int(state.found.get(f.kind, 0)) + int(f.get("count", 1))
 	profile.add_finds(finds)
+	Chronicle.note_finds(state.chron, finds)
 	_start_find_quest(finds)
 	return finds
 
@@ -820,6 +837,8 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 		h.wins = int(h.wins) + (1 if victory else 0)
 		h.deaths = int(h.deaths) + u.deaths
 		h.revives = int(h.revives) + u.revives
+	if not state.practice:
+		Chronicle.note_battle(state.chron, sim.heroes)
 	for trait_id in sim.trait_stats:
 		var st: Dictionary = sim.trait_stats[trait_id]
 		var tot: Dictionary = state.trait_totals.get(trait_id, {"procs": 0, "damage": 0.0, "heal": 0.0, "unit": st.unit})
@@ -882,7 +901,7 @@ func after_camp() -> void:
 		if state.is_last_floor():
 			_pay_trail()
 			profile.clear_depth(state.depth, state.realm)
-			end_descent()
+			end_descent("boss")
 			state.finished = true
 			playtime.finish_run("boss")
 			_clear_run()
@@ -942,7 +961,7 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		if Intro.current(data, profile).get("id", "") == "descent" and not profile.recruited.has("imma"):
 			pending_story += Intro.speech(data.intro.get("alone_home", {}).get("lines", []))
 		playtime.finish_run("forfeit" if playtime.last_forfeit else "loss")
-		end_descent()
+		end_descent("forfeit" if playtime.last_forfeit else "loss")
 		_save()
 		_clear_run()
 		get_tree().change_scene_to_file(BASE_SCENE)

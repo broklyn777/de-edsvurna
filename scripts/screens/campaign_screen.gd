@@ -64,7 +64,7 @@ var _news_open := false
 func _ready() -> void:
 	super()
 	_vow_open = "--vows" in OS.get_cmdline_user_args()  # 0.30.17: löftesrutan öppen (skärmdumpar)
-	_news_open = not run.profile.growth_news.get("lines", []).is_empty()
+	_news_open = not run.profile.growth_news.get("lines", []).is_empty() or _has_homecoming(run.profile)
 	# 0.25: djup och instabilitet förklaras efter den första nedstigningen (den första hålls enkel).
 	if run.profile.total_descents() > 0:
 		HelpBox.offer(self, ["depth", "instability"])
@@ -121,6 +121,7 @@ func _tap(p: Vector2) -> void:
 	if _news_open:
 		_news_open = false
 		prof.growth_news = {}
+		prof.homecoming = {}
 		run.save("ui_page")
 		queue_redraw()
 		return
@@ -415,17 +416,28 @@ func _draw_growth_marks(realm_id: String, r: Rect2, g: int) -> void:
 		InkArt.skull(self, c, 40.0, Color(0.85, 0.18, 0.15, 0.85))
 
 
-## Hemkomstens ruta: vad som ändrades och varför, och högst en replik (Imma eller Gorm).
+## Krönikan: hemkomstens repliker eller nya titlar (Profile.homecoming).
+static func _has_homecoming(prof: Profile) -> bool:
+	return not prof.homecoming.get("remarks", []).is_empty() or not prof.homecoming.get("titles", []).is_empty()
+
+
+## Hemkomstens ruta: vad som ändrades och varför, nya titlar och högst två repliker. Krönikan (Chronicle.homecoming)
+## väljer repliken (den levande kartans tävlar med krönikans); utan krönikan säger Imma eller Gorm kartans replik.
 func _draw_news(data: Dictionary, prof: Profile) -> void:
 	var news: Dictionary = prof.growth_news
 	var lines: Array = news.get("lines", [])
-	var speaker := String(news.get("speaker", ""))
-	var w := 720.0
+	var remarks: Array = []
+	if prof.homecoming.has("remarks"):
+		remarks = prof.homecoming.remarks
+	elif String(news.get("speaker", "")) != "":
+		remarks = [{"speaker": news.speaker, "text": news.get("text", "")}]
+	var titles: Array = prof.homecoming.get("titles", [])
+	var w := 760.0
 	var x := (size.x - w) / 2.0
 	var body := 0.0
 	for l in lines:
 		body += UiStyle.bold().get_multiline_string_size(String(l), HORIZONTAL_ALIGNMENT_LEFT, w - 64, 17).y + 8
-	var h := 96.0 + body + (120.0 if speaker != "" else 0.0) + 40.0
+	var h := 96.0 + body + 34.0 * titles.size() + 112.0 * remarks.size() + 40.0
 	var b := Rect2(x, (size.y - h) / 2.0, w, h)
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.45))
 	draw_rect(b, Color(0.16, 0.11, 0.07, 0.97))
@@ -435,13 +447,19 @@ func _draw_news(data: Dictionary, prof: Profile) -> void:
 	for l in lines:
 		draw_circle(Vector2(x + 30, y + 10), 3.5, UiStyle.TRAIT_GOLD)
 		y += UiStyle.para(self, Vector2(x + 44, y + 16), String(l), 17, Color(1, 1, 1, 0.9), w - 64) + 8
-	if speaker != "":
+	for t in titles:
+		UiStyle.text(self, Vector2(x + 24, y + 24), "Ny titel: " + Chronicle.title_name(data, t), 20, UiStyle.TRAIT_GOLD,
+				HORIZONTAL_ALIGNMENT_LEFT, w - 48, 3)
+		y += 34
+	for r in remarks:
 		y += 8
+		var speaker := String(r.speaker)
 		var pr := Rect2(x + 24, y, 96, 96)
 		DialogBox.portrait(self, data, speaker, pr)
 		UiStyle.text(self, Vector2(pr.end.x + 16, y + 22), Dialog.display_name(data, speaker), 18, UiStyle.GOLD)
-		UiStyle.para(self, Vector2(pr.end.x + 16, y + 48), Dialog.fill_for(String(news.get("text", "")), prof), 17,
+		UiStyle.para(self, Vector2(pr.end.x + 16, y + 48), Dialog.fill_for(String(r.get("text", "")), prof), 17,
 				Color(1, 1, 1, 0.9), w - 160, 3)
+		y += 104
 	UiStyle.text(self, Vector2(x, b.end.y - 16), "Tryck för att fortsätta", 15, Color(1, 1, 1, 0.55),
 			HORIZONTAL_ALIGNMENT_CENTER, w)
 

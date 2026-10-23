@@ -24,7 +24,7 @@ func test_every_station_has_a_person_and_a_conversation() -> void:
 		assert_eq(opts.back().label, "Avsluta samtalet", "sist kommer Avsluta samtalet")
 		assert_eq(opts.back().open, "")
 		for o in opts.slice(0, opts.size() - 1):
-			assert_true(_data.keep.rooms.has(o.open) or o.open in ["rename", "talk_trophies", "handbook"], "%s öppnar något som finns" % o.label)
+			assert_true(_data.keep.rooms.has(o.open) or o.open in ["rename", "talk_trophies", "handbook", "chronicle"], "%s öppnar något som finns" % o.label)
 		assert_true(Dialog.reply(_data, id) != "", "%s har ett svar när den är stängd" % id)
 
 

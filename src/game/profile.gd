@@ -124,6 +124,16 @@ var growth_rest := {}
 var growth_news := {}
 ## När man senast gick till varje Realm (antal nedstigningar då); den som har legat orörd längst växer.
 var growth_last := {}
+## Krönikan (Chronicle): en kort post per nedstigning (de senaste Chronicle.MAX_ENTRIES), räknare (rader, fall per hjälte,
+## löften …), replikerna som redan har sagts (ingen upprepas förrän de andra med samma villkor har sagts) och hemkomstens
+## repliker och nya titlar (visas en gång i rutan "Medan ni var borta").
+var chronicle: Array = []
+var chron_stats := {}
+var chron_said: Array = []
+var homecoming := {}
+## Titlar (data/titles.json, vårt val): vald titel ("" = ingen) och de upplåsta, i den ordning de förtjänades.
+var title := ""
+var titles: Array = []
 
 
 static func reward(floor: int, at_depth := 1) -> int:
@@ -613,6 +623,12 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "growth_rest", growth_rest)
 	cfg.set_value("progress", "growth_news", growth_news)
 	cfg.set_value("progress", "growth_last", growth_last)
+	cfg.set_value("progress", "chronicle", chronicle)
+	cfg.set_value("progress", "chron_stats", chron_stats)
+	cfg.set_value("progress", "chron_said", chron_said)
+	cfg.set_value("progress", "homecoming", homecoming)
+	cfg.set_value("progress", "title", title)
+	cfg.set_value("progress", "titles", titles)
 	return cfg.save(path)
 
 
@@ -691,5 +707,14 @@ static func load_from(path: String) -> Profile:
 	p.growth_rest = cfg.get_value("progress", "growth_rest", {})
 	p.growth_news = cfg.get_value("progress", "growth_news", {})
 	p.growth_last = cfg.get_value("progress", "growth_last", {})
+	# Krönikan: profiler från före den har ingen logg; titlar som redan är förtjänade låses upp vid nästa hemkomst.
+	p.chronicle = cfg.get_value("progress", "chronicle", [])
+	p.chron_stats = cfg.get_value("progress", "chron_stats", {})
+	p.chron_said = cfg.get_value("progress", "chron_said", [])
+	p.homecoming = cfg.get_value("progress", "homecoming", {})
+	p.titles = cfg.get_value("progress", "titles", [])
+	p.title = String(cfg.get_value("progress", "title", ""))
+	if not p.titles.has(p.title):
+		p.title = ""
 	p.choose_depth(int(cfg.get_value("progress", "depth", 1)))
 	return p

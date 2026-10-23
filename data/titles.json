@@ -1,0 +1,78 @@
+{
+	"_comment": "Titlar (vårt val; om Siralim har spelartitlar är okänt). Förtjänas genom bedrifter i krönikan (Chronicle.title_met) och väljs hos Broder Alrik. cond: boss_wins {fiende: segrar}, realm_depth {Realm: djup}, stat {räknare i Profile.chron_stats: värde}, best_depth, rescued (befriade lärjungar), descents (nedstigningar). Ordningen är visningsordningen.",
+	"alone_first": {
+		"name": "Den som gick ensam ned",
+		"text": "Steg ned i kryptan ensam, med bara eden till sällskap.",
+		"cond": {"stat": {"alone_descents": 1}}
+	},
+	"bone_trapper": {
+		"name": "Benfurstens fälla",
+		"text": "Har fällt Benfursten tre gånger.",
+		"cond": {"boss_wins": {"bone_lich": 3}}
+	},
+	"black_bane": {
+		"name": "Svärtans bane",
+		"text": "Har fällt Den svärtade Benfursten.",
+		"cond": {"boss_wins": {"bone_lich_black": 1}}
+	},
+	"bishop_judge": {
+		"name": "Biskopens domare",
+		"text": "Har fällt Den fallne biskopen tre gånger.",
+		"cond": {"boss_wins": {"fallen_bishop": 3}}
+	},
+	"web_cutter": {
+		"name": "Den som skar väven",
+		"text": "Har fällt Vävmodern tre gånger.",
+		"cond": {"boss_wins": {"web_mother": 3}}
+	},
+	"crypt_light": {
+		"name": "Ljus i kryptan",
+		"text": "Har klarat kryptan på djup 3.",
+		"cond": {"realm_depth": {"crypt": 3}}
+	},
+	"chapel_cleanser": {
+		"name": "Kapellets renare",
+		"text": "Har klarat kapellet på djup 3.",
+		"cond": {"realm_depth": {"chapel": 3}}
+	},
+	"grove_freer": {
+		"name": "Lundens befriare",
+		"text": "Har klarat lunden på djup 3.",
+		"cond": {"realm_depth": {"grove": 3}}
+	},
+	"oath_kept": {
+		"name": "Den som höll eden",
+		"text": "Har hållit ett löfte en hel nedstigning, ända till bossen.",
+		"cond": {"stat": {"vows_kept": 1}}
+	},
+	"oath_rock": {
+		"name": "Edens klippa",
+		"text": "Har hållit fem löften.",
+		"cond": {"stat": {"vows_kept": 5}}
+	},
+	"unbroken": {
+		"name": "Den obrutna",
+		"text": "Fem klarade nedstigningar i rad utan en förlust.",
+		"cond": {"stat": {"best_win_streak": 5}}
+	},
+	"risen": {
+		"name": "Den som reste sig",
+		"text": "Klarade en nedstigning efter tre förluster i rad.",
+		"cond": {"stat": {"comebacks": 1}}
+	},
+	"liberator": {
+		"name": "Fångarnas befriare",
+		"text": "Har befriat fem lärjungar.",
+		"cond": {"rescued": 5}
+	},
+	"deep_walker": {
+		"name": "Djupets vandrare",
+		"text": "Har klarat djup 5.",
+		"cond": {"best_depth": 5}
+	},
+	"returner": {
+		"name": "Den som alltid vänder åter",
+		"text": "Har gått ned tjugofem gånger och kommit hem varje gång.",
+		"cond": {"descents": 25}
+	}
+}

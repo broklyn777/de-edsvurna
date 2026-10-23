@@ -130,6 +130,8 @@ var growth := LivingMap.GROWTH_START
 var twisted := ""
 var wins := 0
 var realm_quest_done := false
+## Krönikan (Chronicle.begin): profilen när körningen började och det som bara striden vet (vem som föll, sällsynta fynd).
+var chron := {}
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -1052,7 +1054,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken", "growth", "twisted",
-		"wins", "realm_quest_done"]
+		"wins", "realm_quest_done", "chron"]
 
 
 func to_dict() -> Dictionary:

@@ -346,6 +346,10 @@
 					"open": "talk_trophies"
 				},
 				{
+					"label": "Krönikan och titlarna",
+					"open": "chronicle"
+				},
+				{
 					"label": "Skriv om mitt namn i krönikan",
 					"open": "rename"
 				}
@@ -2304,6 +2308,481 @@
 		"hedda_no_slot": "Ditt svärd har ingen plats än. Höj det till nivå 2, så öppnar jag den första. Det kostar silver, som allt annat här.",
 		"hedda_slot": "Ditt svärd har en ledig plats. Välj \"Sätt in bärnsten och trick\", så visar jag.",
 		"hedda_reward": "Här. {belöning} silver för att du tog hem det i stället för att sälja det på vägen."
+	},
+	"chronicle": {
+		"_comment": "Krönikan (Chronicle): 1–2 repliker vid hemkomsten för det viktigaste som har hänt. key = händelsen, who = talaren ('subject' = den det handlar om), subject = bara när händelsen gäller den hjälten. {namn}, {titel} (bara om spelaren har en titel), {ny_titel}, {hjälte}, {plats}/{Plats}, {boss}, {antal}, {djup}. Följeslagare talar bara om de var med. Ragnhild citerar bara 1917 års bibel (ref, docs/ideer/ragnhild-bibelord.md).",
+		"lines": [
+			{
+				"id": "elin_fell_1",
+				"key": "fell",
+				"who": "elin",
+				"text": "{hjälte} föll där nere. Jag har bäddat närmast spisen, och ingen säger emot mig i kväll."
+			},
+			{
+				"id": "elin_fell_2",
+				"key": "fell",
+				"who": "elin",
+				"text": "Jag ser hur ni räknar varandra när ni kommer in. Det gör jag också. Sätt er, soppan är varm."
+			},
+			{
+				"id": "elin_fell_3",
+				"key": "fell",
+				"who": "elin",
+				"text": "{namn}, ditt sällskap behöver soppa och sömn, i den ordningen. {hjälte} får dubbel portion."
+			},
+			{
+				"id": "elin_fell_paladin",
+				"key": "fell",
+				"who": "elin",
+				"subject": "paladin",
+				"text": "Du föll, {namn}. Jag hörde det på hur de bar in dig. Sitt. Nej, sitt ned, sa jag."
+			},
+			{
+				"id": "alva_fell_1",
+				"key": "fell",
+				"who": "alva",
+				"text": "{hjälte} föll, men det läker. Jag har lagat värre, och oftare än jag vill minnas."
+			},
+			{
+				"id": "ragnhild_fell_1",
+				"key": "fell",
+				"who": "ragnhild",
+				"ref": "Matt. 5:4",
+				"text": "»Saliga äro de som sörja, ty de skola bliva tröstade.« Och den som föll får den varmaste filten. Jag har redan valt ut den."
+			},
+			{
+				"id": "imma_fell_often_brokk",
+				"key": "fell_often",
+				"who": "imma",
+				"subject": "brokk",
+				"text": "Brokk föll igen. Han låtsas att det inte gör ont. Det gör ont, Brokk. Jag ser det på skägget."
+			},
+			{
+				"id": "alva_fell_often_brokk",
+				"key": "fell_often",
+				"who": "alva",
+				"subject": "brokk",
+				"text": "Brokk har fallit {antal} gånger nu. Jag har slutat fråga hur. Nu frågar jag var."
+			},
+			{
+				"id": "brokk_fell_often_imma",
+				"key": "fell_often",
+				"who": "brokk",
+				"subject": "imma",
+				"text": "Imma föll igen. Nästa gång står jag närmare henne. Säg inget till henne, då blir hon arg."
+			},
+			{
+				"id": "imma_fell_often_paladin",
+				"key": "fell_often",
+				"who": "imma",
+				"subject": "paladin",
+				"text": "Du har fallit {antal} gånger nu, {namn}. Jag har börjat räkna. Sluta ge mig saker att räkna."
+			},
+			{
+				"id": "eira_fell_often_solveig",
+				"key": "fell_often",
+				"who": "eira",
+				"subject": "solveig",
+				"text": "Solveig föll igen. Hon står alltid ett steg för nära elden hon själv har tänt."
+			},
+			{
+				"id": "solveig_fell_often_eira",
+				"key": "fell_often",
+				"who": "solveig",
+				"subject": "eira",
+				"text": "Eira föll igen. Hon säger att hon bara satte sig. Mitt i striden. På marken."
+			},
+			{
+				"id": "elin_fell_often",
+				"key": "fell_often",
+				"who": "elin",
+				"text": "{hjälte} igen. {antal} gånger nu. Jag har ställt en egen stol vid spisen och skrivit namnet på den."
+			},
+			{
+				"id": "gorm_fell_often",
+				"key": "fell_often",
+				"who": "gorm",
+				"text": "{hjälte} faller ofta. Inte av svaghet, tror jag, utan av mod som ingen har lärt att vänta. Skriv en makrorad om det."
+			},
+			{
+				"id": "alva_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "alva",
+				"text": "Så det här är borgen. Mindre än jag mindes, och varmare. Var har ni förbanden? Jag frågar för säkerhets skull."
+			},
+			{
+				"id": "brokk_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "brokk",
+				"text": "En riktig säng! Den är för kort. Jag sover på golvet, som en hederlig dvärg, och tackar för den ändå."
+			},
+			{
+				"id": "eira_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "eira",
+				"text": "Murar runt omkring. Jag får vänja mig. Lämna fönstret öppet, så sover jag."
+			},
+			{
+				"id": "solveig_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "solveig",
+				"text": "Vilken härd! Får jag … nej? Bara lite? Jag lovar att inte tända något som inte ska brinna."
+			},
+			{
+				"id": "ragnhild_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "ragnhild",
+				"text": "Tack för att ni hämtade mig, {namn}. I morgon ser jag över köksordningen. Någon måste."
+			},
+			{
+				"id": "tove_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "tove",
+				"text": "Ett tak, en bänk och en skål soppa. Mer har jag aldrig bett om, och nu har jag fått allt på en gång."
+			},
+			{
+				"id": "sefir_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "sefir",
+				"text": "En borg. Lite sliten, men ljuset är vänligt mot mig. Jag stannar."
+			},
+			{
+				"id": "lirien_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "lirien",
+				"text": "Ni har ingen sång om er själva? Det ordnar jag. Den börjar med {namn} och slutar lyckligt."
+			},
+			{
+				"id": "ronja_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "ronja",
+				"text": "Falken har redan hittat taket. Hon gillar det här stället. Då gör jag också det."
+			},
+			{
+				"id": "hulda_home_1",
+				"key": "rescued",
+				"who": "subject",
+				"subject": "hulda",
+				"text": "Det växer mossa på norra muren. Bra mossa. Rör den inte, så sköter jag resten."
+			},
+			{
+				"id": "elin_rescued_1",
+				"key": "rescued",
+				"who": "elin",
+				"text": "{hjälte} har ätit tre skålar och somnat vid bordet. Låt sova."
+			},
+			{
+				"id": "elin_rescued_2",
+				"key": "rescued",
+				"who": "elin",
+				"text": "Vi har en till vid bordet, {namn}. {hjälte}. Jag har redan lärt mig vad som inte äts."
+			},
+			{
+				"id": "gorm_depth_1",
+				"key": "new_depth",
+				"who": "gorm",
+				"text": "Djup {djup}. Där har ingen av oss stått på länge. Du kom upp igen, och det är det som räknas."
+			},
+			{
+				"id": "gorm_depth_2",
+				"key": "new_depth",
+				"who": "gorm",
+				"text": "Ett nytt djup, {namn}. Fienderna där nere vet vem du är nu. Se till att de inte glömmer det."
+			},
+			{
+				"id": "gorm_depth_3",
+				"key": "new_depth",
+				"who": "gorm",
+				"text": "Djup {djup}. {titel}, säger de i byn. Jag säger: ät, sov och gå ned igen."
+			},
+			{
+				"id": "stig_depth_1",
+				"key": "new_depth",
+				"who": "stig",
+				"text": "Djupare ned slår de hårdare. Kom till gården i morgon, så slår jag hårdare här också."
+			},
+			{
+				"id": "imma_first_boss_1",
+				"key": "first_boss",
+				"who": "imma",
+				"text": "Vi slog {boss}! Första gången! Jag ska berätta det för alla. Två gånger var."
+			},
+			{
+				"id": "imma_first_boss_2",
+				"key": "first_boss",
+				"who": "imma",
+				"text": "{namn}! Vi slog {boss}. Jag skakar fortfarande. Det är av glädje. Mest."
+			},
+			{
+				"id": "gorm_first_boss_1",
+				"key": "first_boss",
+				"who": "gorm",
+				"text": "{boss} har fallit för första gången. Kom ihåg hur det kändes. Nästa gång är den förberedd."
+			},
+			{
+				"id": "imma_boss_again_1",
+				"key": "boss_again",
+				"who": "imma",
+				"text": "{boss} igen. Det börjar bli en vana. En bra vana, tycker jag."
+			},
+			{
+				"id": "brokk_boss_again_1",
+				"key": "boss_again",
+				"who": "brokk",
+				"text": "{antal} gånger har vi slagit {boss}. Jag börjar känna igen var den slår. Vänster, alltid vänster."
+			},
+			{
+				"id": "alrik_boss_trophy_1",
+				"key": "boss_trophy",
+				"who": "alrik",
+				"text": "Tre segrar mot {boss}! Nu lämnar den sin trofé. Jag har skrivit in den med rött bläck. Det röda tog slut."
+			},
+			{
+				"id": "alrik_boss_trophy_2",
+				"key": "boss_trophy",
+				"who": "alrik",
+				"text": "{namn}, {boss} har fallit tre gånger. Trofén ligger på bordet. Rör den varsamt, den verkar fortfarande arg."
+			},
+			{
+				"id": "gorm_twisted_1",
+				"key": "twisted_boss",
+				"who": "gorm",
+				"text": "Den svärtade är slagen. Jag har sett mycket, {namn}. Det där vill jag inte se igen."
+			},
+			{
+				"id": "imma_twisted_1",
+				"key": "twisted_boss",
+				"who": "imma",
+				"text": "Jag trodde inte att vi skulle komma upp. Jag sa det inte då. Nu säger jag det, för nu får jag."
+			},
+			{
+				"id": "alrik_title_1",
+				"key": "new_title",
+				"who": "alrik",
+				"text": "Jag har skrivit in en ny titel i krönikan: {ny_titel}. Säg den gärna högt. Inte här, böckerna sover."
+			},
+			{
+				"id": "alrik_title_2",
+				"key": "new_title",
+				"who": "alrik",
+				"text": "{ny_titel}. Det står i krönikan nu, med mitt finaste bläck. Du väljer själv om du bär den."
+			},
+			{
+				"id": "hedda_rare_1",
+				"key": "rare_find",
+				"who": "hedda",
+				"text": "Den här stenen. Var hittade du den? Nej, säg inget. Lägg den här och backa långsamt."
+			},
+			{
+				"id": "hedda_rare_2",
+				"key": "rare_find",
+				"who": "hedda",
+				"text": "En sällsynt sten, {namn}. Jag har sett två förut. Den ena sprack. Vi pratar inte om den."
+			},
+			{
+				"id": "hedda_nether_1",
+				"key": "nether",
+				"who": "hedda",
+				"text": "En Nether Stone. Kall i handen, varm i städet. Kom hit när svärdet har en plats för den."
+			},
+			{
+				"id": "hedda_nether_2",
+				"key": "nether",
+				"who": "hedda",
+				"text": "Du tog med dig en sten från djupet. Bra. Jag har redan en plats för den i tankarna."
+			},
+			{
+				"id": "alrik_trophy_1",
+				"key": "new_trophy",
+				"who": "alrik",
+				"text": "Nya troféer! Jag har bläck på fingrarna redan. Berätta allt, och långsamt."
+			},
+			{
+				"id": "alrik_trophy_2",
+				"key": "new_trophy",
+				"who": "alrik",
+				"text": "{antal} nya troféer i samlingen. Hyllorna knarrar av förtjusning. Eller av ålder."
+			},
+			{
+				"id": "alrik_trophy_3",
+				"key": "new_trophy",
+				"who": "alrik",
+				"text": "Jag skriver: ”{namn}, {titel}, kom hem med nya troféer.” Det låter bra. Det låter som historia."
+			},
+			{
+				"id": "elin_lost_1",
+				"key": "lost",
+				"who": "elin",
+				"text": "Ni kom hem. Det är det enda jag frågar efter. Resten lagar vi i morgon."
+			},
+			{
+				"id": "gorm_lost_1",
+				"key": "lost",
+				"who": "gorm",
+				"text": "En förlust är ett brev från fienden. Läs det noga, {namn}. Sedan skriver vi svar."
+			},
+			{
+				"id": "imma_lost_1",
+				"key": "lost",
+				"who": "imma",
+				"text": "Vi förlorade. Jag hatar det. Men vi är hemma, och Mor Elin har kokat gröt. Jag hatar det lite mindre."
+			},
+			{
+				"id": "ragnhild_lost_1",
+				"key": "lost",
+				"who": "ragnhild",
+				"ref": "Rom. 12:12",
+				"text": "»Varen glada i hoppet, tåliga i bedrövelsen, uthålliga i bönen.« Gråt en stund. Sedan tvättar vi händerna."
+			},
+			{
+				"id": "imma_streak_1",
+				"key": "streak",
+				"who": "imma",
+				"text": "{antal} segrar i rad! Jag har slutat knacka i trä. Det finns inget trä kvar i borgen."
+			},
+			{
+				"id": "gorm_streak_1",
+				"key": "streak",
+				"who": "gorm",
+				"text": "{antal} nedstigningar utan förlust. Bra. Det är nu man blir slarvig. Var inte det, {namn}."
+			},
+			{
+				"id": "sven_streak_1",
+				"key": "streak",
+				"who": "sven",
+				"text": "Porten har inte behövt öppnas för bårar på länge. {antal} gånger i rad. Fortsätt så, {titel}."
+			},
+			{
+				"id": "ragnhild_streak_broken_1",
+				"key": "streak_broken",
+				"who": "ragnhild",
+				"ref": "Ords. 16:18",
+				"text": "»Stolthet går före undergång, och högmod går före fall.« Jag säger inte att det var högmod. Jag säger det bara."
+			},
+			{
+				"id": "imma_streak_broken_1",
+				"key": "streak_broken",
+				"who": "imma",
+				"text": "Det blev en förlust till slut. Vi hade tur länge. Nu får vi vara bra i stället."
+			},
+			{
+				"id": "gorm_comeback_1",
+				"key": "comeback",
+				"who": "gorm",
+				"text": "Tre gånger slog de dig tillbaka. Den fjärde gick du igenom. Det är så en paladin ser ut."
+			},
+			{
+				"id": "imma_comeback_1",
+				"key": "comeback",
+				"who": "imma",
+				"text": "Jag visste att vi skulle klara det. Jag visste det inte alls, faktiskt. Men nu vet jag det."
+			},
+			{
+				"id": "gorm_vow_kept_1",
+				"key": "vow_kept",
+				"who": "gorm",
+				"text": "Du höll löftet hela vägen. Det är inte orden som gör en edsvuren, {namn}. Det är det man gör när ingen ser."
+			},
+			{
+				"id": "ragnhild_vow_kept_1",
+				"key": "vow_kept",
+				"who": "ragnhild",
+				"text": "Ett löfte, hållet ända hem. Det ser man för sällan. Jag tänker på det resten av veckan."
+			},
+			{
+				"id": "imma_vow_broken_1",
+				"key": "vow_broken",
+				"who": "imma",
+				"text": "Löftet brast. Det gör inget. Du lovade något svårt, och det var därför det var värt att lova."
+			},
+			{
+				"id": "gorm_vow_broken_1",
+				"key": "vow_broken",
+				"who": "gorm",
+				"text": "Ett brutet löfte är ingen skam. Ett löfte man aldrig vågade ge, det är värre. Försök igen."
+			},
+			{
+				"id": "elin_hurt_1",
+				"key": "hurt",
+				"who": "elin",
+				"text": "Ni ser ut som om någon har vridit ur er. Sätt er vid elden, så hämtar jag salvan."
+			},
+			{
+				"id": "alva_hurt_1",
+				"key": "hurt",
+				"who": "alva",
+				"text": "Ingen föll, men flera av er haltar. Jag ser det. Ni behöver inte visa mig, jag kommer ändå."
+			},
+			{
+				"id": "imma_same_realm_1",
+				"key": "same_realm",
+				"who": "imma",
+				"text": "Tredje gången i rad i {plats}. Jag börjar känna igen stenarna. Den där vid trappan har en mustasch."
+			},
+			{
+				"id": "eira_same_realm_1",
+				"key": "same_realm",
+				"who": "eira",
+				"text": "{Plats} igen. Jag kan stigarna nu. Det är bra, och det är farligt."
+			},
+			{
+				"id": "gorm_same_realm_1",
+				"key": "same_realm",
+				"who": "gorm",
+				"text": "Du går gärna till {plats}. Akta dig, {namn}: den som alltid går samma väg blir lätt att vänta in."
+			},
+			{
+				"id": "imma_home_won_1",
+				"key": "home_won",
+				"who": "imma",
+				"text": "Hemma! Jag tycker om {plats} också, men inte alls på samma sätt."
+			},
+			{
+				"id": "imma_home_won_2",
+				"key": "home_won",
+				"who": "imma",
+				"text": "Vi lever, vi har silver, och ingen av oss luktar som {plats}. Nästan ingen."
+			},
+			{
+				"id": "imma_home_won_3",
+				"key": "home_won",
+				"who": "imma",
+				"text": "Välkommen hem, {titel}. Nej, jag kommer aldrig att kunna säga det med allvar."
+			},
+			{
+				"id": "sven_home_1",
+				"key": "home_won",
+				"who": "sven",
+				"text": "Porten är öppen, {namn}. Den var stängd en stund. Jag oroade mig. Inte mycket."
+			},
+			{
+				"id": "gorm_home_1",
+				"key": "home_won",
+				"who": "gorm",
+				"text": "Du är hemma. Skriv ned vad du såg där nere innan du glömmer det."
+			},
+			{
+				"id": "imma_home_left_1",
+				"key": "home_left",
+				"who": "imma",
+				"text": "Vi gick hem i tid. Gorm säger att det är klokt. Jag säger att det är skönt att leva."
+			},
+			{
+				"id": "gorm_home_left_1",
+				"key": "home_left",
+				"who": "gorm",
+				"text": "Att vända i tid är också en sorts mod. Det är bara inte lika roligt att berätta om."
+			}
+		]
 	},
 	"living_map": {
 		"_comment": "Den levande kartan (prov, LivingMap): högst en replik efter hemkomsten, för den viktigaste ändringen. Imma om hon är rekryterad, annars Gorm. {plats} = kryptan/kapellet/lunden, {folk} = Benfolket …",
