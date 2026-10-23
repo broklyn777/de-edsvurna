@@ -8,6 +8,7 @@ extends SceneTree
 ##   godot --headless --path . --script res://tests/soak.gd -- --runs=1000 --from=1001
 ##   godot --headless --path . --script res://tests/soak.gd -- --seed=17 --verbose       (återskapa ett frö)
 ##   SOAK=nivaer godot --headless --path . --script res://tests/soak.gd -- --runs=200  (nivån efter första nedstigningen)
+##   SOAK=karriar godot --headless --path . --script res://tests/soak.gd -- --runs=80 --descents=18  (svårighetskurvan)
 ## Varje fel skrivs med frö, drag och vad som hände; samma frö ger samma körning.
 
 const Bot := preload("res://tests/combat_bot.gd")
@@ -38,6 +39,8 @@ var ended := ""
 var arrived := false  # pjäsen kom just fram till rutan (rumskartans _arrive)
 var silver_floor := 0  # silvret får inte bli lägre än så här (boten spenderar inget)
 var collection_floor: Array = []
+var run_fights := 0  # strider i körningen (karriärläget)
+var lost_at := ""  # var körningen förlorades (karriärläget)
 
 
 ## Samlar skriptfel och motorfel medan ett drag körs.
@@ -71,6 +74,14 @@ func _init() -> void:
 		elif arg == "--verbose":
 			verbose = true
 	OS.add_logger(catcher)
+	if OS.get_environment("SOAK") == "karriar":
+		var n := 18
+		for arg in OS.get_cmdline_user_args():
+			if arg.begins_with("--descents="):
+				n = int(arg.get_slice("=", 1))
+		_career_report(from, runs, n)
+		quit()
+		return
 	if OS.get_environment("SOAK") == "nivaer":
 		_levels_report(from, runs)
 		quit()
@@ -218,7 +229,7 @@ func _start_run() -> void:
 func _tick(use_bot: bool) -> void:
 	# Imma (eller någon annan) som väntar ansluter när sällskapet är tillbaka på rumskartan (Run.imma_sneaks).
 	if state.joins_next != "":
-		state.join_waiting(data, profile)
+		_take_hint(state.join_waiting(data, profile))
 	if state.at_group():
 		if state.came_from >= 0 and _wants_back(use_bot):
 			_log("backar från ruta %d" % state.pos)
@@ -232,14 +243,14 @@ func _tick(use_bot: bool) -> void:
 		if _arrive():
 			return
 	# GÅ HEM (bara efter introt, som rumskartan).
-	if profile.intro_done and pick.randf() < 0.002:
+	if profile.intro_done and not cfg.get("no_leave", false) and pick.randf() < 0.002:
 		_log("går hem")
 		stats.left += 1
 		ended = "left"
 		RunState.delete_saved(TMP_RUN)
 		return
 	# Spara och läs in mitt i (som när appen stängs och öppnas igen).
-	if pick.randf() < 0.12:
+	if pick.randf() < 0.12 and not cfg.get("no_save", false):
 		_save_and_load()
 	# Lägereld man står vid: troféerna kan bytas när som helst.
 	var r := state.current_room()
@@ -400,6 +411,7 @@ func _rescue() -> void:
 		avg += float(profile.hero(data, id).level)
 	avg /= maxi(state.party.size(), 1)
 	profile.recruit(data, hero_id, avg)
+	_take_hint(hero_id)
 	if state.party.size() <= Profile.MAX_COMPANIONS:
 		state.party.append(hero_id)
 		state.add_charges_for(data, hero_id)
@@ -431,12 +443,13 @@ func _fight() -> void:
 		ended = "error"
 		return
 	stats.battles += 1
+	run_fights += 1
 	if state.current_room().get("boss", false):
 		stats.bosses += 1
 	if state.current_room().get("elite", false) and not profile.elites_met.has(state.encounter()):
 		profile.elites_met.append(state.encounter())
 	# Ibland stängs appen mitt i striden: körningen läses in och striden börjar om (Run._resume_run).
-	if pick.randf() < 0.05:
+	if pick.randf() < 0.05 and not cfg.get("no_save", false):
 		_save_and_load()
 		if not state.battle_pending:
 			_fail("spara", "battle_pending försvann vid inläsningen")
@@ -525,6 +538,9 @@ func _roll_finds(kind: String) -> void:
 ## Run.battle_finished och lägret efter en seger (camp_screen: välj en trofé, VIDARE).
 func _battle_finished(victory: bool, forfeited: bool) -> void:
 	if not victory:
+		var lr := state.current_room()
+		lost_at = "v%d %s" % [state.floor + 1, "boss" if lr.get("boss", false) else ("Nemesis" if lr.get("nemesis", false)
+				else ("elit" if lr.get("elite", false) else ("föremål" if lr.get("kind", "") == "object" else "vanlig")))]
 		stats.forfeit += 1 if forfeited else 0
 		stats.lost += 1
 		RunState.delete_saved(TMP_RUN)
@@ -869,3 +885,184 @@ func _run_quiet() -> void:
 		_guard("drag", _tick.bind(true))
 	if ended == "":
 		ended = "stuck"
+
+
+## Makroförslaget när en ny sorts hjälte ansluter (LÄGG TILL RADEN), bara i karriärläget (cfg.hints).
+func _take_hint(hero_id: String) -> void:
+	if hero_id == "" or not cfg.get("hints", false):
+		return
+	var hint: Dictionary = data.heroes.get(hero_id, {}).get("macro_hint", {})
+	if hint.is_empty():
+		return
+	if not macros.has(hero_id):
+		macros[hero_id] = {"name": data.heroes[hero_id].name, "lines": []}
+	for line in macros[hero_id].lines:
+		if line.get("cond", "") == hint.line.cond and line.get("action", "") == hint.line.action \
+				and line.get("ability", "") == hint.line.get("ability", ""):
+			return
+	macros[hero_id].lines.insert(0, hint.line.duplicate(true))
+
+
+# --- SOAK=karriar: svårighetskurvan, en profil i taget genom många nedstigningar ------------------------------
+
+## Djupet: ett djupare efter en klarad körning, ett grundare efter två förluster i rad. Realm: växlar varje gång.
+## Hemma: smedjan (svärdet till nivå 3, sedan en artefakt till den som saknar, sedan den lägsta artefakten), den
+## billigaste perken, och sällskapet = de tre följeslagarna med högst nivå. Startmakron (en ny profils rader) med
+## makroförslagen när någon ansluter; MACRO-boten, inga slumpade handlingar, ingen GE UPP och ingen GÅ HEM.
+func _career_report(from: int, runs: int, descents: int) -> void:
+	var rows: Array = []  # per nedstigning: lista med {level, depth, won, fights, silver, heroes, lost_at, realm, best}
+	for i in descents:
+		rows.append([])
+	var t0 := Time.get_ticks_msec()
+	for s in range(from, from + runs):
+		seed_now = s
+		pick.seed = s * 7919 + 3
+		rng.seed = s * 104729 + 11
+		cfg = {"first": true, "realm": "crypt", "depth": 1, "instability": 0, "oath": "oath_vengeance", "party": [],
+				"level": 1, "policy": "bot", "p_random_action": 0.0, "descents": 0, "no_forfeit": true, "no_leave": true,
+				"no_save": true, "hints": true, "vow": ""}
+		_setup_profile()
+		var losses := 0
+		for d in descents:
+			var realm: String = ["crypt", "chapel"][d % 2] if d > 0 else "crypt"
+			profile.realm = realm
+			var before := profile.silver
+			var best_before := profile.best_depth
+			var party := Array(profile.party)
+			var lv := 0.0
+			for h in party:
+				lv += float(profile.hero(data, h).level)
+			lv /= maxf(party.size(), 1)
+			run_fights = 0
+			lost_at = ""
+			cfg.first = d == 0
+			_run_quiet()
+			_home()
+			var won := ended == "cleared"
+			rows[d].append({"level": lv, "depth": profile.depth, "won": won, "fights": run_fights,
+					"silver": profile.silver - before, "heroes": party.size(), "lost_at": lost_at if not won else "",
+					"realm": realm, "best": best_before, "recruited": profile.recruited.size()})
+			if verbose:
+				print("frö %d nedstigning %d: %s djup %d nivå %.1f %s %s strider %d silver +%d" % [s, d + 1, realm,
+						profile.depth, lv, str(party), ended, run_fights, profile.silver - before])
+			# Djupet för nästa gång.
+			if won:
+				losses = 0
+				profile.choose_depth(profile.depth + 1)
+			else:
+				losses += 1
+				if losses >= 2:
+					profile.choose_depth(profile.depth - 1)
+					losses = 0
+			_career_home()
+		if (s - from + 1) % 10 == 0:
+			print("… %d profiler, %.0f s" % [s - from + 1, (Time.get_ticks_msec() - t0) / 1000.0])
+	_career_print(rows, runs, descents)
+	_print_errors()
+
+
+## Hemma mellan nedstigningarna: smedjan, perken och sällskapet.
+func _career_home() -> void:
+	if not profile.intro_done and Intro.needs_talk(data, profile):
+		Intro.talked(data, profile)  # borgen spelar Gorms samtal när man kommer hem ("auto")
+	var guard := 0
+	while guard < 40:
+		guard += 1
+		var sword := profile.artifact("paladin")
+		if not sword.is_empty() and int(sword.level) < 3:
+			if profile.level_artifact("paladin") == null:
+				break
+			Intro.notify(data, profile, "sword_level", int(profile.artifact("paladin").level))
+			continue
+		var party: Array = Array(profile.party)
+		var bare := party.filter(func(h: String) -> bool: return profile.artifact(h).is_empty())
+		if not bare.is_empty():
+			var h: String = bare[0]
+			var abilities: Array = data.heroes[h].get("abilities", [])
+			if profile.silver < Profile.FORGE_COST or not profile.forge(h, "sword", abilities[0] if not abilities.is_empty() else ""):
+				break
+			continue
+		var lowest := ""
+		for h in party:
+			var a := profile.artifact(h)
+			if not a.is_empty() and int(a.level) < Forge.LEVEL_MAX and (lowest == "" or int(a.level) < int(profile.artifact(lowest).level)):
+				lowest = h
+		if lowest == "" or profile.level_artifact(lowest) == null:
+			break
+	# Den billigaste perken som går att köpa, tills poängen är slut.
+	var perks: Array = data.oaths[profile.oath].get("perks", []).map(func(p: Variant) -> String:
+			return String(p.get("id", "")) if p is Dictionary else String(p))
+	for i in 10:
+		var best := ""
+		var cost := 99
+		for perk in perks:
+			var c := Profile.perk_cost(data, profile.oath, perk)
+			if c >= 0 and c < cost and profile.perk_rank(profile.oath, perk) < Profile.perk_ranks(data, perk):
+				best = perk
+				cost = c
+		if best == "" or not profile.buy_perk(data, profile.oath, best):
+			break
+	# Sällskapet: de tre följeslagarna med högst nivå (Värdshuset).
+	if profile.intro_done or profile.recruited.size() > 1:
+		var list: Array = Array(profile.recruited).duplicate()
+		list.sort_custom(func(a: String, b: String) -> bool:
+				return int(profile.hero(data, a).level) > int(profile.hero(data, b).level))
+		profile.set_party(list.slice(0, Profile.MAX_COMPANIONS))
+
+
+func _career_print(rows: Array, runs: int, descents: int) -> void:
+	print("")
+	print("=== Svårighetskurvan: %d profiler, %d nedstigningar var ===" % [runs, descents])
+	print("  ned  djup (snitt, spridning)   nivå   vinst  strider  silver  hjältar  förluster")
+	for d in descents:
+		var list: Array = rows[d]
+		var n := list.size()
+		var won := list.filter(func(r: Dictionary) -> bool: return r.won).size()
+		var depth_mix := {}
+		var where := {}
+		var lv := 0.0
+		var fights := 0.0
+		var silver := 0.0
+		var heroes := 0.0
+		for r in list:
+			depth_mix[r.depth] = int(depth_mix.get(r.depth, 0)) + 1
+			lv += r.level
+			fights += r.fights
+			silver += r.silver
+			heroes += r.heroes
+			if r.lost_at != "":
+				where[r.lost_at] = int(where.get(r.lost_at, 0)) + 1
+		var depths := depth_mix.keys()
+		depths.sort()
+		var mix := " ".join(depths.map(func(k: int) -> String: return "d%d:%d" % [k, depth_mix[k]]))
+		var avg_depth := 0.0
+		for k in depth_mix:
+			avg_depth += float(k) * depth_mix[k]
+		var keys := where.keys()
+		keys.sort_custom(func(a: String, b: String) -> bool: return where[a] > where[b])
+		print("  %3d  %.1f (%s)  %5.1f  %4d %%  %6.1f  %6d  %6.1f   %s" % [d + 1, avg_depth / maxi(n, 1), mix,
+				lv / maxi(n, 1), roundi(100.0 * won / maxi(n, 1)), fights / maxi(n, 1), roundi(silver / maxi(n, 1)),
+				heroes / maxi(n, 1), ", ".join(keys.slice(0, 4).map(func(k: String) -> String: return "%s %d" % [k, where[k]]))])
+	# Per djup och Realm: vinst och nivå, och hur ofta man spelar under sitt bästa djup (slipar).
+	print("")
+	print("  Per djup och Realm (alla nedstigningar):")
+	var by := {}
+	var grind := 0
+	var total := 0
+	for d in descents:
+		for r in rows[d]:
+			var key := "%s d%d" % [r.realm, r.depth]
+			var b: Dictionary = by.get(key, {"n": 0, "won": 0, "lv": 0.0})
+			b.n += 1
+			b.won += 1 if r.won else 0
+			b.lv += r.level
+			by[key] = b
+			total += 1
+			if r.depth <= r.best and d > 0:
+				grind += 1
+	var ks := by.keys()
+	ks.sort()
+	for k in ks:
+		print("    %-12s %4d körningar  vinst %3d %%  nivå %.1f" % [k, by[k].n, roundi(100.0 * by[k].won / by[k].n),
+				by[k].lv / by[k].n])
+	print("  På ett djup som redan är klarat (slipar): %d av %d nedstigningar" % [grind, total])
