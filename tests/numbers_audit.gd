@@ -87,7 +87,7 @@ func run_battle(encounter: String, floor_i: int, depth: int, seed_value: int, pa
 	counts.battles += 1
 
 
-## Uppställningarna som granskas: båda Realms, djup 1–3, alla tre våningarna (huvudmötet och rummens möten),
+## Uppställningarna som granskas: alla tre Realms, djup 1–3, alla tre våningarna (huvudmötet och rummens möten),
 ## olika sällskap (2–4 hjältar, alla följeslagare), med och utan nivåer, artefakter, statusar och regler.
 static func setups(data: Dictionary) -> Array:
 	var parties := [["paladin", "brokk", "alva", "eira"], ["paladin", "imma", "solveig", "hulda"],
@@ -97,7 +97,7 @@ static func setups(data: Dictionary) -> Array:
 	var rule_sets := [[], ["mirror_bones", "cursed_ground"], ["withered_grace", "heavy_air"], ["risen_dead"]]
 	var out := []
 	var i := 0
-	for realm in ["crypt", "chapel"]:
+	for realm in ["crypt", "chapel", "grove"]:
 		var r: Dictionary = data.realms[realm]
 		for depth in [1, 2, 3]:
 			for floor_i in 3:

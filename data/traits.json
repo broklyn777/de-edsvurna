@@ -446,7 +446,11 @@
 		]
 	},
 	"bone_finger": {
-		"combo": {"needs": "crit", "creates": "damage", "scope": "enemy"},
+		"combo": {
+			"needs": "crit",
+			"creates": "damage",
+			"scope": "enemy"
+		},
 		"name": "Skelettets fingerled",
 		"trophy": true,
 		"text": "Efter en kritisk direkt attack gör bäraren ett följdanfall för 40 % (en gång per tur).",
@@ -467,7 +471,11 @@
 		]
 	},
 	"bow_sinew": {
-		"combo": {"needs": "marked", "creates": "crit", "scope": "enemy"},
+		"combo": {
+			"needs": "marked",
+			"creates": "crit",
+			"scope": "enemy"
+		},
 		"name": "Benbågens sena",
 		"trophy": true,
 		"text": "Bärarens attacker mot märkta mål är alltid kritiska.",
@@ -481,7 +489,11 @@
 		}
 	},
 	"rosary": {
-		"combo": {"needs": "holy_damage", "creates": "heal", "scope": "party"},
+		"combo": {
+			"needs": "holy_damage",
+			"creates": "heal",
+			"scope": "party"
+		},
 		"name": "Gravprästens radband",
 		"trophy": true,
 		"text": "Bärarens Heliga skada helar den svagaste i sällskapet för 25 % av skadan.",
@@ -499,7 +511,11 @@
 		]
 	},
 	"warden_helm": {
-		"combo": {"needs": "defend_or_provoke", "creates": "heal", "scope": "party"},
+		"combo": {
+			"needs": "defend_or_provoke",
+			"creates": "heal",
+			"scope": "party"
+		},
 		"name": "Väktarens hjälm",
 		"trophy": true,
 		"text": "När bäraren Försvarar eller Provocerar helas den svagaste i sällskapet för 140 % av bärarens Defense.",
@@ -521,7 +537,11 @@
 		]
 	},
 	"ember_jaw": {
-		"combo": {"needs": "ally_healed", "creates": "damage_bonus", "scope": "self"},
+		"combo": {
+			"needs": "ally_healed",
+			"creates": "damage_bonus",
+			"scope": "self"
+		},
 		"name": "Glödkäken",
 		"trophy": true,
 		"text": "När någon i sällskapet helas får bäraren en Glöd (högst 5). Bärarens nästa förmåga förbrukar dem: +15 % skada per Glöd.",
@@ -546,7 +566,11 @@
 		}
 	},
 	"lich_crown": {
-		"combo": {"needs": "follow_up", "creates": "holy_damage", "scope": "enemy"},
+		"combo": {
+			"needs": "follow_up",
+			"creates": "holy_damage",
+			"scope": "enemy"
+		},
 		"name": "Benfurstens krona",
 		"trophy": true,
 		"text": "Bärarens följdanfall räknas som Heliga besvärjelser, men bärarens direkta besvärjelser gör 20 % mindre skada.",
@@ -767,7 +791,11 @@
 		}
 	},
 	"prayer_beads": {
-		"combo": {"needs": "turn_start", "creates": "barrier", "scope": "party"},
+		"combo": {
+			"needs": "turn_start",
+			"creates": "barrier",
+			"scope": "party"
+		},
 		"name": "Bönepärlor",
 		"trophy": true,
 		"rarity": "common",
@@ -786,7 +814,11 @@
 		]
 	},
 	"wraith_veil": {
-		"combo": {"needs": "attacked", "creates": "dodge", "scope": "self"},
+		"combo": {
+			"needs": "attacked",
+			"creates": "dodge",
+			"scope": "self"
+		},
 		"name": "Gastens slöja",
 		"trophy": true,
 		"rarity": "common",
@@ -803,7 +835,11 @@
 		]
 	},
 	"fallen_oath": {
-		"combo": {"needs": "hit_taken", "creates": "damage", "scope": "enemy"},
+		"combo": {
+			"needs": "hit_taken",
+			"creates": "damage",
+			"scope": "enemy"
+		},
 		"name": "Den fallnes ed",
 		"trophy": true,
 		"rarity": "common",
@@ -826,7 +862,11 @@
 		]
 	},
 	"witch_tongue": {
-		"combo": {"needs": "spell_hit", "creates": "silenced", "scope": "enemy"},
+		"combo": {
+			"needs": "spell_hit",
+			"creates": "silenced",
+			"scope": "enemy"
+		},
 		"name": "Häxans tunga",
 		"trophy": true,
 		"rarity": "common",
@@ -848,7 +888,11 @@
 		]
 	},
 	"executioner_hood": {
-		"combo": {"needs": "crit", "creates": "vulnerable", "scope": "enemy"},
+		"combo": {
+			"needs": "crit",
+			"creates": "vulnerable",
+			"scope": "enemy"
+		},
 		"name": "Bödelns huva",
 		"trophy": true,
 		"rarity": "common",
@@ -868,7 +912,11 @@
 		]
 	},
 	"bishop_mitre": {
-		"combo": {"needs": "allies_alive", "creates": "immune", "scope": "self"},
+		"combo": {
+			"needs": "allies_alive",
+			"creates": "immune",
+			"scope": "self"
+		},
 		"name": "Biskopens mitra",
 		"trophy": true,
 		"rarity": "boss",
@@ -892,7 +940,11 @@
 		}
 	},
 	"first_strike": {
-		"combo": {"needs": "first_attack", "creates": "damage_bonus", "scope": "enemy"},
+		"combo": {
+			"needs": "first_attack",
+			"creates": "damage_bonus",
+			"scope": "enemy"
+		},
 		"name": "Kaparens första hugg",
 		"trophy": true,
 		"rarity": "elite",
@@ -909,7 +961,11 @@
 		}
 	},
 	"quick_shot": {
-		"combo": {"needs": "attack_hit", "creates": "follow_up", "scope": "enemy"},
+		"combo": {
+			"needs": "attack_hit",
+			"creates": "follow_up",
+			"scope": "enemy"
+		},
 		"name": "Snabbt tag",
 		"trophy": true,
 		"rarity": "elite",
@@ -933,7 +989,11 @@
 		]
 	},
 	"bearer_of_light": {
-		"combo": {"needs": "turn_start", "creates": "heal", "scope": "party"},
+		"combo": {
+			"needs": "turn_start",
+			"creates": "heal",
+			"scope": "party"
+		},
 		"name": "Ljusets bärare",
 		"trophy": true,
 		"rarity": "elite",
@@ -953,7 +1013,11 @@
 		]
 	},
 	"salted_earth": {
-		"combo": {"needs": "defend_or_provoke", "creates": "defense_down", "scope": "enemies"},
+		"combo": {
+			"needs": "defend_or_provoke",
+			"creates": "defense_down",
+			"scope": "enemies"
+		},
 		"name": "Saltad jord",
 		"trophy": true,
 		"rarity": "elite",
@@ -976,7 +1040,11 @@
 		]
 	},
 	"scatter_shot": {
-		"combo": {"needs": "attack_hit", "creates": "damage", "scope": "enemies"},
+		"combo": {
+			"needs": "attack_hit",
+			"creates": "damage",
+			"scope": "enemies"
+		},
 		"name": "Splitterben",
 		"trophy": true,
 		"rarity": "elite",
@@ -999,7 +1067,11 @@
 		]
 	},
 	"phantasm": {
-		"combo": {"needs": "repeat_ability", "creates": "damage_bonus", "scope": "self"},
+		"combo": {
+			"needs": "repeat_ability",
+			"creates": "damage_bonus",
+			"scope": "self"
+		},
 		"name": "Fantasm",
 		"trophy": true,
 		"rarity": "elite",
@@ -1014,7 +1086,11 @@
 		}
 	},
 	"surprise": {
-		"combo": {"needs": "battle_start", "creates": "timeline_top", "scope": "self"},
+		"combo": {
+			"needs": "battle_start",
+			"creates": "timeline_top",
+			"scope": "self"
+		},
 		"name": "Överraskning!",
 		"trophy": true,
 		"rarity": "elite",
@@ -1024,7 +1100,11 @@
 		"start_first": true
 	},
 	"heart_of_chaos": {
-		"combo": {"needs": "ability_used", "creates": "revive", "scope": "self"},
+		"combo": {
+			"needs": "ability_used",
+			"creates": "revive",
+			"scope": "self"
+		},
 		"name": "Kaosets hjärta",
 		"trophy": true,
 		"rarity": "elite",
@@ -1037,7 +1117,11 @@
 		}
 	},
 	"miracle": {
-		"combo": {"needs": "ability_used", "creates": "ability_cast", "scope": "self"},
+		"combo": {
+			"needs": "ability_used",
+			"creates": "ability_cast",
+			"scope": "self"
+		},
 		"name": "Mirakel",
 		"trophy": true,
 		"rarity": "elite",
@@ -1061,7 +1145,11 @@
 		]
 	},
 	"sareas_plot": {
-		"combo": {"needs": "hit_taken", "creates": "damage_bonus", "scope": "self"},
+		"combo": {
+			"needs": "hit_taken",
+			"creates": "damage_bonus",
+			"scope": "self"
+		},
 		"name": "Sareas intrig",
 		"trophy": true,
 		"rarity": "elite",
@@ -1461,7 +1549,11 @@
 		]
 	},
 	"runner_sinew": {
-		"combo": {"needs": "battle_start", "creates": "agile", "scope": "self"},
+		"combo": {
+			"needs": "battle_start",
+			"creates": "agile",
+			"scope": "self"
+		},
 		"name": "Springarens senor",
 		"trophy": true,
 		"text": "Bäraren börjar striden Smidig i 2 turer.",
@@ -1477,7 +1569,11 @@
 		]
 	},
 	"wolf_leap": {
-		"combo": {"needs": "battle_start", "creates": "timeline_top", "scope": "self"},
+		"combo": {
+			"needs": "battle_start",
+			"creates": "timeline_top",
+			"scope": "self"
+		},
 		"name": "Vargens språng",
 		"trophy": true,
 		"text": "Bäraren börjar striden överst på tidslinjen.",
@@ -1492,7 +1588,11 @@
 		]
 	},
 	"coffin_nail": {
-		"combo": {"needs": "ally_death", "creates": "barrier", "scope": "party"},
+		"combo": {
+			"needs": "ally_death",
+			"creates": "barrier",
+			"scope": "party"
+		},
 		"name": "Kistspik",
 		"trophy": true,
 		"text": "När en allierad faller får sällskapet en Barriär för 8 % av bärarens max liv.",
@@ -1511,7 +1611,11 @@
 		]
 	},
 	"last_watch": {
-		"combo": {"needs": "ally_death", "creates": "provoke", "scope": "self"},
+		"combo": {
+			"needs": "ally_death",
+			"creates": "provoke",
+			"scope": "self"
+		},
 		"name": "Sista vaktens sköld",
 		"trophy": true,
 		"text": "Första gången en allierad faller blir bäraren Provocerande i 2 turer.",
@@ -1532,7 +1636,11 @@
 		]
 	},
 	"mold_jaw": {
-		"combo": {"needs": "attack_hit", "creates": "poisoned", "scope": "enemy"},
+		"combo": {
+			"needs": "attack_hit",
+			"creates": "poisoned",
+			"scope": "enemy"
+		},
 		"name": "Mögelkäken",
 		"trophy": true,
 		"text": "Bärarens direkta attacker har 30 % chans att förgifta målet i 3 turer.",
@@ -1553,7 +1661,11 @@
 		]
 	},
 	"spore_burst": {
-		"combo": {"needs": "poisoned_enemy_death", "creates": "poisoned", "scope": "enemies"},
+		"combo": {
+			"needs": "poisoned_enemy_death",
+			"creates": "poisoned",
+			"scope": "enemies"
+		},
 		"name": "Sporfallet",
 		"trophy": true,
 		"text": "När en förgiftad fiende faller förgiftas en annan fiende.",
@@ -1573,7 +1685,11 @@
 		]
 	},
 	"rattler_bone": {
-		"combo": {"needs": "hit_taken", "creates": "defensive", "scope": "self"},
+		"combo": {
+			"needs": "hit_taken",
+			"creates": "defensive",
+			"scope": "self"
+		},
 		"name": "Skramlarens ben",
 		"trophy": true,
 		"text": "Efter en direkt attack mot bäraren blir hen Defensiv i 1 tur (en gång per tur).",
@@ -1596,7 +1712,11 @@
 		]
 	},
 	"clatter_stone": {
-		"combo": {"needs": "hit_taken", "creates": "damage", "scope": "enemy"},
+		"combo": {
+			"needs": "hit_taken",
+			"creates": "damage",
+			"scope": "enemy"
+		},
 		"name": "Klapperstenen",
 		"trophy": true,
 		"text": "Efter en direkt attack mot bäraren blir hen Defensiv i 1 tur och anfallaren tar 20 % av skadan tillbaka (en gång per tur).",
@@ -1627,7 +1747,11 @@
 		]
 	},
 	"colossus_spine": {
-		"combo": {"needs": "turn_start", "creates": "stat_gain", "scope": "self"},
+		"combo": {
+			"needs": "turn_start",
+			"creates": "stat_gain",
+			"scope": "self"
+		},
 		"name": "Kolossens ryggrad",
 		"trophy": true,
 		"text": "Bäraren får +8 % Attack i början av varje egen tur (högst 5 gånger).",
@@ -1649,7 +1773,11 @@
 		]
 	},
 	"caller_lantern": {
-		"combo": {"needs": "ally_death", "creates": "revive", "scope": "party"},
+		"combo": {
+			"needs": "ally_death",
+			"creates": "revive",
+			"scope": "party"
+		},
 		"name": "Väckarens lykta",
 		"trophy": true,
 		"text": "En gång per strid: när någon i sällskapet faller väcks hen med 30 % liv.",
@@ -1669,7 +1797,11 @@
 		]
 	},
 	"mist_veil": {
-		"combo": {"needs": "spell_hit", "creates": "sleeping", "scope": "enemy"},
+		"combo": {
+			"needs": "spell_hit",
+			"creates": "sleeping",
+			"scope": "enemy"
+		},
 		"name": "Dimmans slöja",
 		"trophy": true,
 		"text": "Bäraren kan inte sövas (inte heller Dimsömn). Bärarens första besvärjelse i striden söver målet i 1 tur.",
@@ -1696,7 +1828,11 @@
 		]
 	},
 	"scribe_quill": {
-		"combo": {"needs": "new_ability", "creates": "damage_bonus", "scope": "party"},
+		"combo": {
+			"needs": "new_ability",
+			"creates": "damage_bonus",
+			"scope": "party"
+		},
 		"name": "Skrivarens penna",
 		"trophy": true,
 		"text": "Medan bäraren lever räknas sällskapets träffar aldrig som upprepningar (Antecknat), och bäraren gör 15 % mer skada med en handling hen inte gjorde förra turen.",
@@ -1712,7 +1848,11 @@
 		"ignore_repeat": true
 	},
 	"bell_rope": {
-		"combo": {"needs": "enemy_timeline_top", "creates": "timeline_top", "scope": "self"},
+		"combo": {
+			"needs": "enemy_timeline_top",
+			"creates": "timeline_top",
+			"scope": "self"
+		},
 		"name": "Klockrepet",
 		"trophy": true,
 		"text": "När fienderna flyttas överst på tidslinjen följer bäraren med (en gång per tur), men bäraren börjar striden längst ned.",
@@ -1959,7 +2099,11 @@
 		]
 	},
 	"deacon_stole": {
-		"combo": {"needs": "heal_cast", "creates": "mending", "scope": "party"},
+		"combo": {
+			"needs": "heal_cast",
+			"creates": "mending",
+			"scope": "party"
+		},
 		"name": "Diakonens stola",
 		"trophy": true,
 		"text": "När bäraren helar någon får målet Läkning i 2 turer.",
@@ -1980,7 +2124,11 @@
 		]
 	},
 	"clean_spring": {
-		"combo": {"needs": "heal_cast", "creates": "purge", "scope": "party"},
+		"combo": {
+			"needs": "heal_cast",
+			"creates": "purge",
+			"scope": "party"
+		},
 		"name": "Den rena källan",
 		"trophy": true,
 		"text": "Bärarens helningar tar bort en debuff från målet.",
@@ -1999,7 +2147,11 @@
 		]
 	},
 	"torn_banner": {
-		"combo": {"needs": "family_alive", "creates": "damage_bonus", "scope": "party"},
+		"combo": {
+			"needs": "family_alive",
+			"creates": "damage_bonus",
+			"scope": "party"
+		},
 		"name": "Den trasiga fanan",
 		"trophy": true,
 		"text": "Sällskapet gör 8 % mer skada medan bäraren lever.",
@@ -2015,7 +2167,11 @@
 		}
 	},
 	"herald_horn": {
-		"combo": {"needs": "provoke", "creates": "savage", "scope": "self"},
+		"combo": {
+			"needs": "provoke",
+			"creates": "savage",
+			"scope": "self"
+		},
 		"name": "Härolds horn",
 		"trophy": true,
 		"text": "När bäraren Provocerar blir sällskapet Vildsint i 1 tur.",
@@ -2036,7 +2192,11 @@
 		]
 	},
 	"wisp_flame": {
-		"combo": {"needs": "not_acted", "creates": "dodge", "scope": "self"},
+		"combo": {
+			"needs": "not_acted",
+			"creates": "dodge",
+			"scope": "self"
+		},
 		"name": "Irrblossets låga",
 		"trophy": true,
 		"text": "Bäraren undviker attacker så ofta det går (taket för undvikande, 75 %) tills hen har agerat första gången.",
@@ -2052,7 +2212,11 @@
 		}
 	},
 	"lantern_light": {
-		"combo": {"needs": "direct_hit", "creates": "blind", "scope": "enemy"},
+		"combo": {
+			"needs": "direct_hit",
+			"creates": "blind",
+			"scope": "enemy"
+		},
 		"name": "Lyktans ljus",
 		"trophy": true,
 		"text": "Bärarens första träff i striden förblindar målet i 1 tur.",
@@ -2075,7 +2239,11 @@
 		]
 	},
 	"mirror_shield": {
-		"combo": {"needs": "hit_taken", "creates": "damage", "scope": "enemy"},
+		"combo": {
+			"needs": "hit_taken",
+			"creates": "damage",
+			"scope": "enemy"
+		},
 		"name": "Spegelskölden",
 		"trophy": true,
 		"text": "Den som skadar bäraren med en besvärjelse tar 60 % tillbaka (indirekt).",
@@ -2098,7 +2266,11 @@
 		]
 	},
 	"silver_glass": {
-		"combo": {"needs": "hit_taken", "creates": "heal", "scope": "self"},
+		"combo": {
+			"needs": "hit_taken",
+			"creates": "heal",
+			"scope": "self"
+		},
 		"name": "Silverglaset",
 		"trophy": true,
 		"text": "Första besvärjelsen som skadar bäraren i striden studsar tillbaka: bäraren får livet tillbaka och kastaren tar lika mycket (indirekt).",
@@ -2127,7 +2299,11 @@
 		]
 	},
 	"overseer_keys": {
-		"combo": {"needs": "turn_start", "creates": "protected", "scope": "self"},
+		"combo": {
+			"needs": "turn_start",
+			"creates": "protected",
+			"scope": "self"
+		},
 		"name": "Förmannens nyckelknippa",
 		"trophy": true,
 		"text": "I början av bärarens tur blir den svagaste i sällskapet Beskyddad i 1 tur.",
@@ -2147,7 +2323,11 @@
 		]
 	},
 	"inquisitor_seal": {
-		"combo": {"needs": "enemy_repeat", "creates": "silenced", "scope": "enemy"},
+		"combo": {
+			"needs": "enemy_repeat",
+			"creates": "silenced",
+			"scope": "enemy"
+		},
 		"name": "Inkvisitorns sigill",
 		"trophy": true,
 		"text": "Fiender som använder samma förmåga två gånger i rad blir Tystade i 1 tur.",
@@ -2168,7 +2348,11 @@
 		]
 	},
 	"ascetic_strap": {
-		"combo": {"needs": "turn_start", "creates": "stat_gain", "scope": "self"},
+		"combo": {
+			"needs": "turn_start",
+			"creates": "stat_gain",
+			"scope": "self"
+		},
 		"name": "Asketens rem",
 		"trophy": true,
 		"text": "Bäraren får +6 % Defense i början av varje egen tur (högst 5 gånger).",
@@ -2190,7 +2374,11 @@
 		]
 	},
 	"lance_tip": {
-		"combo": {"needs": "first_attack", "creates": "ignore_defense", "scope": "enemy"},
+		"combo": {
+			"needs": "first_attack",
+			"creates": "ignore_defense",
+			"scope": "enemy"
+		},
 		"name": "Lansspetsen",
 		"trophy": true,
 		"text": "Bärarens första Anfall i striden struntar i Defense.",
@@ -2208,7 +2396,11 @@
 		}
 	},
 	"abbess_key": {
-		"combo": {"needs": "heal_cast", "creates": "purge", "scope": "party"},
+		"combo": {
+			"needs": "heal_cast",
+			"creates": "purge",
+			"scope": "party"
+		},
 		"name": "Abbedissans nyckel",
 		"trophy": true,
 		"text": "När bäraren helar någon renas målet från alla debuffar, men bärarens helningar är 20 % svagare.",
@@ -2242,9 +2434,53 @@
 			"heal_mult": 0.8
 		}
 	},
-	"vow_no_fall_held": {"name": "Ingen ska falla", "vow": true, "text": "I början av striden får den svagaste i sällskapet en Barriär för 20 % av sitt liv.", "trigger": "battle_start", "effects": [{"type": "barrier", "pct_max_hp": 0.2, "target": "weakest_ally"}]},
-	"vow_no_fall_humble": {"name": "Den som föll reser sig", "vow": true, "text": "En gång under körningen: när någon i sällskapet faller väcks hen med 30 % liv.", "trigger": "death", "once_per_battle": true, "when": {"unit": "ally"}, "effects": [{"type": "revive", "pct": 0.3, "target": "unit"}]},
-	"vow_no_heal_held": {"name": "Jag helar inte", "vow": true, "text": "Paladinens direkta attacker helar den svagaste i sällskapet för 20 % av skadan.", "trigger": "damage", "when": {"source": "self", "direct": true}, "effects": [{"type": "heal", "pct_of_event": 0.2, "target": "weakest_ally"}]},
+	"vow_no_fall_held": {
+		"name": "Ingen ska falla",
+		"vow": true,
+		"text": "I början av striden får den svagaste i sällskapet en Barriär för 20 % av sitt liv.",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "barrier",
+				"pct_max_hp": 0.2,
+				"target": "weakest_ally"
+			}
+		]
+	},
+	"vow_no_fall_humble": {
+		"name": "Den som föll reser sig",
+		"vow": true,
+		"text": "En gång under körningen: när någon i sällskapet faller väcks hen med 30 % liv.",
+		"trigger": "death",
+		"once_per_battle": true,
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "revive",
+				"pct": 0.3,
+				"target": "unit"
+			}
+		]
+	},
+	"vow_no_heal_held": {
+		"name": "Jag helar inte",
+		"vow": true,
+		"text": "Paladinens direkta attacker helar den svagaste i sällskapet för 20 % av skadan.",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_of_event": 0.2,
+				"target": "weakest_ally"
+			}
+		]
+	},
 	"troll_hide": {
 		"name": "Trollhud",
 		"enemy": true,
@@ -2281,9 +2517,9 @@
 		]
 	},
 	"porridge_greed": {
-		"name": "Sju sorters gröt",
+		"name": "Grytans hunger",
 		"enemy": true,
-		"text": "Varje gång en hjälte helas blir Gudrun mättare: +10 % Attack (högst 3 gånger).",
+		"text": "Varje gång en hjälte helas växer Grytmoderns hunger: +10 % Attack (högst 3 gånger).",
 		"trigger": "heal",
 		"when": {
 			"target": "enemy"
@@ -2302,7 +2538,7 @@
 	"troll_envy": {
 		"name": "Avund",
 		"enemy": true,
-		"text": "När en hjälte får en buff får Gunnar samma buff (en gång per tur).",
+		"text": "När en hjälte får en buff får Avundsjätten samma buff (en gång per tur).",
 		"trigger": "aura_applied",
 		"when": {
 			"unit": "enemy",
@@ -2320,7 +2556,7 @@
 	"troll_club": {
 		"name": "Klubban",
 		"enemy": true,
-		"text": "Kalles anfall mot en hjälte som Försvarar gör dubbel skada.",
+		"text": "Stenkrossarens anfall mot en hjälte som Försvarar gör dubbel skada.",
 		"trigger": "modify_damage",
 		"when": {
 			"target_has_aura": "defend",
@@ -2351,7 +2587,7 @@
 	"stone_heart": {
 		"name": "Stenhjärta",
 		"enemy": true,
-		"text": "Gör sällskapet samma sorts handling två gånger i rad (anfall efter anfall, förmåga efter förmåga) tar Grumse 60 % mindre skada. Variera!",
+		"text": "Gör sällskapet samma sorts handling två gånger i rad (anfall efter anfall, förmåga efter förmåga) tar Bergakungen 60 % mindre skada. Variera!",
 		"trigger": "modify_damage_taken",
 		"when": {
 			"source_repeats_team_action": true
@@ -2361,7 +2597,11 @@
 		}
 	},
 	"moss_cloak": {
-		"combo": {"needs": "turn_start", "creates": "heal", "scope": "self"},
+		"combo": {
+			"needs": "turn_start",
+			"creates": "heal",
+			"scope": "self"
+		},
 		"name": "Mosskappa",
 		"trophy": true,
 		"rarity": "common",
@@ -2380,8 +2620,12 @@
 		]
 	},
 	"porridge_bowl": {
-		"combo": {"needs": "enemy_heal", "creates": "attack_up", "scope": "self"},
-		"name": "Grötskål",
+		"combo": {
+			"needs": "enemy_heal",
+			"creates": "attack_up",
+			"scope": "self"
+		},
+		"name": "Grytskärva",
 		"trophy": true,
 		"rarity": "common",
 		"text": "När en fiende helas får bäraren +10 % Attack (högst 3 gånger per strid).",
@@ -2401,7 +2645,11 @@
 		]
 	},
 	"envy_stone": {
-		"combo": {"needs": "enemy_buff", "creates": "buff", "scope": "self"},
+		"combo": {
+			"needs": "enemy_buff",
+			"creates": "buff",
+			"scope": "self"
+		},
 		"name": "Avundsten",
 		"trophy": true,
 		"rarity": "common",
@@ -2421,8 +2669,12 @@
 		]
 	},
 	"kalles_club": {
-		"combo": {"needs": "enemy_defend", "creates": "damage_bonus", "scope": "enemy"},
-		"name": "Kalles klubba",
+		"combo": {
+			"needs": "enemy_defend",
+			"creates": "damage_bonus",
+			"scope": "enemy"
+		},
+		"name": "Krossarens klubba",
 		"trophy": true,
 		"rarity": "common",
 		"text": "Bärarens anfall mot en fiende som Försvarar gör +50 % skada.",
@@ -2436,7 +2688,11 @@
 		}
 	},
 	"toll_buckle": {
-		"combo": {"needs": "enemy_provoke", "creates": "damage_bonus", "scope": "enemy"},
+		"combo": {
+			"needs": "enemy_provoke",
+			"creates": "damage_bonus",
+			"scope": "enemy"
+		},
 		"name": "Brospännet",
 		"trophy": true,
 		"rarity": "elite",
@@ -2451,7 +2707,11 @@
 		}
 	},
 	"grey_shawl": {
-		"combo": {"needs": "acted", "creates": "sleep", "scope": "enemies"},
+		"combo": {
+			"needs": "acted",
+			"creates": "sleep",
+			"scope": "enemies"
+		},
 		"name": "Gråluvans sjal",
 		"trophy": true,
 		"rarity": "elite",
@@ -2471,7 +2731,11 @@
 		]
 	},
 	"mountain_crown": {
-		"combo": {"needs": "enemy_repeat", "creates": "damage_reduction", "scope": "self"},
+		"combo": {
+			"needs": "enemy_repeat",
+			"creates": "damage_reduction",
+			"scope": "self"
+		},
 		"name": "Bergakungens krona",
 		"trophy": true,
 		"rarity": "boss",
@@ -2482,6 +2746,547 @@
 		},
 		"modify": {
 			"damage_taken_mult": 0.6
+		}
+	},
+	"spider_snare": {
+		"name": "Fästtråd",
+		"enemy": true,
+		"text": "Bettet snärjer målet i 2 turer (50 %).",
+		"trigger": "damage",
+		"chance": 0.5,
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack",
+			"target": "enemy"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "snared",
+				"duration": 2,
+				"target": "target"
+			}
+		]
+	},
+	"venom_thread": {
+		"name": "Gift i tråden",
+		"enemy": true,
+		"text": "När en hjälte blir Snärjd förgiftar Gifttanden hen i 3 turer.",
+		"trigger": "aura_applied",
+		"when": {
+			"aura": "snared",
+			"unit": "enemy"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"target": "unit"
+			}
+		]
+	},
+	"dust_eyes": {
+		"name": "Damm i ögonen",
+		"enemy": true,
+		"text": "Bettet förblindar en Förgiftad hjälte till efter hens nästa tur.",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack",
+			"target": "enemy",
+			"target_has_aura": "poisoned"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "blind",
+				"duration": 2,
+				"target": "target"
+			}
+		]
+	},
+	"spider_barbs": {
+		"name": "Hullingar",
+		"enemy": true,
+		"text": "En Förblindad hjälte som anfaller börjar blöda (1 tur).",
+		"trigger": "damage",
+		"when": {
+			"source": "enemy",
+			"target": "ally",
+			"direct": true,
+			"kind": "attack",
+			"source_has_aura": "blind"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "bleeding",
+				"duration": 1,
+				"target": "source"
+			}
+		]
+	},
+	"weaver_lull": {
+		"name": "Dvalans nät",
+		"enemy": true,
+		"text": "Anfall mot en Snärjd hjälte söver hen (tills hen tar skada).",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack",
+			"target": "enemy",
+			"target_has_aura": "snared"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sleeping",
+				"duration": 2,
+				"target": "target"
+			}
+		]
+	},
+	"devour": {
+		"name": "Sluka",
+		"enemy": true,
+		"text": "Anfall mot en Snärjd gör dubbel skada och helar Slukaren med hälften. Snärjningen släpper.",
+		"trigger": "modify_damage",
+		"when": {
+			"kind": "attack",
+			"target_has_aura": "snared"
+		},
+		"modify": {
+			"damage_mult": 2.0
+		},
+		"parts": [
+			"devour_feed"
+		]
+	},
+	"devour_feed": {
+		"name": "Sluka",
+		"hidden": true,
+		"enemy": true,
+		"text": "",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack",
+			"target": "enemy",
+			"target_has_aura": "snared"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_of_event": 0.5,
+				"target": "self"
+			},
+			{
+				"type": "remove_aura",
+				"aura": "snared",
+				"target": "target"
+			}
+		]
+	},
+	"knot_end": {
+		"name": "Trådens slut",
+		"enemy": true,
+		"text": "I början av sin tur snärjer Strypvävaren den hjälte som står överst på tidslinjen.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "snared",
+				"duration": 2,
+				"target": "top_enemy"
+			}
+		]
+	},
+	"mother_thread": {
+		"name": "Moderns tråd",
+		"enemy": true,
+		"text": "Den som sliter sig loss ur Snärjd förgiftas i 3 turer.",
+		"trigger": "aura_removed",
+		"when": {
+			"aura": "snared",
+			"reason": "broke_free",
+			"unit": "enemy"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"target": "unit"
+			}
+		]
+	},
+	"arachnophobia": {
+		"name": "Spindelskräck",
+		"enemy": true,
+		"counter": true,
+		"original": "Woolly Arachnalisk (Arachnophobia)",
+		"text": "Motdrag: Snärjda hjältar tar dubbel skada av gift.",
+		"card": "snärjda tar dubbel giftskada",
+		"trigger": "modify_damage",
+		"scope": "party",
+		"when": {
+			"ability": "poisoned",
+			"target_has_aura": "snared"
+		},
+		"modify": {
+			"damage_mult": 2.0
+		}
+	},
+	"thread_spool": {
+		"combo": {
+			"needs": "first_attack",
+			"creates": "snared",
+			"scope": "enemy"
+		},
+		"name": "Snärjtråden",
+		"trophy": true,
+		"text": "Bärarens första anfall i striden snärjer målet (längst ned på tidslinjen).",
+		"answers": "Grupper som slår först (Lansen, Irrbloss)",
+		"trigger": "damage",
+		"once_per_battle": true,
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack",
+			"target": "enemy"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "snared",
+				"target": "target"
+			}
+		]
+	},
+	"silk_noose": {
+		"combo": {
+			"needs": "snared",
+			"creates": "damage_bonus",
+			"scope": "enemy"
+		},
+		"name": "Sidenslingan",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Bäraren gör 25 % mer skada mot Snärjda fiender.",
+		"answers": "Höga liv och långa strider",
+		"trigger": "modify_damage",
+		"when": {
+			"target_has_aura": "snared"
+		},
+		"modify": {
+			"damage_mult": 1.25
+		}
+	},
+	"venom_fang": {
+		"combo": {
+			"needs": "snared",
+			"creates": "poisoned",
+			"scope": "enemy"
+		},
+		"name": "Gifttanden",
+		"trophy": true,
+		"text": "När en fiende blir Snärjd förgiftar bäraren den i 3 turer.",
+		"answers": "Benrustning och Asketen (indirekt skada biter)",
+		"trigger": "aura_applied",
+		"when": {
+			"aura": "snared",
+			"unit": "enemy"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"target": "unit"
+			}
+		]
+	},
+	"emerald_venom": {
+		"combo": {
+			"needs": "snared",
+			"creates": "damage_bonus",
+			"scope": "enemy"
+		},
+		"name": "Smaragdgiftet",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Bärarens gift gör 50 % mer skada på Snärjda fiender.",
+		"answers": "Bossar med mycket liv",
+		"trigger": "modify_damage",
+		"when": {
+			"ability": "poisoned",
+			"target_has_aura": "snared"
+		},
+		"modify": {
+			"damage_mult": 1.5
+		}
+	},
+	"dust_tuft": {
+		"combo": {
+			"needs": "poisoned",
+			"creates": "blind",
+			"scope": "enemy"
+		},
+		"name": "Dammkörteln",
+		"trophy": true,
+		"text": "Bärarens anfall mot en Förgiftad fiende förblindar den till efter dess nästa tur.",
+		"answers": "Starka anfallare",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack",
+			"target": "enemy",
+			"target_has_aura": "poisoned"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "blind",
+				"duration": 2,
+				"target": "target"
+			}
+		]
+	},
+	"ash_cloud": {
+		"combo": {
+			"needs": "blind",
+			"creates": "damage_bonus",
+			"scope": "enemy"
+		},
+		"name": "Askmolnet",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Bärarens anfall gör 25 % mer skada mot Förblindade fiender.",
+		"answers": "Kombinationen med Immas Rökpil",
+		"trigger": "modify_damage",
+		"when": {
+			"kind": "attack",
+			"target_has_aura": "blind"
+		},
+		"modify": {
+			"damage_mult": 1.25
+		}
+	},
+	"barbed_thread": {
+		"combo": {
+			"needs": "blind",
+			"creates": "bleeding",
+			"scope": "enemy"
+		},
+		"name": "Hullingtråden",
+		"trophy": true,
+		"text": "En Förblindad fiende som skadar någon i sällskapet börjar blöda (1 tur).",
+		"answers": "Elitfiender som slår hårt",
+		"trigger": "damage",
+		"when": {
+			"source": "enemy",
+			"target": "ally",
+			"direct": true,
+			"kind": "attack",
+			"source_has_aura": "blind"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "bleeding",
+				"duration": 1,
+				"target": "source"
+			}
+		]
+	},
+	"rose_thorn": {
+		"combo": {
+			"needs": "hit_taken",
+			"creates": "bleeding",
+			"scope": "enemy"
+		},
+		"name": "Blodtornet",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "En Snärjd fiende som anfaller bäraren börjar blöda (1 tur).",
+		"answers": "Långsamma, tunga slag",
+		"trigger": "damage",
+		"when": {
+			"source": "enemy",
+			"target": "self",
+			"direct": true,
+			"kind": "attack",
+			"source_has_aura": "snared"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "bleeding",
+				"duration": 1,
+				"target": "source"
+			}
+		]
+	},
+	"lull_web": {
+		"combo": {
+			"needs": "snared",
+			"creates": "sleeping",
+			"scope": "enemy"
+		},
+		"name": "Dvalnätet",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Bärarens anfall mot en Snärjd fiende söver den (tills den tar skada).",
+		"answers": "Elitfiender som slår först",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack",
+			"target": "enemy",
+			"target_has_aura": "snared"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sleeping",
+				"duration": 2,
+				"target": "target"
+			}
+		]
+	},
+	"devour_maw": {
+		"combo": {
+			"needs": "snared",
+			"creates": "heal",
+			"scope": "self"
+		},
+		"name": "Slukarens käke",
+		"trophy": true,
+		"rarity": "elite",
+		"text": "Bärarens anfall mot en Snärjd fiende gör 60 % mer skada och helar bäraren med 30 %. Snärjningen släpper.",
+		"answers": "Nötning",
+		"trigger": "modify_damage",
+		"when": {
+			"kind": "attack",
+			"target_has_aura": "snared"
+		},
+		"modify": {
+			"damage_mult": 1.6
+		},
+		"parts": [
+			"devour_maw_feed"
+		]
+	},
+	"devour_maw_feed": {
+		"name": "Slukarens käke",
+		"hidden": true,
+		"text": "",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true,
+			"kind": "attack",
+			"target": "enemy",
+			"target_has_aura": "snared"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_of_event": 0.3,
+				"target": "self"
+			},
+			{
+				"type": "remove_aura",
+				"aura": "snared",
+				"target": "target"
+			}
+		]
+	},
+	"knot_eye": {
+		"combo": {
+			"needs": "turn_start",
+			"creates": "snared",
+			"scope": "enemy"
+		},
+		"name": "Strypvävarens öga",
+		"trophy": true,
+		"rarity": "boss",
+		"text": "I början av bärarens tur snärjs fienden som står överst på tidslinjen, men bäraren börjar striden längst ned.",
+		"answers": "Grupper som slår först",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "snared",
+				"duration": 2,
+				"target": "top_enemy"
+			}
+		],
+		"parts": [
+			"knot_eye_cost"
+		]
+	},
+	"knot_eye_cost": {
+		"name": "Strypvävarens öga (kostnad)",
+		"hidden": true,
+		"text": "Bäraren börjar striden längst ned.",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "to_bottom",
+				"target": "self"
+			}
+		]
+	},
+	"mother_silk": {
+		"combo": {
+			"needs": "snared",
+			"creates": "poisoned",
+			"scope": "enemies"
+		},
+		"name": "Moderns silke",
+		"trophy": true,
+		"rarity": "boss",
+		"text": "Fiender som sliter sig loss ur Snärjd förgiftas i 3 turer, men sällskapets anfall gör 15 % mindre skada.",
+		"answers": "Bossar (de sliter sig loss oftare)",
+		"trigger": "aura_removed",
+		"when": {
+			"aura": "snared",
+			"reason": "broke_free",
+			"unit": "enemy"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "poisoned",
+				"target": "unit"
+			}
+		],
+		"parts": [
+			"mother_silk_cost"
+		]
+	},
+	"mother_silk_cost": {
+		"name": "Moderns silke",
+		"hidden": true,
+		"text": "",
+		"trigger": "modify_damage",
+		"scope": "party",
+		"when": {
+			"kind": "attack"
+		},
+		"modify": {
+			"damage_mult": 0.85
 		}
 	}
 }

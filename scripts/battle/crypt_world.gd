@@ -7,9 +7,13 @@ const ARENA_RADIUS := 7.5
 const CAMERA_POS := Vector3(0.0, 8.6, 8.4)
 const CAMERA_LOOK := Vector3(0.4, 1.3, -0.9)
 
+## 0.31: "grove" (Sidenlunden, realms.json "style") gör kryptan till en lund: grönare dimma, mossigt golv, stammar med
+## nät i stället för pelare och kokonger i stället för ben. Sätts före add_child.
+var style := "crypt"
 var camera: Camera3D
 var shake := 0.0
 var _torches: Array[OmniLight3D] = []
+var _trunks: Array[Vector3] = []
 var _runes: StandardMaterial3D
 var _t := 0.0
 var _rng := RandomNumberGenerator.new()
@@ -20,7 +24,10 @@ func _ready() -> void:
 	_build_environment()
 	_build_floor()
 	_build_pillars()
-	_build_bones()
+	if style == "grove":
+		_build_webs()
+	else:
+		_build_bones()
 	camera = Camera3D.new()
 	camera.fov = 40.0
 	add_child(camera)
@@ -74,23 +81,24 @@ func make_telegraph(radius: float) -> Node3D:
 func _build_environment() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.02, 0.018, 0.03)
+	var grove := style == "grove"
+	env.background_color = Color(0.015, 0.025, 0.02) if grove else Color(0.02, 0.018, 0.03)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.4, 0.37, 0.46)
+	env.ambient_light_color = Color(0.36, 0.44, 0.38) if grove else Color(0.4, 0.37, 0.46)
 	env.ambient_light_energy = 0.55
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.glow_enabled = true
 	env.glow_intensity = 0.6
 	env.glow_bloom = 0.05
 	env.fog_enabled = true
-	env.fog_light_color = Color(0.08, 0.06, 0.12)
+	env.fog_light_color = Color(0.06, 0.1, 0.07) if grove else Color(0.08, 0.06, 0.12)
 	env.fog_density = 0.02
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
 
 	var moon := DirectionalLight3D.new()
-	moon.light_color = Color(0.7, 0.72, 1.0)
+	moon.light_color = Color(0.75, 0.9, 0.8) if grove else Color(0.7, 0.72, 1.0)
 	moon.light_energy = 0.55
 	moon.shadow_enabled = true
 	moon.rotation_degrees = Vector3(-62, -35, 0)
@@ -118,7 +126,7 @@ func _build_floor() -> void:
 	ramp.set_color(1, Color(0.9, 0.88, 0.85))
 	tex.color_ramp = ramp
 	var stone := StandardMaterial3D.new()
-	stone.albedo_color = Color(0.42, 0.39, 0.38)
+	stone.albedo_color = Color(0.3, 0.36, 0.26) if style == "grove" else Color(0.42, 0.39, 0.38)
 	stone.albedo_texture = tex
 	stone.uv1_scale = Vector3(6, 6, 6)
 	stone.roughness = 0.95
@@ -142,7 +150,7 @@ func _build_floor() -> void:
 	d.radial_segments = 64
 	dais.mesh = d
 	var dais_mat := stone.duplicate() as StandardMaterial3D
-	dais_mat.albedo_color = Color(0.45, 0.42, 0.47)
+	dais_mat.albedo_color = Color(0.34, 0.38, 0.3) if style == "grove" else Color(0.45, 0.42, 0.47)
 	dais.material_override = dais_mat
 	dais.position.y = 0.0
 	add_child(dais)
@@ -151,7 +159,7 @@ func _build_floor() -> void:
 	_runes.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	# 0.22.1: tonad, så att runcirkeln läses som en del av golvet och inte som en markering i striden.
 	_runes.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_runes.albedo_color = Color(0.42, 0.36, 0.55, 0.28)
+	_runes.albedo_color = Color(0.85, 0.85, 0.8, 0.22) if style == "grove" else Color(0.42, 0.36, 0.55, 0.28)
 	_runes.emission_enabled = false
 	for r in [3.2, 4.4]:
 		var ring := MeshInstance3D.new()
@@ -177,8 +185,9 @@ func _build_floor() -> void:
 
 func _build_pillars() -> void:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.3, 0.28, 0.32)
+	mat.albedo_color = Color(0.22, 0.17, 0.12) if style == "grove" else Color(0.3, 0.28, 0.32)
 	mat.roughness = 0.9
+	_trunks.clear()
 	for i in 10:
 		var a := i * TAU / 10.0 + 0.3
 		var p := Vector3(cos(a) * ARENA_RADIUS, 0, sin(a) * ARENA_RADIUS * 0.85)
@@ -186,13 +195,14 @@ func _build_pillars() -> void:
 			continue  # inga pelare framför kameran
 		var pillar := MeshInstance3D.new()
 		var cyl := CylinderMesh.new()
-		cyl.top_radius = 0.45
-		cyl.bottom_radius = 0.55
+		cyl.top_radius = 0.3 if style == "grove" else 0.45
+		cyl.bottom_radius = 0.6 if style == "grove" else 0.55
 		cyl.height = 5.0
 		pillar.mesh = cyl
 		pillar.material_override = mat
 		pillar.position = p + Vector3(0, 2.5, 0)
 		add_child(pillar)
+		_trunks.append(p)
 		if i % 2 == 0:
 			var torch := OmniLight3D.new()
 			torch.light_color = Color(1.0, 0.55, 0.2)
@@ -235,6 +245,49 @@ func _build_bones() -> void:
 		skull.material_override = mat
 		skull.position = Vector3(cos(a) * 5.8, 0.1, sin(a) * 5.0)
 		add_child(skull)
+
+
+## Sidenlunden: nät mellan stammarna och kokonger på marken.
+func _build_webs() -> void:
+	var silk := _flat_material(Color(0.92, 0.92, 0.88, 0.35))
+	for i in _trunks.size():
+		var a: Vector3 = _trunks[i]
+		var b: Vector3 = _trunks[(i + 1) % _trunks.size()]
+		if a.distance_to(b) > 6.0:
+			continue
+		for k in 4:
+			var h1 := _rng.randf_range(0.6, 4.2)
+			var h2 := _rng.randf_range(0.6, 4.2)
+			_strand(a + Vector3(0, h1, 0), b + Vector3(0, h2, 0), silk)
+		for k in 3:
+			_strand(a + Vector3(0, _rng.randf_range(1.0, 4.0), 0), a.lerp(Vector3.ZERO, 0.25) + Vector3(0, 0.02, 0), silk)
+	var cocoon := StandardMaterial3D.new()
+	cocoon.albedo_color = Color(0.62, 0.6, 0.53)
+	cocoon.roughness = 1.0
+	for i in 6:
+		var a := _rng.randf() * TAU
+		var d := _rng.randf_range(5.6, ARENA_RADIUS - 0.4)
+		var c := MeshInstance3D.new()
+		var cap := CapsuleMesh.new()
+		cap.radius = 0.13
+		cap.height = _rng.randf_range(0.45, 0.75)
+		cap.radial_segments = 8
+		c.mesh = cap
+		c.material_override = cocoon
+		c.position = Vector3(cos(a) * d, 0.15, sin(a) * d * 0.85)
+		c.rotation = Vector3(PI / 2, _rng.randf() * TAU, 0)
+		add_child(c)
+
+
+func _strand(from: Vector3, to: Vector3, mat: Material) -> void:
+	var m := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(0.015, 0.015, from.distance_to(to))
+	m.mesh = box
+	m.material_override = mat
+	add_child(m)
+	m.position = (from + to) * 0.5
+	m.look_at_from_position(m.position, to, Vector3.UP if absf((to - from).normalized().y) < 0.95 else Vector3.RIGHT)
 
 
 func _flat_material(c: Color, emissive := false) -> StandardMaterial3D:

@@ -180,5 +180,63 @@
 				"floor": 2
 			}
 		]
+	},
+	"grove": {
+		"name": "Sidenlunden",
+		"text": "Vävmodern och hennes spindlar. De snärjer, förgiftar och förblindar, en tråd i taget.",
+		"floors": [
+			"grove_1",
+			"grove_2",
+			"grove_3"
+		],
+		"short": "Lunden",
+		"objects": [
+			"cocoon",
+			"dew_web",
+			"silk_trail",
+			"hourglass"
+		],
+		"pools": [
+			[
+				"grove_1a",
+				"grove_1b",
+				"grove_1c"
+			],
+			[
+				"grove_2a",
+				"grove_2b",
+				"grove_2c",
+				"grove_2d"
+			],
+			[
+				"grove_3a",
+				"grove_3b",
+				"grove_3c",
+				"grove_3d",
+				"grove_2a"
+			]
+		],
+		"elite_pools": [
+			[
+				"grove_e1"
+			],
+			[
+				"grove_e2",
+				"grove_e3",
+				"grove_e4"
+			]
+		],
+		"map": {
+			"rect": [
+				548,
+				404,
+				250,
+				168
+			],
+			"vignette": "graskogen",
+			"zoom_image": "graskogen"
+		},
+		"style": "grove",
+		"disciples": []
 	}
 }

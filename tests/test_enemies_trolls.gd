@@ -61,7 +61,7 @@ func test_porridge_grows_when_heroes_are_healed() -> void:
 	alva.hp = alva.max_hp * 0.5
 	sim._heal(alva, alva, 5.0, "healing_light")
 	sim.drain_events()
-	assert_true(gudrun.stat("attack") > atk, "Gudrun blir mättare")
+	assert_true(gudrun.stat("attack") > atk, "Grytmodern blir mättare")
 
 
 func test_envy_copies_a_hero_buff() -> void:
@@ -73,7 +73,7 @@ func test_envy_copies_a_hero_buff() -> void:
 			buff = id
 			break
 	sim._add_aura(sim.unit("paladin"), sim.unit("brokk"), buff)
-	assert_true(gunnar.auras.has(buff), "Gunnar fick samma buff (%s)" % buff)
+	assert_true(gunnar.auras.has(buff), "Avundsjätten fick samma buff (%s)" % buff)
 
 
 func test_club_doubles_against_defending() -> void:

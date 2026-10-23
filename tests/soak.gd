@@ -133,7 +133,7 @@ func _soak(s: int) -> void:
 func _roll_config() -> Dictionary:
 	var c := {}
 	c.first = pick.randf() < 0.2
-	c.realm = "crypt" if c.first else ["crypt", "chapel"][pick.randi() % 2]
+	c.realm = "crypt" if c.first else String(data.realms.keys()[pick.randi() % data.realms.size()])
 	c.depth = 1 if c.first else pick.randi_range(1, 3)
 	c.instability = 0 if c.first else pick.randi_range(0, 3)
 	var vows: Array = [""] + data.vows.keys().filter(func(k: String) -> bool: return not k.begins_with("_"))
@@ -925,7 +925,7 @@ func _career_report(from: int, runs: int, descents: int) -> void:
 		_setup_profile()
 		var losses := 0
 		for d in descents:
-			var realm: String = ["crypt", "chapel"][d % 2] if d > 0 else "crypt"
+			var realm: String = String(data.realms.keys()[d % data.realms.size()]) if d > 0 else "crypt"  # 0.31: alla Realms i tur
 			profile.realm = realm
 			var before := profile.silver
 			var best_before := profile.best_depth
