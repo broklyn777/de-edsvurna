@@ -1,0 +1,17 @@
+Du är en erfaren speldesigner och provspelare. Jag bygger "De edsvurna", ett svenskt turordnings-RPG för mobil i stil
+med Siralim Ultimate (med lite WoW-tänk: tank, helare, skada). Nedan följer en logg från en provspelning gjord av en
+AI-agent: varje skärm den såg och varje val den gjorde, genom fem nedstigningar. Läs den som om du själv satt med.
+
+Min största oro: UPPREPNING. Att man möter samma boss, samma monster och samma elitgrupper på varje djup, bara starkare.
+Själva striderna är roliga, och att dö och gå tillbaka för att träna är något jag VILL ha.
+
+Svara på svenska, rakt och ärligt, gärna tufft:
+1. De 5 största upprepningsproblemen du ser i loggen, rangordnade. Citera loggen där det syns.
+2. För varje problem: ett konkret förslag som passar ett turordningsspel med makron (inga realtidsmekaniker som
+   "spring bakom en pelare"), och om möjligt hur Siralim Ultimate eller ett annat spel löser det.
+3. Var verkar spelaren sluta läsa eller klicka förbi? Vad borde synas tydligare?
+4. Vad i loggen ser roligt eller lovande ut – det vi ska bygga mer av?
+5. Tre saker du skulle ändra först om du bara fick ändra tre.
+Hitta inte på fakta om spelet som inte står i loggen; säg till om något är oklart.
+
+LOGGEN:
