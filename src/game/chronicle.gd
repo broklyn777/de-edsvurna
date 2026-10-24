@@ -147,6 +147,10 @@ static func end(profile: Profile, data: Dictionary, state: RunState, outcome: St
 		if not quiet.is_empty():
 			map_lines.append(quiet.text)
 	profile.homecoming.summary = map_lines + Array(world.get("lines", []))
+	# tydliga-val: efter en förlust säger Mäster Gorm ett eller två konkreta råd ur läget (LossTips), inte i introts trappa.
+	if outcome in ["loss", "forfeit"] and not state.first_descent and not state.practice:
+		profile.homecoming.tips = LossTips.pick(profile, data, LossTips.context(state)).map(
+				func(t: Dictionary) -> String: return String(t.text))
 	return entry
 
 
@@ -775,6 +779,8 @@ static func simulate(profile: Profile, data: Dictionary, spec: Dictionary) -> Di
 	s.realm = String(spec.get("realm", "crypt"))
 	s.depth = int(spec.get("depth", 1))
 	s.party.assign(spec.get("party", profile.party))
+	s.floor = int(spec.get("floor", 0))
+	s.charges = (spec.get("charges", {}) as Dictionary).duplicate(true)  # körningens Charges vid slutet (LossTips)
 	profile.descents[s.realm] = int(profile.descents.get(s.realm, 0)) + 1
 	profile.growth_news = {}
 	s.chron = begin(profile, s.party)
@@ -845,7 +851,7 @@ static func demo(profile: Profile, data: Dictionary) -> void:
 ## sällskapet förlorade; boss3: tredje segern mot Benfursten (bosstrofé och ny titel); rare: Ragnhild befriad och en
 ## sällsynt sten; depth: ett nytt djup och ett hållet löfte. Den levande världen: event_lost (mässan hölls), event_won
 ## (karavanen räddad), start (en händelse börjar), loss (andra förlusten i rad, med ett råd), cost (lunden når steg 3,
-## Hedda får inget järn), gift (kryptan trycks tillbaka, arbetarna hittar något).
+## Hedda får inget järn), gift (kryptan trycks tillbaka, arbetarna hittar något), tip (en förlust med Gorms konkreta råd).
 static func demo_home(profile: Profile, data: Dictionary, kind: String) -> void:
 	profile.intro_done = true
 	for id in ["imma", "brokk", "alva"]:
@@ -900,6 +906,14 @@ static func demo_home(profile: Profile, data: Dictionary, kind: String) -> void:
 			# karta-synlig: hem utan en vunnen strid; kartan ändras inte, och en rad pekar på kapellet som växer härnäst.
 			profile.growth_last = {"crypt": 3, "chapel": 0}
 			simulate(profile, data, {"party": party, "outcome": "home", "wins": 0, "map": true})
+		"tip":
+			# tydliga-val: en förlust mot Benfursten med Alvas helningar slut och silver till Brokks sköld (Gorms råd).
+			profile.silver = 260
+			profile.forge("brokk", "shield", "stone_wall")
+			profile.silver = 260
+			profile.artifacts.brokk.level = 3
+			simulate(profile, data, {"party": party, "depth": 1, "floor": 2, "outcome": "loss", "lost_to": "crypt_3",
+					"charges": {"alva": {"healing_light": 0, "renew": 1}, "brokk": {"stone_wall": 2}}, "wins": 4})
 		"fell":
 			profile.chron_stats.falls = {"brokk": 2}
 			simulate(profile, data, {"party": party, "depth": 2, "outcome": "loss", "fell": {"brokk": 2, "alva": 1}, "map": true})
