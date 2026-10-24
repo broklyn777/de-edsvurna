@@ -116,7 +116,8 @@ func _chip_rect(i: int) -> Rect2:
 
 
 func _hero_rect(i: int) -> Rect2:
-	var w := (size.x - MARGIN * 2 - GAP * 3) / 4.0
+	var n := maxi(4, run.state.party.size())  # prototyp (sallskap-fem): fem kort på raden
+	var w := (size.x - MARGIN * 2 - GAP * (n - 1)) / float(n)
 	return Rect2(MARGIN + i * (w + GAP), 396, w, 116)
 
 

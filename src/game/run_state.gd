@@ -167,6 +167,7 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	if profile.intro_done:
 		s.set_vow(data, profile.vow)
 	s.owned_heroes = profile.recruited.size() + 1
+	s.party_slots = profile.party_slots()
 	s.place_prisoners(data, profile.recruited, int(profile.descents.get(profile.realm, 0)))
 	# 0.26.3 (Siralim): hjältarna bär sina troféer ur samlingen in i varje körning.
 	for hero_id in profile.worn:
@@ -257,6 +258,7 @@ func set_realm(data: Dictionary, realm_id: String) -> void:
 	if data.get("realms", {}).has(realm_id):
 		realm = realm_id
 		floor_ids = data.realms[realm_id].floors
+		realm_party = int(data.realms[realm_id].get("party", Profile.BASE_SLOTS))
 
 
 ## Den levande kartan: Realmens fördärv för körningen. På steg 4 tar den förvridna bossen den vanligas plats.
@@ -379,7 +381,7 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = 
 		unlocked_bosses: Array = []) -> Array[String]:
 	var sure: Array[String] = []
 	# Den levande kartan: den förvridna bossen lämnar alltid sin trofé (den visar sig bara på steg 4).
-	for kind in CombatSim.enemy_lineup(data, data.encounters[encounter()].enemies, party.size()):
+	for kind in lineup(data, encounter()):
 		var tt: String = data.enemies[kind].get("trophy", "")
 		if data.enemies[kind].get("twisted", false) and tt != "" and not trophies.has(tt):
 			sure.append(tt)
@@ -389,7 +391,7 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = 
 			sure.append(t)
 	var offer: Array[String] = []
 	# 0.23.3: bara de fiender som faktiskt mötte sällskapet (ett litet sällskap möter färre).
-	for kind in CombatSim.enemy_lineup(data, data.encounters[encounter()].enemies, party.size()):
+	for kind in lineup(data, encounter()):
 		if data.enemies[kind].get("boss", false) and not unlocked_bosses.has(kind):
 			continue
 		var t: String = data.enemies[kind].get("trophy", "")
@@ -476,6 +478,11 @@ const SMALL_PARTY_ELITE := 0.8
 ## 0.30.21: hur många hjältar profilen äger (Paladinen + lärjungarna). Med fyra eller fler balanseras striderna mot
 ## fyra oavsett hur många man tar med (CombatSim "full_party"); färre är spelarens eget val.
 var owned_heroes := 0
+## Prototyp (sallskap-fem): hur många hjältar sällskapet rymmer, Paladinen inräknad (Profile.party_slots()).
+var party_slots := Profile.BASE_SLOTS
+## Hur stort sällskap Realmen är balanserad mot (realms.json "party", annars fyra): kryptan och kapellet fyra,
+## Trollberget fem. Den som äger så många och har platserna möter fiender som mot så många, även med färre.
+var realm_party := Profile.BASE_SLOTS
 ## 0.25: den första striden gör paladinen ensam (Imma smiter efter först efteråt). Den ska vara lika lätt som övningen:
 ## fienderna ×0,80 till (vårt val, mätt med botarna: tests/test_story.gd och BALANS=forsta).
 const FIRST_FIGHT_ALONE := 0.80
@@ -770,6 +777,32 @@ static func is_common_group(r: Dictionary) -> bool:
 
 ## Inställningar till CombatSim för rutans strid (regler, elit, Nemesis, helgedomens gåva). "floor" är gruppens tier, som
 ## ger fiendernas nivå (HeroStats.enemy_level).
+## Sällskapets storlek som fienderna balanseras mot (CombatSim "full_party"), eller 0 = efter dem som är med.
+## En Realm byggd för fem (Trollberget, VD) är alltid balanserad mot fem, hur många man än äger eller har platser för:
+## med fyra kan man titta in och vinna vanliga grupper, men eliter, väktare och bossen slår en oftast. I kryptan och
+## kapellet (fyra) gäller 0.30.21: den som äger fyra möter fiender som mot fyra, annars efter sällskapet.
+func full_party_size() -> int:
+	if realm_party > Profile.BASE_SLOTS:
+		return realm_party
+	return Profile.BASE_SLOTS if owned_heroes >= Profile.BASE_SLOTS else 0
+
+
+## true när Realmen är byggd för fler än profilen har platser för (kampanjkartans varning).
+static func realm_too_big(profile: Profile, data: Dictionary, realm_id: String) -> bool:
+	return int(data.get("realms", {}).get(realm_id, {}).get("party", Profile.BASE_SLOTS)) > profile.party_slots()
+
+
+## Storleken fienderna ställs upp mot (CombatSim.party_scale_size med battle_opts():s "full_party").
+func lineup_size() -> int:
+	return CombatSim.party_scale_size({"full_party": full_party_size()}, party.size())
+
+
+## Fienderna som möter sällskapet i ett möte (samma uppställning som CombatSim.create med battle_opts()).
+func lineup(data: Dictionary, encounter_id: String) -> Array:
+	var size := lineup_size()
+	return CombatSim.enemy_lineup(data, CombatSim.encounter_kinds(data.encounters[encounter_id], size), size)
+
+
 func battle_opts() -> Dictionary:
 	var r := current_room()
 	var tier := int(r.get("tier", floor))
@@ -795,8 +828,8 @@ func battle_opts() -> Dictionary:
 			opts.first_descent_elite = FIRST_DESCENT_ELITE
 		elif r.get("elite", false) or r.get("nemesis", false):
 			opts.first_descent_elite = 1.0  # våning 2: bara mötets egen styrka, om den finns
-	if owned_heroes >= 4:
-		opts.full_party = true
+	if full_party_size() > 0:
+		opts.full_party = full_party_size()
 	elif not first_descent and party.size() <= 2 and floor == 0 and (r.get("elite", false) or r.get("nemesis", false)):
 		opts.stat_bonus = float(opts.get("stat_bonus", 1.0)) * SMALL_PARTY_ELITE
 	# Den levande kartan: Realmens fördärv (steg 2–4) gör alla grupper starkare, som en mildare instabilitet.
@@ -1200,7 +1233,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
-		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "quest_hints", "trail_taken", "growth", "twisted",
+		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "party_slots", "realm_party", "quest_hints", "trail_taken", "growth", "twisted",
 		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour"]
 
 

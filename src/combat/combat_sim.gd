@@ -95,7 +95,10 @@ const TURN_LIMIT := 5
 ## 0.23: fiendernas styrka efter sällskapets storlek (1–4 hjältar). Vårt val, mätt med botarna. 0.30.21 (VD): bara när
 ## profilen äger färre än fyra hjältar; den som har fyra och väljer färre möter fiender som mot fyra
 ## (opts "full_party", även antalet fiender).
-const PARTY_SCALE := {1: 0.45, 2: 0.54, 3: 0.64, 4: 1.0}
+## Prototyp (sallskap-fem): fem hjältar (Trollberget och senare, eller fem i en lägre Realm) mot ×PARTY_SCALE[5].
+const PARTY_SCALE := {1: 0.45, 2: 0.54, 3: 0.64, 4: 1.0, 5: 1.0}
+## Största sällskapet striden har platser och skalning för.
+const MAX_HEROES := 5
 const TURN_PROC_LIMIT := 60
 ## Handlingar en hjälte kan göra på sin tur ("ability" kräver vilken förmåga).
 const ACTIONS := ["attack", "ability", "defend", "provoke", "skip"]
@@ -103,7 +106,7 @@ const ACTIONS := ["attack", "ability", "defend", "provoke", "skip"]
 const HERO_SLOTS := [Vector2(-95, 10), Vector2(-150, -75), Vector2(-165, 95), Vector2(-230, 15),
 		Vector2(-240, -110), Vector2(-250, 130)]
 const ENEMY_SLOTS := [Vector2(105, 5), Vector2(160, -80), Vector2(170, 90), Vector2(235, 0),
-		Vector2(245, -120), Vector2(250, 125)]
+		Vector2(280, -150), Vector2(290, 150)]  # 5:e och 6:e längre ut (sallskap-fem: färre överlappande namn)
 
 var data: Dictionary
 var units: Array[CombatUnit] = []
@@ -170,8 +173,8 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	# 0.27: en elitgrupp (elitfiender i rollen) får ingen påtvingad elitvariant; Nemesis blir den första elitfienden.
 	if enc_def.get("elite_group", false):
 		forced = 0
-	var counter := counter_for(game_data, encounter_id, maxi(depth, 1), opts, party.size() if not party.is_empty()
-			else enc_def.party.size())
+	var counter := counter_for(game_data, encounter_id, maxi(depth, 1), opts, party_scale_size(opts, party.size() if not party.is_empty()
+			else enc_def.party.size()))
 	if not artifacts.is_empty():
 		# Artefakternas egenskaper skapas för den här striden, utan att röra den delade datan.
 		sim.data = game_data.duplicate()
@@ -211,10 +214,10 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		sim._add(hero)
 		sim.heroes.append(hero)
 	# 0.23: ett mindre sällskap möter svagare fiender (Health, Attack och Intelligence; vårt val).
-	var scale_size := 4 if opts.get("full_party", false) else sim.heroes.size()
-	var party_mult := float(PARTY_SCALE[clampi(scale_size, 1, 4)])
+	var scale_size := party_scale_size(opts, sim.heroes.size())
+	var party_mult := float(PARTY_SCALE[scale_size]) * (FIVE_CAPPED_SCALE if scale_size >= 5 and max_enemies <= 5 else 1.0)
 	var counts := {}
-	var lineup := enemy_lineup(game_data, enc.enemies, scale_size)
+	var lineup := enemy_lineup(game_data, encounter_kinds(enc, scale_size), scale_size)
 	for i in lineup.size():
 		var kind: String = lineup[i]
 		counts[kind] = counts.get(kind, 0) + 1
@@ -279,7 +282,7 @@ static func counter_for(game_data: Dictionary, encounter_id: String, at_depth: i
 		return {}
 	var enc: Dictionary = game_data.encounters[encounter_id]
 	var forced := 0 if enc.get("elite_group", false) else int(opts.get("force_elites", 0))
-	var lineup := enemy_lineup(game_data, enc.enemies, party_size)
+	var lineup := enemy_lineup(game_data, encounter_kinds(enc, party_size), party_size)
 	for i in lineup.size():
 		var d: Dictionary = game_data.enemies[lineup[i]]
 		var c: Dictionary = d.get("counter", {})
@@ -311,6 +314,30 @@ func _family(u: CombatUnit) -> Array[CombatUnit]:
 ## 0.23.3: högst så många fler fiender än hjältar (vårt val). Fyra fiender mot två hjältar fick dubbelt så många turer
 ## som sällskapet även med svagare stats.
 const EXTRA_ENEMIES := 1
+## Prototyp (sallskap-fem): högst så många fiender på slagfältet (ENEMY_SLOTS har sex). Botarna prövar 5 (GROTTA_TAK=5,
+## färre modeller på telefonen); då slår FIVE_CAPPED_SCALE på fiendernas stats mot fem hjältar.
+static var max_enemies := 6
+const FIVE_CAPPED_SCALE := 1.0
+
+
+## Storleken fienderna skalas och ställs upp mot: hjältarna som är med, eller opts "full_party" (true = fyra, ett tal =
+## så många, RunState.full_party_size()) när profilen äger fler än den tar med.
+static func party_scale_size(opts: Dictionary, heroes: int) -> int:
+	var size := heroes
+	var full = opts.get("full_party", false)
+	if full is bool and full:
+		size = maxi(4, heroes)
+	elif (full is int or full is float) and int(full) > 0:
+		size = maxi(int(full), heroes)
+	return clampi(size, 1, MAX_HEROES)
+
+
+## Mötets fiender, med "extra" (encounters.json) när sällskapet är fem: Trollbergets grupper är byggda för fem.
+static func encounter_kinds(enc: Dictionary, party_size: int) -> Array:
+	var kinds: Array = enc.enemies.duplicate()
+	if party_size >= 5:
+		kinds.append_array(enc.get("extra", []))
+	return kinds
 
 
 ## Fienderna som möter ett sällskap av den storleken. Ett litet sällskap möter färre: först tas dubbletter bort
@@ -318,7 +345,7 @@ const EXTRA_ENEMIES := 1
 ## en annan behöver (som Kultisten som gör biskopen immun).
 static func enemy_lineup(game_data: Dictionary, kinds: Array, party_size: int) -> Array:
 	var out := kinds.duplicate()
-	var cap := maxi(party_size, 1) + EXTRA_ENEMIES
+	var cap := mini(maxi(party_size, 1) + EXTRA_ENEMIES, max_enemies)
 	for only_duplicates in [true, false]:
 		var i := out.size() - 1
 		while out.size() > cap and i > 0:

@@ -79,8 +79,19 @@ var find_quest := 0
 ## Hur många följeslagare man hade senast man var i Värdshuset (det lyser när någon ny har kommit).
 var inn_seen := 0
 const LEGACY_COMPANIONS := ["brokk", "alva", "eira", "solveig"]
-## Paladinen och högst så här många följeslagare i sällskapet.
+## Paladinen och högst så här många följeslagare i sällskapet (före den femte platsen; använd max_companions()).
 const MAX_COMPANIONS := 3
+## Sällskapets platser, Paladinen inräknad (party_slots()). Prototyp (VD, sallskap-fem): den femte platsen ska kosta
+## på riktigt. Den öppnas när huvudbossen är besegrad på djup 4 i både kryptan och kapellet (andra mötet med Benfursten
+## och biskopen i de roterande väktarnas schema; karriärbotarna: ungefär nedstigning 11–14). Varje rad är en plats till:
+## "requires" = Realm -> djup som ska vara klarat (Profile.realm_depth). En sjätte kan komma senare med en rad till.
+const BASE_SLOTS := 4
+const SLOT_UNLOCKS := [{"requires": {"crypt": 4, "chapel": 4},
+		"lock": "Besegra Benfursten och Den fallne biskopen på djup 4", "short": "Benfursten och biskopen på djup 4"}]
+## --party5 (dev): tvingar fram så många platser (0 = som profilen).
+var force_slots := 0
+## Platserna spelaren har fått veta om (Run.check_slot_unlock visar ögonblicket när en ny öppnas).
+var slots_seen := BASE_SLOTS
 ## Ikapphämtning (vårt val): en hjälte under sällskapets snitt får mer erfarenhet, +50 % per nivå under, högst ×3.
 const CATCH_UP_PER_LEVEL := 0.5
 const CATCH_UP_MAX := 3.0
@@ -450,11 +461,48 @@ func roster() -> Array[String]:
 	return recruited.duplicate()
 
 
-## Väljer sällskapet: Paladinen plus 1–MAX_COMPANIONS följeslagare man har.
+## Hur många hjältar sällskapet rymmer, Paladinen inräknad: 4, eller 5 när kapellet är klarat på djup 1.
+func party_slots() -> int:
+	return force_slots if force_slots > 0 else earned_slots()
+
+
+## Platserna profilen har förtjänat (utan --party5).
+func earned_slots() -> int:
+	var n := BASE_SLOTS
+	for unlock in SLOT_UNLOCKS:
+		if not slot_unlocked(unlock):
+			break
+		n += 1
+	return n
+
+
+func slot_unlocked(unlock: Dictionary) -> bool:
+	for realm_id in unlock.requires:
+		if int(realm_depth.get(realm_id, 0)) < int(unlock.requires[realm_id]):
+			return false
+	return true
+
+
+## Texten på den låsta platsen, eller "" när det inte finns någon att längta efter än: den visas först när profilen
+## äger så många hjältar som sällskapet rymmer (VD: längtan ska synas tidigt). short = den korta formen för smala rutor.
+func next_slot_lock(short := false) -> String:
+	var n := party_slots()
+	var i := n - BASE_SLOTS
+	if i < 0 or i >= SLOT_UNLOCKS.size() or recruited.size() + 1 < n:
+		return ""
+	return String(SLOT_UNLOCKS[i].get("short", SLOT_UNLOCKS[i].lock) if short else SLOT_UNLOCKS[i].lock)
+
+
+## Följeslagare utöver Paladinen (3, eller 4 med den femte platsen).
+func max_companions() -> int:
+	return party_slots() - 1
+
+
+## Väljer sällskapet: Paladinen plus 1–max_companions() följeslagare man har.
 func set_party(companions: Array) -> void:
 	var p: Array[String] = ["paladin"]
 	for id in companions:
-		if recruited.has(id) and not p.has(id) and p.size() <= MAX_COMPANIONS:
+		if recruited.has(id) and not p.has(id) and p.size() <= max_companions():
 			p.append(id)
 	if p.size() == 1 and not recruited.is_empty():
 		p.append(recruited[0])  # minst en följeslagare när man har någon (introt: Paladinen ensam tills Imma)
@@ -628,6 +676,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "inn_heard", inn_heard)
 	cfg.set_value("progress", "help_seen", help_seen)
 	cfg.set_value("progress", "narrated", narrated)
+	cfg.set_value("progress", "slots_seen", slots_seen)
 	cfg.set_value("progress", "elites_met", elites_met)
 	cfg.set_value("progress", "find_quest", find_quest)
 	cfg.set_value("progress", "worn", worn)
@@ -703,6 +752,7 @@ static func load_from(path: String) -> Profile:
 	p.inn_heard = cfg.get_value("progress", "inn_heard", {})
 	p.help_seen = cfg.get_value("progress", "help_seen", [])
 	p.narrated = cfg.get_value("progress", "narrated", [])
+	p.slots_seen = int(cfg.get_value("progress", "slots_seen", BASE_SLOTS))
 	p.elites_met = cfg.get_value("progress", "elites_met", [])
 	p.find_quest = int(cfg.get_value("progress", "find_quest", 0))
 	if p.intro_done and not p.recruited.has(STARTER):

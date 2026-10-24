@@ -798,7 +798,7 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	y += 12
 	var guards: String = {"treasure": "Vaktar en skatt.", "item": "Vaktar ett av questens föremål.",
 			"prisoner": "Vaktar en fånge."}.get(r.kind, "")
-	var kinds := CombatSim.enemy_lineup(data, enc.enemies, state.party.size())
+	var kinds := state.lineup(data, r.encounter)
 	var count := {}
 	for k in kinds:
 		count[k] = int(count.get(k, 0)) + 1
@@ -833,7 +833,7 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	# 0.27: elitens motdrag (Siralims counters) på en rad, t.ex. "Klockaren: ni får bara väcka döda en gång per strid".
 	var c_opts := {"counter": r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false),
 			"force_elites": 1 if r.get("elite", false) or r.get("nemesis", false) else 0}
-	var counter := CombatSim.counter_for(data, r.encounter, state.depth, c_opts, state.party.size())
+	var counter := CombatSim.counter_for(data, r.encounter, state.depth, c_opts, state.lineup_size())
 	if not counter.is_empty():
 		var who: Dictionary = data.enemies[counter.kind]
 		var who_name: String = who.name

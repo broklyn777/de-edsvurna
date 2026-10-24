@@ -179,3 +179,23 @@ static func big_button(ci: CanvasItem, r: Rect2, label: String, t: float, enable
 	ci.draw_rect(r, Color(GOLD, pulse if enabled else 0.3), false, 3.0)
 	text(ci, r.position + Vector2(0, r.size.y / 2 + 9), label, 24, Color.WHITE if enabled else Color(1, 1, 1, 0.4),
 			HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 6)
+
+
+## Prototyp (sallskap-fem): en låst plats i sällskapet, grå med ett hänglås och vad som öppnar den.
+static func locked_slot(ci: CanvasItem, r: Rect2, title: String, lock: String) -> void:
+	ci.draw_rect(r, Color(0.1, 0.1, 0.11, 0.85))
+	var dash := Color(1, 1, 1, 0.3)
+	ci.draw_dashed_line(r.position, Vector2(r.end.x, r.position.y), dash, 1.5, 6.0)
+	ci.draw_dashed_line(Vector2(r.position.x, r.end.y), r.end, dash, 1.5, 6.0)
+	ci.draw_dashed_line(r.position, Vector2(r.position.x, r.end.y), dash, 1.5, 6.0)
+	ci.draw_dashed_line(Vector2(r.end.x, r.position.y), r.end, dash, 1.5, 6.0)
+	var c := Vector2(r.position.x + 22, r.position.y + r.size.y / 2.0 + 3)
+	var grey := Color(0.72, 0.72, 0.75, 0.8)
+	ci.draw_arc(c + Vector2(0, -7), 6.0, PI, TAU, 12, grey, 2.5)
+	ci.draw_rect(Rect2(c + Vector2(-9, -7), Vector2(18, 14)), grey)
+	ci.draw_circle(c + Vector2(0, -1), 2.2, Color(0.1, 0.1, 0.11))
+	var tw := r.size.x - 48
+	if r.size.y >= 44:  # högt och smalt: villkoret på två rader (hänglåset säger att platsen är låst)
+		para(ci, r.position + Vector2(40, 20), lock, 15, Color(0.85, 0.8, 0.7, 0.8), tw, 2)
+	else:
+		text(ci, r.position + Vector2(40, r.size.y / 2.0 + 6), fit(title + ": " + lock, 15, tw), 15, Color(0.85, 0.8, 0.7, 0.75))

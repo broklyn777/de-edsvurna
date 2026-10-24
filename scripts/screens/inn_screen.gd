@@ -34,7 +34,7 @@ func _tap(p: Vector2) -> void:
 			if companions.has(id):
 				if companions.size() > 1:
 					companions.erase(id)
-			elif companions.size() < Profile.MAX_COMPANIONS:
+			elif companions.size() < run.profile.max_companions():
 				companions.append(id)
 			else:
 				companions.pop_front()
@@ -62,8 +62,12 @@ func _draw() -> void:
 	var data: Dictionary = run.data
 	header("VÄRDSHUSET", "Följeslagarna du har befriat. Tryck för att ta med eller lämna kvar – de som stannar behåller sin nivå.")
 	small_button(back_rect(), "‹ BASEN")
-	UiStyle.text(self, Vector2(MARGIN, 116), "SÄLLSKAPET: PALADINEN + %d AV %d" % [companions.size(), Profile.MAX_COMPANIONS], 16,
+	UiStyle.text(self, Vector2(MARGIN, 116), "SÄLLSKAPET: PALADINEN + %d AV %d" % [companions.size(), run.profile.max_companions()], 16,
 			Color(1, 1, 1, 0.6))
+	# Prototyp (sallskap-fem): den låsta platsen till höger på raden, så att längtan syns.
+	var lock: String = run.profile.next_slot_lock()
+	if lock != "":
+		UiStyle.locked_slot(self, Rect2(size.x - MARGIN - 760, 92, 760, 30), "FEMTE PLATSEN", lock)
 	var roster := _roster()
 	for i in roster.size():
 		var id: String = roster[i]

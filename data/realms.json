@@ -285,6 +285,7 @@
 			"realm": "chapel",
 			"depth": 1
 		},
+		"party": 5,
 		"objects": [
 			"troll_cup",
 			"sunken_bell",

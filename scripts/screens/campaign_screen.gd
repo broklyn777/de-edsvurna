@@ -10,6 +10,8 @@ extends TapScreen
 ## sten, skelett, häxa, Väktaren) ligger i marginalen och aldrig över det man trycker på.
 
 const PANEL_W := 400.0
+## Prototyp (sallskap-fem): varningen under en Realm som är byggd för fler än profilen har platser för (Trollberget).
+const FIVE_WARNING := "Byggt för fem i sällskapet – här får fyra stryk"
 const ZOOM_TIME := 0.7
 ## Hur mycket av området som är befriat per klarat djup (högst FREED_MAX).
 const FREED_PER_DEPTH := 0.18
@@ -426,6 +428,10 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 			HORIZONTAL_ALIGNMENT_CENTER, cart.size.x, 0)
 	if not open:
 		return
+	# Prototyp (sallskap-fem, VD): Trollberget är byggt för fem; med färre platser en allvarlig varning.
+	if RunState.realm_too_big(prof, run.data, realm_id):
+		UiStyle.text(self, Vector2(cart.position.x - 40, cart.end.y + 32), FIVE_WARNING, 15, Parchment.SEAL,
+				HORIZONTAL_ALIGNMENT_CENTER, cart.size.x + 80, 0)
 	# Sigill för bossen i vinjettens hörn: fylls i takt med segrarna (x/3 till bosstrofén).
 	for boss in _bosses(realm_id):
 		var wins: int = mini(int(prof.boss_wins.get(boss, 0)), RunState.BOSS_WINS_FOR_TROPHY)
@@ -585,8 +591,11 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	var x := p.position.x + 20
 	var w := p.size.x - 40
 	UiStyle.text(self, Vector2(x, p.position.y + 34), realm.name.to_upper(), 22, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT, w, 3)
-	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 58), realm.text,
+	var too_big := RunState.realm_too_big(prof, data, prof.realm)  # prototyp (sallskap-fem): varningen på andra raden
+	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 58), UiStyle.fit(realm.text, 15, w) if too_big else realm.text,
 			HORIZONTAL_ALIGNMENT_LEFT, w, 15, 2, Color(1, 1, 1, 0.8))
+	if too_big:
+		UiStyle.text(self, Vector2(x, p.position.y + 80), UiStyle.fit(FIVE_WARNING, 15, w), 15, Color("#ff8a6a"))
 
 	# Djup
 	UiStyle.text(self, Vector2(x, p.position.y + 98), "DJUP (DJUPASTE KLARADE %d)" % prof.best_depth, 15, Color(1, 1, 1, 0.6))
