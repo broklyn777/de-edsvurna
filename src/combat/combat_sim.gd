@@ -156,7 +156,8 @@ var _team_heals := {}
 ## opts: {"rules": [regel-id], "instability": n, "elite_chance": andel (annars elite_chance()),
 ##   "force_elites": n (de n första vanliga fienderna blir elit – Elit-rum och Nemesis), "nemesis": true
 ##   (den första eliten heter Nemesis), "stat_bonus": extra skalning (Portalens strid),
-##   "start_auras": [aura] som sällskapet börjar med (Helgedomens gåva), "first_descent_elite": faktorn som redan
+##   "start_auras": [aura] som sällskapet börjar med (Helgedomens gåva), "boss_traits": [trait] som bossen (annars
+##   den första fienden) får (sigillen som lämnades, RunState.boss_seals), "first_descent_elite": faktorn som redan
 ##   ligger i stat_bonus för elitgruppen på första nedstigningen (byts mot mötets "first_descent_stat_mult"),
 ##   "levels": {hero_id: {level, personality}} (0.19) – hjältarnas nivåer; då har fienderna en nivå efter
 ##   djupet och "floor" (0–2, HeroStats.enemy_level), också i Speed}.
@@ -219,6 +220,14 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	var counts := {}
 	var lineup := enemy_lineup(game_data, encounter_kinds(enc, scale_size), scale_size)
 	var elites := elite_rolls(game_data, encounter_id, lineup, seed_value, opts, sim.depth)
+	# Bryt två av tre sigill (RunState.boss_seals): bossen (annars ledaren, den första) får sigillens egenskaper.
+	var seal_at := -1
+	if not opts.get("boss_traits", []).is_empty():
+		seal_at = 0
+		for i in lineup.size():
+			if game_data.enemies[lineup[i]].get("boss", false):
+				seal_at = i
+				break
 	for i in lineup.size():
 		var kind: String = lineup[i]
 		counts[kind] = counts.get(kind, 0) + 1
@@ -261,6 +270,10 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		if not counter.is_empty() and counter.index == i:
 			e.counter = counter.trait
 			e.traits.append(counter.trait)
+		if i == seal_at:
+			for t in opts.boss_traits:
+				if game_data.traits.has(t) and not e.traits.has(t):
+					e.traits.append(t)
 		e.traits = expand_traits(game_data, e.traits)
 		sim._add(e)
 		sim.enemies.append(e)

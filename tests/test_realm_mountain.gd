@@ -81,7 +81,8 @@ func test_quests_get_the_mountain_names() -> void:
 		s.start_expedition(_data, seed_value)
 		seen[s.quest.type] = RunState.quest_text(s.quest)
 	for type in seen:
-		assert_true(String(seen[type]).begins_with(_data.realms.mountain.quests[type]), seen[type])
+		if _data.realms.mountain.quests.has(type):  # sigillen har inget eget namn på berget
+			assert_true(String(seen[type]).begins_with(_data.realms.mountain.quests[type]), seen[type])
 	var plain := RunState.roll_quest(RandomNumberGenerator.new())
 	assert_true(not RunState.quest_text(plain).begins_with("Tullen"), "andra Realms behåller typens ord")
 

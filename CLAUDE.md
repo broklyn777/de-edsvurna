@@ -88,7 +88,17 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   storlek, egenskaper, möjliga troféer, varning för elit): ANFALL (`Run.fight_here`) eller BACKA (`back`); en sedd grupp
   spärrar de obesökta rutorna intill sig tills den är besegrad (Dungelot, `Grotto.blocked`, `RunState.seen`).
   **Questen** (en per våning, `RunState.roll_quest`): Jakt på Nemesis, Rensa (2 elitgrupper) eller Samla (2–3 föremål,
-  alltid bevakade). Belöningen (silver, perk-poäng) ges för den sista våningens quest, en gång per körning som förut.
+  alltid bevakade) eller **Bryt två av tre sigill** (prov, ChatGPT:s förslag, `docs/provspel/chatgpt-om-textspel.md`; quest
+  `seals`, aldrig på den första nedstigningen, lika ofta som de andra): tre sigill (fiendens värn, `kind` seal) i olika
+  fjärdedelar, var och en bevakad av en grupp, ett av en elitgrupp. Vakten besegrad = sigillet brutet (`RunState.break_seal`);
+  två brutna öppnar trappan eller bossen och det tredje håller: dess fördel går till slutstriden (`boss_seals`, sparas;
+  från våning 1 till bossen på den sista; CombatSim `boss_traits` ger bossen, annars ledaren, egenskapen): Murens sigill
+  (Barriär 20 %), Vaksamhetens sigill (först på tidslinjen och Smidig), Uthållighetens sigill (helas 2 % per tur; 3 % var starkast i botarna),
+  traits.json `seal_*`. Sigillkortet och bosskortet visar fördelen; rubriken "KVAR ÅT BOSSEN". Botarna lämnar det
+  elitbevakade (`SIGILL=slump|ward|haste|mend` ändrar), `GROTTA_QUEST=1` visar våningar per quest, `BALANS=sigill` bossen
+  med varje fördel. Flaggor: `--quest=seals` före `--map`, `--reveal-seals`, `--break-seals=<n>`, `--seals-left=ward,mend`;
+  textspelet `TEXTSPEL_QUEST=seals`. Tester: `tests/test_seals.gd`.
+  Belöningen (silver, perk-poäng) ges för den sista våningens quest, en gång per körning som förut.
   Lägereld = +3 Charges per förmåga en gång, och **troféer byts bara vid en lägereld** (VAL; lägret i läget "campfire",
   `Run.open_campfire_camp`; efter en strid väljer man bara en ny trofé). Helgedom = välj en gåva eller Pandemonium.
   Gåvorna Värnad (−20 % skada) och Styrka (+15 % skada) och Pandemoniums Välsignade sköld (−30 %) varar hela nästa strid

@@ -3891,5 +3891,51 @@
 		"modify": {
 			"damage_mult": 0.85
 		}
+	},
+	"seal_ward": {
+		"name": "Murens sigill",
+		"enemy": true,
+		"seal": true,
+		"text": "Sigillet som lämnades: bossen börjar striden med en Barriär för 20 % av sitt liv.",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "barrier",
+				"pct_max_hp": 0.2,
+				"target": "self"
+			}
+		]
+	},
+	"seal_haste": {
+		"name": "Vaksamhetens sigill",
+		"enemy": true,
+		"seal": true,
+		"text": "Sigillet som lämnades: bossen börjar överst på tidslinjen och är Smidig (25 % extra chans att undvika anfall) sina två första turer.",
+		"trigger": "battle_start",
+		"start_first": true,
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "agile",
+				"target": "self"
+			}
+		]
+	},
+	"seal_mend": {
+		"name": "Uthållighetens sigill",
+		"enemy": true,
+		"seal": true,
+		"text": "Sigillet som lämnades: bossen helas 2 % av sitt liv i början av varje egen tur.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_max_hp": 0.02,
+				"target": "self"
+			}
+		]
 	}
 }

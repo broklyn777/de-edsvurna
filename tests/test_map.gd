@@ -154,7 +154,16 @@ func test_quests_lead_to_fights() -> void:
 					s.battle_won()
 					s.collect_item()
 				assert_true(s.quest.done, "alla föremål")
-	assert_eq(seen.size(), 3, "alla tre sorterna förekommer")
+			"seals":
+				var seals := s.map.indices("seal")
+				assert_eq(seals.size(), 3)
+				for i in seals.slice(0, 2):
+					s.pos = i
+					assert_true(not s.break_seal(), "vakten först")
+					s.battle_won()
+					s.break_seal()
+				assert_true(s.quest.done, "två av tre sigill")
+	assert_eq(seen.size(), 4, "alla fyra sorterna förekommer")
 
 
 func test_campfire_restores_charges_once() -> void:
