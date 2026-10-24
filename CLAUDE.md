@@ -261,7 +261,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `--world-demo`, `--news` (den gamla rutan på kampanjkartan). Botarna: `SOAK=karriar` skriver händelserna (`VARLD=av`).
   Tester: `tests/test_world_events.gd`.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
-  +8 % stats per djup (inte Speed), silver +25 % och troféchans +15 procentenheter per djup.
+  +3 % stats per djup (inte Speed; 0.30.33, förr 8 %: det lades ovanpå fiendernivåerna och gav väggen vid djup 5–6, `docs/provspel/djupsteg-matning.md`), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
   Taggig utmaning, Glödhetta). Benfursten är Resistant (halv effekt av debuffar) och vredgas under 50 % liv.
   Tryck och håll på en figur i striden för att granska den (Inspect, kostar ingen tur).

@@ -204,7 +204,7 @@ lista visar samma fiender som striden (`CombatSim.enemy_lineup`).
 
 Fiendernas stats räknas i den här ordningen, och avrundas efter varje steg:
 
-1. bas × mötets skalning × djupet (+8 % per djup, inte Speed) × Portalens strid (×1,15) × profilens första
+1. bas × mötets skalning × djupet (+3 % per djup sedan 0.30.33, förr 8 %; inte Speed) × Portalens strid (×1,15) × profilens första
    nedstigning (se nedan). Båda kan gälla samtidigt. Health, Attack, Intelligence och Defense, inte Speed;
 2. × sällskapets storlek (0.23.3, *vårt val*): ×0,45 för en hjälte, ×0,54 för två, ×0,64 för tre, ×1 för fyra (Health,
    Attack och Intelligence, inte Defense och Speed);

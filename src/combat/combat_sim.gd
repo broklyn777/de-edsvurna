@@ -61,9 +61,10 @@ const DODGE_MAX := 0.3
 ## Med egenskaper ("dodge_add") kan undvikandet bli högst så här stort.
 const DODGE_TRAIT_MAX := 0.75
 ## Realm Depth (Siralim): fiendernas Health, Attack, Intelligence och Defense växer med en andel per
-## djup över 1 (8 %). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
+## djup över 1 (3 %, 0.30.33; förr 8 %, som lades ovanpå fiendernivåerna och gav väggen vid djup 5–6,
+## docs/provspel/djupsteg-matning.md). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
 ## (våning 2 och 3 är starkare än 1, som i Siralim där fienderna skalar snabbare än laget).
-const DEPTH_STEP := 0.08
+const DEPTH_STEP := 0.03
 ## Botarnas mätning (DJUPSTEG=0.03 i soak/balance): ändrar steget utan att ändra spelets värde.
 static var depth_step := DEPTH_STEP
 const SCALED_STATS := ["health", "attack", "intelligence", "defense"]
