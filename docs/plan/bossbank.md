@@ -16,7 +16,8 @@ skada. Den här filen samlar exemplen kort. Detaljerna står i källorna:
 - En **räddad fånge kan bli lärjunge** efteråt.
 - **Rena DPS-prov** får finnas ibland.
 - Råd med tre fiender: **båda sorterna** (ordningen som val, och kraften som flyttar).
-- Djupets tecken: obesvarat (Claude rekommenderar tvåsidiga).
+- Djupets tecken: **tvåsidiga** (gåva + börda, VD lät Claude bestämma 2026-10-24).
+- **Femte platsen i sällskapet** öppnas senare som belöning (t.ex. efter kapellets boss); en sjätte kan öppnas långt senare. Prototyp med fem först (skärm i telefonbredd + botar).
 
 ## Bossar och strider
 
