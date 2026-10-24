@@ -33,6 +33,10 @@ func _init() -> void:
 	if OS.get_environment("DJUPSTEG") != "":
 		CombatSim.depth_step = float(OS.get_environment("DJUPSTEG"))
 		print("Djupsteg: +%.1f %% per djup" % (CombatSim.depth_step * 100.0))
+	# PROVOKE_CD=n: Provocera går att använda högst var n:te egna tur (nedkylning n − 1). NO_PROVOKE=1 i combat_bot.gd.
+	if not OS.get_environment("PROVOKE_CD") in ["", "0"]:
+		data.abilities.provoke.cooldown = float(int(OS.get_environment("PROVOKE_CD")) - 1)
+		print("Provocera: högst var %s:e tur" % OS.get_environment("PROVOKE_CD"))
 	# BALANS=nivaer kör bara nivåavsnittet (0.19), som går snabbare och värmer mindre.
 	if OS.get_environment("BALANS") == "sallskap":
 		_party_sizes(data)
@@ -443,7 +447,7 @@ func _grotto(data: Dictionary) -> void:
 	if OS.get_environment("GROTTA_DJUP") != "":
 		grotto_depth = int(OS.get_environment("GROTTA_DJUP"))
 	print("=== Grottan (0.27), djup %d, %d körningar per rad ===" % [grotto_depth, RUNS])
-	if grotto_depth > 1:
+	if grotto_depth > 1 or OS.get_environment("GROTTA_FYRA") == "1":  # GROTTA_FYRA=1: bara fyra hjältar, också på djup 1
 		var lv := HeroStats.expected_level(grotto_depth)
 		for realm_id in (realms_for_grotto()):
 			_grotto_line(data, realm_id, "4 hjältar, startmakron, nivå %d" % lv, ["paladin", "brokk", "alva", "eira"], lv, {})
@@ -465,8 +469,9 @@ func realms_for_grotto() -> Array:
 func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Array, lv: int, extra: Dictionary,
 		traits := {}, artifacts := {}) -> void:
 	var line := "  %-8s %-34s" % [data.realms[realm_id].short, label]
-	for run in [[Bot.Skill.MACRO, "simple"], [Bot.Skill.TUNED, "simple"], [Bot.Skill.MACRO, "careful"],
-			[Bot.Skill.MACRO, "direct"]]:
+	var runs := [[Bot.Skill.MACRO, "simple"], [Bot.Skill.TUNED, "simple"], [Bot.Skill.MACRO, "careful"],
+			[Bot.Skill.MACRO, "direct"]]
+	for run in runs.slice(0, 2) if OS.get_environment("GROTTA_KORT") == "1" else runs:  # GROTTA_KORT=1: MACRO och TUNED
 		var skill: Bot.Skill = run[0]
 		var policy: String = run[1]
 		var cleared := 0
