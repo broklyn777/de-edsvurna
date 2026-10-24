@@ -26,6 +26,13 @@
 					}
 				},
 				{
+					"id": "gorm_windup_1",
+					"text": "Du såg honom samla kraft. Den som laddar slår inte förrän han är klar – det är din tur att välja: försvara dig, eller tysta honom innan. Skriv en makrorad om det.",
+					"when": {
+						"help_seen": "windup"
+					}
+				},
+				{
 					"id": "gorm_crown_2",
 					"text": "Samma stämpel igen. Då leder spåren längre än till den fiende vi just besegrat.",
 					"when": {

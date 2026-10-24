@@ -610,6 +610,9 @@ func act(action: String, target_id := "", ability_id := "") -> String:
 func ai_act() -> void:
 	if outcome != "" or current == null:
 		return
+	if current.team == 1 and is_charging(current) and _windup_turn(current):
+		_end_turn()
+		return
 	var choice := _hero_choice(current) if current.team == 0 else _enemy_choice(current)
 	_perform(current, choice.ability, choice.action, choice.get("target", ""))
 	_end_turn()
@@ -679,6 +682,9 @@ func _next_turn() -> void:
 		if u.alive:
 			# Frusen eller sover: turen går förlorad, figuren läggs längst ned.
 			_emit({"type": "status_skip", "unit": u.id, "aura": cannot_act(u)})
+			if is_charging(u):
+				_emit({"type": "windup_delayed", "unit": u.id, "ability": u.charging.ability,
+						"reason": "frozen" if cannot_act(u) == "frozen" else "sleep", "left": charge_left(u)})
 			order.push_back(u.id)
 			_sink_snared()
 			if u.team == 1:
@@ -783,6 +789,7 @@ func _end_turn() -> void:
 		current.next_slot = ""
 		_sink_snared()
 		if current.team == 1:
+			current.windup_guard = false  # efter en bruten laddning: en vanlig tur först (0.31)
 			_choose_intent(current)
 	_next_turn()
 
@@ -882,14 +889,115 @@ func _check_outcome() -> void:
 		_emit({"type": "outcome", "result": outcome})
 
 
+# --- Varslade attacker (0.31, docs/plan/varslade-attacker.md) -----------------
+# En förmåga med "windup" laddas i fiendens egna turer innan den släpps. Laddningen syns på avsikten, kostar fiendens
+# turer och kan brytas (broken_by: "silenced" – Tystad, även på Resistenta; "stagger" – skada ≥ stagger × max-liv under
+# laddningen; "channel" – ingen levande allierad av typen channeled_by). Bruten: förmågan får sin nedkylning och fienden
+# blir Vacklande (vulnerable_after). Sömn och Frusen skjuter upp den. Skydd mot evigt lås: en fiende vars laddning bröts
+# kan inte börja en ny förrän efter sin nästa tur (variation-i-strid.md, topp 5 #3).
+
+const WINDUP_STAGGER_AURA := "staggered"
+
+
+func windup_of(ability_id: String) -> Dictionary:
+	return ability(ability_id).get("windup", {})
+
+
+func windup_breaks(ability_id: String, reason: String) -> bool:
+	var w := windup_of(ability_id)
+	if reason == "channel":
+		return str(w.get("channeled_by", "")) != ""
+	return (w.get("broken_by", []) as Array).has(reason)
+
+
+func is_charging(u: CombatUnit) -> bool:
+	return u != null and u.alive and not u.charging.is_empty()
+
+
+## Egna turer tills laddningen släpps (släppets tur inräknad): 1 = den slår nästa gång den står på tur.
+func charge_left(u: CombatUnit) -> int:
+	return int(u.charging.get("left", 0)) if is_charging(u) else 0
+
+
+## Sant om laddningen går mot hela sällskapet.
+func charging_all(u: CombatUnit) -> bool:
+	return is_charging(u) and ability(u.charging.ability).get("target", "") == "enemies"
+
+
+func _can_start_windup(e: CombatUnit, ability_id: String) -> bool:
+	if windup_of(ability_id).is_empty():
+		return true
+	if e.windup_guard:
+		return false
+	# En Tystad fiende börjar inte en laddning som Tystad bryter (den skulle brytas direkt).
+	return not (has_flag(e, "silence") and windup_breaks(ability_id, "silenced"))
+
+
+func _start_windup(e: CombatUnit, ability_id: String, turns: int) -> void:
+	# Turen då den väljer laddningen är redan slut, så "turns" är egna turer tills den slår: 1 = slår nästa tur (en
+	# hjälterunda att svara på, samma takt som en vanlig avsikt), 2 = en tur som går åt till laddningen först.
+	var left := maxi(turns, 1)
+	e.charging = {"ability": ability_id, "left": left, "max": left, "taken": 0.0}
+	_emit({"type": "windup_start", "unit": e.id, "ability": ability_id, "left": left,
+			"targets": e.intent.get("targets", [])})
+
+
+## En tur medan fienden laddar. Sant om turen gick åt till laddningen; falskt när förmågan släpps nu.
+func _windup_turn(e: CombatUnit) -> bool:
+	e.charging.left = int(e.charging.left) - 1
+	if int(e.charging.left) > 0:
+		_emit({"type": "windup_tick", "unit": e.id, "ability": e.charging.ability, "left": e.charging.left,
+				"targets": e.intent.get("targets", [])})
+		return true
+	_emit({"type": "windup_release", "unit": e.id, "ability": e.charging.ability})
+	e.charging = {}
+	return false
+
+
+func _windup_damage(u: CombatUnit, amount: float) -> void:
+	u.charging.taken = float(u.charging.taken) + amount
+	var w := windup_of(u.charging.ability)
+	if windup_breaks(u.charging.ability, "stagger") and float(u.charging.taken) >= float(w.get("stagger", 1.0)) * u.max_hp:
+		_break_windup(u, "stagger")
+
+
+func _check_channels() -> void:
+	for e in units:
+		if not is_charging(e):
+			continue
+		var kind := str(windup_of(e.charging.ability).get("channeled_by", ""))
+		if kind != "" and not _allies(e).any(func(x: CombatUnit) -> bool: return x != e and x.kind == kind):
+			_break_windup(e, "channel")
+
+
+func _break_windup(u: CombatUnit, reason: String) -> void:
+	var ability_id: String = u.charging.ability
+	u.charging = {}
+	u.windup_guard = true
+	var cooldown: float = ability(ability_id).get("cooldown", 0.0)
+	if cooldown > 0.0:
+		u.cooldowns[ability_id] = cooldown + 1.0
+	_emit({"type": "windup_broken", "unit": u.id, "ability": ability_id, "reason": reason})
+	var mult := float(windup_of(ability_id).get("vulnerable_after", 0.0))
+	if mult > 1.0 and data.auras.has(WINDUP_STAGGER_AURA):
+		_add_aura(u, u, WINDUP_STAGGER_AURA)
+		if u.auras.has(WINDUP_STAGGER_AURA):
+			u.auras[WINDUP_STAGGER_AURA].damage_taken_mult = mult
+	_choose_intent(u)
+
+
 # --- AI ---------------------------------------------------------------------
 
 ## Fienden bestämmer sin nästa handling i början av striden och i slutet av sin tur, så att
 ## spelaren kan se den (som Siralims bossar som låser ett mål).
-func _choose_intent(e: CombatUnit) -> void:
+func _choose_intent(e: CombatUnit, allow_windup := true) -> void:
+	if is_charging(e):
+		return  # laddningen håller avsikten tills den släpps eller bryts (0.31)
 	for rule in ([] if is_silenced(e) else e.rules):
 		var ability_id: String = rule.ability
 		if e.cooldown_left(ability_id) > 0.0 or not _rule_matches(e, rule):
+			continue
+		if not (allow_windup or windup_of(ability_id).is_empty()) or not _can_start_windup(e, ability_id):
 			continue
 		if _rule("no_guard") and ability(ability_id).get("effects", []).any(func(f: Dictionary) -> bool:
 				return f.get("aura", "") in ["defend", "provoke"]):
@@ -900,6 +1008,8 @@ func _choose_intent(e: CombatUnit) -> void:
 			ab = ab.duplicate()
 			ab.pick = rule.pick
 		e.intent = {"ability": ability_id, "targets": _pick_targets(e, ab)}
+		if not windup_of(ability_id).is_empty():
+			_start_windup(e, ability_id, int(rule.get("windup", windup_of(ability_id).get("turns", 1))))
 		_intent_chosen(e)
 		return
 	e.intent = {"ability": e.attack_ability, "targets": _pick_targets(e, ability(e.attack_ability))}
@@ -918,7 +1028,8 @@ func _enemy_choice(e: CombatUnit) -> Dictionary:
 			or (is_silenced(e) and e.intent.ability != e.attack_ability) \
 			or (ability(e.intent.ability).get("target", "") == "dead_ally" and _pick_targets(e, ability(e.intent.ability)).is_empty()):
 		# 0.31: liket som avsikten gällde är redan väckt eller uppätet (Gravväckaren och Likätaren tävlar).
-		_choose_intent(e)
+		# En varslad attack väljs inte nu: den måste synas en tur i förväg.
+		_choose_intent(e, false)
 	var target := ""
 	for id in e.intent.targets:
 		if unit(id).alive:
@@ -1565,6 +1676,8 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	calc.absorbed = absorbed
 	calc.lost = lost
 	tgt.hp = maxf(0.0, tgt.hp - lost)
+	if life_lost > 0.0 and is_charging(tgt) and tgt.hp > 0.0:
+		_windup_damage(tgt, life_lost)
 	# 0.26: en träff som Barriären inte tog räknas som en träff även om den avrundas till 0 (förut gav golvet på 1 alltid
 	# minst 1). Då slår Domens kall, Rotskott och andra egenskaper till som förut, utan att den svaga träffen gör mer skada.
 	var landed := lost > 0.0 or (absorbed <= 0.0 and dmg + additional > 0.0)
@@ -1844,6 +1957,8 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 		_sink_snared()  # Snärjd: fast längst ned
 	_emit({"type": "aura_applied", "unit": tgt.id, "aura": aura_id, "refreshed": refreshed, "source": src.id,
 			"aura_kind": kind, "stacks": stacks})
+	if d.get("silence", false) and is_charging(tgt) and windup_breaks(tgt.charging.ability, "silenced"):
+		_break_windup(tgt, "silenced")
 	if d.get("taunt", false):
 		for e in enemies:
 			if e.alive and not e.intent.is_empty() and ability(e.intent.ability).get("target", "") == "enemy":
@@ -2050,11 +2165,13 @@ func _kill(u: CombatUnit, by: CombatUnit = null) -> void:
 	u.deaths += 1
 	u.auras.clear()
 	u.barrier = 0.0
+	u.charging = {}
 	order.erase(u.id)
 	var death := {"type": "death", "unit": u.id, "had": had}
 	if by != null and by != u:
 		death.source = by.id  # 0.31: den som fällde (Den brutna gravspaden)
 	_emit(death)
+	_check_channels()
 	if outcome != "" and u.team == 1:
 		return
 	# Pånyttfödd (0.22): återuppstår med 50 % liv; statusen förbrukas.

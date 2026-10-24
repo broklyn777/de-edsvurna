@@ -1,6 +1,6 @@
 {
 	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
-	"order": ["timeline", "combo", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "living_map", "forfeit"],
+	"order": ["timeline", "combo", "windup", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "living_map", "forfeit"],
 	"entries": {
 		"timeline": {
 			"title": "Tidslinjen",
@@ -39,6 +39,14 @@
 			"text": [
 				"En hjältes förmåga kan göra en annans starkare. Immas Rökpil gör fienderna Förblindade, och Rättfärdigt slag slår 50 % hårdare mot en Förblindad fiende.",
 				"Hela spelet bygger på sådant: egenskaper, troféer och artefakter som sätter igång varandra. Leta efter ord som går igen, som Förblindad, Blöder eller Helig."
+			]
+		},
+		"windup": {
+			"title": "Varslad attack",
+			"text": [
+				"Ringen runt fiendens avsikt betyder att den samlar kraft till ett stort slag. Siffran är hur många av dess egna turer som är kvar innan det slår.",
+				"Medan den laddar gör den ingenting annat. Försvara dämpar slaget, och Tystad eller tillräckligt med skada under laddningen bryter den. En bruten fiende vacklar och tar 25 % mer skada en stund.",
+				"Makrona kan svara: villkoren \"laddar en varslad attack\" och \"laddar, slår om högst 1 tur\" finns under Laddning i radeditorn."
 			]
 		},
 		"macros": {

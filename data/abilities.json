@@ -499,10 +499,21 @@
 		"travel": 0.4,
 		"cooldown": 3,
 		"sound": "shadow_hit",
+		"windup": {
+			"turns": 1,
+			"text": "pekar på {mål}",
+			"broken_by": [
+				"silenced",
+				"stagger"
+			],
+			"stagger": 0.3,
+			"channeled_by": "",
+			"vulnerable_after": 1.25
+		},
 		"effects": [
 			{
 				"type": "damage",
-				"power": 3.0
+				"power": 3.6
 			}
 		]
 	},

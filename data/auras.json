@@ -355,5 +355,13 @@
 		"text": "Fri: har just slitit sig loss och kan inte snärjas, sövas eller frysas förrän efter sin nästa tur.",
 		"glyph": "cross",
 		"cannot_dispel": true
+	},
+	"staggered": {
+		"name": "Vacklande",
+		"duration": 1,
+		"damage_taken_mult": 1.25,
+		"text": "Vacklande: laddningen bröts; tar 25 % mer skada fram till sin nästa tur.",
+		"glyph": "diamond",
+		"cannot_dispel": true
 	}
 }

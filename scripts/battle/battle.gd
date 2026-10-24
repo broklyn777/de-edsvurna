@@ -58,6 +58,7 @@ var _dev_combo := false  # 0.30: --combo förblindar fienderna vid start och kö
 ## bara en gång per profil: använd en ny profil, t.ex. --intro-step=crypt --combo-first --floor=0 --frames=260.
 var _dev_combo_first := false
 var _dev_inspect := ""
+var _dev_windup := false  # 0.31: --windup låter en fiende med en varslad attack börja ladda direkt (skärmdumpar)
 var _dev_log := false
 var _dev_ask_forfeit := false
 ## Effekter som väntar på att vapnet eller projektilen ska träffa: [{left, call}].
@@ -130,6 +131,8 @@ func _ready() -> void:
 			_dev_log = true  # öppnar skadeloggen efter några turer (skärmdumpar)
 		elif arg == "--ask-forfeit":
 			_dev_ask_forfeit = true  # visar frågan om att ge upp när striden har börjat (skärmdumpar)
+		elif arg == "--windup":
+			_dev_windup = true
 		elif arg.begins_with("--inspect="):
 			_dev_inspect = arg.get_slice("=", 1)  # Inspect när striden har börjat (skärmdumpar)
 	var state: RunState = run.state
@@ -386,6 +389,8 @@ func _process(delta: float) -> void:
 				var pal: Dictionary = {} if _dev_order else run.macro_for("paladin")
 				pal.lines = [{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "holy_smite",
 						"target": "that"}]
+			if _dev_windup:
+				_start_dev_windup()
 			if _dev_inspect != "":
 				_show_inspect.call_deferred(_dev_inspect)
 			_play_events()
@@ -668,6 +673,8 @@ func _show_inspect(unit_id: String) -> void:
 	if lines.size() == 1:
 		lines.append("Inga egenskaper.")
 	lines.append_array(StatusIcons.lines(data, u))  # 0.22: statusarna med text och turer kvar
+	if sim.is_charging(u):
+		lines.append(windup_text(sim, u))
 	if u.team == 1:
 		lines.append(_trophy_line(u))
 		var trophy_id: String = data.enemies[u.kind].get("elite", {}).get("trophy", "") if u.elite \
@@ -959,6 +966,8 @@ func _handle(e: Dictionary) -> void:
 		"revive_blocked":
 			if e.get("consumed", false):
 				_after(_effect_delay(e), _float.bind(e.unit, "KAN INTE VÄCKAS", Color("#a8c070"), 18, false))
+		"windup_start", "windup_tick", "windup_delayed", "windup_broken":
+			_after(_effect_delay(e) + 0.05, _on_windup.bind(e))
 		"chaos_calm":
 			_after(_cursor + 0.1, _float.bind(e.unit, "KAOSVINDEN LÄGGER SIG", UiStyle.TRAIT_GOLD, 18, true))
 		"elite":
@@ -1100,6 +1109,72 @@ func _decider_alternatives(rows: Array) -> Dictionary:
 		if not list.is_empty():
 			out[i] = list
 	return out
+
+
+## 0.31 Varslade attacker: ord över fienden, en rad i makrologgen och skadeloggen, och hjälprutan första gången.
+func _on_windup(e: Dictionary) -> void:
+	var u := sim.unit(e.unit)
+	var ab_name: String = sim.ability(e.ability).get("name", e.ability)
+	var warn := Color("#ffb347")
+	var note := ""
+	match e.type:
+		"windup_start":
+			sfx.play("cast_shadow", -10.0, 0.1)
+			note = "%s laddar %s – slår om %d %s%s." % [u.name, ab_name, int(e.left), "tur" if int(e.left) == 1 else "turer",
+					_windup_target(e)]
+			if _help_ok:
+				HelpBox.offer(self, ["windup"], true)
+		"windup_tick":
+			note = "%s laddar %s – slår %s%s." % [u.name, ab_name,
+					"nästa tur" if int(e.left) <= 1 else "om %d turer" % int(e.left), _windup_target(e)]
+		"windup_delayed":
+			_float(e.unit, "FÖRDRÖJD", Color("#bcd2ff"), 20, false)
+			note = "%s: %s skjuts upp (%s)." % [u.name, ab_name, "frusen" if e.reason == "frozen" else "sover"]
+		"windup_broken":
+			_float(e.unit, "AVBRUTEN!", UiStyle.GOLD, 26, true)
+			sfx.play("bone_crush", -6.0, 0.0)
+			_hitstop(70)
+			note = "%s avbröts: %s. %s vacklar." % [ab_name, WINDUP_REASONS.get(e.reason, e.reason), u.name]
+	if note != "":
+		macro_log.add({"text": note, "ok": true, "skipped": [], "notes": []})
+		damage_log.add_note(note, warn)
+
+
+const WINDUP_REASONS := {"silenced": "Tystad", "stagger": "skakad loss av skadan", "channel": "kanalen föll"}
+
+
+func _windup_target(e: Dictionary) -> String:
+	for id in e.get("targets", []):
+		var t := sim.unit(id)
+		if t != null and t.alive and t.team == 0:
+			return " mot " + t.name
+	return ""
+
+
+## Raden i Inspect: vad laddningen gör och hur den bryts.
+static func windup_text(s: CombatSim, u: CombatUnit) -> String:
+	var w := s.windup_of(u.charging.ability)
+	var how: Array[String] = []
+	for r in w.get("broken_by", []):
+		match r:
+			"silenced":
+				how.append("Tystad")
+			"stagger":
+				how.append("%d %% av livet i skada" % roundi(float(w.get("stagger", 0.0)) * 100.0))
+	if str(w.get("channeled_by", "")) != "":
+		how.append("döda den som kanaliserar")
+	var left := s.charge_left(u)
+	return "Laddar %s: slår %s. Bryts av %s; Försvara dämpar." % [s.ability(u.charging.ability).get("name", ""),
+			"nästa tur" if left <= 1 else "om %d turer" % left, " eller ".join(how) if not how.is_empty() else "ingenting"]
+
+
+func _start_dev_windup() -> void:
+	for en in sim.enemies:
+		for r in en.rules:
+			if not sim.windup_of(r.ability).is_empty():
+				en.intent = {"ability": r.ability, "targets": sim._pick_targets(en, sim.ability(r.ability))}
+				sim._start_windup(en, r.ability, maxi(2, int(sim.windup_of(r.ability).get("turns", 1))))  # två turer: syns längre
+				return
 
 
 func _on_combo(e: Dictionary) -> void:

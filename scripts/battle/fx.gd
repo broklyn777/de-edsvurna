@@ -215,7 +215,7 @@ class Overheads extends Node2D:
 				StatusIcons.draw(self, sim.data, u, head + Vector2(-n * 12.0, 0), 22.0)
 			if u.team == 1:
 				UiStyle.text(self, head + Vector2(-90, -18), u.name, 13, Color(u.color, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 180, 4)
-				_draw_intent(u, head + Vector2(0, -42))
+				_draw_intent(u, head + Vector2(0, -50 if sim.is_charging(u) else -42))
 
 	func _draw_intent(u: CombatUnit, at: Vector2) -> void:
 		if u.intent.is_empty():
@@ -239,5 +239,29 @@ class Overheads extends Node2D:
 				var eats: bool = ab.effects.any(func(e: Dictionary) -> bool: return e.type == "consume_corpse")
 				target_name = ("äter " if eats else "väcker ") + t.name
 				break
-		if target_name != "":
+		if sim.is_charging(u):
+			_draw_windup(u, at, target_name)
+		if target_name != "" and not sim.is_charging(u):
 			UiStyle.text(self, at + Vector2(-80, -20), target_name, 12, Color(col, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 160, 4)
+
+	## 0.31 Varslad attack: en ring med ett segment per tur som återstår, siffran bredvid och en rad ovanför målet.
+	func _draw_windup(u: CombatUnit, at: Vector2, target_name: String) -> void:
+		var left := sim.charge_left(u)
+		var total := maxi(int(u.charging.get("max", left)), 1)
+		var warn := Color("#ffb347")
+		var fast := 0.6 + 0.4 * sin(_t * (9.0 if left <= 1 else 5.0))
+		var gap := 0.18
+		var seg := TAU / total
+		for i in total:
+			var a0 := -PI / 2.0 + i * seg + gap / 2.0
+			var lit := i < left
+			draw_arc(at, 20, a0, a0 + seg - gap, 16, Color(warn, fast if lit else 0.22), 4.0, true)
+		draw_circle(at + Vector2(32, 0), 11, Color(0, 0, 0, 0.85))
+		draw_arc(at + Vector2(32, 0), 11, 0, TAU, 20, Color(warn, 0.9), 1.5, true)
+		UiStyle.text(self, at + Vector2(21, 6), str(left), 15, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, 22, 3)
+		var when := "slår nästa tur" if left <= 1 else "slår om %d turer" % left
+		var who := (" " + target_name) if target_name != "" else ""
+		UiStyle.text(self, at + Vector2(-150, -28), "%s%s" % [sim.ability(u.charging.ability).get("name", ""), who], 15,
+				Color(warn, 0.95), HORIZONTAL_ALIGNMENT_CENTER, 300, 4)
+		UiStyle.text(self, at + Vector2(-150, -46), "SAMLAR KRAFT – " + when.to_upper(), 15, Color(warn, fast),
+				HORIZONTAL_ALIGNMENT_CENTER, 300, 4)

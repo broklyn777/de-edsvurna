@@ -21,7 +21,7 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"deaths_at_least", "revives_at_least", "is_alive", "highest_speed", "lowest_hp", "lowest_defense",
 		"highest_defense", "highest_attack", "own_turn",
 		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced",
-		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff"]
+		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff", "is_charging", "charge_left_at_most"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -242,6 +242,11 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return not sim.is_immune(x)
 		"is_silenced":
 			return sim.is_silenced(x)
+		# 0.31 Varslade attacker: fienden laddar, och slår om högst n av sina egna turer.
+		"is_charging":
+			return sim.is_charging(x)
+		"charge_left_at_most":
+			return sim.is_charging(x) and sim.charge_left(x) <= int(v)
 		"lacks_artifact":
 			return x.artifact.get("type", "") != v
 	return false
@@ -399,6 +404,10 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "kan skadas"
 		"is_silenced":
 			return "är tystad"
+		"is_charging":
+			return "laddar en varslad attack"
+		"charge_left_at_most":
+			return "laddar, slår om högst %d %s" % [int(value), "tur" if int(value) == 1 else "turer"]
 	return cond
 
 

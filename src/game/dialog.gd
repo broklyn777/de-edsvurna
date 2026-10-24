@@ -78,6 +78,9 @@ static func applies(data: Dictionary, profile: Profile, when: Dictionary) -> boo
 			"intro_done":
 				if profile.intro_done != bool(v):
 					return false
+			"help_seen":  # 0.31: efter en hjälpruta, t.ex. den första varslade attacken
+				if not profile.help_seen.has(v):
+					return false
 	return true
 
 

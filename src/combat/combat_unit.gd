@@ -79,6 +79,10 @@ var cooldowns := {}
 var auras := {}
 ## Fiender: {ability, targets} – vad den tänker göra när det blir dess tur.
 var intent := {}
+## 0.31 Varslade attacker: {ability, left, max, taken} medan fienden laddar (left = egna turer tills den slår, slaget
+## inräknat), annars tom. windup_guard: laddningen bröts nyss; ingen ny förrän efter fiendens nästa tur.
+var charging := {}
+var windup_guard := false
 
 
 static func from_data(unit_id: String, d: Dictionary, unit_team: int) -> CombatUnit:

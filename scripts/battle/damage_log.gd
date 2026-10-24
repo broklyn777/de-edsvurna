@@ -32,6 +32,11 @@ func add(e: Dictionary) -> void:
 	entries.append({"e": e, "title": DamageExplain.title(data, e), "color": color})
 
 
+## 0.31: en rad utan uträkning (en varslad attack som laddas eller bryts).
+func add_note(text: String, color: Color) -> void:
+	entries.append({"e": {"type": "note"}, "title": text, "color": color})
+
+
 func show_log() -> void:
 	open = true
 	visible = true
