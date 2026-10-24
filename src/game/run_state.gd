@@ -46,6 +46,18 @@ const BOSS_WINS_FOR_TROPHY := 3
 ## vart tredje djup, och den andra segern är den som visar att man har lärt sig svaret.
 const GUARDIAN_WINS_FOR_TROPHY := 2
 
+
+## Kortets räkning mot väktarens trofé, t.ex. "1/2 segrar – nästa seger ger trofén" (textspelet: "1/2" lästes som att
+## det behövdes två segrar till, men trofén erbjöds efter striden).
+static func guardian_progress(wins: int) -> String:
+	var need := GUARDIAN_WINS_FOR_TROPHY
+	var text := "%d/%d segrar" % [mini(wins, need), need]
+	if wins >= need:
+		return text + " – trofén erbjuds efter segern"
+	if wins == need - 1:
+		return text + " – nästa seger ger trofén"
+	return text + " – %d segrar till ger trofén" % (need - wins)
+
 var oath := "oath_vengeance"
 ## Köpta perks i Kallet (Kallets altare). De bärs av Paladinen och verkar som Kallet.
 var perks: Array = []
@@ -817,13 +829,95 @@ func lineup(data: Dictionary, encounter_id: String) -> Array:
 	return CombatSim.enemy_lineup(data, CombatSim.encounter_kinds(data.encounters[encounter_id], size), size)
 
 
+## Rutans eget frö för elitvarianterna (CombatSim.elite_rolls): samma varje gång gruppen visas och när striden börjar.
+func cell_elite_seed(idx: int) -> int:
+	return run_seed * 131 + floor * 1009 + idx * 17 + 5
+
+
+## Det som avgör elitvarianterna i en ruta (en del av battle_opts()).
+func variant_opts(r: Dictionary, idx: int) -> Dictionary:
+	var opts := {"instability": instability, "elite_seed": cell_elite_seed(idx)}
+	if r.get("elite", false) or r.get("nemesis", false):
+		opts.force_elites = 1
+	return opts
+
+
+## Gruppens fiender som de möter sällskapet: [{kind, name, elite}] med elitvarianterna redan slumpade (textspelet:
+## kortet visade Likätare och Skelettkrigare, striden Gravgnagaren och Benkapten). Samma som CombatSim.create med
+## battle_opts() på rutan.
+func group_preview(data: Dictionary, idx: int) -> Array:
+	var r: Dictionary = map.cell(idx)
+	if not r.has("encounter"):
+		return []
+	var kinds := lineup(data, r.encounter)
+	var rolls := CombatSim.elite_rolls(data, r.encounter, kinds, 0, variant_opts(r, idx), depth)
+	var enc: Dictionary = data.encounters[r.encounter]
+	var counts := {}
+	var out: Array = []
+	for i in kinds.size():
+		var d: Dictionary = data.enemies[kinds[i]]
+		counts[kinds[i]] = int(counts.get(kinds[i], 0)) + 1
+		var name := String(CombatSim.unit_override(enc, kinds[i], counts[kinds[i]]).get("name", d.name))
+		out.append({"kind": kinds[i], "elite": rolls[i], "name": String(d.elite.get("name", name)) if rolls[i] else name})
+	return out
+
+
+## Sällsynta elitvarianter i en vanlig grupp (inte elit-, Nemesis- eller bossrutor): [{kind, name}].
+func rare_variants(data: Dictionary, idx: int) -> Array:
+	var r: Dictionary = map.cell(idx)
+	if r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false):
+		return []
+	return group_preview(data, idx).filter(func(x: Dictionary) -> bool: return x.elite)
+
+
+## Kortets rad med fienderna ("3 fiender: Gravgnagaren, Benkapten, Skelettbågskytt"), elitvarianterna med sina namn.
+func lineup_text(data: Dictionary, idx: int) -> String:
+	var preview := group_preview(data, idx)
+	var count := {}
+	var order: Array = []
+	for x in preview:
+		if not count.has(x.name):
+			order.append(x.name)
+		count[x.name] = int(count.get(x.name, 0)) + 1
+	return "%d fiender: %s" % [preview.size(), ", ".join(order.map(func(n: String) -> String:
+			return n + (" ×%d" % count[n] if count[n] > 1 else "")))]
+
+
+## Kortets varning för sällsynta elitvarianter i en vanlig grupp, eller "" (elitkortet har en egen varning).
+func rare_warning(data: Dictionary, idx: int) -> String:
+	var rare := rare_variants(data, idx)
+	if rare.is_empty():
+		return ""
+	var names: Array = []
+	for x in rare:
+		if not names.has(x.name):
+			names.append(x.name)
+	if names.size() == 1:
+		return "Varning: %s är en sällsynt elitvariant – den glöder, är starkare än vanligt och har en egen regelbrytande egenskap och trofé." % names[0]
+	return "Varning: %s är sällsynta elitvarianter – de glöder, är starkare än vanligt och har var sin regelbrytande egenskap och trofé." % \
+			" och ".join(names)
+
+
+## Elitvarianternas egenskaper och troféer i gruppen (för kortets listor): {traits: [id], trophies: [id]}.
+func variant_extras(data: Dictionary, idx: int) -> Dictionary:
+	var out := {"traits": [], "trophies": []}
+	for x in group_preview(data, idx):
+		if not x.elite:
+			continue
+		var def: Dictionary = data.enemies[x.kind].elite
+		if def.has("trait") and not out.traits.has(def.trait):
+			out.traits.append(def.trait)
+		if def.has("trophy") and not out.trophies.has(def.trophy):
+			out.trophies.append(def.trophy)
+	return out
+
+
 func battle_opts() -> Dictionary:
 	var r := current_room()
 	var tier := int(r.get("tier", floor))
 	var opts := {"rules": active_rules() + next_rules, "instability": instability, "start_auras": next_auras.duplicate(),
 			"floor": tier}
-	if r.get("elite", false) or r.get("nemesis", false):
-		opts.force_elites = 1
+	opts.merge(variant_opts(r, pos))
 	# 0.27: motdrag bara i elitgrupper och bossmöten (CombatSim.counter_for).
 	if r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false):
 		opts.counter = true
@@ -1081,7 +1175,7 @@ func treasure_value() -> int:
 	return roundi(Profile.reward(floor, depth) * TREASURE_SILVER)
 
 
-## Valen för föremålet man står på: [{id, label, disabled?}].
+## Valen för föremålet man står på: [{id, label, disabled?, disabled_text?}] (disabled_text: varför valet inte går).
 func object_options(data: Dictionary) -> Array:
 	var r := current_room()
 	var def: Dictionary = data.get("objects", {}).get(r.get("obj", ""), {})
@@ -1090,10 +1184,13 @@ func object_options(data: Dictionary) -> Array:
 		for o in opts:
 			if o.id == "scout":
 				o.disabled = true
+				o.disabled_text = ("Sanden ligger stilla. Ingen har en Charge kvar att offra." if _richest_charge().is_empty()
+						else "Sanden ligger stilla. Det finns ingen elitgrupp kvar på våningen som ni inte redan vet om.")
 	if r.get("obj", "") == "pew" and barricade_target() < 0:
 		for o in opts:
 			if o.id == "barricade":
 				o.disabled = true
+				o.disabled_text = "Gedigen ek. Ni har inte sett någon grupp att barrikadera bort än – men virket är bra."
 	return opts
 
 

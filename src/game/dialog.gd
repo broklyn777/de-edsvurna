@@ -275,6 +275,44 @@ static func _bark_ok(entry: Variant, key: String, used: Array, profile: Profile,
 	return true
 
 
+## Ord i hjältarnas namn som inte pekar ut någon (titlar och småord).
+const NAME_TITLES := ["Syster", "Broder", "Jägaren", "Paladinen", "av"]
+
+
+## Följeslagarna som en replik talar till eller om: talarna i ett samtal, "needs" i datan och namn som står i texten
+## (textspelet: Alva sa "Ja, du också, Imma" fast Imma satt i Värdshuset).
+static func mentioned(data: Dictionary, entry: Variant) -> Array:
+	var out: Array = []
+	var texts: Array = []
+	if entry is Dictionary:
+		for id in entry.get("needs", []):
+			out.append(String(id))
+		for l in entry.get("lines", []):
+			if not out.has(String(l[0])):
+				out.append(String(l[0]))
+			texts.append(String(l[1]))
+		if entry.has("text"):
+			texts.append(String(entry.text))
+	else:
+		texts.append(String(entry))
+	for id in data.get("heroes", {}):
+		if id == "paladin" or out.has(id):
+			continue
+		for word in String(data.heroes[id].get("name", "")).split(" ", false):
+			if NAME_TITLES.has(word) or word.length() < 3:
+				continue
+			var re := RegEx.create_from_string("\\b" + word + "\\b")
+			if texts.any(func(t: String) -> bool: return re.search(t) != null):
+				out.append(id)
+				break
+	return out
+
+
+## Sant om alla som repliken nämner eller låter tala är med i sällskapet (Paladinen är alltid med).
+static func present(data: Dictionary, entry: Variant, party: Array) -> bool:
+	return mentioned(data, entry).all(func(id: String) -> bool: return id == "paladin" or id == "narrator" or party.has(id))
+
+
 static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng: RandomNumberGenerator,
 		profile: Profile = null, fallback := true) -> Dictionary:
 	var d: Dictionary = data.get("dialog", {})
@@ -283,7 +321,8 @@ static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng:
 	var cands: Array = []
 	var pool := 0
 	for pair in d.get("pairs", []):
-		if pair.get("kind", "") == kind and party.has(pair.heroes[0]) and party.has(pair.heroes[1]):
+		if pair.get("kind", "") == kind and party.has(pair.heroes[0]) and party.has(pair.heroes[1]) \
+				and present(data, pair, party):
 			pool += 1
 			var key := pair_key(pair)
 			if _bark_ok(pair, key, used, profile, rng):
@@ -292,6 +331,8 @@ static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng:
 		if id == "paladin":
 			continue
 		for e in d.get("barks", {}).get(id, {}).get(kind, []):
+			if not present(data, e, party):
+				continue
 			pool += 1
 			var key := line_key(e)
 			if _bark_ok(e, key, used, profile, rng):

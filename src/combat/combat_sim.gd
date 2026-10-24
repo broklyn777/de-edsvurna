@@ -218,6 +218,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	var party_mult := float(PARTY_SCALE[scale_size]) * (FIVE_CAPPED_SCALE if scale_size >= 5 and max_enemies <= 5 else 1.0)
 	var counts := {}
 	var lineup := enemy_lineup(game_data, encounter_kinds(enc, scale_size), scale_size)
+	var elites := elite_rolls(game_data, encounter_id, lineup, seed_value, opts, sim.depth)
 	for i in lineup.size():
 		var kind: String = lineup[i]
 		counts[kind] = counts.get(kind, 0) + 1
@@ -247,12 +248,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 			scale_unit(e, lm)
 			e.speed = roundf(e.speed * lm)
 			e.base_stats.speed = e.speed
-		# Elitvarianter slumpas med ett eget frö, så att striden i övrigt blir densamma.
-		var chance: float = opts.get("elite_chance", elite_chance(sim.depth, int(opts.get("instability", 0))))
-		var elite_rng := RandomNumberGenerator.new()
-		elite_rng.seed = seed_value * 7919 + i
-		var roll := elite_rng.randf()
-		if game_data.enemies[kind].has("elite") and (forced > 0 or roll < chance):
+		if elites[i]:
 			make_elite(e, game_data.enemies[kind].elite)
 			if forced > 0 and opts.get("nemesis", false):
 				e.name = "Nemesis: " + e.name
@@ -397,6 +393,27 @@ static func _can_drop(game_data: Dictionary, kinds: Array, i: int) -> bool:
 
 
 ## Chansen att en vanlig fiende är en elitvariant: 5 % och mer med djup och instabilitet, högst 30 %.
+## Vilka i uppställningen som blir elitvarianter (sant/falskt per plats). Slumpas med ett eget frö, så att striden i
+## övrigt blir densamma: "elite_seed" i opts (grottan ger varje ruta ett, så att kortet visar samma fiender som striden,
+## RunState.group_preview), annars stridens frö. "force_elites" gör de n första som har en variant till elit (inte i
+## en elitgrupp).
+static func elite_rolls(game_data: Dictionary, encounter_id: String, lineup: Array, seed_value: int, opts: Dictionary,
+		at_depth: int) -> Array:
+	var forced := 0 if game_data.encounters[encounter_id].get("elite_group", false) else int(opts.get("force_elites", 0))
+	var chance: float = opts.get("elite_chance", elite_chance(at_depth, int(opts.get("instability", 0))))
+	var base := int(opts.get("elite_seed", seed_value))
+	var out: Array = []
+	for i in lineup.size():
+		var elite_rng := RandomNumberGenerator.new()
+		elite_rng.seed = base * 7919 + i
+		var roll := elite_rng.randf()
+		var yes: bool = game_data.enemies[lineup[i]].has("elite") and (forced > 0 or roll < chance)
+		if yes:
+			forced -= 1
+		out.append(yes)
+	return out
+
+
 static func elite_chance(at_depth: int, instability := 0) -> float:
 	return minf(ELITE_CHANCE + ELITE_PER_DEPTH * (maxi(at_depth, 1) - 1) + ELITE_PER_INSTABILITY * instability,
 			ELITE_MAX)
@@ -2462,7 +2479,12 @@ func _kill(u: CombatUnit, by: CombatUnit = null) -> void:
 
 func _emit(e: Dictionary) -> void:
 	if _trait_ctx != "":
-		e.trait = _trait_ctx
+		# Händelser där "trait" är själva innehållet (trait_passed, heal_blocked …) behåller det; egenskapen som
+		# skickade dem står då i "ctx_trait" (textspelet: "Jägarinstinkt går vidare" fast det var Kistornas råd).
+		if e.has("trait") and e.trait != _trait_ctx:
+			e.ctx_trait = _trait_ctx
+		else:
+			e.trait = _trait_ctx
 	events.append(e)
 	_count_stats(e)
 	if _trait_depth >= MAX_TRAIT_CHAIN or outcome != "" or _turn_procs >= TURN_PROC_LIMIT:
@@ -2476,7 +2498,8 @@ func _emit(e: Dictionary) -> void:
 			continue
 		for trait_id in (traits_of(owner) if owner.alive else owner.traits):
 			var t: Dictionary = data.traits[trait_id]
-			if t.trigger != e.type or e.get("trait", "") == trait_id or not _trait_ready(owner, trait_id, t):
+			if t.trigger != e.type or e.get("trait", "") == trait_id or e.get("ctx_trait", "") == trait_id \
+					or not _trait_ready(owner, trait_id, t):
 				continue
 			if not owner.alive and not t.get("on_own_death", false):
 				continue

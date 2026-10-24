@@ -449,17 +449,33 @@ static func catch_up(level: float, party_avg: float) -> float:
 	return minf(1.0 + CATCH_UP_PER_LEVEL * maxf(party_avg - level, 0.0), CATCH_UP_MAX)
 
 
-## En befriad lärjunge ansluter (0.23). Nivå 1, eller 2 om sällskapet redan är på nivå 4 eller mer (svag men
-## användbar; egenskapen verkar från nivå 1). Returnerar falskt om hen redan fanns.
-func recruit(data: Dictionary, hero_id: String, party_avg := 1.0) -> bool:
+## En befriad lärjunge ansluter (0.23). Textspelet: Sefir anslöt på nivå 2 när sällskapet var på 17, och nya
+## kombinationer i Värdshuset prövades aldrig. Nu ansluter hen JOIN_BELOW nivåer (dagens skala, HeroStats.old_level)
+## under sällskapets snitt, aldrig över den svagaste i sällskapet + 1, och minst nivå 1 (2 när sällskapet är på 4 eller
+## mer, som förut). Ikapphämtningen (catch_up) tar resten. party_min < 0: snittet räknas som den svagaste.
+## Returnerar falskt om hen redan fanns.
+func recruit(data: Dictionary, hero_id: String, party_avg := 1.0, party_min := -1.0) -> bool:
 	if recruited.has(hero_id) or not data.heroes.has(hero_id) or hero_id == "paladin":
 		return false
 	recruited.append(hero_id)
 	var h := hero(data, hero_id)
 	if int(h.level) <= 1:
-		h.level = 2 if HeroStats.old_level(party_avg) >= 4.0 else 1
+		h.level = join_level(party_avg, party_min)
 		h.xp = 0
 	return true
+
+
+## Nivåer under sällskapets snitt som en befriad lärjunge ansluter på (vårt val).
+const JOIN_BELOW := 2.0
+
+
+## Nivån en befriad lärjunge ansluter på (se recruit).
+static func join_level(party_avg: float, party_min := -1.0) -> int:
+	var old_avg := HeroStats.old_level(party_avg)
+	var floor_level := 2 if old_avg >= 4.0 else 1
+	var target := roundi(HeroStats.new_level(maxf(old_avg - JOIN_BELOW, 1.0)))
+	var cap := floori((party_min if party_min > 0.0 else party_avg) + 1.0)
+	return clampi(maxi(floor_level, target), 1, maxi(cap, 1))
 
 
 ## Följeslagarna man kan välja (Värdshuset): de man har, i den ordning de kom.
