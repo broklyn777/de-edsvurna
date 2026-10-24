@@ -10,6 +10,8 @@ extends SceneTree
 
 const Bot := preload("res://tests/combat_bot.gd")
 const RUNS := 100
+## BALANS=grotta: GROTTA_DJUP=n kör grottan på djup n med väntad nivå (förval 1).
+var grotto_depth := 1
 const DEPTHS := [1, 3]
 ## Ett första smide: Brokks sköld med Helande ljus (160 silver).
 const ONE_ARTIFACT := {"brokk": {"type": "shield", "ability": "healing_light"}}
@@ -27,6 +29,10 @@ const BEST_PERKS := {1: ["oath_dawn", "ward_war_machine"], 3: ["oath_dawn", "daw
 
 func _init() -> void:
 	var data := GameData.load_all()
+	# DJUPSTEG=0.03: fiendernas stats per djup för mätningen (spelets värde är CombatSim.DEPTH_STEP).
+	if OS.get_environment("DJUPSTEG") != "":
+		CombatSim.depth_step = float(OS.get_environment("DJUPSTEG"))
+		print("Djupsteg: +%.1f %% per djup" % (CombatSim.depth_step * 100.0))
 	# BALANS=nivaer kör bara nivåavsnittet (0.19), som går snabbare och värmer mindre.
 	if OS.get_environment("BALANS") == "sallskap":
 		_party_sizes(data)
@@ -434,7 +440,14 @@ func _elite_groups(data: Dictionary) -> void:
 ## TUNED, i kryptan och kapellet på väntad nivå, och den första nedstigningen (ensam, Imma efter strid 1).
 func _grotto(data: Dictionary) -> void:
 	var fresh := Bot.new_profile_macros(data)
-	print("=== Grottan (0.27), djup 1, %d körningar per rad ===" % RUNS)
+	if OS.get_environment("GROTTA_DJUP") != "":
+		grotto_depth = int(OS.get_environment("GROTTA_DJUP"))
+	print("=== Grottan (0.27), djup %d, %d körningar per rad ===" % [grotto_depth, RUNS])
+	if grotto_depth > 1:
+		var lv := HeroStats.expected_level(grotto_depth)
+		for realm_id in (realms_for_grotto()):
+			_grotto_line(data, realm_id, "4 hjältar, startmakron, nivå %d" % lv, ["paladin", "brokk", "alva", "eira"], lv, {})
+		return
 	var realms := ["crypt", "chapel"]
 	if OS.get_environment("NIVA_REALM") != "":
 		realms = [OS.get_environment("NIVA_REALM")]
@@ -443,6 +456,10 @@ func _grotto(data: Dictionary) -> void:
 		_grotto_line(data, realm_id, "Paladinen + Imma, nivå 3", ["paladin", "imma"], 3, {"bot_macros": fresh})
 		_grotto_line(data, realm_id, "första: ensam, Imma efter strid 1", ["paladin"], 1,
 				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"})
+
+
+func realms_for_grotto() -> Array:
+	return ["crypt", "chapel"] if OS.get_environment("NIVA_REALM") == "" else [OS.get_environment("NIVA_REALM")]
 
 
 func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Array, lv: int, extra: Dictionary,
@@ -461,7 +478,7 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 		for seed_value in range(1, RUNS + 1):
 			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
 			opts.merge(extra.duplicate(true))
-			var r := Bot.run_expedition(data, seed_value, skill, traits, artifacts, 1, realm_id, opts, policy)
+			var r := Bot.run_expedition(data, seed_value, skill, traits, artifacts, grotto_depth, realm_id, opts, policy)
 			cleared += 1 if r.cleared else 0
 			if r.has("lost_at"):
 				lost[r.lost_at] = int(lost.get(r.lost_at, 0)) + 1
