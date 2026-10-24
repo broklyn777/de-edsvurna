@@ -64,6 +64,8 @@ const DODGE_TRAIT_MAX := 0.75
 ## djup över 1 (8 %). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
 ## (våning 2 och 3 är starkare än 1, som i Siralim där fienderna skalar snabbare än laget).
 const DEPTH_STEP := 0.08
+## Botarnas mätning (DJUPSTEG=0.03 i soak/balance): ändrar steget utan att ändra spelets värde.
+static var depth_step := DEPTH_STEP
 const SCALED_STATS := ["health", "attack", "intelligence", "defense"]
 ## 0.26: talen börjar små som i Siralim (grundvärdena delades med 10). Health, Attack, Intelligence och Defense har därför
 ## en decimal (förut heltal, samma upplösning i förhållande till värdet); Speed är kvar i heltal. Skada och helning
@@ -366,7 +368,7 @@ static func make_elite(e: CombatUnit, def: Dictionary) -> void:
 
 ## Hur mycket fiendernas stats växer på djupet: 1 + 8 % per djup över 1.
 static func depth_mult(depth: int) -> float:
-	return 1.0 + DEPTH_STEP * (maxi(depth, 1) - 1)
+	return 1.0 + depth_step * (maxi(depth, 1) - 1)
 
 
 ## Mötets skalning (våningen) gånger djupets.

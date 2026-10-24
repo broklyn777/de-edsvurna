@@ -77,6 +77,9 @@ func _init() -> void:
 		elif arg == "--verbose":
 			verbose = true
 	OS.add_logger(catcher)
+	if OS.get_environment("DJUPSTEG") != "":
+		CombatSim.depth_step = float(OS.get_environment("DJUPSTEG"))
+		print("Djupsteg: +%.1f %% per djup" % (CombatSim.depth_step * 100.0))
 	if OS.get_environment("SOAK") == "karriar":
 		var n := 18
 		for arg in OS.get_cmdline_user_args():
