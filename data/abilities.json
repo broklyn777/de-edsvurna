@@ -1393,7 +1393,15 @@
 				"aura": "snared",
 				"duration": 2
 			}
-		]
+		],
+		"anim": "Troll_Throw",
+		"release_at": 0.53,
+		"held": "troll_delar/Troll_Boulder",
+		"hide_while": [
+			"Troll_Club"
+		],
+		"projectile": "stone",
+		"stone_color": "#5f6f48"
 	},
 	"troll_ladle": {
 		"name": "Grytslag",

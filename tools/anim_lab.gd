@@ -7,6 +7,7 @@ extends Node3D
 ##
 ## Steg i --seq (kommaseparerade, valfri längd i sekunder efter kolon):
 ##   cast:<skola>:<s>  ladda en besvärjelse så länge, sedan släpp
+##   ability:<förmåga>[:s]  förmågans egen rörelse (t.ex. ability:moss_throw, trollets kast)
 ##   attack[:s]  hit[:s]  block:<s>  kick[:s]  idle:<s>  walk:<s>  die[:s]  revive[:s]
 ##
 ## Nya modeller utan data: --models=gast,haxa (spelar Idle och Sword_Attack, se MODEL_PREVIEW).
@@ -145,6 +146,11 @@ func _process(delta: float) -> void:
 			"cast": m.start_cast(parts[1] if parts.size() > 1 else "holy", false)
 			"release": m.end_cast(true)
 			"attack": m.attack(front)
+			"ability":  # ability:<förmåga>: förmågans egen rörelse, och stenen i händerna om den kastar en
+				var ab: Dictionary = GameData.load_all().abilities[parts[1]]
+				m.attack(front, 0.15, ab.get("anim", ""), ab.get("release_at", UnitModel.IMPACT_AT))
+				if ab.has("held"):
+					m.hold_until(ab.held, ab.get("hide_while", []), maxf(m.last_impact_delay, 0.15))
 			"kick": m.kick(front)
 			"hit": m.hit(2.0, front)
 			"block": m.set_blocking(true)
@@ -160,6 +166,8 @@ func _process(delta: float) -> void:
 			_wait = 1.0
 		"attack", "kick":
 			_wait = arg.call(1, 1.2)
+		"ability":
+			_wait = arg.call(2, 1.6)
 		"hit":
 			_wait = arg.call(1, 1.0)
 		"block":

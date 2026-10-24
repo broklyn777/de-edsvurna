@@ -1742,8 +1742,12 @@
 				"Troll_MossLight": "#a8d65a",
 				"Troll_Brown": "#5a3d22",
 				"Troll_Brown2": "#7a5230",
-				"Troll_EyeGlint": "#ffe066"
-			}
+				"Troll_EyeGlint": "#ffe066",
+				"Troll_Boulder": "#5d6650"
+			},
+			"anims_from": [
+				"troll_kast"
+			]
 		},
 		"trophy": "moss_cloak"
 	},

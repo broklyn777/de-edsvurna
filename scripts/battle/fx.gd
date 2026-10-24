@@ -105,6 +105,49 @@ class Projectile extends Node2D:
 		draw_circle(Vector2.ZERO, size * 0.5, Color(1, 1, 1, 0.9))
 
 
+## Sten som ett troll slungar: en kantig klump som roterar i en hög båge, med lite damm efter sig.
+class Stone extends Node2D:
+	var from := Vector2.ZERO
+	var to := Vector2.ZERO
+	var travel := 0.4
+	var color := Color("#6f6a60")
+	var arc := 60.0
+	var _t := 0.0
+	var _shape := PackedVector2Array()
+	var _dust: Array[Vector2] = []
+
+	func _init(a: Vector2, b: Vector2, duration: float, c: Color) -> void:
+		from = a
+		to = b
+		travel = duration
+		color = c
+		position = a
+		arc = clampf(a.distance_to(b) * 0.3, 30.0, 110.0)
+		for i in 7:
+			var r := randf_range(9.0, 14.0)
+			_shape.append(Vector2.from_angle(TAU * i / 7.0) * r)
+
+	func _process(delta: float) -> void:
+		_t += delta
+		var k := minf(_t / travel, 1.0)
+		position = from.lerp(to, k) + Vector2(0, -sin(k * PI) * arc)
+		rotation += delta * 9.0
+		_dust.push_front(position)
+		if _dust.size() > 8:
+			_dust.pop_back()
+		if k >= 1.0:
+			queue_free()
+		queue_redraw()
+
+	func _draw() -> void:
+		for i in range(_dust.size() - 1, 0, -1):
+			var f := 1.0 - float(i) / _dust.size()
+			draw_circle((_dust[i] - position).rotated(-rotation), 5.0 * f, Color(0.55, 0.5, 0.42, 0.35 * f))
+		draw_colored_polygon(_shape, color)
+		draw_polyline(_shape + PackedVector2Array([_shape[0]]), color.darkened(0.55), 2.0, true)
+		draw_line(_shape[1] * 0.4, _shape[4] * 0.3, color.lightened(0.25), 2.0)
+
+
 ## Flygande siffra eller text. Kritiska träffar poppar större.
 class FloatingText extends Node2D:
 	var text := ""
