@@ -186,6 +186,10 @@ Exempel: Helande ljus har styrka 2,3. Med 10,4 Intelligence och variationen 1,00
 
 Helningar blir aldrig krit. Vissnad nåd (våningsregel) ger −40 %.
 
+**Mattad helning** (strid-langd, vårt val; Siralim har det inte): en fiendes helning med samma förmåga eller egenskap
+helar 15 % mindre för varje tidigare gång i striden, ned till 40 % (100, 85, 70, 55, 40, 40 … %). Hjältarnas helningar
+mattas inte. Syns som modifieraren "Mattad helning" i skadeloggen (`CombatSim.heal_fade`, `heal_fade_min`).
+
 **Förnyelse** (HoT) helar 70 % av kastarens Intelligence i början av målets tre nästa turer. *0.21:* tidigare var
 det fast 45 och växte inte med nivåerna.
 

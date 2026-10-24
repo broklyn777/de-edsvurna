@@ -331,6 +331,14 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   maximala liv per tur över 100, förbi Barriär (`CombatSim.EXHAUSTION_TURN`, `_exhaust`, händelserna `exhaustion_start`
   och `exhaustion`, skylten "Facklorna falnar"); tur 300 är en ren förlust. Botarna: 99 av 100 strider är klara på 69 turer.
   `--exhaust=<tur>` startar striden på en viss tur.
+  **Stridernas längd** (strid-langd, textspelet: Benskrivaren 55 turer, Kistornas råd 87): fiendernas helningar mattas
+  15 % per tidigare tur med samma förmåga, ned till 40 % (`CombatSim.heal_fade`, "Mattad helning", formler.md §7);
+  Antecknat högst 50 % (förr 75); Kistbäraren försvarar sig under 35 % liv (förr 60); Kistornas råd stat_mult 1,155
+  (förr 1,14, för att hålla vinsten). Botarna: `GROTTA_TURER=1` ger turer per strid (median/90:e percentilen/max) per sort
+  och per möte i `BALANS=grotta` och `BALANS=vaktare`. Prov utan att ändra spelet: `HEAL_FADE`, `NOTED_MAX`, `BEARER_DEF`,
+  `MOTE_MULT=<möte>:<x>`, och för stora strider (elit, Nemesis, boss) `BIG_HP`, `BIG_POW`, `BIG_EXH`, `BIG_EXH_STEP`
+  (`CombatSim.big_fight_*`, av som förval). Våningens nödvändiga grupper (elit, Nemesis, föremåls- och sigillvakter) är
+  olika möten när poolen har fler (`Grotto._pick_unused`).
   Fiender som försvarar sig vid lågt liv gör det bara direkt efter ett anfall (0.30.19, `self_last_attacked`: karriärbotarna
   fann ett dödläge mot Asketen). **Svårighetskurvan** (`SOAK=karriar` i `tests/soak.gd` på testgrenen,
   `docs/provspel/svarighetskurva.md`): en profil genom 18 nedstigningar; djup 1 är en platå, taket kommer vid djup 6–7.

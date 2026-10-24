@@ -733,7 +733,10 @@ func _vary_groups(data: Dictionary) -> void:
 		var e: Dictionary = data.encounters.get(c.encounter, {})
 		if not e.has("twist"):
 			continue
-		if twists_used.has(c.encounter) and data.encounters.has(String(e.get("base", ""))):
+		# Grundgruppen bara om den inte redan vaktar ett annat quest-föremål eller sigill här (nödvändiga grupper olika).
+		var base_taken: bool = c.get("kind", "") in ["item", "seal"] and map.cells.any(func(o: Dictionary) -> bool:
+				return o != c and o.get("kind", "") in ["item", "seal"] and o.get("encounter", "") == String(e.get("base", "")))
+		if twists_used.has(c.encounter) and data.encounters.has(String(e.get("base", ""))) and not base_taken:
 			c.encounter = String(e.base)
 		else:
 			twists_used.append(c.encounter)

@@ -32,6 +32,27 @@ func _init() -> void:
 	if OS.get_environment("KORNINGAR") != "":
 		RUNS = int(OS.get_environment("KORNINGAR"))
 	var data := GameData.load_all()
+	# strid-langd: prov av fiendehelning som mattas, tidigare utmattning i stora strider och Antecknats tak.
+	if OS.get_environment("HEAL_FADE") != "":
+		CombatSim.heal_fade = float(OS.get_environment("HEAL_FADE"))
+	if OS.get_environment("HEAL_FADE_MIN") != "":
+		CombatSim.heal_fade_min = float(OS.get_environment("HEAL_FADE_MIN"))
+	if OS.get_environment("BIG_EXH") != "":
+		CombatSim.big_fight_exhaustion = int(OS.get_environment("BIG_EXH"))
+	if OS.get_environment("BIG_EXH_STEP") != "":
+		CombatSim.big_fight_step = float(OS.get_environment("BIG_EXH_STEP"))
+	if OS.get_environment("NOTED_MAX") != "":
+		data.traits.noted.modify.repeat_max = float(OS.get_environment("NOTED_MAX"))
+	if OS.get_environment("BIG_HP") != "":
+		CombatSim.big_fight_hp = float(OS.get_environment("BIG_HP"))
+	if OS.get_environment("BIG_POW") != "":
+		CombatSim.big_fight_power = float(OS.get_environment("BIG_POW"))
+	# MOTE_MULT=crypt_g2:1.17 prövar ett mötes stat_mult.
+	if OS.get_environment("MOTE_MULT") != "":
+		var mm := OS.get_environment("MOTE_MULT").split(":")
+		data.encounters[mm[0]].stat_mult = float(mm[1])
+	if OS.get_environment("BEARER_DEF") != "":
+		data.enemies.coffin_bearer.rules[0]["if"].self_hp_below = float(OS.get_environment("BEARER_DEF"))
 	# NIVAER=k2|k3|kurva|k2seg: prototyp av andra nivåtakter (HeroStats.set_variant, docs/plan/nivaer-och-charges.md).
 	if OS.get_environment("NIVAER") != "":
 		HeroStats.set_variant(OS.get_environment("NIVAER"))
@@ -477,11 +498,15 @@ func _guardians(data: Dictionary) -> void:
 				var lv := HeroStats.expected_level(depth)
 				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
 					var won := 0
+					var tl := []
 					for seed_value in range(1, RUNS + 1):
 						var opts := {"levels": Bot.party_levels(data, lv, party), "floor": 2, "counter": true}
 						var res := Bot.run_fight(data, seed_value, skill, enc_id, party, {}, {}, {}, depth, opts)
 						won += 1 if res.outcome == "victory" else 0
+						tl.append(int(res.turns))
 					line += "  d%d %s %3d %%" % [depth, _skill_name(skill), roundi(100.0 * won / RUNS)]
+					if OS.get_environment("GROTTA_TURER") == "1":
+						line += " t" + _turn_stats({"": tl}, [""]).strip_edges()
 			var mark := "" if enc_id == slots[0] else "  (djup %s)" % ", ".join(range(1, 10).filter(func(d: int) -> bool:
 				return RunState.guardian_for(data, realm_id, d) == enc_id).map(func(d: int) -> String: return str(d)))
 			print(line + mark)
@@ -622,6 +647,18 @@ func _five_by_type(data: Dictionary) -> void:
 		print(line)
 
 
+## strid-langd: "sort med/p90/max (n)" för nycklarna i {nyckel: [turer]}.
+static func _turn_stats(turns: Dictionary, keys: Array) -> String:
+	var bits := []
+	for k in keys:
+		if not turns.has(k) or (turns[k] as Array).is_empty():
+			continue
+		var a: Array = (turns[k] as Array).duplicate()
+		a.sort()
+		bits.append("%s %d/%d/%d (%d)" % [k, a[a.size() / 2], a[mini(a.size() - 1, int(a.size() * 0.9))], a[a.size() - 1], a.size()])
+	return ", ".join(bits)
+
+
 func realms_for_grotto() -> Array:
 	return ["crypt", "chapel"] if OS.get_environment("NIVA_REALM") == "" else [OS.get_environment("NIVA_REALM")]
 
@@ -644,6 +681,7 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 		var by_quest := {}  # GROTTA_QUEST=1: våningar per quest-typ [nådda, klarade], och körningar med/utan sigill
 		var seal_runs := [0, 0, 0, 0]
 		var boss_left := {}
+		var turns := {}  # GROTTA_TURER=1: turer per strid per sort och möte
 		for seed_value in range(1, RUNS + 1):
 			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
 			opts.merge(extra.duplicate(true))
@@ -657,6 +695,10 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 			for k in r.get("by_kind", {}):
 				var a: Array = kinds.get(k, [0, 0])
 				kinds[k] = [int(a[0]) + int(r.by_kind[k][0]), int(a[1]) + int(r.by_kind[k][1])]
+			for k in r.get("turns", {}):
+				var tl: Array = turns.get(k, [])
+				tl.append_array(r.turns[k])
+				turns[k] = tl
 			if r.cleared:
 				fights_cleared += int(r.fights)
 			var has_seal := false
@@ -679,6 +721,8 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 						if not r.get("seals_left", []).is_empty() else "inga"
 				var c: Array = boss_left.get(left_key, [0, 0])
 				boss_left[left_key] = [int(c[0]) + 1, int(c[1]) + (1 if r.cleared else 0)]
+		if OS.get_environment("GROTTA_TURER") == "1" and line.contains("%"):
+			line += "\n  %-8s %-34s" % ["", ""]
 		line += "  %s%s %3d %% (strider %.1f, klarade %.1f, steg %d, erf %d)" % [_skill_name(skill),
 				{"careful": "-försiktig", "direct": "-direkt"}.get(policy, ""), roundi(100.0 * cleared / RUNS),
 				float(fights) / RUNS, float(fights_cleared) / maxi(cleared, 1), roundi(float(steps) / RUNS), xp / RUNS]
@@ -700,6 +744,12 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 			bk.sort()
 			line += "\n      bossen (vunna/nådda) efter kvarlämnade sigill: " + ", ".join(bk.map(func(k: String) -> String:
 				return "%s %d/%d" % [k, boss_left[k][1], boss_left[k][0]]))
+		if OS.get_environment("GROTTA_TURER") == "1":
+			line += "\n      turer (median / 90:e percentilen / max, antal): " + _turn_stats(turns, ["vanlig", "elit", "väktare", "boss"])
+			var named := turns.keys().filter(func(k: String) -> bool: return k.contains(": "))
+			named.sort()
+			for k in named:
+				line += "\n        %s" % _turn_stats(turns, [k])
 		# GROTTA_FORLUST=1: var körningarna förloras (våning och rumstyp, f1_end = bossen).
 		if OS.get_environment("GROTTA_FORLUST") != "":
 			var keys := lost.keys()

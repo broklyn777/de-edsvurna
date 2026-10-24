@@ -132,6 +132,14 @@ func _place_objects(seed_value: int, objects: Array) -> void:
 			cells[at] = {"kind": "object", "obj": id}
 
 
+## Ett möte ur poolen som inte redan står på våningen (elitgrupperna ska vara olika); bara om alla är tagna en upprepning.
+static func _pick_unused(rng: RandomNumberGenerator, pool: Array, used: Array) -> String:
+	var free := pool.filter(func(id: String) -> bool: return not used.has(id))
+	if free.is_empty():
+		free = pool
+	return free[rng.randi() % free.size()]
+
+
 static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, pools: Array, boss: String,
 		guard: String, quest: Dictionary, prisoner: Dictionary, elite_pools := [], nemesis_pool := []) -> Grotto:
 	var g := Grotto.new()
@@ -158,20 +166,23 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 	# Elit (så många som Rensa kräver, annars en), minst ELITE_MIN_DIST från start; den första är Nemesis i en Jakt.
 	var n_elites := maxi(1, int(quest.get("goal", 2))) if quest.get("type", "") == "clear" else 1
 	var elites: Array[int] = []
+	# Textspelet: Rensa lade två likadana Likfärden och Samla två likadana Askkoret på samma våning. Våningens nödvändiga
+	# grupper (elit, Nemesis, föremålens och sigillens vakter) är olika möten när poolen har fler.
+	var used: Array = []
 	for e in n_elites:
 		var at := g._free_cell(rng, func(i: int) -> bool: return dist(i, g.start) >= ELITE_MIN_DIST and dist(i, g.goal) >= 2)
 		if at < 0:
 			return null
 		var tier := mini(base_tier + 1, 2)
 		var enc := ""
-		if elite_pools.is_empty():
-			enc = pick.call(tier)
-		else:
-			var ep: Array = elite_pools[clampi(floor_index, 0, elite_pools.size() - 1)]
+		var ep: Array = pools[clampi(tier, 0, pools.size() - 1)]
+		if not elite_pools.is_empty():
+			ep = elite_pools[clampi(floor_index, 0, elite_pools.size() - 1)]
 			# Mot upprepning: Nemesis kan dras ur en egen pool (RunState.nemesis_pool: båda våningarnas elit på våning 2).
 			if e == 0 and quest.get("type", "") == "hunt" and not nemesis_pool.is_empty():
 				ep = nemesis_pool
-			enc = ep[rng.randi() % ep.size()]
+		enc = _pick_unused(rng, ep, used)
+		used.append(enc)
 		g.cells[at] = {"kind": "elite", "encounter": enc, "tier": tier, "elite": true}
 		if e == 0 and quest.get("type", "") == "hunt":
 			g.cells[at].nemesis = true
@@ -195,7 +206,10 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 			if at < 0:
 				return null
 			used_quadrants.append(_quadrant(at))
-			g.cells[at] = {"kind": "item", "encounter": pick.call(tier_for.call(at)), "tier": tier_for.call(at)}
+			var t_item: int = tier_for.call(at)
+			var enc_item := _pick_unused(rng, pools[clampi(t_item, 0, pools.size() - 1)], used)
+			used.append(enc_item)
+			g.cells[at] = {"kind": "item", "encounter": enc_item, "tier": t_item}
 			guards += 1
 	# Sigillen (Bryt två av tre sigill): tre, i olika fjärdedelar, var och en bevakad av en lika stark vanlig grupp ur
 	# våningens svårare pool (VD: valet ska gälla fördelen, inte att slippa en elit). Fördelarna slumpas (quest "seal_kinds").
@@ -210,7 +224,9 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 			used_quadrants.append(_quadrant(at))
 			var kind: String = kinds.pop_at(rng.randi() % kinds.size())
 			var tier := mini(base_tier + 1, 2)
-			g.cells[at] = {"kind": "seal", "seal": kind, "encounter": pick.call(tier), "tier": tier}
+			var enc_seal := _pick_unused(rng, pools[clampi(tier, 0, pools.size() - 1)], used)
+			used.append(enc_seal)
+			g.cells[at] = {"kind": "seal", "seal": kind, "encounter": enc_seal, "tier": tier}
 			guards += 1
 	# Fången: den första tidigt och obevakad, de andra bevakade av en grupp.
 	if not prisoner.is_empty():

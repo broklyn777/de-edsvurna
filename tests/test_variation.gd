@@ -127,6 +127,72 @@ func test_nemesis_draws_from_both_floors_on_floor_two() -> void:
 	assert_true(from_floor_one > 0, "Nemesis på våning 2 kan komma ur våning 1:s elit")
 
 
+## Textspelet (strid-langd): Rensa lade två likadana Likfärden på våning 2. Elitgrupperna på en våning är olika möten.
+func test_clear_quest_elites_are_different_encounters() -> void:
+	var clear := 0
+	for realm_id in REALMS:
+		for seed_value in range(1, 60):
+			for floor_i in [0, 1]:
+				var s := _run(realm_id, 1 + seed_value % 5, seed_value)
+				if floor_i == 1:
+					s.floor = 1
+					s.start_floor(_data)
+				var encs := []
+				for c in s.map.cells:
+					if c.get("kind", "") == "elite":
+						encs.append(c.encounter)
+				var pool: Array = s.elite_pools_for(_data)[floor_i]
+				if encs.size() >= 2:
+					clear += 1
+				for i in encs.size():
+					for j in range(i + 1, encs.size()):
+						if pool.size() >= encs.size():
+							assert_true(encs[i] != encs[j], "%s frö %d våning %d: två likadana elitgrupper %s" % [
+									realm_id, seed_value, floor_i + 1, encs[i]])
+	assert_true(clear > 5, "Rensa med två elitgrupper prövades (%d)" % clear)
+	# Direkt i Grotto: en pool med två möten ger alltid två olika, en pool med ett möte får upprepa.
+	for seed_value in range(1, 40):
+		var g := Grotto.generate(seed_value, 1, false, [["crypt_1"], ["crypt_1"], ["crypt_1"]], "", "crypt_1",
+				{"type": "clear", "goal": 2}, {}, [["crypt_e1"], ["crypt_e2", "crypt_e6"]])
+		var got := []
+		for c in g.cells:
+			if c.get("kind", "") == "elite":
+				got.append(c.encounter)
+		got.sort()
+		assert_eq(got, ["crypt_e2", "crypt_e6"], "frö %d" % seed_value)
+
+
+## Andra textspelet: Samla lade två likadana Askkoret som föremålsvakter. Föremålens och sigillens vakter är olika möten
+## när våningens pool har fler.
+func test_quest_guards_are_different_encounters() -> void:
+	for qt in ["collect", "seals"]:
+		RunState.dev_quest = qt
+		var checked := 0
+		for realm_id in REALMS:
+			for seed_value in range(1, 40):
+				var s := _run(realm_id, 1 + seed_value % 5, seed_value)
+				if s.quest.type != qt:
+					s.floor = 1
+					s.start_floor(_data)
+				if s.quest.type != qt:
+					continue
+				var encs := []
+				var pool := {}
+				for c in s.map.cells:
+					if c.get("kind", "") in ["item", "seal"]:
+						encs.append(c.encounter)
+				for t in RunState.pools_for(_data, realm_id, s.depth):
+					for id in t:
+						pool[id] = true
+				checked += 1
+				var uniq := {}
+				for id in encs:
+					uniq[id] = true
+				assert_eq(uniq.size(), encs.size(), "%s %s frö %d: vakterna %s" % [qt, realm_id, seed_value, str(encs)])
+		RunState.dev_quest = ""
+		assert_true(checked > 10, "%s prövades (%d)" % [qt, checked])
+
+
 func test_guardian_leader_stays_away_from_its_depths() -> void:
 	# Midnattsklockan (Klockaren) vaktar kryptans djup 2, 5, 8 …; Klockstapeln syns inte på väktarens eget djup
 	# (GUARDIAN_GAP 0), men finns kvar på djupen emellan.
