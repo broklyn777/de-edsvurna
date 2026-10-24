@@ -421,6 +421,15 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Andra halvan (0.30.16): tryck på en TROFÉ-rad så visas upp till fyra ägda troféer som kunde ta dess plats
   (`BattleSummary.alternatives`: samma roll, utlösare, sällsynthet; körningens troféer, i Övningsgården samlingen), med
   vem som bär dem; `--alt-open` öppnar listan för skärmdumpar. Plan för Löften per nedstigning: `docs/plan/loften.md`.
+  **Varslade attacker** (0.31 prov, steg 1 av `docs/plan/varslade-attacker.md`, VD): en förmåga med `windup` (turns, text,
+  broken_by, stagger, channeled_by, vulnerable_after) laddas i fiendens egna turer; avsikten får en ring med siffran och
+  raden "SAMLAR KRAFT" (`CombatUnit.charging`, `CombatSim._windup_turn`). `turns` = egna turer tills den slår: 1 = nästa
+  tur (en hjälterunda att svara), 2 = en tur går åt till laddningen; en avsikt som väljs om mitt i turen blir aldrig en laddning. Tystad bryter även på
+  Resistenta (bara för laddningen), likaså skada ≥ stagger × max-liv och en dödad kanal; bruten = AVBRUTEN!, nedkylning och
+  **Vacklande** (+25 % skada tagen till nästa tur); ingen ny laddning förrän efter fiendens nästa tur (`windup_guard`, skydd
+  mot evigt lås). Sömn/Frusen skjuter upp. Makrovillkor `is_charging`, `charge_left_at_most` (gruppen Laddning); inga rader i
+  startmakrona – hjälprutan "windup" och Gorms replik (`help_seen`) lär ut det. Först: Benfurstens Dödsdom (1 tur).
+  `--windup` startar en laddning direkt (skärmdumpar). Tester: `tests/test_windup.gd`.
   Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.

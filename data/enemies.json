@@ -859,7 +859,7 @@
 			"lich_undying_wrath"
 		],
 		"trophy": "lich_crown",
-		"boss_text": "Resistent. Väcker ett fallet skelett var tredje tur, sveper sällskapet med Benstorm och vredgas under 50 % liv.",
+		"boss_text": "Resistent. Väcker ett fallet skelett var tredje tur, sveper sällskapet med Benstorm och vredgas under 50 % liv. Då laddar han Dödsdom mot den svagaste – Tystad eller hård skada bryter laddningen.",
 		"rules": [
 			{
 				"ability": "lich_doom",

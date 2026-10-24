@@ -34,7 +34,8 @@ var _search: LineEdit
 var _group := "common"
 var _group_buttons := {}
 var _shown := {}  # kolumn → index i _options som syns
-const COND_GROUPS := [["common", "Vanliga"], ["hp", "Liv"], ["status", "Status"], ["trait", "Egenskaper"],
+const COND_GROUPS := [["common", "Vanliga"], ["hp", "Liv"], ["status", "Status"], ["windup", "Laddning"],
+		["trait", "Egenskaper"],
 		["charges", "Charges"], ["artifact", "Artefakt"], ["all", "Alla"]]
 ## Makro-UX förslag 5: förslag som fyller i sökningen med ett tryck. Fältet får fokus av sig självt när villkoren är
 ## många, men bara utan pekskärm: på telefonen skulle tangentbordet täcka halva skärmen varje gång.
@@ -525,6 +526,8 @@ static func _cond_group(cond: String) -> String:
 		return "status"
 	if cond in ["has_trait", "lacks_trait"]:
 		return "trait"
+	if cond in ["is_charging", "charge_left_at_most"]:
+		return "windup"
 	if cond == "has_charges":
 		return "charges"
 	if cond in ["has_artifact", "lacks_artifact"]:
@@ -616,6 +619,8 @@ func _values_for(cond: String) -> Array:
 			return [1, 2, 3]
 		"own_turn":
 			return [1, 2, 3, 4, 5]
+		"charge_left_at_most":
+			return [1, 2, 3]
 		"has_charges":
 			return _macro_abilities()
 		"has_artifact", "lacks_artifact":
