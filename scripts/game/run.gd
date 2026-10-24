@@ -447,7 +447,9 @@ func _dev_args() -> void:
 		elif arg == "--map":
 			# --map startar en ny körning och visar rumskartan (med --realm, --depth, --instability före)
 			var keep_realm := state.realm
+			var keep_depth := state.depth  # --depth före --map (roterande väktare: djupet avgör bossplatsen)
 			state = RunState.new_run(profile, data)
+			state.depth = keep_depth
 			state.set_realm(data, keep_realm)
 			state.set_growth(data, LivingMap.growth(profile, keep_realm))
 			state.start_expedition(data, 7)

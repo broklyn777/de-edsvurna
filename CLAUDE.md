@@ -270,6 +270,14 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   immun så länge en Kultist lever). Djup och skalning gäller alla Realms. Nya debuffar: Tystad (inga
   förmågor; makrorader med förmågor hoppas över), Sårbar (+50 % skada) och Försvagad (−50 % skada).
   Troféer har `rarity` (common/elite/boss); bossens trofé ändrar en regel med en kostnad.
+  **Roterande väktare** (mot upprepning, `docs/plan/mot-upprepning.md` §1, VD): bossplatsen växlar med djupet. `realms.json`
+  "guardians" (två möten per Realm, `"guardian": true` i encounters.json); cykeln är [huvudbossen] + väktarna, djup d tar
+  plats (d − 1) mod 3: huvudbossen på djup 1, 4, 7 …, väktare 1 på 2, 5, 8 …, väktare 2 på 3, 6, 9 … (`RunState.guardian_for`,
+  `boss_encounter`; den förvridna bossen går före). Kryptan: Klockaren (Midnattsklockan), Gravväckaren (Kistornas råd);
+  kapellet: Abbedissan, Inkvisitorn; Lunden: Strypvävaren, Sömnvävaren + Slukaren; Berget: Brom, Gråluva. Väktarna är
+  inga bossar: ledarens egen trofé, inga bosstroféer, `boss_wins`, smörjelse eller berättarruta; djupet, Realm Quest och
+  upplåsningar som förut. Kortet säger VÄKTARE och när huvudbossen kommer. `stat_mult` mätt mot huvudbossen med
+  `BALANS=grotta` (`KORNINGAR=300`) och `BALANS=vaktare`; `--depth=2 --map --enter=end` visar kortet.
 - **Trollberget** (Realm 4, steg 1, `docs/plan/trollens-realm.md`, `realms.json` "mountain", kort "Berget", `"style": "mountain"`):
   bara de sju trollen som finns, pooler i tre tiers (`troll_1a` … `troll_3d`), våningsmöten `troll_1`/`troll_2`, elit Gråluvans
   stuga (våning 1), Bron och Vaggan (våning 2), bossen Bergakungen. Öppnas när kapellet är klarat på djup 1 (`"requires"`,

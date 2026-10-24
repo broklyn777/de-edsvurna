@@ -98,6 +98,10 @@ func _dev_enter(arg: String) -> void:
 			cell.encounter = parts[1]
 	if want == "object":
 		cell.obj = parts[1] if parts.size() > 1 else "sarcophagus"  # --enter=object:grave_bell
+	if want == "end":  # --enter=end: djupets bossruta (huvudbossen eller väktaren), --enter=end:<möte> ett annat
+		var enc := parts[1] if parts.size() > 1 else state.boss_encounter(run.data)
+		cell = {"kind": "end", "encounter": enc, "tier": 2, "boss": true,
+				"guardian": enc != state.floor_ids[state.floor_ids.size() - 1]}
 	m.cells[n] = cell
 	get_tree().create_timer(0.8).timeout.connect(_go.bind(n))
 
@@ -770,7 +774,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 				HORIZONTAL_ALIGNMENT_LEFT, w, 0)
 		var hint := "Tryck på en ruta bredvid för att gå dit. En besökt ruta går pjäsen till själv."
 		if state.goal_locked():
-			hint += " %s syns men är låst tills questen är klar." % ("Bossen" if state.map.last_floor else "Trappan")
+			hint += " %s syns men är låst tills questen är klar." % ("Trappan" if not state.map.last_floor else
+					("Väktaren" if state.map.cell(state.map.goal).get("guardian", false) else "Bossen"))
 			if not state.active_hints().is_empty():
 				hint += " De röda ringarna visar ungefär var målen finns."
 			elif state.world_rumour and state.floor == 0:
@@ -786,6 +791,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	var title := "ELITGRUPP" if r.get("elite", false) else ("BOSS" if r.get("boss", false) else "FIENDEGRUPP")
 	if r.get("nemesis", false):
 		title = "NEMESIS"
+	if state.guardian_room(r):
+		title = "VÄKTARE"  # roterande väktare: en befordrad fiende leder bossstriden på det här djupet
 	UiStyle.text(self, Vector2(x, y), title, 22, Parchment.SEAL if title != "FIENDEGRUPP" else InkArt.INK,
 			HORIZONTAL_ALIGNMENT_LEFT, w, 0)
 	y += 12
@@ -798,6 +805,10 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	var names: Array = count.keys().map(func(k: String) -> String:
 		return data.enemies[k].name + (" ×%d" % count[k] if count[k] > 1 else ""))
 	var lines: Array[String] = ["%d fiender: %s" % [kinds.size(), ", ".join(names)]]
+	if state.guardian_room(r):
+		lines.push_front(_guardian_line(data, state, enc, kinds))
+	elif r.get("boss", false):
+		lines.push_front(String(enc.get("name", "")))
 	if guards != "":
 		lines.append(guards)
 	var traits: Array = []
@@ -835,6 +846,23 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		y += UiStyle.para(self, Vector2(x, y), l, 16, Parchment.INK, w, 4) + 6
 	UiStyle.big_button(self, _fight_rect(), "ANFALL", _t)
 	small_button(_back_rect(), "BACKA")
+
+
+## Väktarens rad på kortet: mötets namn, vem som leder och när huvudbossen kommer tillbaka.
+func _guardian_line(data: Dictionary, state: RunState, enc: Dictionary, kinds: Array) -> String:
+	var leader: String = data.enemies[kinds[0]].name if not kinds.is_empty() else ""
+	var main_enc: Dictionary = data.encounters[state.floor_ids[state.floor_ids.size() - 1]]
+	var boss_name := ""
+	for k in main_enc.enemies:
+		if data.enemies[k].get("boss", false):
+			boss_name = data.enemies[k].name
+	var next := state.depth + 1
+	while next < state.depth + 12 and RunState.guardian_for(data, state.realm, next) != "":
+		next += 1
+	var text := "%s: %s vaktar djupet i bossens ställe." % [enc.get("name", ""), leader]
+	if boss_name != "":
+		text += " %s väntar på djup %d." % [boss_name, next]
+	return text
 
 
 func _draw_dialog() -> void:

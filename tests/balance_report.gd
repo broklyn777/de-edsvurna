@@ -9,7 +9,8 @@ extends SceneTree
 ## Den äldre rapporten med perk-sökning och varje våningsregel för sig finns i git (0.17).
 
 const Bot := preload("res://tests/combat_bot.gd")
-const RUNS := 100
+## KORNINGAR=n ändrar antalet körningar eller strider per rad (förval 100; fler ger mindre brus).
+var RUNS := 100
 ## BALANS=grotta: GROTTA_DJUP=n kör grottan på djup n med väntad nivå (förval 1).
 var grotto_depth := 1
 const DEPTHS := [1, 3]
@@ -28,6 +29,8 @@ const BEST_PERKS := {1: ["oath_dawn", "ward_war_machine"], 3: ["oath_dawn", "daw
 
 
 func _init() -> void:
+	if OS.get_environment("KORNINGAR") != "":
+		RUNS = int(OS.get_environment("KORNINGAR"))
 	var data := GameData.load_all()
 	# DJUPSTEG=0.03: fiendernas stats per djup för mätningen (spelets värde är CombatSim.DEPTH_STEP).
 	if OS.get_environment("DJUPSTEG") != "":
@@ -80,6 +83,10 @@ func _init() -> void:
 		return
 	if OS.get_environment("BALANS") == "elitgrupper":
 		_elite_groups(data)
+		quit()
+		return
+	if OS.get_environment("BALANS") == "vaktare":
+		_guardians(data)
 		quit()
 		return
 	if OS.get_environment("BALANS") == "artefakter":
@@ -438,6 +445,34 @@ func _elite_groups(data: Dictionary) -> void:
 						line += "  d%d %s %3d %% liv %2d %% stup %.1f" % [depth, _skill_name(skill), roundi(100.0 * won / RUNS),
 								roundi(100.0 * hp_left / RUNS), float(fallen) / RUNS]
 				print(line)
+
+
+## Roterande väktare (BALANS=vaktare, mot-upprepning.md §1): en strid per bossplats (huvudbossen och väktarna) på djup
+## 1–3 med fulla Charges och motdrag, fyra hjältar på väntad nivå. En väktare ska vara ungefär lika svår som huvudbossen
+## på samma djup; hela körningarna mäts med BALANS=grotta. NIVA_REALM begränsar till en Realm.
+func _guardians(data: Dictionary) -> void:
+	var realms := ["crypt", "chapel", "grove", "mountain"]
+	if OS.get_environment("NIVA_REALM") != "":
+		realms = [OS.get_environment("NIVA_REALM")]
+	print("=== Roterande väktare, 4 hjältar, en strid, motdrag på, %d strider per rad ===" % RUNS)
+	var party := ["paladin", "brokk", "alva", "eira"]
+	for realm_id in realms:
+		var r: Dictionary = data.realms[realm_id]
+		var slots: Array = [r.floors[r.floors.size() - 1]] + r.get("guardians", [])
+		for enc_id in slots:
+			var line := "  %-8s %-24s" % [r.short, data.encounters[enc_id].name]
+			for depth in [1, 2, 3]:
+				var lv := HeroStats.expected_level(depth)
+				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+					var won := 0
+					for seed_value in range(1, RUNS + 1):
+						var opts := {"levels": Bot.party_levels(data, lv, party), "floor": 2, "counter": true}
+						var res := Bot.run_fight(data, seed_value, skill, enc_id, party, {}, {}, {}, depth, opts)
+						won += 1 if res.outcome == "victory" else 0
+					line += "  d%d %s %3d %%" % [depth, _skill_name(skill), roundi(100.0 * won / RUNS)]
+			var mark := "" if enc_id == slots[0] else "  (djup %s)" % ", ".join(range(1, 10).filter(func(d: int) -> bool:
+				return RunState.guardian_for(data, realm_id, d) == enc_id).map(func(d: int) -> String: return str(d)))
+			print(line + mark)
 
 
 ## 0.27 grottan (BALANS=grotta): vinst, strider per körning (alla och klarade) och steg, för startmakrona (MACRO) och

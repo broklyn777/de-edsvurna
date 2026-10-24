@@ -270,6 +270,34 @@ func set_growth(data: Dictionary, g: int) -> void:
 		twisted = enc
 
 
+## Roterande väktare (docs/plan/mot-upprepning.md §1, VD 2026-10-24): Realmens bossplats växlar med djupet så att man
+## inte möter samma boss i slutet av varje djup. realms.json "guardians" är en lista möten; cykeln är [huvudbossen] +
+## guardians och djup d tar cykel[(d − 1) % storlek]. Med två väktare: huvudbossen på djup 1, 4, 7 …, den första väktaren
+## på 2, 5, 8 … och den andra på 3, 6, 9 …. Samma djup ger alltid samma väktare. "" = huvudbossen (inga väktare).
+## Väktarnas fiender är inte bossar: bosstroféer, Profile.boss_wins, smörjelsen och berättarrutan hör till huvudbossen.
+static func guardian_for(data: Dictionary, realm_id: String, at_depth: int) -> String:
+	var list: Array = data.get("realms", {}).get(realm_id, {}).get("guardians", [])
+	if list.is_empty():
+		return ""
+	var i := posmod(maxi(at_depth, 1) - 1, list.size() + 1)
+	return "" if i == 0 else String(list[i - 1])
+
+
+## Mötet på den sista våningens bossruta: den förvridna bossen (fördärv 4) går före, sedan djupets väktare, annars
+## huvudbossen (det sista mötet i floor_ids).
+func boss_encounter(data: Dictionary) -> String:
+	var main: String = floor_ids[floor_ids.size() - 1]
+	if twisted != "":
+		return main
+	var g := guardian_for(data, realm, depth)
+	return g if g != "" and data.encounters.has(g) else main
+
+
+## Sant när bossrutan leds av en roterande väktare (inte huvudbossen).
+func guardian_room(r: Dictionary) -> bool:
+	return r.get("boss", false) and r.get("guardian", false)
+
+
 func encounter() -> String:
 	if practice:
 		return practice_encounter
@@ -512,10 +540,12 @@ func start_floor(data: Dictionary) -> void:
 	var pools: Array = data.realms[realm].get("pools", [])
 	if pools.is_empty():
 		pools = [floor_ids]
-	var boss: String = floor_ids[floor_ids.size() - 1]
+	var boss := boss_encounter(data)
 	var guard: String = floor_ids[mini(floor, floor_ids.size() - 2)] if floor_ids.size() > 1 else ""
 	map = Grotto.generate(run_seed * 101 + floor * 7 + 1, floor, is_last_floor(), pools, boss, guard, quest,
 			prisoners.get(str(floor), {}), data.realms[realm].get("elite_pools", []), data.realms[realm].get("objects", []))
+	if is_last_floor() and boss != floor_ids[floor_ids.size() - 1]:
+		map.cells[map.goal].guardian = true  # en roterande väktare leder bossstriden (kortet, förlusttipsen)
 	pos = map.start
 	visited = [map.start]
 	rooms_entered += 1
