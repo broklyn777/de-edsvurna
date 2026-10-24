@@ -65,6 +65,10 @@ func _init() -> void:
 		_grotto(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "kartprov":
+		_node_maps(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "fem":
 		_five_by_type(data)
 		quit()
@@ -1118,3 +1122,36 @@ func _living(data: Dictionary) -> void:
 						"stat_bonus": LivingMap.stat_mult(g), "counter": true})
 				won += 1 if r.outcome == "victory" else 0
 			print("    %-14s steg %d: %3d %%" % [enc, g, roundi(100.0 * won / RUNS)])
+
+
+## Kartprov (BALANS=kartprov): grottan (två våningar, rutnät) mot nodkartan (en karta per nedstigning) i kryptan och
+## kapellet på djup 1 och 3, fyra hjältar med startmakron (MACRO) på väntad nivå. Grottan: boten "simple" (slåss mot det
+## den kliver på) och "direct". Nodkartan: "nodes" (slumpad väg, slåss mot allt) och "plan" (poäng per väg).
+## KARTPROV_DJUP=1,3 och NIVA_REALM begränsar.
+func _node_maps(data: Dictionary) -> void:
+	var depths := [1, 3]
+	if OS.get_environment("KARTPROV_DJUP") != "":
+		depths = Array(OS.get_environment("KARTPROV_DJUP").split(",")).map(func(x: String) -> int: return int(x))
+	var party := ["paladin", "brokk", "alva", "eira"]
+	print("=== Kartprov: grottan mot nodkartan, %d körningar per rad, 4 hjältar, startmakron ===" % RUNS)
+	for realm_id in realms_for_grotto():
+		for d in depths:
+			var lv := 3 if d == 1 else HeroStats.expected_level(d)
+			for row in [["grotta-enkel", false, "simple"], ["grotta-direkt", false, "direct"], ["nod-slump", true, "nodes"],
+					["nod-plan", true, "plan"]]:
+				var cleared := 0
+				var fights := 0
+				var elites := 0
+				var lost := {}
+				for seed_value in range(1, RUNS + 1):
+					var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party, "node_map": row[1]}
+					var r := Bot.run_expedition(data, seed_value, Bot.Skill.MACRO, {}, {}, d, realm_id, opts, row[2])
+					cleared += 1 if r.cleared else 0
+					fights += int(r.fights)
+					elites += int(r.get("by_kind", {}).get("elit", [0, 0])[0])
+					if r.has("lost_at"):
+						var k := "boss" if String(r.lost_at).ends_with("_end") else String(r.lost_at).get_slice("_", 1)
+						lost[k] = int(lost.get(k, 0)) + 1
+				print("  %-8s djup %d nivå %2d  %-14s vinst %3d %%  strider %.1f  eliter %.1f  förlust vid %s" % [
+						data.realms[realm_id].short, d, lv, row[0], roundi(100.0 * cleared / RUNS), float(fights) / RUNS,
+						float(elites) / RUNS, str(lost)])

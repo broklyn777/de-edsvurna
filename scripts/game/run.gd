@@ -247,6 +247,54 @@ func choose_slot(i: int, new_name := "") -> void:
 	_resume_run()
 
 
+## Kartprov (prototyp, bara när nodkartan är på): en tom plats kan få en färdig profil, så att kartan går att jämföra
+## direkt utan introt. Fyra hjältar runt nivå 10, några troféer, en artefakt, kryptan och kapellet öppna till djup 3.
+const QUICK_PARTY := ["imma", "brokk", "alva"]
+const QUICK_LEVEL := 10
+
+
+func quickstart_slot(i: int) -> void:
+	choose_slot(i, "Provaren")
+	make_quickstart(profile, data)
+	_load_macros(true)  # hela startmakrona (introt är klart)
+	apply_name()
+	_save()
+	save_macros()
+
+
+static func make_quickstart(p: Profile, d: Dictionary) -> void:
+	p.intro_done = true
+	for id in QUICK_PARTY + ["eira"]:
+		p.recruit(d, id, float(QUICK_LEVEL))
+	for id in ["paladin"] + QUICK_PARTY + ["eira"]:
+		var h := p.hero(d, id)
+		h.level = QUICK_LEVEL + (1 if id == "paladin" else 0)
+		h.xp = 0
+	p.set_party(QUICK_PARTY)
+	for realm_id in ["crypt", "chapel"]:
+		p.realm_depth[realm_id] = 2  # djup 1–3 öppna
+		p.descents[realm_id] = 3
+	p.best_depth = 2
+	p.depth = 1
+	p.silver = 900
+	p.forge("paladin", "sword", "holy_smite")
+	# Troféer ur kryptans och kapellets vanliga fiender, en på var och en i sällskapet.
+	var found: Array = []
+	for realm_id in ["crypt", "chapel"]:
+		for pool in d.realms[realm_id].get("pools", []):
+			for enc_id in pool:
+				for kind in d.encounters.get(enc_id, {}).get("enemies", []):
+					var t := String(d.enemies.get(kind, {}).get("trophy", ""))
+					if t != "" and d.traits.has(t) and not found.has(t) and found.size() < 8:
+						found.append(t)
+	for t in found:
+		p.add_trophy(t)
+	var wearers := ["paladin"] + QUICK_PARTY
+	for k in mini(wearers.size(), found.size()):
+		p.wear(wearers[k], found[k])
+	p.help_seen.append_array(["room_map", "realm_quest"])
+
+
 ## 0.24.2: paladinens namn syns där hjälten visas (stridens ram, hjältebladet, makroskärmen, korten): datan för
 ## "paladin" får profilens namn. Rollen ("Paladinen", titeln "Edsvuren") står kvar där den beskriver klassen.
 func apply_name() -> void:

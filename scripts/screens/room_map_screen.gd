@@ -33,6 +33,33 @@ var _bark_t := 0.0
 ## Ett kort meddelande under rutnätet (låst, spärrat) och hur länge det har synts.
 var _toast := ""
 var _toast_t := 0.0
+## Kartprov (nodkartan): noden vars kort visas för att planera (en nod man inte kan gå till nu), −1 = ingen.
+var _inspect := -1
+## Nodkartan rullar uppåt och nedåt (som Slay the Spires karta): hur långt från toppen, målet för glidningen, dragningen.
+var _scroll := 0.0
+var _scroll_target := 0.0
+var _scroll_wait := 0.0
+var _drag_on := false
+var _drag_y := 0.0
+var _drag_scroll := 0.0
+var _map_view: Control
+## "Hela kartan": nodkartan förminskad så att allt syns på en gång (ett tryck går tillbaka).
+var _overview := false
+## Där tuschhjälparna ritar (_draw_cell med flera): skärmen själv, eller nodkartans klippta yta.
+var _ci: CanvasItem = self
+const NODE_SIZE := 58.0
+const NODE_TOP := 84.0
+const NODE_ROW_H := 74.0
+const NODE_PAD := 70.0
+const NODE_STEP_TIME := 0.45
+
+
+## Nodkartans yta: ritar kartan i skärmens koordinater, klippt till sin rektangel, bakom skärmens egna paneler.
+class MapView extends Control:
+	var screen: Control
+
+	func _draw() -> void:
+		screen._draw_node_map(self)
 
 
 func _ready() -> void:
@@ -43,6 +70,19 @@ func _ready() -> void:
 		run.go(run.CAMPAIGN_SCENE)
 		return
 	_walk_from = run.state.pos
+	if _nodes():
+		_zoom_t = 1.0  # nodkartan glider i stället från bossen ned till där man står
+		_map_view = MapView.new()
+		_map_view.screen = self
+		_map_view.clip_contents = true
+		_map_view.show_behind_parent = true
+		_map_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_map_view)
+		_scroll = 0.0
+		_scroll_wait = 0.9 if run.state.pos == run.state.map.start else 0.0
+		_scroll_target = _focus_scroll(run.state.pos)
+		if _scroll_wait <= 0.0:
+			_scroll = _scroll_target
 	if run.pending_rescue != "":
 		_dialog = _rescue_dialog(run.pending_rescue)
 		run.pending_rescue = ""
@@ -66,6 +106,15 @@ func _ready() -> void:
 			_dialog = _leave_dialog()  # frågan om att gå hem (skärmdumpar)
 		elif arg.begins_with("--explore="):
 			_dev_explore(int(arg.get_slice("=", 1)))
+		elif arg == "--overview" and _nodes():
+			_overview = true  # kartprov: hela kartan (skärmdumpar)
+		elif arg == "--inspect" and _nodes():
+			# kartprov: kortet för den första elitgruppen på kartan, som om man tryckt på den (skärmdumpar)
+			for i in NodeMap.all_nodes(run.state.map):
+				if run.state.map.cell(i).get("elite", false) and _inspect < 0:
+					_inspect = i
+					_scroll_wait = 0.0
+					_scroll_target = _focus_scroll(i)
 
 
 ## Hjälprutan om sigillen när våningens quest är Bryt två av tre sigill.
@@ -76,6 +125,9 @@ func _seal_help() -> Array:
 ## --explore=<n> (0.28.3, för skärmdumpar): markerar n rutor som besökta, i bredd från start, utan att gå på grupper.
 func _dev_explore(n: int) -> void:
 	var state: RunState = run.state
+	if _nodes():
+		_dev_walk_nodes(n)
+		return
 	var queue: Array = [state.map.start]
 	while not queue.is_empty() and state.visited.size() < n:
 		var i: int = queue.pop_front()
@@ -92,7 +144,7 @@ func _dev_enter(arg: String) -> void:
 	var want: String = parts[0]
 	var state: RunState = run.state
 	var m: Grotto = state.map
-	var n: int = Grotto.neighbors(state.pos)[0]
+	var n: int = Grotto.neighbors(state.pos)[0] if not _nodes() else int(NodeMap.up(m, state.pos)[0])
 	var cell := {"kind": want}
 	if want in ["battle", "elite"]:
 		var other := m.group_cells().filter(func(i: int) -> bool: return m.cells[i].kind == "battle")
@@ -120,6 +172,15 @@ func _dev_enter(arg: String) -> void:
 
 func _process(delta: float) -> void:
 	super(delta)
+	if _map_view != null:
+		var v := _node_rect()
+		_map_view.position = v.position
+		_map_view.size = v.size
+		_map_view.queue_redraw()
+		if _scroll_wait > 0.0:
+			_scroll_wait -= delta
+		elif not _drag_on:
+			_scroll = lerpf(_scroll, _scroll_target, 1.0 - exp(-delta * 3.0))
 	if _zoom_t < 1.0:
 		_zoom_t = minf(1.0, _zoom_t + delta / ZOOM_TIME)
 		parchment.set_view(lerpf(3.2, 1.0, _smooth(_zoom_t)), Vector2(0.5, 0.5))
@@ -137,7 +198,7 @@ func _process(delta: float) -> void:
 		if _toast_t > 3.0:
 			_toast = ""
 	if _walk_t >= 0.0:
-		_walk_t += delta / STEP_TIME
+		_walk_t += delta / (STEP_TIME if not _nodes() else NODE_STEP_TIME)
 		if _walk_t >= 1.0:
 			_walk_from = _walk.pop_front()
 			_walk_t = 0.0 if not _walk.is_empty() else -1.0
@@ -161,6 +222,9 @@ func _tap(p: Vector2) -> void:
 	if not _dialog.is_empty():
 		_tap_dialog(p)
 		return
+	if _nodes() and (_overview or _overview_rect().has_point(p)):
+		_overview = not _overview  # hela kartan, och ett tryck var som helst tillbaka
+		return
 	if _macro_rect().has_point(p):
 		run.open_macros(run.ROOM_MAP_SCENE)
 		return
@@ -180,19 +244,29 @@ func _tap(p: Vector2) -> void:
 			return
 	var i := _cell_at(p)
 	if i < 0:
+		_inspect = -1
 		return
 	if i == state.came_from and state.at_group():
 		_back()
 		return
 	var why := state.can_step(i)
 	if why == "":
+		_inspect = -1
 		_go(i)
 		return
+	if _nodes() and not state.at_group():
+		# Nodkartan: ett tryck på en nod man inte kan gå till visar dess kort (för att planera); ett till stänger det.
+		_inspect = -1 if _inspect == i or why == "here" else i
+		run.ui("ui_page", -18.0)
+		if why != "quest":
+			return
 	_toast = {"locked": "Questen är inte klar – %s är låst." % ("bossen" if state.map.last_floor else "trappan"),
 			"blocked": "En grupp spärrar vägen. Besegra den eller gå runt.",
 			"group": "Gruppen står i vägen: anfall, eller backa dit ni kom ifrån.",
 			"far": "Ett steg i taget – till en ruta bredvid en som ni har sett.",
-			"path": "Det finns ingen väg dit genom rutorna ni känner."}.get(why, "")
+			"path": "Det finns ingen väg dit genom rutorna ni känner.",
+			"quest": "Den vägen räcker inte för questen – ni skulle inte kunna öppna %s." % (
+					"bossen" if state.map.last_floor else "trappan")}.get(why, "")
 	_toast_t = 0.0
 	if why == "locked" and state.pos == state.map.goal:
 		_toast = ""
@@ -245,6 +319,8 @@ func _next_bark() -> void:
 ## Pjäsen har kommit fram: rutans innehåll (en grupp visas som kort i panelen; resten som en ruta).
 func _arrive() -> void:
 	var state: RunState = run.state
+	if _nodes():
+		_scroll_target = _focus_scroll(state.pos)
 	var r := state.current_room()
 	if state.at_group():
 		run.ui("room_lock", -10.0)
@@ -383,16 +459,22 @@ func _tap_dialog(p: Vector2) -> void:
 
 ## Rutornas storlek och rutnätets plats (mitt på skärmen, under rubriken).
 func _cell_size() -> float:
+	if _nodes():
+		return NODE_SIZE
 	return floorf(minf((size.y - 232.0) / Grotto.SIZE, (size.x - 700.0) / Grotto.SIZE))
 
 
 func _grid_rect() -> Rect2:
+	if _nodes():
+		return _node_rect()
 	var cs := _cell_size()
 	var w := cs * Grotto.SIZE
 	return Rect2(floorf((size.x - w) / 2.0) - 60.0, 150.0, w, w)
 
 
 func _cell_rect(i: int) -> Rect2:
+	if _nodes():
+		return Rect2(_node_pos(i) - Vector2(NODE_SIZE, NODE_SIZE) / 2.0, Vector2(NODE_SIZE, NODE_SIZE))
 	var g := _grid_rect()
 	var cs := _cell_size()
 	var p := Grotto.xy(i)
@@ -400,10 +482,14 @@ func _cell_rect(i: int) -> Rect2:
 
 
 func _cell_center(i: int) -> Vector2:
+	if _nodes():
+		return _node_pos(i)
 	return _cell_rect(i).get_center()
 
 
 func _cell_at(p: Vector2) -> int:
+	if _nodes():
+		return _node_at(p)
 	var g := _grid_rect()
 	if not g.has_point(p):
 		return -1
@@ -415,7 +501,8 @@ func _cell_at(p: Vector2) -> int:
 func _panel_rect() -> Rect2:
 	var g := _grid_rect()
 	var x := g.end.x + 28.0
-	return Rect2(x, 150.0, size.x - MARGIN - x, size.y - 150.0 - 84.0)
+	var top := 150.0 if not _nodes() else NODE_TOP
+	return Rect2(x, top, size.x - MARGIN - x, size.y - top - 84.0)
 
 
 func _fight_rect() -> Rect2:
@@ -485,9 +572,11 @@ func _draw() -> void:
 	var z := lerpf(3.2, 1.0, _smooth(_zoom_t))
 	var c := size / 2
 	draw_set_transform(c - c * z, 0.0, Vector2.ONE * z)
-	_draw_decor(state)
-	_draw_grid(m, state)
-	InkArt.icon(self, "paladin", _piece_pos() + Vector2(0, -_cell_size() * 0.18 + sin(_t * 3.0) * 1.5), _cell_size() * 1.05)
+	if not _nodes():
+		_draw_decor(state)
+		_draw_grid(m, state)
+	if not _nodes():
+		InkArt.icon(self, "paladin", _piece_pos() + Vector2(0, -_cell_size() * 0.18 + sin(_t * 3.0) * 1.5), _cell_size() * 1.05)
 	draw_set_transform(Vector2.ZERO)
 	if _zoom_t < 1.0:
 		# Bilden av området (samma som kampanjkartan tonade fram) tonar bort medan kameran zoomar ut.
@@ -498,40 +587,44 @@ func _draw() -> void:
 		draw_texture_rect(img, Rect2(0, (size.y - h) / 2, size.x, h), false, Color(1, 1, 1, a))
 	var realm: Dictionary = data.realms[state.realm]
 	InkArt.cartouche(self, Rect2(MARGIN + 14, 16, 460, 46), "%s · DJUP %d" % [realm.name.to_upper(), state.depth], InkArt.INK, 20)
-	InkArt.floor_markers(self, Vector2(MARGIN + 520, 47), state.floor, RunState.FLOORS_PER_RUN, InkArt.INK, 20)
+	if not _nodes():
+		InkArt.floor_markers(self, Vector2(MARGIN + 520, 47), state.floor, RunState.FLOORS_PER_RUN, InkArt.INK, 20)
 	silver_label()
-	var quest := RunState.quest_text(state.quest) + ("  – KLAR!" if state.quest.get("done", false) else "")
-	var lock := "  · %s är öppen" % ("bossen" if m.last_floor else "trappan") if state.quest.get("done", false) \
-			else "  · öppnar %s" % ("bossen" if m.last_floor else "trappan")  # 0.27.2: "låser" lät som att questen låste
-	UiStyle.text(self, Vector2(MARGIN, 88), "QUEST: " + quest + lock, 17, Parchment.SEAL, HORIZONTAL_ALIGNMENT_LEFT,
-			size.x - 420, 0)
-	var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
-	var hidden := state.active_rules().size() - known.size()
-	var header := ""
-	if not state.active_rules().is_empty():
-		header = "REGLER: %s%s" % [", ".join(known), "" if hidden == 0 else " · %d dolda" % hidden]
-	if state.vow != "":
-		# 0.30.17: löftet, och för Raka vägen hur många vanliga grupper som återstår på våningen.
-		var vow_txt := "LÖFTE: " + state.vow_name(data) + ("" if state.vow_kept(data) else " (brutet)")
-		if state.vow_breaks_on == "commons" and state.vow_kept(data):
-			vow_txt += " · %d av %d vanliga grupper" % [state.commons_fought, state.vow_max_commons]
-		header = vow_txt if header == "" else header + "   ·   " + vow_txt
-	if not state.boss_seals.is_empty():
-		# Bryt två av tre sigill: det som står kvar åt slutstriden (också från våning 1 till bossen på den sista).
-		var seal_txt := "KVAR ÅT BOSSEN: " + ", ".join(RunState.seal_lines(data, state.boss_seals).map(
-				func(l: Dictionary) -> String: return l.name))
-		header = seal_txt if header == "" else header + "   ·   " + seal_txt
-	if header != "":
-		UiStyle.text(self, Vector2(MARGIN, 110), UiStyle.fit(header, 15, size.x - 460), 15, Parchment.INK,
-				HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
-	_draw_charges(data, state)
-	_draw_found(data, state)
+	if not _nodes():
+		var quest := RunState.quest_text(state.quest) + ("  – KLAR!" if state.quest.get("done", false) else "")
+		var lock := "  · %s är öppen" % ("bossen" if m.last_floor else "trappan") if state.quest.get("done", false) \
+				else "  · öppnar %s" % ("bossen" if m.last_floor else "trappan")  # 0.27.2: "låser" lät som att questen låste
+		UiStyle.text(self, Vector2(MARGIN, 88), "QUEST: " + quest + lock, 17, Parchment.SEAL, HORIZONTAL_ALIGNMENT_LEFT,
+				size.x - 420, 0)
+		var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
+		var hidden := state.active_rules().size() - known.size()
+		var header := ""
+		if not state.active_rules().is_empty():
+			header = "REGLER: %s%s" % [", ".join(known), "" if hidden == 0 else " · %d dolda" % hidden]
+		if state.vow != "":
+			# 0.30.17: löftet, och för Raka vägen hur många vanliga grupper som återstår på våningen.
+			var vow_txt := "LÖFTE: " + state.vow_name(data) + ("" if state.vow_kept(data) else " (brutet)")
+			if state.vow_breaks_on == "commons" and state.vow_kept(data):
+				vow_txt += " · %d av %d vanliga grupper" % [state.commons_fought, state.vow_max_commons]
+			header = vow_txt if header == "" else header + "   ·   " + vow_txt
+		if not state.boss_seals.is_empty():
+			# Bryt två av tre sigill: det som står kvar åt slutstriden (också från våning 1 till bossen på den sista).
+			var seal_txt := "KVAR ÅT BOSSEN: " + ", ".join(RunState.seal_lines(data, state.boss_seals).map(
+					func(l: Dictionary) -> String: return l.name))
+			header = seal_txt if header == "" else header + "   ·   " + seal_txt
+		if header != "":
+			UiStyle.text(self, Vector2(MARGIN, 110), UiStyle.fit(header, 15, size.x - 460), 15, Parchment.INK,
+					HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
+		_draw_charges(data, state)
+		_draw_found(data, state)
 	_draw_panel(data, state)
 	var msg: String = _toast if _toast != "" else (run.vow_news + " " + run.room_result).strip_edges()
 	if msg != "" and _dialog.is_empty():
-		UiStyle.para(self, Vector2(_grid_rect().position.x, size.y - 50), msg, 16, Parchment.INK,
-				_home_rect().position.x - _grid_rect().position.x - 20, 2)
+		var mx := _grid_rect().position.x if not _nodes() else _overview_rect().end.x + 16
+		UiStyle.para(self, Vector2(mx, size.y - 50), msg, 16, Parchment.INK, _home_rect().position.x - mx - 20, 2)
 	small_button(_macro_rect(), "MAKRON")
+	if _nodes():
+		small_button(_overview_rect(), "TILLBAKA" if _overview else "HELA KARTAN")
 	if _can_leave():
 		small_button(_home_rect(), "GÅ HEM")
 	small_button(_moments_rect(), "RUMSÖGONBLICK: " + ("PÅ" if run.profile.room_moments else "AV"))
@@ -662,8 +755,8 @@ func _draw_corners(r: Rect2, len: float, color: Color) -> void:
 	var w := 4.0
 	for c in [[r.position, Vector2(1, 0), Vector2(0, 1)], [Vector2(r.end.x, r.position.y), Vector2(-1, 0), Vector2(0, 1)],
 			[Vector2(r.position.x, r.end.y), Vector2(1, 0), Vector2(0, -1)], [r.end, Vector2(-1, 0), Vector2(0, -1)]]:
-		draw_line(c[0], c[0] + c[1] * len, color, w)
-		draw_line(c[0], c[0] + c[2] * len, color, w)
+		_ci.draw_line(c[0], c[0] + c[1] * len, color, w)
+		_ci.draw_line(c[0], c[0] + c[2] * len, color, w)
 
 
 func _draw_cell(m: Grotto, state: RunState, i: int) -> void:
@@ -677,15 +770,15 @@ func _draw_cell(m: Grotto, state: RunState, i: int) -> void:
 	var alpha := 0.38 if used else 1.0
 	match kind:
 		"start":
-			InkArt.ring(self, at, cs * 0.2, Color(InkArt.INK, 0.5), 2.0)
+			InkArt.ring(_ci, at, cs * 0.2, Color(InkArt.INK, 0.5), 2.0)
 		"stairs":
 			_draw_stairs(at, cs * 0.62, Color(InkArt.INK, 1.0))
 		"end":
-			InkArt.icon(self, "boss", at, cs * 1.0, 1.0 if not c.get("beaten", false) else 0.4)
+			InkArt.icon(_ci, "boss", at, cs * 1.0, 1.0 if not c.get("beaten", false) else 0.4)
 		"item":
 			_draw_item(at, cs * 0.36, Color(Parchment.SEAL, alpha))
 		"battle", "elite", "treasure", "shrine", "campfire", "prisoner":
-			InkArt.room_icon(self, kind, at, cs * 0.92, alpha)
+			InkArt.room_icon(_ci, kind, at, cs * 0.92, alpha)
 		"object":
 			_draw_object(String(c.get("obj", "")), at, cs * 0.34, Color(InkArt.INK, alpha))
 		"seal":
@@ -693,16 +786,16 @@ func _draw_cell(m: Grotto, state: RunState, i: int) -> void:
 	if c.get("barricaded", false):
 		for k in 3:  # bänken i vägen: tre plankor
 			var y := at.y - cs * 0.18 + k * cs * 0.18
-			draw_line(Vector2(at.x - cs * 0.34, y), Vector2(at.x + cs * 0.34, y), Color(InkArt.INK, 0.8), 3.0)
+			_ci.draw_line(Vector2(at.x - cs * 0.34, y), Vector2(at.x + cs * 0.34, y), Color(InkArt.INK, 0.8), 3.0)
 	if group and kind in ["treasure", "item", "prisoner", "object", "seal"]:
-		InkArt.room_icon(self, "battle", at + Vector2(cs * 0.24, -cs * 0.24), cs * 0.5, 1.0)  # en grupp vaktar rutan
+		InkArt.room_icon(_ci, "battle", at + Vector2(cs * 0.24, -cs * 0.24), cs * 0.5, 1.0)  # en grupp vaktar rutan
 	if group and state.seen.has(i) and i != state.pos:
-		InkArt.ring(self, at, cs * 0.44, Color(Parchment.SEAL, 0.7), 2.2)
+		InkArt.ring(_ci, at, cs * 0.44, Color(Parchment.SEAL, 0.7), 2.2)
 	if c.get("nemesis", false) and group:
-		draw_circle(at + Vector2(cs * 0.32, -cs * 0.32), 10, Parchment.SEAL)
-		UiStyle.text(self, at + Vector2(cs * 0.32 - 12, -cs * 0.32 + 6), "N", 15, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, 24, 0)
+		_ci.draw_circle(at + Vector2(cs * 0.32, -cs * 0.32), 10, Parchment.SEAL)
+		UiStyle.text(_ci, at + Vector2(cs * 0.32 - 12, -cs * 0.32 + 6), "N", 15, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, 24, 0)
 	if kind == "prisoner" and not c.get("rescued", false):
-		draw_circle(at, cs * 0.46, Color(1.0, 0.85, 0.4, 0.16 + 0.08 * sin(_t * 3.0)))
+		_ci.draw_circle(at, cs * 0.46, Color(1.0, 0.85, 0.4, 0.16 + 0.08 * sin(_t * 3.0)))
 	if i == m.goal and state.goal_locked():
 		_draw_lock(at + Vector2(cs * 0.3, cs * 0.28), cs * 0.2)
 
@@ -713,36 +806,36 @@ func _draw_object(obj: String, c: Vector2, s: float, color: Color) -> void:
 		"sarcophagus":
 			var pts := PackedVector2Array([c + Vector2(-s * 0.5, -s), c + Vector2(s * 0.5, -s), c + Vector2(s * 0.7, -s * 0.4),
 					c + Vector2(s * 0.45, s), c + Vector2(-s * 0.45, s), c + Vector2(-s * 0.7, -s * 0.4), c + Vector2(-s * 0.5, -s)])
-			draw_polyline(pts, color, 2.5)
-			draw_line(c + Vector2(0, -s * 0.6), c + Vector2(0, s * 0.5), color, 2.0)
-			draw_line(c + Vector2(-s * 0.3, -s * 0.2), c + Vector2(s * 0.3, -s * 0.2), color, 2.0)
+			_ci.draw_polyline(pts, color, 2.5)
+			_ci.draw_line(c + Vector2(0, -s * 0.6), c + Vector2(0, s * 0.5), color, 2.0)
+			_ci.draw_line(c + Vector2(-s * 0.3, -s * 0.2), c + Vector2(s * 0.3, -s * 0.2), color, 2.0)
 		"grave_bell", "bell_rope":
 			var bell := PackedVector2Array([c + Vector2(-s * 0.7, s * 0.6), c + Vector2(-s * 0.5, -s * 0.3), c + Vector2(0, -s * 0.8),
 					c + Vector2(s * 0.5, -s * 0.3), c + Vector2(s * 0.7, s * 0.6), c + Vector2(-s * 0.7, s * 0.6)])
-			draw_polyline(bell, color, 2.5)
-			draw_circle(c + Vector2(0, s * 0.8), s * 0.15, color)
+			_ci.draw_polyline(bell, color, 2.5)
+			_ci.draw_circle(c + Vector2(0, s * 0.8), s * 0.15, color)
 			if obj == "bell_rope":
-				draw_line(c + Vector2(0, -s * 0.8), c + Vector2(0, -s * 1.2), color, 2.0)
+				_ci.draw_line(c + Vector2(0, -s * 0.8), c + Vector2(0, -s * 1.2), color, 2.0)
 		"grave_register":
-			draw_rect(Rect2(c - Vector2(s * 0.8, s * 0.6), Vector2(s * 1.6, s * 1.2)), color, false, 2.5)
-			draw_line(c + Vector2(0, -s * 0.6), c + Vector2(0, s * 0.6), color, 2.0)
+			_ci.draw_rect(Rect2(c - Vector2(s * 0.8, s * 0.6), Vector2(s * 1.6, s * 1.2)), color, false, 2.5)
+			_ci.draw_line(c + Vector2(0, -s * 0.6), c + Vector2(0, s * 0.6), color, 2.0)
 		"stained_window":
-			draw_arc(c + Vector2(0, -s * 0.2), s * 0.6, PI, TAU, 12, color, 2.5)
-			draw_line(c + Vector2(-s * 0.6, -s * 0.2), c + Vector2(-s * 0.6, s * 0.9), color, 2.5)
-			draw_line(c + Vector2(s * 0.6, -s * 0.2), c + Vector2(s * 0.6, s * 0.9), color, 2.5)
-			draw_line(c + Vector2(-s * 0.6, s * 0.9), c + Vector2(s * 0.6, s * 0.9), color, 2.5)
-			draw_line(c + Vector2(0, -s * 0.8), c + Vector2(0, s * 0.9), color, 1.5)
+			_ci.draw_arc(c + Vector2(0, -s * 0.2), s * 0.6, PI, TAU, 12, color, 2.5)
+			_ci.draw_line(c + Vector2(-s * 0.6, -s * 0.2), c + Vector2(-s * 0.6, s * 0.9), color, 2.5)
+			_ci.draw_line(c + Vector2(s * 0.6, -s * 0.2), c + Vector2(s * 0.6, s * 0.9), color, 2.5)
+			_ci.draw_line(c + Vector2(-s * 0.6, s * 0.9), c + Vector2(s * 0.6, s * 0.9), color, 2.5)
+			_ci.draw_line(c + Vector2(0, -s * 0.8), c + Vector2(0, s * 0.9), color, 1.5)
 		"pew":
-			draw_line(c + Vector2(-s, -s * 0.2), c + Vector2(s, -s * 0.2), color, 3.0)
-			draw_line(c + Vector2(-s, s * 0.2), c + Vector2(s, s * 0.2), color, 3.0)
-			draw_line(c + Vector2(-s * 0.8, -s * 0.2), c + Vector2(-s * 0.8, s * 0.8), color, 2.5)
-			draw_line(c + Vector2(s * 0.8, -s * 0.2), c + Vector2(s * 0.8, s * 0.8), color, 2.5)
+			_ci.draw_line(c + Vector2(-s, -s * 0.2), c + Vector2(s, -s * 0.2), color, 3.0)
+			_ci.draw_line(c + Vector2(-s, s * 0.2), c + Vector2(s, s * 0.2), color, 3.0)
+			_ci.draw_line(c + Vector2(-s * 0.8, -s * 0.2), c + Vector2(-s * 0.8, s * 0.8), color, 2.5)
+			_ci.draw_line(c + Vector2(s * 0.8, -s * 0.2), c + Vector2(s * 0.8, s * 0.8), color, 2.5)
 		"hourglass":
-			draw_polyline(PackedVector2Array([c + Vector2(-s * 0.6, -s), c + Vector2(s * 0.6, -s), c + Vector2(-s * 0.6, s),
+			_ci.draw_polyline(PackedVector2Array([c + Vector2(-s * 0.6, -s), c + Vector2(s * 0.6, -s), c + Vector2(-s * 0.6, s),
 					c + Vector2(s * 0.6, s), c + Vector2(-s * 0.6, -s)]), color, 2.5)
-			draw_circle(c + Vector2(0, s * 0.6), s * 0.18, color)
+			_ci.draw_circle(c + Vector2(0, s * 0.6), s * 0.18, color)
 		_:
-			InkArt.ring(self, c, s * 0.6, color, 2.0)
+			InkArt.ring(_ci, c, s * 0.6, color, 2.0)
 
 
 ## En trappa i tusch: steg som går ned åt höger.
@@ -753,19 +846,19 @@ func _draw_stairs(c: Vector2, s: float, color: Color) -> void:
 	for k in n:
 		var x := x0 + s * k / n
 		var y := y0 + s * k / n
-		draw_line(Vector2(x, y), Vector2(x + s / n, y), color, 2.4)
-		draw_line(Vector2(x + s / n, y), Vector2(x + s / n, y + s / n), color, 2.4)
-	draw_line(Vector2(x0, y0), Vector2(x0, c.y + s / 2), Color(color, 0.6), 1.8)
+		_ci.draw_line(Vector2(x, y), Vector2(x + s / n, y), color, 2.4)
+		_ci.draw_line(Vector2(x + s / n, y), Vector2(x + s / n, y + s / n), color, 2.4)
+	_ci.draw_line(Vector2(x0, y0), Vector2(x0, c.y + s / 2), Color(color, 0.6), 1.8)
 
 
 ## Ett quest-föremål: en slipad sten i tusch.
 func _draw_item(c: Vector2, r: float, color: Color) -> void:
 	var pts := PackedVector2Array([c + Vector2(0, -r), c + Vector2(r * 0.8, -r * 0.2), c + Vector2(0, r),
 			c + Vector2(-r * 0.8, -r * 0.2)])
-	draw_colored_polygon(pts, Color(color, 0.25))
+	_ci.draw_colored_polygon(pts, Color(color, 0.25))
 	pts.append(pts[0])
-	draw_polyline(pts, color, 2.2, true)
-	draw_line(c + Vector2(-r * 0.8, -r * 0.2), c + Vector2(r * 0.8, -r * 0.2), Color(color, 0.7), 1.5)
+	_ci.draw_polyline(pts, color, 2.2, true)
+	_ci.draw_line(c + Vector2(-r * 0.8, -r * 0.2), c + Vector2(r * 0.8, -r * 0.2), Color(color, 0.7), 1.5)
 
 
 ## Ett sigill (Bryt två av tre sigill): fiendens vaxsigill i tusch, en rund klump med en tagg i varje väderstreck och ett
@@ -778,36 +871,36 @@ func _draw_seal(c: Vector2, r: float, cell: Dictionary) -> void:
 		var a := TAU * k / 16.0
 		var rr := r * (1.0 if k % 4 != 0 else 1.22) * (1.0 + 0.05 * InkArt.jitter(k * 1.3))
 		pts.append(c + Vector2(cos(a), sin(a)) * rr)
-	draw_colored_polygon(pts, Color(col, 0.22))
+	_ci.draw_colored_polygon(pts, Color(col, 0.22))
 	pts.append(pts[0])
-	draw_polyline(pts, col, 2.4, true)
-	InkArt.ring(self, c, r * 0.66, Color(col, 0.8), 1.6)
+	_ci.draw_polyline(pts, col, 2.4, true)
+	InkArt.ring(_ci, c, r * 0.66, Color(col, 0.8), 1.6)
 	var s := r * 0.38
 	match String(cell.get("seal", "")):
 		"ward":  # en mur
-			draw_rect(Rect2(c - Vector2(s, s * 0.7), Vector2(s * 2, s * 1.4)), col, false, 2.0)
-			draw_line(c + Vector2(-s, 0), c + Vector2(s, 0), col, 1.6)
-			draw_line(c + Vector2(0, -s * 0.7), c + Vector2(0, 0), col, 1.6)
+			_ci.draw_rect(Rect2(c - Vector2(s, s * 0.7), Vector2(s * 2, s * 1.4)), col, false, 2.0)
+			_ci.draw_line(c + Vector2(-s, 0), c + Vector2(s, 0), col, 1.6)
+			_ci.draw_line(c + Vector2(0, -s * 0.7), c + Vector2(0, 0), col, 1.6)
 		"haste":  # ett öga
-			draw_arc(c + Vector2(0, s * 0.5), s * 1.1, PI * 1.2, PI * 1.8, 8, col, 2.0)
-			draw_arc(c - Vector2(0, s * 0.5), s * 1.1, PI * 0.2, PI * 0.8, 8, col, 2.0)
-			draw_circle(c, s * 0.32, col)
+			_ci.draw_arc(c + Vector2(0, s * 0.5), s * 1.1, PI * 1.2, PI * 1.8, 8, col, 2.0)
+			_ci.draw_arc(c - Vector2(0, s * 0.5), s * 1.1, PI * 0.2, PI * 0.8, 8, col, 2.0)
+			_ci.draw_circle(c, s * 0.32, col)
 		"mend":  # en droppe
-			draw_polyline(PackedVector2Array([c + Vector2(0, -s * 1.1), c + Vector2(s * 0.7, s * 0.2), c + Vector2(0, s * 0.9),
+			_ci.draw_polyline(PackedVector2Array([c + Vector2(0, -s * 1.1), c + Vector2(s * 0.7, s * 0.2), c + Vector2(0, s * 0.9),
 					c + Vector2(-s * 0.7, s * 0.2), c + Vector2(0, -s * 1.1)]), col, 2.0)
 	if broken:
-		draw_polyline(PackedVector2Array([c + Vector2(-r * 0.2, -r * 1.25), c + Vector2(r * 0.1, -r * 0.3),
+		_ci.draw_polyline(PackedVector2Array([c + Vector2(-r * 0.2, -r * 1.25), c + Vector2(r * 0.1, -r * 0.3),
 				c + Vector2(-r * 0.15, r * 0.3), c + Vector2(r * 0.2, r * 1.25)]), Color(InkArt.INK, 0.85), 2.6)
 	elif cell.get("held", false):
-		InkArt.ring(self, c, r * 1.5, Color(Parchment.SEAL, 0.55 + 0.25 * sin(_t * 2.5)), 2.2)
+		InkArt.ring(_ci, c, r * 1.5, Color(Parchment.SEAL, 0.55 + 0.25 * sin(_t * 2.5)), 2.2)
 
 
 ## Ett hänglås (målet är låst tills questen är klar).
 func _draw_lock(c: Vector2, s: float) -> void:
 	var body := Rect2(c - Vector2(s * 0.6, s * 0.1), Vector2(s * 1.2, s))
-	draw_arc(c + Vector2(0, -s * 0.1), s * 0.42, PI, TAU, 12, Parchment.SEAL, 2.4)
-	draw_rect(body, Color(0.96, 0.9, 0.74))
-	draw_rect(body, Parchment.SEAL, false, 2.4)
+	_ci.draw_arc(c + Vector2(0, -s * 0.1), s * 0.42, PI, TAU, 12, Parchment.SEAL, 2.4)
+	_ci.draw_rect(body, Color(0.96, 0.9, 0.74))
+	_ci.draw_rect(body, Parchment.SEAL, false, 2.4)
 
 
 ## Panelen: gruppens kort när man står på en grupp, annars rutans namn och vad man ser.
@@ -817,7 +910,19 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	var x := p.position.x + 16
 	var w := p.size.x - 32
 	var y := p.position.y + 34
-	if not state.at_group():
+	# Nodkartan: en nod man har tryckt på för att planera visar sitt kort (utan knappar).
+	var idx: int = state.pos
+	if _nodes() and not state.at_group() and _inspect >= 0:
+		idx = _inspect
+		r = state.map.cell(idx)
+	var readonly := idx != state.pos
+	if _nodes() and not state.map.has_group(idx):
+		_draw_node_info(data, state, idx, readonly)
+		return
+	if _nodes() and readonly and NodeMap.is_unknown(r):
+		_draw_node_info(data, state, idx, readonly)
+		return
+	if not state.at_group() and not readonly:
 		var name: String = KIND_NAMES.get(r.get("kind", "empty"), "")
 		if r.get("kind", "") == "prisoner" and r.has("hero"):
 			name = "Fånge: " + String(data.heroes[r.hero].get("short", data.heroes[r.hero].name))
@@ -873,8 +978,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	for k in kinds:
 		count[k] = int(count.get(k, 0)) + 1
 	# Elitvarianterna är slumpade per ruta, så kortet visar samma fiender som striden (RunState.group_preview).
-	var lines: Array[String] = [state.lineup_text(data, state.pos)]
-	var extras := state.variant_extras(data, state.pos)
+	var lines: Array[String] = [state.lineup_text(data, idx)]
+	var extras := state.variant_extras(data, idx)
 	if state.guardian_room(r):
 		lines.push_front(_guardian_line(data, state, enc, kinds))
 		# Väktarsteg 2: väktarens egen fråga och dess trofé (efter två segrar).
@@ -921,8 +1026,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		lines.append("Löftet Raka vägen brister om ni anfaller den här gruppen.")
 	if r.get("elite", false) or r.get("nemesis", false):
 		lines.append("Varning: en elitfiende är starkare än vanligt och har en egen regelbrytande egenskap. Backa och byt makro, eller troféer vid en lägereld, om det behövs.")
-	elif state.rare_warning(data, state.pos) != "":
-		lines.append(state.rare_warning(data, state.pos))
+	elif state.rare_warning(data, idx) != "":
+		lines.append(state.rare_warning(data, idx))
 	# 0.27: elitens motdrag (Siralims counters) på en rad, t.ex. "Klockaren: ni får bara väcka döda en gång per strid".
 	var c_opts := {"counter": r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false),
 			"force_elites": 1 if r.get("elite", false) or r.get("nemesis", false) else 0}
@@ -937,6 +1042,9 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	y += 22
 	for l in lines:
 		y += UiStyle.para(self, Vector2(x, y), l, 16, Parchment.INK, w, 4) + 6
+	if readonly:
+		UiStyle.para(self, Vector2(x, _fight_rect().position.y + 10), _plan_line(state, idx), 16, Parchment.SEAL, w, 4)
+		return
 	UiStyle.big_button(self, _fight_rect(), "ANFALL", _t)
 	small_button(_back_rect(), "BACKA")
 
@@ -1047,3 +1155,383 @@ func _draw_charges(data: Dictionary, state: RunState) -> void:
 			parts.append("%s %d/%d" % [data.heroes[hero_id].name, left, full])
 	UiStyle.text(self, Vector2(MARGIN, 134), "CHARGES: " + " · ".join(parts), 18, Parchment.INK, HORIZONTAL_ALIGNMENT_LEFT,
 			size.x - 60, 0)
+
+
+# --- Kartprov: nodkartan (NodeMap) -----------------------------------------------------
+
+func _nodes() -> bool:
+	return run != null and run.state != null and run.state.node_mode()
+
+
+## Kartans synliga yta till vänster; panelen till höger.
+func _node_rect() -> Rect2:
+	var w := clampf(size.x * 0.5, 560.0, 700.0)
+	return Rect2(MARGIN, NODE_TOP, w, size.y - NODE_TOP - 80.0)
+
+
+func _overview_rect() -> Rect2:
+	return Rect2(MARGIN, size.y - 66, 200, 48)
+
+
+func _content_h() -> float:
+	return NODE_PAD * 2.0 + (NodeMap.row_count(run.state.map) - 1) * NODE_ROW_H
+
+
+func _max_scroll() -> float:
+	return maxf(_content_h() - _node_rect().size.y, 0.0)
+
+
+## Rullningen som visar noden en bit ned i ytan (det man har framför sig syns ovanför).
+func _focus_scroll(i: int) -> float:
+	var m: Grotto = run.state.map
+	var cy := NODE_PAD + (NodeMap.row_count(m) - 1 - NodeMap.row_of(m, i)) * NODE_ROW_H
+	return clampf(cy - _node_rect().size.y * 0.7, 0.0, _max_scroll())
+
+
+## Nodens plats på skärmen (kolumnen över bredden, raden nedifrån; lite handritat darr).
+func _node_pos(i: int) -> Vector2:
+	var m: Grotto = run.state.map
+	var v := _node_rect()
+	var r := NodeMap.row_of(m, i)
+	var col := NodeMap.col_of(m, i)
+	var x := v.position.x + 46.0 + col / (NodeMap.COLS - 1) * (v.size.x - 92.0)
+	var y := v.position.y + NODE_PAD + (NodeMap.row_count(m) - 1 - r) * NODE_ROW_H - _scroll
+	if i != m.goal and i != m.start:
+		x += 9.0 * InkArt.jitter(i * 1.37)
+		y += 6.0 * InkArt.jitter(i * 2.11 + 0.5)
+	return Vector2(x, y)
+
+
+func _node_at(p: Vector2) -> int:
+	if not _node_rect().has_point(p):
+		return -1
+	var best := -1
+	var best_d := NODE_SIZE * 0.62
+	for i in NodeMap.all_nodes(run.state.map):
+		var d := _node_pos(i).distance_to(p)
+		if i == run.state.map.goal:
+			d *= 0.6  # bossen är större
+		if d < best_d:
+			best_d = d
+			best = i
+	return best
+
+
+## Kartan rullas med fingret (dras) eller hjulet; ett kort tryck är fortfarande ett tryck (TapScreen, 30 px).
+func _gui_input(event: InputEvent) -> void:
+	if _nodes() and _dialog.is_empty() and _moment == null and not _overview:
+		if event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			_scroll_target = clampf(_scroll_target + (-70.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 70.0), 0.0, _max_scroll())
+			_scroll_wait = 0.0
+			accept_event()
+			return
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed and _node_rect().has_point(event.position):
+				_drag_on = true
+				_drag_y = event.position.y
+				_drag_scroll = _scroll
+				_scroll_wait = 0.0
+			elif not event.pressed:
+				_drag_on = false
+		if event is InputEventMouseMotion and _drag_on and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
+			_scroll = clampf(_drag_scroll - (event.position.y - _drag_y), 0.0, _max_scroll())
+			_scroll_target = _scroll
+	super(event)
+
+
+## En väg mellan två noder: tusch med en svag båge och handdragen ojämnhet, streckad om den inte är gången.
+func _ink_edge(ci: CanvasItem, a: Vector2, b: Vector2, color: Color, solid: bool, width: float, seed_value: float) -> void:
+	var normal := (b - a).orthogonal().normalized()
+	var bend := 5.0 * InkArt.jitter(seed_value)
+	var pts := PackedVector2Array()
+	var n := maxi(int(a.distance_to(b) / 7.0), 4)
+	for k in n + 1:
+		var t := float(k) / n
+		pts.append(a.lerp(b, t) + normal * (sin(t * PI) * bend + InkArt.jitter(t * 7.0 + seed_value) * 0.9))
+	if solid:
+		ci.draw_polyline(pts, color, width, true)
+		return
+	for k in range(0, pts.size() - 1, 2):
+		ci.draw_line(pts[k], pts[k + 1], color, width, true)
+
+
+## Ritar nodkartan på MapView (klippt till kartans yta, i skärmens koordinater).
+func _draw_node_map(ci: Control) -> void:
+	var state: RunState = run.state
+	var m: Grotto = state.map
+	if m == null or m.nodes.is_empty():
+		return
+	_ci = ci
+	var v := _node_rect()
+	var keep_scroll := _scroll
+	if _overview:
+		var sc := v.size.y / _content_h()
+		_scroll = 0.0
+		ci.draw_set_transform(Vector2((v.size.x - v.size.x * sc) / 2.0, 0.0) - v.position * sc, 0.0, Vector2(sc, sc))
+	else:
+		ci.draw_set_transform(-ci.position)
+	var cs := NODE_SIZE
+	var ahead := NodeMap.ahead(m, state.pos)
+	var pulse := 0.5 + 0.5 * sin(_t * 4.0)
+	var still := _walk_t < 0.0 and _dialog.is_empty()
+	# Vägen man har gått: på varandra följande besökta noder.
+	var walked := {}
+	var trail: Array = state.visited.filter(func(i: int) -> bool: return NodeMap.is_node(m, i))
+	for k in trail.size() - 1:
+		walked[Vector2i(trail[k], trail[k + 1])] = true
+	var lo := v.position.y - NODE_ROW_H if not _overview else -INF
+	var hi := v.end.y + NODE_ROW_H if not _overview else INF
+	for i in NodeMap.all_nodes(m):
+		var a := _node_pos(i)
+		for j in NodeMap.up(m, i):
+			var b := _node_pos(j)
+			if maxf(a.y, b.y) < lo or minf(a.y, b.y) > hi:
+				continue
+			var dir := (b - a).normalized()
+			var ra := cs * (0.5 if i != m.start else 0.3)
+			var rb := cs * (0.5 if j != m.goal else 0.95)
+			var col := Color(InkArt.INK, 0.14)
+			var solid := false
+			var width := 1.8
+			if walked.has(Vector2i(i, j)):
+				col = Color(InkArt.INK, 0.92)
+				solid = true
+				width = 4.0
+			elif i == state.pos and still and not state.at_group() and state.can_step(j) == "":
+				col = Color(UiStyle.GOLD.darkened(0.3), 0.65 + 0.35 * pulse)
+				width = 3.6
+			elif ahead.has(i) and ahead.has(j):
+				col = Color(InkArt.INK, 0.5)
+				width = 2.2
+			_ink_edge(ci, a + dir * ra, b - dir * rb, col, solid, width, float(i * 13 + j))
+	for i in NodeMap.all_nodes(m):
+		var at := _node_pos(i)
+		if at.y < lo or at.y > hi:
+			continue
+		_draw_node(m, state, i, at, ahead, pulse, still)
+	# Pjäsen står bredvid noden (inte över symbolen).
+	InkArt.icon(ci, "paladin", _piece_pos() + Vector2(-cs * 0.62, -cs * 0.28 + sin(_t * 3.0) * 1.5), cs * 0.92)
+	ci.draw_set_transform(Vector2.ZERO)
+	_scroll = keep_scroll
+	_ci = self
+
+
+func _draw_node(m: Grotto, state: RunState, i: int, at: Vector2, ahead: Dictionary, pulse: float, still: bool) -> void:
+	var ci := _ci
+	var cs := NODE_SIZE
+	var c: Dictionary = m.cell(i)
+	var visited: bool = state.visited.has(i)
+	var parch := Color(0.97, 0.92, 0.78)
+	if i == m.goal:
+		# Bossen eller väktaren högst upp, stor, med sitt namn.
+		ci.draw_circle(at, cs * 0.95, Color(parch, 0.85))
+		InkArt.ring(ci, at, cs * 0.95, Color(Parchment.SEAL, 0.85), 3.0)
+		InkArt.icon(ci, "boss", at, cs * 1.55, 1.0 if not c.get("beaten", false) else 0.4)
+		var enc: Dictionary = run.data.encounters.get(String(c.get("encounter", "")), {})
+		var title := ("VÄKTARE: " if c.get("guardian", false) else "BOSS: ") + String(enc.get("name", "")).to_upper()
+		UiStyle.text(ci, at + Vector2(cs * 1.05, 6), title, 17, Parchment.SEAL, HORIZONTAL_ALIGNMENT_LEFT, 300, 0)
+		if state.goal_locked():
+			_draw_lock(at + Vector2(cs * 0.62, cs * 0.55), cs * 0.3)
+	elif i == m.start:
+		InkArt.ring(ci, at, cs * 0.24, Color(InkArt.INK, 0.6), 2.2)
+	else:
+		ci.draw_circle(at, cs * 0.5, Color(parch, 0.92))
+		var elite: bool = c.get("elite", false) and m.has_group(i)
+		InkArt.ring(ci, at, cs * 0.5, Color(Parchment.SEAL, 0.9) if elite else Color(InkArt.INK, 0.45), 3.0 if elite else 1.8)
+		if NodeMap.is_unknown(c) and not visited:
+			UiStyle.text(ci, at + Vector2(-20, 13), "?", 36, InkArt.INK, HORIZONTAL_ALIGNMENT_CENTER, 40, 0)
+		else:
+			_draw_cell(m, state, i)
+		if elite:
+			InkArt.ring(ci, at, cs * 0.58, Color(Parchment.SEAL, 0.35 + 0.15 * pulse), 1.6)
+		# Questens mål som ännu gäller: ett litet rött sigill.
+		if NodeMap.quest_gain(c, state.quest) > 0 and not state.quest.get("done", false):
+			var q := at + Vector2(-cs * 0.38, -cs * 0.38)
+			ci.draw_circle(q, 10, Parchment.SEAL)
+			UiStyle.text(ci, q + Vector2(-12, 6), "Q", 15, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, 24, 0)
+	# Det man inte längre kan nå bleknar.
+	if not ahead.has(i) and not visited:
+		ci.draw_circle(at, cs * (0.6 if i != m.goal else 1.0), Color(parch, 0.62))
+	if visited and i != state.pos and i != m.start:
+		InkArt.ring(ci, at, cs * 0.62, Color(InkArt.INK, 0.85), 3.2)  # en ring runt det man har gått, som i Slay the Spire
+	if i == state.pos:
+		ci.draw_circle(at, cs * 0.64, Color(1.0, 0.82, 0.42, 0.22 + 0.06 * sin(_t * 2.0)))
+	if still and i != state.pos and NodeMap.up(m, state.pos).has(i) and not state.at_group():
+		var why := state.can_step(i)
+		if why == "":
+			InkArt.ring(ci, at, cs * (0.66 if i != m.goal else 1.08), Color(UiStyle.GOLD.darkened(0.2), 0.6 + 0.4 * pulse), 3.4)
+		elif why == "quest":
+			var d := cs * 0.3
+			ci.draw_line(at + Vector2(-d, -d), at + Vector2(d, d), Color(Parchment.SEAL, 0.85), 4.0)
+			ci.draw_line(at + Vector2(-d, d), at + Vector2(d, -d), Color(Parchment.SEAL, 0.85), 4.0)
+	if i == _inspect:
+		var r := cs * 0.74
+		for k in 12:
+			var a0 := TAU * k / 12.0 + _t * 0.6
+			ci.draw_arc(at, r, a0, a0 + TAU / 24.0, 4, Color(Parchment.SEAL, 0.9), 2.4)
+
+
+## Nodens namn för panelen.
+func _node_name(data: Dictionary, state: RunState, i: int) -> String:
+	var c: Dictionary = state.map.cell(i)
+	var kind: String = c.get("kind", "")
+	if NodeMap.is_unknown(c) and not state.visited.has(i):
+		return "Okänt"
+	if kind == "prisoner" and c.has("hero"):
+		return "Fånge: " + String(data.heroes[c.hero].get("short", data.heroes[c.hero].name))
+	if kind == "object":
+		return String(data.get("objects", {}).get(c.get("obj", ""), {}).get("name", "Föremål"))
+	if kind == "seal":
+		return _seal_line(data, c).name
+	if kind == "treasure" and c.has("encounter"):
+		return "Bevakad skatt"
+	return KIND_NAMES.get(kind, "")
+
+
+func _node_desc(data: Dictionary, state: RunState, i: int) -> String:
+	var c: Dictionary = state.map.cell(i)
+	if NodeMap.is_unknown(c) and not state.visited.has(i):
+		return "Något väntar här: en helgedom, ett av Realmens föremål eller en fånge. Ni ser vad när ni kommer dit."
+	match c.get("kind", ""):
+		"campfire":
+			return "Vila ger +%d Charges på varje förmåga, en gång. Här byter ni troféer." % RunState.CAMPFIRE_CHARGES \
+					+ (" Redan använd." if c.get("done", false) else "")
+		"treasure":
+			return "Silver och kanske bärnsten eller ett annat fynd." + (" Tagen." if c.get("done", false) else "")
+		"shrine":
+			return "Välj en gåva inför nästa strid – eller låt Pandemonium avgöra."
+		"object":
+			return String(data.get("objects", {}).get(c.get("obj", ""), {}).get("text", ""))
+		"prisoner":
+			return rescue_about(data, String(c.get("hero", "")))
+		"seal":
+			return ("Brutet. " if c.get("broken", false) else "Lämnas det: ") + _seal_line(data, c).text
+		"item":
+			return "Ett av questens föremål." + (" Taget." if c.get("done", false) else "")
+		"start":
+			return "Ingången till %s." % String(data.realms[state.realm].name)
+	return ""
+
+
+## Raden under ett kort man planerar med: kan man gå dit, och vad betyder det för questen.
+func _plan_line(state: RunState, i: int) -> String:
+	var m: Grotto = state.map
+	var ahead := NodeMap.ahead(m, state.pos)
+	if state.visited.has(i):
+		return "Här har ni redan varit."
+	if not ahead.has(i):
+		return "Ingen väg härifrån leder dit längre."
+	if not NodeMap.quest_ok(m, i, state.quest):
+		return "Går ni den vägen kan questen inte klaras – %s förblir låst." % ("väktaren" if m.cell(m.goal).get("guardian", false) else "bossen")
+	var steps := NodeMap.row_of(m, i) - NodeMap.row_of(m, state.pos)
+	return "Nästa steg – tryck på noden med guldring." if steps == 1 else "%d steg bort på en väg framför er." % steps
+
+
+## Panelen utan kort: questen, reglerna, Charges och fynden, sedan den nod man har tryckt på (eller där man står) och
+## en teckenförklaring.
+func _draw_node_info(data: Dictionary, state: RunState, idx: int, readonly: bool) -> void:
+	var p := _panel_rect()
+	var x := p.position.x + 16
+	var w := p.size.x - 32
+	var y := p.position.y + 18
+	var m: Grotto = state.map
+	var boss_word := "väktaren" if m.cell(m.goal).get("guardian", false) else "bossen"
+	var quest := RunState.quest_text(state.quest) + ("  – KLAR!" if state.quest.get("done", false) else "")
+	quest += ("  · %s är öppen" % boss_word) if state.quest.get("done", false) else ("  · öppnar %s" % boss_word)
+	y += UiStyle.para(self, Vector2(x, y), "QUEST: " + quest, 17, Parchment.SEAL, w, 3) + 6
+	var bits: Array = []
+	var known: Array = state.known_rules().map(func(id: String) -> String: return data.floor_rules[id].name)
+	if not state.active_rules().is_empty():
+		var hidden := state.active_rules().size() - known.size()
+		bits.append("REGLER: %s%s" % [", ".join(known), "" if hidden == 0 else " · %d dolda" % hidden])
+	if state.vow != "":
+		bits.append("LÖFTE: " + state.vow_name(data) + ("" if state.vow_kept(data) else " (brutet)"))
+	if not state.boss_seals.is_empty():
+		bits.append("KVAR ÅT BOSSEN: " + ", ".join(RunState.seal_lines(data, state.boss_seals).map(
+				func(l: Dictionary) -> String: return l.name)))
+	if not bits.is_empty():
+		y += UiStyle.para(self, Vector2(x, y), "   ·   ".join(bits), 15, Parchment.INK, w, 2) + 6
+	var parts: Array = []
+	for hero_id in state.party:
+		var left := 0
+		var full := 0
+		for ability_id in state.charges.get(hero_id, {}):
+			left += int(state.charges[hero_id][ability_id])
+			full += int(data.abilities[ability_id].get("charges", 0))
+		if full > 0:
+			parts.append("%s %d/%d" % [data.heroes[hero_id].get("short", data.heroes[hero_id].name), left, full])
+	y += UiStyle.para(self, Vector2(x, y), "CHARGES: " + " · ".join(parts), 16, Parchment.INK, w, 2) + 4
+	UiStyle.text(self, Vector2(x, y + 16), "FYND: bärnsten %d · trick %d · Nether %d" % [int(state.found.amber),
+			int(state.found.trick), int(state.found.nether)], 15, Color(InkArt.INK, 0.8), HORIZONTAL_ALIGNMENT_LEFT, w, 0)
+	y += 34
+	draw_line(Vector2(x, y), Vector2(x + w, y), Color(InkArt.INK, 0.35), 1.5)
+	y += 30
+	var name := _node_name(data, state, idx)
+	UiStyle.text(self, Vector2(x, y), (name.to_upper() if name != "" else "HÄR"), 20, InkArt.INK, HORIZONTAL_ALIGNMENT_LEFT, w, 0)
+	y += 30
+	var desc := _node_desc(data, state, idx)
+	if desc != "":
+		y += UiStyle.para(self, Vector2(x, y), desc, 16, Color(InkArt.INK, 0.85), w, 4) + 4
+	if readonly:
+		y += UiStyle.para(self, Vector2(x, y), _plan_line(state, idx), 16, Parchment.SEAL, w, 3) + 4
+	else:
+		var hint := "Tryck på en nod med guldring för att gå dit. Tryck på andra noder för att se vad som väntar, och dra kartan upp och ned. Vägen går bara uppåt."
+		if state.goal_locked():
+			hint += " %s är låst tills questen är klar; ett rött kryss betyder att questen inte går att klara den vägen." % boss_word.capitalize()
+		y += UiStyle.para(self, Vector2(x, y), hint, 16, Color(InkArt.INK, 0.8), w, 5) + 4
+	# Teckenförklaring längst ned.
+	var legend := [["battle", "Fiender"], ["elite", "Elit"], ["campfire", "Lägereld"], ["treasure", "Skatt"], ["?", "Okänt"]]
+	if state.quest.get("type", "") == RunState.SEAL_QUEST:
+		legend.append(["seal", "Sigill"])
+	if state.quest.get("type", "") == "collect":
+		legend.append(["item", "Föremål"])
+	var ly := p.end.y - 24
+	var lx := x
+	var step := w / legend.size()
+	for e in legend:
+		var c := Vector2(lx + 16, ly - 8)
+		match e[0]:
+			"?":
+				UiStyle.text(self, c + Vector2(-14, 10), "?", 26, InkArt.INK, HORIZONTAL_ALIGNMENT_CENTER, 28, 0)
+			"seal":
+				_draw_seal(c, 11.0, {"seal": "ward"})
+			"item":
+				_draw_item(c, 11.0, Parchment.SEAL)
+			_:
+				InkArt.room_icon(self, e[0], c, 30.0, 1.0)
+		UiStyle.text(self, Vector2(lx + 34, ly), e[1], 15, InkArt.INK, HORIZONTAL_ALIGNMENT_LEFT, step - 34, 0)
+		lx += step
+
+
+## --explore=<n> på nodkartan (skärmdumpar): går n steg uppåt längs en väg som håller questen vid liv, vinner striderna
+## och tar föremålen och sigillen, som om sällskapet gått dit.
+func _dev_walk_nodes(n: int) -> void:
+	var state: RunState = run.state
+	var m: Grotto = state.map
+	for k in n:
+		var next := -1
+		for j in NodeMap.up(m, state.pos):
+			if state.can_step(j) == "" and j != m.goal:
+				next = j
+				if not m.has_group(j):
+					break
+		if next < 0:
+			break
+		state.step(next)
+		if state.at_group():
+			state.fight()
+			state.battle_won()
+		var c := m.cell(state.pos)
+		match c.get("kind", ""):
+			"item":
+				state.collect_item()
+			"seal":
+				state.break_seal()
+			"campfire", "treasure", "shrine", "object":
+				c.done = true
+			"prisoner":
+				c.rescued = true
+	_walk_from = state.pos
+	_scroll_wait = 0.0
+	_scroll_target = _focus_scroll(state.pos)
+	_scroll = _scroll_target

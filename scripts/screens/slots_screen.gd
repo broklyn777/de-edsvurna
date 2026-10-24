@@ -37,6 +37,12 @@ func _delete_rect(i: int) -> Rect2:
 	return Rect2(r.position.x + (r.size.x - 160) / 2.0, r.end.y + 18, 160, 44)
 
 
+## Kartprov: knappen för en färdig profil på en tom plats.
+func _quick_rect(i: int) -> Rect2:
+	var r := _card_rect(i)
+	return Rect2(r.position.x + 28, r.position.y + 290, r.size.x - 56, 42)
+
+
 func _yes_rect() -> Rect2:
 	return Rect2(size.x / 2 + 20, size.y / 2 + 50, 240, 60)
 
@@ -75,6 +81,9 @@ func _tap(p: Vector2) -> void:
 			confirm_delete = i
 			run.ui("ui_error", -10.0)
 			return
+		if _summaries[i].empty and NodeMap.enabled() and _quick_rect(i).has_point(p):
+			run.quickstart_slot(i)  # kartprov: en färdig profil
+			return
 		if _card_rect(i).has_point(p):
 			if _summaries[i].empty:
 				_ask_name(i)  # 0.24.2: en ny profil börjar med paladinens namn
@@ -103,6 +112,14 @@ func _draw() -> void:
 			UiStyle.text(self, r.position + Vector2(0, 190), "Ny profil", 26, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 4)
 			UiStyle.para(self, r.position + Vector2(28, 230), "Börjar från början: eden, borgen och kryptan under den.", 18,
 					Color(1, 1, 1, 0.7), r.size.x - 56, 3)
+			if NodeMap.enabled():
+				var q := _quick_rect(i)
+				draw_rect(q, Color(0.05, 0.3, 0.28, 0.95))
+				draw_rect(q, Color("#5fd3c0"), false, 2.0)
+				UiStyle.text(self, q.position + Vector2(0, 29), "SNABBSTART (KARTPROV)", 18, Color.WHITE,
+						HORIZONTAL_ALIGNMENT_CENTER, q.size.x, 4)
+				UiStyle.para(self, Vector2(q.position.x, q.end.y + 22), "Fyra hjältar på nivå 10, troféer, djup 1–3.", 15,
+						Color("#9fe8dc"), q.size.x, 3)
 			continue
 		var rows := [
 			["Namn", String(s.name)],

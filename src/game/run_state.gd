@@ -168,11 +168,14 @@ var world_stat_mult := 1.0
 var world_rumour := false
 ## Bryt två av tre sigill: egenskaperna slutstriden får av sigill som lämnades (traits.json "seal_*"), för hela körningen.
 var boss_seals: Array = []
+## Kartprov (NodeMap, prototyp): våningarna läggs som en nodkarta i Slay the Spires stil i stället för grottans rutnät.
+var use_nodes := false
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
 static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	var s := RunState.new()
+	s.use_nodes = NodeMap.enabled()
 	s.oath = profile.oath
 	s.perks = profile.active_perks(data, profile.oath)
 	s.party = profile.party.duplicate()
@@ -579,7 +582,7 @@ const PORTAL_TROPHY_BONUS := 0.25
 ## Startar grottan och den första våningens quest för en ny körning.
 func start_expedition(data: Dictionary, seed_value: int) -> void:
 	run_seed = seed_value
-	floor = 0
+	floor = 0 if not use_nodes else FLOORS_PER_RUN - 1  # nodkartan: en karta per nedstigning, med bossen överst
 	finished = false
 	twists_used = []
 	boss_seals = []
@@ -646,6 +649,11 @@ func start_floor(data: Dictionary) -> void:
 	map = Grotto.generate(run_seed * 101 + floor * 7 + 1, floor, is_last_floor(), pools, boss, guard, quest,
 			prisoners.get(str(floor), {}), elite_pools, data.realms[realm].get("objects", []),
 			nemesis_pool(elite_pools, floor))
+	if use_nodes:
+		# Kartprov: den första våningens grotta (utan quest) och den sista (med questen och bossen) blir en karta.
+		var first := Grotto.generate(run_seed * 101 + 1, 0, false, pools, boss, floor_ids[0], {},
+				prisoners.get("0", {}), elite_pools, data.realms[realm].get("objects", []), nemesis_pool(elite_pools, 0))
+		map = NodeMap.build_descent(first, map, run_seed * 101 + floor * 7 + 1, quest, pools)
 	_vary_groups(data)
 	if is_last_floor() and boss != floor_ids[floor_ids.size() - 1]:
 		map.cells[map.goal].guardian = true  # en roterande väktare leder bossstriden (kortet, förlusttipsen)
@@ -657,6 +665,11 @@ func start_floor(data: Dictionary) -> void:
 	came_from = -1
 	battle_pending = false
 	_roll_hints(rng)
+	if node_mode():
+		# Nodkartan: allt syns från början (föremålen som avslöjar något har inget kvar att visa), inga rykten.
+		revealed = NodeMap.all_nodes(map)
+		revealed.erase(map.start)
+		quest_hints = []
 
 
 ## Mot upprepning (docs/plan/mot-upprepning.md §2, VD 2026-10-24, textspelet): de vanliga grupperna byts per djupband.
@@ -823,7 +836,7 @@ var trail_taken := false
 
 
 func take_trail(data: Dictionary) -> Dictionary:
-	if trail_taken or map == null or practice:
+	if trail_taken or map == null or practice or node_mode():  # nodkartan: grupper man går förbi lämnar inga spår
 		return {}
 	trail_taken = true
 	var groups := 0
@@ -859,8 +872,14 @@ func goal_locked() -> bool:
 	return not quest.get("done", false)
 
 
+## Kartprov: våningen är en nodkarta (NodeMap) i stället för grottans rutnät.
+func node_mode() -> bool:
+	return map != null and not map.nodes.is_empty()
+
+
 ## Kan man gå till rutan? "" om det går, annars en orsak: here, group (backa eller slåss först), locked (målet),
 ## blocked (spärrad av en grupp), far (inte en granne och inte besökt), path (ingen väg genom besökta rutor).
+## Nodkartan: bara en nod på raden ovanför som en väg leder till; quest = questen går inte att klara den vägen.
 func can_step(i: int) -> String:
 	if map == null or i < 0 or i >= map.cells.size():
 		return "far"
@@ -868,6 +887,12 @@ func can_step(i: int) -> String:
 		return "here"
 	if at_group():
 		return "" if i == came_from else "group"
+	if node_mode():
+		if not NodeMap.up(map, pos).has(i):
+			return "far"
+		if i == map.goal and goal_locked():
+			return "locked"
+		return "" if NodeMap.quest_ok(map, i, quest) else "quest"
 	if i == map.goal and goal_locked():
 		return "locked"
 	if visited.has(i):
@@ -885,7 +910,7 @@ func step(i: int) -> Array[int]:
 	if can_step(i) != "":
 		return []
 	var walk: Array[int] = []
-	if at_group() or (Grotto.neighbors(pos).has(i) and not visited.has(i)):
+	if at_group() or node_mode() or (Grotto.neighbors(pos).has(i) and not visited.has(i)):
 		walk.append(i)
 	else:
 		walk = map.path(pos, i, visited)
@@ -905,6 +930,8 @@ func step(i: int) -> Array[int]:
 func back() -> bool:
 	if not at_group() or came_from < 0:
 		return false
+	if node_mode():
+		visited.erase(pos)  # nodkartan: vägen man gått ritas ur visited; man kan välja en annan nod
 	pos = came_from
 	came_from = -1
 	return true
@@ -1459,6 +1486,12 @@ func _richest_charge() -> Dictionary:
 ## Kyrkbänken: närmaste vanliga grupp man har sett (inte elit, Nemesis, boss eller en vakt), eller −1.
 func barricade_target() -> int:
 	var best := -1
+	if node_mode():  # nodkartan: allt syns; bänken spärrar en vanlig grupp på raden ovanför
+		for i in NodeMap.up(map, pos):
+			var c := map.cell(i)
+			if map.has_group(i) and c.get("kind", "") == "battle" and not c.get("elite", false) and not c.get("nemesis", false):
+				return i
+		return -1
 	for i in seen:
 		var c := map.cell(i)
 		if map.has_group(i) and c.get("kind", "") == "battle" and not c.get("elite", false) and not c.get("nemesis", false):
@@ -1589,7 +1622,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "party_slots", "realm_party", "quest_hints", "trail_taken", "growth", "twisted",
 		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour",
-		"twists_used", "fresh_trophies", "boss_seals"]
+		"twists_used", "fresh_trophies", "boss_seals", "use_nodes"]
 
 
 func to_dict() -> Dictionary:

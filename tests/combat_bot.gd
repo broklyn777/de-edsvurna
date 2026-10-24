@@ -170,6 +170,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		state.place_prisoners(data, opts.recruited)  # 0.23: botarna befriar lärjungar som i spelet
 	if opts.has("growth"):
 		state.set_growth(data, int(opts.growth))  # den levande kartan: Realmens fördärv (steg 4 = den förvridna bossen)
+	state.use_nodes = opts.get("node_map", false)  # kartprov: nedstigningen som en nodkarta
 	state.start_expedition(data, seed_value)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value * 13 + 5
@@ -199,14 +200,14 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				r.snapped = true
 				opts.elite_snaps.append({"charges": state.charges.duplicate(true), "levels": levels.duplicate(true),
 						"party": state.party.duplicate(), "floor": state.floor, "opts": state.battle_opts()})
-			if not _bot_wants_fight(state, r, policy):
+			if not state.node_mode() and not _bot_wants_fight(state, r, policy):
 				state.back()
 				rooms += 1
 				continue
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth", "owned", "slots", "realm_party"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth", "owned", "slots", "realm_party", "node_map"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
@@ -298,7 +299,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			silver += roundi(float(t.get("silver", 0.0)))
 			state.next_floor(data)
 			continue
-		var target := _bot_target(data, state, policy)
+		var target := _bot_target(data, state, policy) if not state.node_mode() else _bot_node_target(data, state, policy, rng)
 		if target < 0 or state.step(target).is_empty():
 			break
 		rooms += 1
@@ -413,6 +414,53 @@ static func _bot_target(data: Dictionary, state: RunState, policy: String) -> in
 	if fallback >= 0:
 		m.cell(fallback)["bot_must"] = true
 	return fallback
+
+
+## Kartprov: nästa nod på nodkartan. "nodes" går en slumpad väg (bland noderna som håller questen vid liv) och slåss mot
+## allt; "plan" väljer den väg som ger mest enligt en enkel poäng: questens mål först, lägereld när Charges sinar, skatter
+## och okända gärna, eliter bara när questen kräver dem eller Charges räcker.
+static func _bot_node_target(data: Dictionary, state: RunState, policy: String, rng: RandomNumberGenerator) -> int:
+	var m := state.map
+	var options: Array = NodeMap.up(m, state.pos).filter(func(j: int) -> bool: return state.can_step(j) == "")
+	if options.is_empty():
+		return -1
+	if policy != "plan":
+		return options[rng.randi() % options.size()]
+	var share := _charges_share(data, state)
+	var memo := {}
+	var best := -1
+	var best_score := -INF
+	for j in options:
+		var v := _node_score(state, j, share, memo)
+		if v > best_score:
+			best_score = v
+			best = j
+	return best
+
+
+static func _node_score(state: RunState, i: int, share: float, memo: Dictionary) -> float:
+	if memo.has(i):
+		return memo[i]
+	var c := state.map.cell(i)
+	var v := 0.0
+	if NodeMap.quest_gain(c, state.quest) > 0:
+		v += 6.0
+	elif c.get("elite", false):
+		v += 1.0 if share > 0.6 else -4.0
+	elif c.get("kind", "") == "campfire":
+		v += 4.0 if share < 0.6 else 0.3
+	elif c.get("kind", "") == "treasure":
+		v += 2.5 if c.has("encounter") else 2.0
+	elif c.get("kind", "") in ["shrine", "object", "prisoner"]:
+		v += 1.5
+	elif c.has("encounter"):
+		v += 1.0 if share > 0.4 else -0.5
+	var after := -INF
+	for j in NodeMap.up(state.map, i):
+		after = maxf(after, _node_score(state, j, share, memo))
+	v += 0.0 if after == -INF else after * 0.9
+	memo[i] = v
+	return v
 
 
 static func _frontier_ok(state: RunState, i: int) -> bool:

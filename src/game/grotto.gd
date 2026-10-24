@@ -38,6 +38,8 @@ var floor := 0
 var last_floor := false
 var start := 0
 var goal := 0
+## Kartprov (NodeMap): nodkartan över rutorna, eller tom (grottan som vanligt).
+var nodes := {}
 
 
 # --- Rutnätet -------------------------------------------------------------------
@@ -415,7 +417,10 @@ func path(from: int, to: int, visited: Array) -> Array[int]:
 # --- Sparning ------------------------------------------------------------------------
 
 func to_dict() -> Dictionary:
-	return {"cells": cells, "floor": floor, "last_floor": last_floor, "start": start, "goal": goal}
+	var d := {"cells": cells, "floor": floor, "last_floor": last_floor, "start": start, "goal": goal}
+	if not nodes.is_empty():
+		d.nodes = nodes
+	return d
 
 
 static func from_dict(d: Dictionary) -> Grotto:
@@ -425,4 +430,5 @@ static func from_dict(d: Dictionary) -> Grotto:
 	g.last_floor = d.get("last_floor", false)
 	g.start = int(d.get("start", 0))
 	g.goal = int(d.get("goal", 0))
+	g.nodes = d.get("nodes", {})
 	return g
