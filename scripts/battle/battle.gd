@@ -678,10 +678,9 @@ func _guardian_trophy_line(u: CombatUnit) -> String:
 	var kinds: Array = data.encounters[enc_id].get("enemies", [])
 	if trophy_id == "" or kinds.is_empty() or u.kind != kinds[0]:
 		return ""
-	var wins := int(run.profile.guardian_wins.get(enc_id, 0))
-	var need := RunState.GUARDIAN_WINS_FOR_TROPHY
-	return "Väktarens trofé: %s – kräver %d segrar mot väktaren (%d/%d)%s" % [data.traits[trophy_id].name, need,
-			mini(wins, need), need, " · i samlingen" if run.collection.has(trophy_id) else ""]
+	return "Väktarens trofé: %s (%s)%s" % [data.traits[trophy_id].name,
+			RunState.guardian_progress(int(run.profile.guardian_wins.get(enc_id, 0))),
+			" · i samlingen" if run.collection.has(trophy_id) else ""]
 
 
 ## Visar figurens stats och egenskaper (dolda delar och artefaktens egenskap räknas inte).

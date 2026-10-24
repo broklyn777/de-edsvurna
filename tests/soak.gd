@@ -682,7 +682,8 @@ func _end_descent() -> void:
 	var list := LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
 	if OS.get_environment("VARLD") != "av":
 		var outcome := "boss" if state.floor_cleared() and state.is_last_floor() else "loss"
-		var w := WorldEvents.after_descent(profile, data, state.realm, outcome, state.wins, state.realm_quest_done, before)
+		var w := WorldEvents.after_descent(profile, data, state.realm, WorldEvents.outcome_for(state, data, outcome), state.wins,
+				state.realm_quest_done, before)
 		if not w.event_start.is_empty():
 			world_stats.started[w.event_start.id] = int(world_stats.started.get(w.event_start.id, 0)) + 1
 		if not w.event_end.is_empty():

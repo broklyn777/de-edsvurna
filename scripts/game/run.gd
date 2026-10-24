@@ -663,7 +663,8 @@ func end_descent(outcome := "loss") -> void:
 	if not state.first_descent:
 		changes = LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
 	# Den levande världen: händelsen, följderna i borgen och gåvorna (WorldEvents).
-	var world := WorldEvents.after_descent(profile, data, state.realm, outcome, state.wins, state.realm_quest_done, before)
+	var world := WorldEvents.after_descent(profile, data, state.realm, WorldEvents.outcome_for(state, data, outcome), state.wins,
+			state.realm_quest_done, before)
 	if outcome in ["loss", "forfeit"] and state.map != null:
 		state.chron.lost_to = state.encounter()  # hemkomstens råd: mötet som fällde sällskapet
 	Chronicle.end(profile, data, state, outcome, changes, world)
@@ -946,10 +947,12 @@ func rescue_prisoner() -> String:
 	r.rescued = true
 	state.prisoners.erase(str(state.floor))
 	var avg := 0.0
+	var lowest := INF
 	for id in state.party:
 		avg += float(profile.hero(data, id).level)
+		lowest = minf(lowest, float(profile.hero(data, id).level))
 	avg /= maxi(state.party.size(), 1)
-	profile.recruit(data, hero_id, avg)
+	profile.recruit(data, hero_id, avg, lowest)
 	state.owned_heroes = profile.recruited.size() + 1
 	last_recruit = hero_id
 	var h: Dictionary = data.heroes[hero_id]

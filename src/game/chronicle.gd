@@ -811,7 +811,8 @@ static func simulate(profile: Profile, data: Dictionary, spec: Dictionary) -> Di
 	# Den levande världen (WorldEvents) körs med kartan, eller med "world": true.
 	var world := {}
 	if spec.get("world", spec.get("map", false)):
-		world = WorldEvents.after_descent(profile, data, s.realm, outcome, s.wins, s.realm_quest_done, before)
+		world = WorldEvents.after_descent(profile, data, s.realm, WorldEvents.outcome_for(s, data, outcome), s.wins,
+				s.realm_quest_done, before)
 	s.chron.lost_to = String(spec.get("lost_to", ""))
 	return end(profile, data, s, outcome, changes, world)
 

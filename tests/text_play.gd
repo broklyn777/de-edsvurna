@@ -440,8 +440,7 @@ func _object_dialog(r: Dictionary) -> void:
 	var options := []
 	for o in state.object_options(data):
 		if o.get("disabled", false):
-			# room_map_screen visar bänkens text ("Gedigen ek …") för alla avstängda val, även timglasets.
-			text += " (Ett val går inte: %s)" % ("ingen elitgrupp kvar att visa, eller inga Charges att offra" if o.id == "scout" else "ni har inte sett någon grupp att barrikadera bort")
+			text += " (Ett val går inte: %s)" % String(o.get("disabled_text", ""))
 			continue
 		options.append({"label": o.label, "act": "object", "obj": o.id})
 	if not options.any(func(o: Dictionary) -> bool: return String(o.get("obj", "")) in ["leave", "none", "skip"] or String(o.label).begins_with("LÅT")):
@@ -1107,7 +1106,7 @@ func _grotto_screen() -> void:
 	var seen_groups: Array = state.seen.filter(func(i: int) -> bool: return m.has_group(i))
 	for i in seen_groups:
 		var c := m.cell(i)
-		out.append("  Sedd grupp på %s: %s" % [_cell_name(i), _group_title(c) + " – " + _lineup_text(c.encounter)])
+		out.append("  Sedd grupp på %s: %s" % [_cell_name(i), _group_title(c) + " – " + state.lineup_text(data, i)])
 
 
 func _cell_symbol(m: Grotto, i: int, hint_cells: Dictionary) -> String:
@@ -1151,21 +1150,12 @@ func _group_title(r: Dictionary) -> String:
 	return title
 
 
-func _lineup_text(enc_id: String) -> String:
-	var kinds := state.lineup(data, enc_id)
-	var count := {}
-	for k in kinds:
-		count[k] = int(count.get(k, 0)) + 1
-	return "%d fiender: %s" % [kinds.size(), ", ".join(count.keys().map(func(k: String) -> String:
-			return data.enemies[k].name + (" ×%d" % count[k] if count[k] > 1 else "")))]
-
-
 ## Gruppens kort (room_map_screen._draw_panel).
 func _card(r: Dictionary) -> void:
 	var enc: Dictionary = data.encounters[r.encounter]
 	out.append("[%s] (%s)" % [_group_title(r), String(enc.get("name", r.encounter))])
 	var kinds := state.lineup(data, r.encounter)
-	var lines: Array[String] = [_lineup_text(r.encounter)]
+	var lines: Array[String] = [state.lineup_text(data, state.pos)]
 	if state.guardian_room(r):
 		var leader: String = data.enemies[kinds[0]].name if not kinds.is_empty() else ""
 		var text := "%s: %s vaktar djupet i bossens ställe." % [enc.get("name", ""), leader]
@@ -1174,8 +1164,8 @@ func _card(r: Dictionary) -> void:
 			lines.insert(1, String(enc.warning))
 		var gt := RunState.guardian_trophy(data, r.encounter)
 		if gt != "" and data.traits.has(gt):
-			var wins := mini(int(profile.guardian_wins.get(r.encounter, 0)), RunState.GUARDIAN_WINS_FOR_TROPHY)
-			lines.append("Väktarens trofé: %s (%d/%d segrar)" % [data.traits[gt].name, wins, RunState.GUARDIAN_WINS_FOR_TROPHY])
+			lines.append("Väktarens trofé: %s (%s)" % [data.traits[gt].name,
+					RunState.guardian_progress(int(profile.guardian_wins.get(r.encounter, 0)))])
 	var guards: String = {"treasure": "Vaktar en skatt.", "item": "Vaktar ett av questens föremål.",
 			"prisoner": "Vaktar en fånge."}.get(r.kind, "")
 	if guards != "":
@@ -1195,10 +1185,20 @@ func _card(r: Dictionary) -> void:
 		var tr: String = data.enemies[k].get("trophy", "")
 		if tr != "" and data.traits.has(tr) and not trophies.has(data.traits[tr].name) and not data.enemies[k].get("boss", false):
 			trophies.append(data.traits[tr].name)
+	var extras := state.variant_extras(data, state.pos)
+	for t in extras.traits:
+		if data.traits.has(t) and not traits.has(data.traits[t].name):
+			traits.append(data.traits[t].name)
+			lines.append("  · %s (elitvariant): %s" % [data.traits[t].name, data.traits[t].get("text", "")])
+	for t in extras.trophies:
+		if data.traits.has(t) and not trophies.has(data.traits[t].name):
+			trophies.append(data.traits[t].name)
 	if not trophies.is_empty():
 		lines.append("Kan lämna: " + ", ".join(trophies))
 	if r.get("elite", false) or r.get("nemesis", false):
 		lines.append("Varning: en elitfiende är starkare än vanligt och har en egen regelbrytande egenskap. Backa och byt makro, eller troféer vid en lägereld, om det behövs.")
+	elif state.rare_warning(data, state.pos) != "":
+		lines.append(state.rare_warning(data, state.pos))
 	var c_opts := {"counter": r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false),
 			"force_elites": 1 if r.get("elite", false) or r.get("nemesis", false) else 0}
 	var counter := CombatSim.counter_for(data, r.encounter, state.depth, c_opts, state.lineup_size())

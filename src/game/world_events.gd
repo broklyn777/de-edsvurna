@@ -233,6 +233,14 @@ static func after_descent(profile: Profile, data: Dictionary, realm_id: String, 
 	return rep
 
 
+## Händelsens utfall för en nedstigning: "boss" bara när huvudbossen (eller den förvridna) fälldes; en roterande väktare
+## i bossrutan ger "guardian" (textspelet: "fäll biskopen" klarades av Abbedissans kör).
+static func outcome_for(state: RunState, data: Dictionary, outcome: String) -> String:
+	if outcome == "boss" and state.boss_encounter(data) != String(state.floor_ids[state.floor_ids.size() - 1]):
+		return "guardian"
+	return outcome
+
+
 static func _won(win: String, outcome: String, wins: int, quest_done: bool, boss_beaten: bool) -> bool:
 	if win == "boss":
 		return outcome == "boss" or boss_beaten

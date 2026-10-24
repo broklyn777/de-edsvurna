@@ -305,7 +305,7 @@ func _object_dialog(r: Dictionary) -> Dictionary:
 	var options := []
 	for o in run.state.object_options(run.data):
 		if o.get("disabled", false):
-			text = "Gedigen ek. Ni har inte sett någon grupp att barrikadera bort än – men virket är bra."
+			text = String(o.get("disabled_text", text))  # föremålets egen förklaring (förr bänkens text för alla)
 			continue
 		options.append({"label": o.label, "obj": o.id})
 	return {"title": def.get("name", "Föremål"), "text": text, "options": options}
@@ -802,9 +802,9 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	var count := {}
 	for k in kinds:
 		count[k] = int(count.get(k, 0)) + 1
-	var names: Array = count.keys().map(func(k: String) -> String:
-		return data.enemies[k].name + (" ×%d" % count[k] if count[k] > 1 else ""))
-	var lines: Array[String] = ["%d fiender: %s" % [kinds.size(), ", ".join(names)]]
+	# Elitvarianterna är slumpade per ruta, så kortet visar samma fiender som striden (RunState.group_preview).
+	var lines: Array[String] = [state.lineup_text(data, state.pos)]
+	var extras := state.variant_extras(data, state.pos)
 	if state.guardian_room(r):
 		lines.push_front(_guardian_line(data, state, enc, kinds))
 		# Väktarsteg 2: väktarens egen fråga och dess trofé (efter två segrar).
@@ -812,9 +812,9 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 			lines.insert(1, String(enc.warning))
 		var gt := RunState.guardian_trophy(data, r.encounter)
 		if gt != "" and data.traits.has(gt):
-			var wins := mini(int(run.profile.guardian_wins.get(r.encounter, 0)), RunState.GUARDIAN_WINS_FOR_TROPHY)
-			lines.append("Väktarens trofé: %s (%d/%d segrar)%s" % [data.traits[gt].name, wins,
-					RunState.GUARDIAN_WINS_FOR_TROPHY, ", i samlingen" if run.collection.has(gt) else ""])
+			lines.append("Väktarens trofé: %s (%s)%s" % [data.traits[gt].name,
+					RunState.guardian_progress(int(run.profile.guardian_wins.get(r.encounter, 0))),
+					", i samlingen" if run.collection.has(gt) else ""])
 	elif r.get("boss", false):
 		lines.push_front(String(enc.get("name", "")))
 	if guards != "":
@@ -829,6 +829,12 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		var tr: String = data.enemies[k].get("trophy", "")
 		if tr != "" and data.traits.has(tr) and not trophies.has(data.traits[tr].name) and not data.enemies[k].get("boss", false):
 			trophies.append(data.traits[tr].name)
+	for t in extras.traits:
+		if data.traits.has(t) and not traits.has(data.traits[t].name):
+			traits.append(data.traits[t].name)
+	for t in extras.trophies:
+		if data.traits.has(t) and not trophies.has(data.traits[t].name):
+			trophies.append(data.traits[t].name)
 	# Väktarsteg 2: väktarens varning ersätter egenskapslistan (mötet ger egna egenskaper, och kortet ska rymmas).
 	if not traits.is_empty() and not state.guardian_room(r):
 		lines.append("Egenskaper: " + ", ".join(traits))
@@ -839,6 +845,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		lines.append("Löftet Raka vägen brister om ni anfaller den här gruppen.")
 	if r.get("elite", false) or r.get("nemesis", false):
 		lines.append("Varning: en elitfiende är starkare än vanligt och har en egen regelbrytande egenskap. Backa och byt makro, eller troféer vid en lägereld, om det behövs.")
+	elif state.rare_warning(data, state.pos) != "":
+		lines.append(state.rare_warning(data, state.pos))
 	# 0.27: elitens motdrag (Siralims counters) på en rad, t.ex. "Klockaren: ni får bara väcka döda en gång per strid".
 	var c_opts := {"counter": r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false),
 			"force_elites": 1 if r.get("elite", false) or r.get("nemesis", false) else 0}
