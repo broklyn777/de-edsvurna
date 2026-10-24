@@ -109,20 +109,50 @@ func test_mountain_is_balanced_for_five() -> void:
 	var old := CombatSim.create(_data, enc, 3, four, {}, {}, {}, 1, {})
 	var vs_five := CombatSim.create(_data, enc, 3, four + ["imma"], {}, {}, {}, 1, {"full_party": 5})
 	assert_eq(old.enemies.size(), 4, "fyra hjältar möter mötets fiender som förut")
-	assert_eq(vs_five.enemies.size(), 6, "fem möter också mötets \"extra\"")
+	assert_eq(vs_five.enemies.size(), 5, "fem möter också mötets \"extra\", men högst fem fiender")
 	assert_eq(vs_five.heroes.size(), 5)
 	var feat := CombatSim.create(_data, enc, 3, four, {}, {}, {}, 1, {"full_party": 5})
-	assert_eq(feat.enemies.size(), 6, "fyra av fem: fiender som mot fem (en bedrift)")
+	assert_eq(feat.enemies.size(), 5, "fyra av fem: fiender som mot fem (en bedrift)")
 
 
 func test_capped_variant_keeps_five_enemies() -> void:
-	var keep := CombatSim.max_enemies
-	CombatSim.max_enemies = 5
+	assert_eq(CombatSim.max_enemies, 5, "VD: högst fem fiender")
 	var sim := CombatSim.create(_data, "troll_1", 3, ["paladin", "brokk", "alva", "eira", "imma"], {}, {}, {}, 1,
 			{"full_party": 5})
-	CombatSim.max_enemies = keep
 	assert_eq(sim.enemies.size(), 5)
 	assert_eq(sim.enemies[0].kind, "moss_troll", "ledaren står kvar")
+
+
+## VD: aldrig fler än fem fiender i en strid, oavsett möte och sällskap (också Trollbergets "extra" mot fem).
+func test_never_more_than_five_enemies() -> void:
+	var five := ["paladin", "brokk", "alva", "eira", "imma"]
+	for enc_id in _data.encounters:
+		for full in [0, 4, 5]:
+			var size := CombatSim.party_scale_size({"full_party": full}, 5)
+			var lineup := CombatSim.enemy_lineup(_data, CombatSim.encounter_kinds(_data.encounters[enc_id], size), size)
+			assert_true(lineup.size() <= 5, "%s mot %d: %d fiender" % [enc_id, full, lineup.size()])
+	var sim := CombatSim.create(_data, "troll_3", 3, five, {}, {}, {}, 1, {"full_party": 5})
+	assert_true(sim.enemies.size() <= 5, "bossen mot fem")
+
+
+## VD: fem hjältar i kryptan och kapellet möter fiender som mot fyra (låga djup ska vara lätta), utan extra fiender.
+func test_five_in_crypt_and_chapel_meet_enemies_as_for_four() -> void:
+	var four := ["paladin", "brokk", "alva", "eira"]
+	for realm_id in ["crypt", "chapel"]:
+		var s := RunState.new()
+		s.set_realm(_data, realm_id)
+		s.owned_heroes = 6
+		s.party_slots = 5
+		s.party.assign(four + ["imma"])
+		assert_eq(s.lineup_size(), 4, "%s: uppställningen som mot fyra" % realm_id)
+		for enc_id in _data.realms[realm_id].floors:
+			var vs_four := CombatSim.create(_data, enc_id, 3, four, {}, {}, {}, 1, {"full_party": s.full_party_size()})
+			var with_five := CombatSim.create(_data, enc_id, 3, four + ["imma"], {}, {}, {}, 1, {"full_party": s.full_party_size()})
+			assert_eq(with_five.heroes.size(), 5)
+			assert_eq(with_five.enemies.size(), vs_four.enemies.size(), "%s %s: lika många fiender" % [realm_id, enc_id])
+			for i in with_five.enemies.size():
+				assert_eq(with_five.enemies[i].kind, vs_four.enemies[i].kind)
+				assert_near(with_five.enemies[i].max_hp, vs_four.enemies[i].max_hp, 1e-6, "%s: fiender som mot fyra" % enc_id)
 
 
 func test_five_heroes_get_their_own_places() -> void:

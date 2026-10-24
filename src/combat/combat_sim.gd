@@ -359,21 +359,24 @@ func _family(u: CombatUnit) -> Array[CombatUnit]:
 ## 0.23.3: högst så många fler fiender än hjältar (vårt val). Fyra fiender mot två hjältar fick dubbelt så många turer
 ## som sällskapet även med svagare stats.
 const EXTRA_ENEMIES := 1
-## Prototyp (sallskap-fem): högst så många fiender på slagfältet (ENEMY_SLOTS har sex). Botarna prövar 5 (GROTTA_TAK=5,
-## färre modeller på telefonen); då slår FIVE_CAPPED_SCALE på fiendernas stats mot fem hjältar.
-static var max_enemies := 6
+## Sällskap om fem (VD): högst fem fiender på slagfältet, också mot fem hjältar (ENEMY_SLOTS har sex platser; botarna kan
+## pröva andra tak med GROTTA_TAK). Mot fem hjältar och fem fiender slår FIVE_CAPPED_SCALE på fiendernas stats, så att
+## Trollberget med fem inte blir lättare än med fyra förut.
+static var max_enemies := 5
 const FIVE_CAPPED_SCALE := 1.0
 
 
 ## Storleken fienderna skalas och ställs upp mot: hjältarna som är med, eller opts "full_party" (true = fyra, ett tal =
-## så många, RunState.full_party_size()) när profilen äger fler än den tar med.
+## så många, RunState.full_party_size()). Med "full_party" gäller den storleken åt båda hållen (VD): färre hjältar möter
+## fiender som mot den (en bedrift), och fem hjältar i en Realm byggd för fyra (kryptan, kapellet) möter fiender som mot
+## fyra, utan mötenas "extra".
 static func party_scale_size(opts: Dictionary, heroes: int) -> int:
 	var size := heroes
 	var full = opts.get("full_party", false)
 	if full is bool and full:
-		size = maxi(4, heroes)
+		size = 4
 	elif (full is int or full is float) and int(full) > 0:
-		size = maxi(int(full), heroes)
+		size = int(full)
 	return clampi(size, 1, MAX_HEROES)
 
 
