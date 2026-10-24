@@ -60,6 +60,7 @@ var _dev_combo_first := false
 var _dev_inspect := ""
 var _dev_windup := false  # 0.31: --windup låter en fiende med en varslad attack börja ladda direkt (skärmdumpar)
 var _dev_windup_ability := ""  # väktarsteg 2: --windup=<förmåga> väljer vilken (t.ex. midnight_bell)
+var _dev_windup_first := false  # --windup-first: den fienden står först och slår direkt (skärmdumpar av slaget)
 var _dev_log := false
 var _dev_ask_forfeit := false
 ## Effekter som väntar på att vapnet eller projektilen ska träffa: [{left, call}].
@@ -132,6 +133,8 @@ func _ready() -> void:
 			_dev_log = true  # öppnar skadeloggen efter några turer (skärmdumpar)
 		elif arg == "--ask-forfeit":
 			_dev_ask_forfeit = true  # visar frågan om att ge upp när striden har börjat (skärmdumpar)
+		elif arg == "--windup-first":
+			_dev_windup_first = true
 		elif arg == "--windup" or arg.begins_with("--windup="):
 			_dev_windup = true
 			_dev_windup_ability = arg.get_slice("=", 1) if arg.contains("=") else ""
@@ -369,7 +372,15 @@ func _process(delta: float) -> void:
 			var pal_speed := pal_unit.speed if pal_unit != null else 0.0
 			if _dev_combo_first and pal_unit != null:
 				pal_unit.speed = 9999.0  # överst på tidslinjen; snabbheten återställs när ordningen är lagd
+			var first_speeds := {}
+			if _dev_windup_first:
+				for en in sim.enemies:
+					if en.rules.any(func(r: Dictionary) -> bool: return r.ability == _dev_windup_ability):
+						first_speeds[en] = en.speed
+						en.speed = 9999.0
 			sim.begin()
+			for en in first_speeds:
+				en.speed = first_speeds[en]
 			# Speltiden: striden räknas från första turen (inte i Övningsgården).
 			if not run.state.practice and run.state.map != null:
 				# 0.31: sällskapets snittnivå och fiendernas väntade nivå följer med.
@@ -1239,7 +1250,7 @@ func _start_dev_windup() -> void:
 				continue
 			if not sim.windup_of(r.ability).is_empty():
 				en.intent = {"ability": r.ability, "targets": sim._pick_targets(en, sim.ability(r.ability))}
-				sim._start_windup(en, r.ability, maxi(2, int(sim.windup_of(r.ability).get("turns", 1))))  # två turer: syns längre
+				sim._start_windup(en, r.ability, 1 if _dev_windup_first else maxi(2, int(sim.windup_of(r.ability).get("turns", 1))))  # två turer: syns längre
 				return
 
 
