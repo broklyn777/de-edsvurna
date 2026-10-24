@@ -7,6 +7,10 @@
 			"crypt_2",
 			"crypt_3"
 		],
+		"guardians": [
+			"crypt_g1",
+			"crypt_g2"
+		],
 		"short": "Kryptan",
 		"objects": [
 			"sarcophagus",
@@ -111,6 +115,10 @@
 			"chapel_2",
 			"chapel_3"
 		],
+		"guardians": [
+			"chapel_g1",
+			"chapel_g2"
+		],
 		"short": "Kapellet",
 		"objects": [
 			"stained_window",
@@ -203,6 +211,10 @@
 			"grove_2",
 			"grove_3"
 		],
+		"guardians": [
+			"grove_g1",
+			"grove_g2"
+		],
 		"short": "Lunden",
 		"objects": [
 			"cocoon",
@@ -263,6 +275,10 @@
 			"troll_1",
 			"troll_2",
 			"troll_3"
+		],
+		"guardians": [
+			"troll_g1",
+			"troll_g2"
 		],
 		"short": "Berget",
 		"requires": {

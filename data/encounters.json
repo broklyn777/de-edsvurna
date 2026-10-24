@@ -1458,5 +1458,145 @@
 		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Hela inte i otakt"
+	},
+	"crypt_g1": {
+		"name": "Midnattsklockan",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bell_ringer",
+			"skeleton_warrior",
+			"bone_runner",
+			"grave_priest"
+		],
+		"stat_mult": 1.05,
+		"guardian": true,
+		"template": "Väktare"
+	},
+	"crypt_g2": {
+		"name": "Kistornas råd",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_caller",
+			"coffin_bearer",
+			"coffin_bearer"
+		],
+		"stat_mult": 1.28,
+		"guardian": true,
+		"template": "Väktare"
+	},
+	"chapel_g1": {
+		"name": "Abbedissans kör",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"corrupted_abbess",
+			"corrupted_deacon",
+			"corrupted_deacon",
+			"witch"
+		],
+		"stat_mult": 1.05,
+		"guardian": true,
+		"template": "Väktare"
+	},
+	"chapel_g2": {
+		"name": "Inkvisitorns domstol",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"inquisitor",
+			"cult_overseer",
+			"witch"
+		],
+		"stat_mult": 1.65,
+		"guardian": true,
+		"template": "Väktare"
+	},
+	"grove_g1": {
+		"name": "Strypvävarens krona",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"old_knot",
+			"venom_spider",
+			"snare_spider",
+			"dust_spider"
+		],
+		"stat_mult": 1.1,
+		"guardian": true,
+		"template": "Väktare"
+	},
+	"grove_g2": {
+		"name": "Vävarnas par",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"sleep_weaver",
+			"devourer_spider",
+			"barb_spider"
+		],
+		"stat_mult": 1.54,
+		"guardian": true,
+		"template": "Väktare"
+	},
+	"troll_g1": {
+		"name": "Tullen vid bron",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bridge_troll",
+			"club_troll",
+			"moss_troll"
+		],
+		"stat_mult": 1.17,
+		"guardian": true,
+		"template": "Väktare"
+	},
+	"troll_g2": {
+		"name": "Gråluvans ätt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"troll_mother",
+			"changeling_troll",
+			"porridge_troll",
+			"grumpy_troll"
+		],
+		"stat_mult": 1.44,
+		"guardian": true,
+		"template": "Väktare"
 	}
 }

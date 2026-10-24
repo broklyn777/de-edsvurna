@@ -50,6 +50,8 @@ static func genitive(name: String) -> String:
 
 
 static func _lost_to_boss(data: Dictionary, enc_id: String) -> bool:
+	if data.encounters.get(enc_id, {}).get("guardian", false):
+		return true  # en roterande väktare leder bossstriden
 	for kind in data.encounters.get(enc_id, {}).get("enemies", []):
 		if data.enemies.get(kind, {}).get("boss", false):
 			return true
