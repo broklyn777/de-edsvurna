@@ -859,7 +859,7 @@
 			"lich_undying_wrath"
 		],
 		"trophy": "lich_crown",
-		"boss_text": "Resistent. Väcker ett fallet skelett var tredje tur, sveper sällskapet med Benstorm och vredgas under 50 % liv. Då laddar han Dödsdom mot den svagaste – Tystad eller hård skada bryter laddningen.",
+		"boss_text": "Resistent. Väcker ett fallet skelett var tredje tur, sveper sällskapet med Benstorm och laddar Dödsdom mot den svagaste när Benstormen vilar (två turer i förväg). Under 50 % liv vredgas han och laddar den så fort han kan, en tur i förväg. Tystad eller hård skada bryter laddningen.",
 		"rules": [
 			{
 				"ability": "lich_doom",
@@ -875,6 +875,10 @@
 			},
 			{
 				"ability": "bone_storm"
+			},
+			{
+				"ability": "lich_doom",
+				"windup": 2
 			}
 		],
 		"visual": {
@@ -1921,8 +1925,8 @@
 		"family": "troll_kin",
 		"color": "#a9aba6",
 		"stats": {
-			"health": 30,
-			"attack": 15,
+			"health": 22,
+			"attack": 13.5,
 			"intelligence": 6,
 			"defense": 0.5,
 			"speed": 13
@@ -1931,7 +1935,8 @@
 		"attack_ability": "changeling_claw",
 		"traits": [
 			"troll_hide",
-			"changeling_slip"
+			"changeling_slip",
+			"mothers_embrace"
 		],
 		"rules": [
 			{

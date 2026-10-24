@@ -6,6 +6,7 @@ extends Control
 signal tapped(unit_id: String)
 
 const AURA_PIPS := {"defend": Color("#9fb4d8"), "provoke": Color("#ff6a4a"), "warded": Color("#bcd2ff"), "inspired": Color("#ffd75e"),
+		"shrine_warded": Color("#bcd2ff"), "shrine_inspired": Color("#ffd75e"), "shrine_holy_shield": Color("#fff2b0"),
 		"blessing": Color("#fff2b0"), "marked": Color("#e9cf3f"), "burning": Color("#ff8a2a")}
 
 var unit: CombatUnit

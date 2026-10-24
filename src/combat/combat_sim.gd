@@ -1659,12 +1659,22 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	calc.additional = roundf(additional)
 	# 0.28 (Förmannens vakt, Siralims livvakt): en ur målets familj tar en del av den färdiga skadan.
 	var guard := _guard_for(src, tgt)
+	var guard_pct := _guard_pct(guard) if guard != null else 0.0
+	# Moderns famn (strid-justering, Bortbytingen): målet själv skickar en del till den största ur familjen.
+	var shelter := ""
+	if guard == null and _shelter_kind_ok(tgt, kind):
+		guard = _shelter_for(src, tgt)
+		if guard != null:
+			shelter = _shelter_trait(tgt)
+			guard_pct = float(data.traits[shelter].shelter_family)
 	var guarded := 0.0
 	if guard != null and total > 0.0:
-		guarded = roundf(total * _guard_pct(guard))
+		guarded = roundf(total * guard_pct)
 		total -= guarded
 		calc.guarded = guarded
 		calc.guard_name = guard.name
+		if shelter != "":
+			calc.shelter = data.traits[shelter].name
 	var absorbed := minf(tgt.barrier, total)
 	if absorbed > 0.0:
 		tgt.barrier -= absorbed
@@ -1701,7 +1711,7 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 	if tgt.hp <= 0.0:
 		_kill(tgt, src)
 	if guarded > 0.0:
-		_guard_takes(src, guard, tgt, guarded, ability_id)
+		_guard_takes(src, guard, tgt, guarded, ability_id, shelter)
 	# Leeching (0.22): en andel av skadan helar anfallaren; helningens uträkning pekar på träffen.
 	if leech > 0.0 and life_lost > 0.0 and src.alive and src != tgt:
 		_heal_ctx = {"base": life_lost * leech, "leech": true, "from_damage": life_lost, "leech_pct": leech,
@@ -1743,8 +1753,43 @@ func _guard_pct(u: CombatUnit) -> float:
 	return 0.0
 
 
+## Moderns famn (strid-justering, Bortbytingen): den som bär en egenskap med "shelter_family" skickar den andelen av
+## motståndarnas skada till den största levande ur sin familj (högst maximalt liv, större än målet). Ingen sådan: null.
+func _shelter_for(src: CombatUnit, tgt: CombatUnit) -> CombatUnit:
+	if src.team == tgt.team or _shelter_trait(tgt) == "":
+		return null
+	var best: CombatUnit = null
+	for x in _family(tgt):
+		if x.max_hp > tgt.max_hp and (best == null or x.max_hp > best.max_hp):
+			best = x
+	return best
+
+
+## Vem som tar emot u:s Moderns famn just nu (Inspect), annars null.
+func shelter_keeper(u: CombatUnit) -> CombatUnit:
+	for h in units:
+		if h.team != u.team:
+			return _shelter_for(h, u)
+	return null
+
+
+## "shelter_kind" (t.ex. "attack") begränsar famnen till den sortens skada; förmågor och indirekt skada går då rakt in.
+func _shelter_kind_ok(u: CombatUnit, kind: String) -> bool:
+	var t := _shelter_trait(u)
+	return t != "" and String(data.traits[t].get("shelter_kind", kind)) == kind
+
+
+func _shelter_trait(u: CombatUnit) -> String:
+	for trait_id in u.traits:
+		if float(data.traits[trait_id].get("shelter_family", 0.0)) > 0.0:
+			return trait_id
+	return ""
+
+
 ## Livvaktens andel: tas av Barriären och livet utan nya modifierare (skadan är redan färdigräknad).
-func _guard_takes(src: CombatUnit, guard: CombatUnit, protected: CombatUnit, amount: float, ability_id: String) -> void:
+## shelter: egenskapen när målet själv skickade skadan (Moderns famn), annars "".
+func _guard_takes(src: CombatUnit, guard: CombatUnit, protected: CombatUnit, amount: float, ability_id: String,
+		shelter := "") -> void:
 	if not guard.alive:
 		return
 	var absorbed := minf(guard.barrier, amount)
@@ -1755,7 +1800,7 @@ func _guard_takes(src: CombatUnit, guard: CombatUnit, protected: CombatUnit, amo
 	var lost := amount - absorbed
 	guard.hp = maxf(0.0, guard.hp - lost)
 	_emit({"type": "guarded", "source": src.id, "unit": guard.id, "protected": protected.id, "amount": lost,
-			"absorbed": absorbed, "ability": ability_id})
+			"absorbed": absorbed, "ability": ability_id, "shelter": shelter})
 	if guard.hp <= 0.0:
 		_kill(guard)
 

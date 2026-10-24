@@ -45,7 +45,7 @@ vem provocerar man, vem fäller man först. Alla siffror är **VAL**, satta med 
 | Mossrygg | pansar | 60 / 12 / 6 / 2 / 7 → 58 / 10 / 6 / 3,5 / 5 | vill ha förmågor (som också stoppar Mossan) |
 | Grytmodern | helare | 52 / 11 / 10 / 1,5 / 8 → 46 / 9 / 12 / 1 / 8 | ny förmåga **Grytans gröt** (`porridge_feed`): helar trollet med lägst liv (140 % Int, nedkylning 2) när någon är under 65 %; ett troll med Svedd hud kan inte helas |
 | Avundsjätten | besvärjare | 56 / 12 / 8 / 2 / 8 → 54 / 11 / 13 / 1,5 / 9 | Avundens blick (förbi Provocera, mot den med högst Attack) 40 → 70 % skada |
-| **Bortbytingen** (`changeling_troll`) | snabb och skör | ny: 30 / 15 / 6 / 0,5 / 13 | se nedan |
+| **Bortbytingen** (`changeling_troll`) | snabb och skör | ny: 30 / 15 / 6 / 0,5 / 13 → 22 / 13,5 / 6 / 0,5 / 13 (Moderns famn) | se nedan |
 
 **Bortbytingen:** modellen `troll_bortbyting.glb` (skala 0,6). Grundanfallet **Bytingens klor** (`changeling_claw`) går förbi
 Provocera och river den hjälte som har lägst liv (100 %). Egen förmåga **Bytingens skrik** (`changeling_wail`, nedkylning 4):
@@ -53,8 +53,12 @@ varje hjälte blir Hånad 1 tur med 30 % chans (en besvärjelse; förmågor går
 Trollhud och **Smyget** (`changeling_slip`, undviker 25 % av anfallen, besvärjelser och indirekt skada träffar alltid).
 Trofé **Stålet ur vaggan** (`cradle_steel`, vanlig, ett föremål ur folktron): när en fiende skadar någon annan i sällskapet
 som har under 50 % liv slår bäraren tillbaka för 60 % (en gång per tur). Lärdom: "Stål i vaggan höll bytingarna borta
-från barnen. {bärare} har lärt sig att vakta den som är svagast." Planens Moderns famn (livvakt när han har lägst liv)
-byggdes inte: den kräver ny kod och gör honom mindre skör. Ingen elitvariant (inga troll har det än).
+från barnen. {bärare} har lärt sig att vakta den som är svagast." **Moderns famn** (`mothers_embrace`, byggd på grenen
+`strid-justering`): så länge ett större troll lever (mest maximalt liv i familjen) tar det hälften av varje anfall mot
+honom; förmågor och indirekt skada träffar honom fullt. "Döda honom först" blir ett val: först trollet, en förmåga på
+honom, eller dubbelt så många anfall. För att berget inte skulle bli svårare fick han 22 Health och 13,5 Attack (förr
+30 / 15). Botarna (BALANS=grotta GROTTA_FYRA=1 GROTTA_KORT=1, MACRO/TUNED): djup 1 41/66 → 41/62 %, djup 3 32/36 → 33/41 %;
+med hälften av all skada och 30 / 15 föll djup 3 till 7/20 %. Ingen elitvariant (inga troll har det än).
 
 **Grupperna** (id:n behållna, två nya): varje vanlig grupp har minst två huvudroller (`tests/test_enemy_roles.gd`).
 

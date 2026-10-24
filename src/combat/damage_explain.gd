@@ -83,7 +83,10 @@ static func lines(data: Dictionary, e: Dictionary) -> Array[String]:
 		out.append("+ %s extra (%s)" % [num(c.additional), c.get("additional_name", "egenskap")])
 	# 0.28: en livvakt (Kultens förman) tog en del.
 	if float(c.get("guarded", 0.0)) > 0.0:
-		out.append("%s tog %s som livvakt" % [c.get("guard_name", "Livvakten"), num(c.guarded)])
+		if c.has("shelter"):
+			out.append("%s tog %s (%s)" % [c.get("guard_name", "Trollet"), num(c.guarded), c.shelter])
+		else:
+			out.append("%s tog %s som livvakt" % [c.get("guard_name", "Livvakten"), num(c.guarded)])
 	if float(c.get("absorbed", 0.0)) > 0.0:
 		out.append("Barriären tog %s av %s" % [num(c.absorbed), num(c.total)])
 	out.append("= %s skada" % num(c.get("lost", 0.0)))

@@ -130,6 +130,11 @@ func test_aura_brief_from_data() -> void:
 	assert_eq(RunState.aura_brief(_data, "inspired", true), "nästa direkta anfall gör 30 % mer skada under egen första tur")
 	assert_eq(RunState.aura_brief(_data, "marked"), "tar 20 % mer skada, 3 turer")
 	assert_eq(RunState.aura_brief(_data, "holy_shield", true, false), "tar 40 % mindre skada")
+	# Helgedomens gåvor varar hela nästa strid (strid-justering).
+	assert_eq(RunState.aura_brief(_data, "shrine_warded", true), "tar 20 % mindre skada hela nästa strid")
+	assert_eq(RunState.aura_brief(_data, "shrine_inspired", true), "gör 15 % mer skada hela nästa strid")
+	assert_eq(RunState.aura_brief(_data, "shrine_holy_shield", true, false), "tar 30 % mindre skada")
+	assert_eq(RunState.aura_brief(_data, "shrine_warded"), "tar 20 % mindre skada hela striden")
 
 
 func test_every_shrine_option_says_what_it_does() -> void:

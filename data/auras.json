@@ -58,6 +58,36 @@
 		"text": "Värnad: tar 25 % mindre skada.",
 		"glyph": "shield"
 	},
+	"shrine_warded": {
+		"name": "Värnad",
+		"duration": -1,
+		"battle": true,
+		"damage_taken_mult": 0.8,
+		"buff": true,
+		"cannot_dispel": true,
+		"text": "Värnad: tar 20 % mindre skada.",
+		"glyph": "shield"
+	},
+	"shrine_inspired": {
+		"name": "Styrka",
+		"duration": -1,
+		"battle": true,
+		"damage_mult": 1.15,
+		"buff": true,
+		"cannot_dispel": true,
+		"text": "Styrka: gör 15 % mer skada.",
+		"glyph": "daggers"
+	},
+	"shrine_holy_shield": {
+		"name": "Välsignad sköld",
+		"duration": -1,
+		"battle": true,
+		"damage_taken_mult": 0.7,
+		"buff": true,
+		"cannot_dispel": true,
+		"text": "Välsignad sköld: tar 30 % mindre skada.",
+		"glyph": "cross"
+	},
 	"holy_shield": {
 		"name": "Välsignad sköld",
 		"duration": 1,

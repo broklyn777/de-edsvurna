@@ -91,6 +91,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   alltid bevakade). Belöningen (silver, perk-poäng) ges för den sista våningens quest, en gång per körning som förut.
   Lägereld = +3 Charges per förmåga en gång, och **troféer byts bara vid en lägereld** (VAL; lägret i läget "campfire",
   `Run.open_campfire_camp`; efter en strid väljer man bara en ny trofé). Helgedom = välj en gåva eller Pandemonium.
+  Gåvorna Värnad (−20 % skada) och Styrka (+15 % skada) och Pandemoniums Välsignade sköld (−30 %) varar hela nästa strid
+  (strid-justering, auror `shrine_*` med `"battle": true`, `RunState.SHRINE_AURAS`; förr tickade de bort vid första turen).
   Charges är Siralims (4–8 per förmåga) och räcker hela körningen. Botarna (`BALANS=grotta`): ca 12 strider per körning
   om man slåss mot allt man kliver på, 6–9 om man backar från vanliga grupper.
   **Rumsögonblick** (0.18, `scripts/rooms/`, `docs/rum3d.md`): skattkammare, helgedom, lägereld och portal
@@ -263,7 +265,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +3 % stats per djup (inte Speed; 0.30.33, förr 8 %: det lades ovanpå fiendernivåerna och gav väggen vid djup 5–6, `docs/provspel/djupsteg-matning.md`), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
-  Taggig utmaning, Glödhetta). Benfursten är Resistant (halv effekt av debuffar) och vredgas under 50 % liv.
+  Taggig utmaning, Glödhetta). Benfursten är Resistant (halv effekt av debuffar) och vredgas under 50 % liv;
+  Dödsdom laddar han också över 50 % när Benstormen vilar, två turer i förväg (strid-justering).
   Tryck och håll på en figur i striden för att granska den (Inspect, kostar ingen tur).
 - **Realms** (0.16, Siralims Realms): väljs på kampanjkartan, `data/realms.json`. Kryptan (Benfursten) och Det
   fördärvade kapellet (Kultist, Gast, Fallen riddare, Häxa, Botgörare och bossen Den fallne biskopen, som är
@@ -354,6 +357,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   **Roller** (grenen `fiender-roller`, `tests/test_enemy_roles.gd`): Stenkrossaren slår hårt, Mossrygg är pansar, Grytmodern
   helar (Grytans gröt, inte ett troll med Svedd hud), Avundsjätten går förbi Provocera och **Bortbytingen** (`changeling_troll`)
   är snabb och skör och river den svagaste förbi Provocera; bergets vanliga grupper blandar 2–4 roller.
+  **Moderns famn** (strid-justering, `mothers_embrace`, `shelter_family`, `shelter_kind`, `CombatSim._shelter_for`): så länge
+  ett större troll lever (mest maximalt liv i familjen) tar det hälften av varje anfall mot Bortbytingen (förmågor och
+  indirekt skada träffar honom fullt); händelsen `guarded` med `shelter`, siffran FAMN över trollet, raden i skadeloggen,
+  Inspect säger vem som tar emot. Han fick 22 Health och 13,5 Attack (förr 30 / 15) så att berget håller sin svårighet. Kapellets Häxa: Tystnadens förbannelse går förbi Provocera.
 - **Drakvalvets fiender** (0.31, `docs/plan/drakvalvet-fiender.md`, `tests/test_enemies_crypt.gd`/`_chapel.gd`): **Likätaren**
   (`ghoul`, Benfolket) äter lik ur familjen (Likmåltid, `consume_corpse`, `CombatUnit.consumed`: kan aldrig väckas) och växer
   (Gravhunger, högst 3); elitvarianten Gravgnagaren äter aldrig hjältar. **Blodsvuren** (`cult_zealot`, Kultens folk; elit

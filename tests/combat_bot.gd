@@ -267,7 +267,13 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 						_count_finds(finds, Forge.roll_finds(data, "treasure", depth, opts.finds, state.instability, loot_rng))
 				"shrine":
 					var gifts := state.shrine_options(data, rng)
-					state.apply_shrine(data, rng, gifts[0] if gifts[0].kind == "charge" else gifts[1])
+					var gift: Dictionary = gifts[0] if gifts[0].kind == "charge" else gifts[1]
+					# HELGEDOM=gava (strid-justering): botarna tar auran i stället för Charges, för att jämföra gåvorna.
+					if OS.get_environment("HELGEDOM") == "gava":
+						for g in gifts:
+							if g.kind == "blessing":
+								gift = g
+					state.apply_shrine(data, rng, gift)
 		if state.floor_cleared():
 			var t := _bot_trail(data, state, levels, opts)
 			xp_total += int(t.get("xp", 0))

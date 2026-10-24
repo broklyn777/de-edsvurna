@@ -391,7 +391,7 @@ func _update_auras(delta: float) -> void:
 	if _shield.visible:
 		var p := 0.5 + 0.5 * sin(_t * 6.0)
 		(_shield.material_override as StandardMaterial3D).albedo_color = Color(0.6, 0.78, 1.0, 0.16 + 0.08 * p)
-	_renew.visible = unit.auras.has("inspired") or unit.auras.has("blessing")
+	_renew.visible = unit.auras.has("inspired") or unit.auras.has("blessing") or unit.auras.has("shrine_inspired")
 	_renew.rotation.y += delta * 2.0
 	_lust.visible = unit.auras.has("marked") or unit.auras.has("provoke")
 	if _lust.visible:

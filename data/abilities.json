@@ -612,6 +612,7 @@
 		"name": "Tystnadens förbannelse",
 		"target": "enemy",
 		"pick": "random",
+		"ignore_taunt": true,
 		"kind": "spell",
 		"school": "shadow",
 		"travel": 0.35,

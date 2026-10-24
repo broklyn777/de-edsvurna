@@ -929,7 +929,7 @@ func shrine_options(data: Dictionary, rng: RandomNumberGenerator) -> Array:
 	if not abilities.is_empty():
 		var pick: Array = abilities[rng.randi() % abilities.size()]
 		out.append({"kind": "charge", "hero": pick[0], "ability": pick[1], "amount": 2})
-	out.append({"kind": "blessing", "aura": ["inspired", "warded"][rng.randi() % 2]})
+	out.append({"kind": "blessing", "aura": SHRINE_AURAS[rng.randi() % SHRINE_AURAS.size()]})
 	out.append({"kind": "chaos"})
 	return out
 
@@ -944,7 +944,10 @@ static func shrine_text(data: Dictionary, o: Dictionary) -> String:
 
 
 ## Pandemoniums utfall (apply_shrine "chaos", samma ordning). Aurans namn ur datan.
-const CHAOS_AURA := "holy_shield"
+## Helgedomens auror (strid-justering) varar hela nästa strid ("battle" i auras.json): förr tickade de bort vid ägarens
+## första tur och var nästan värdelösa. Siffrorna är satta så att gåvan väger ungefär som +2 Charges på en förmåga.
+const CHAOS_AURA := "shrine_holy_shield"
+const SHRINE_AURAS := ["shrine_inspired", "shrine_warded"]
 
 
 ## Gåvans verkan i en rad, ur datan (aurans text och varaktighet, förmågans Charges), för knappen under namnet.
@@ -973,6 +976,8 @@ static func aura_brief(data: Dictionary, aura_id: String, at_start := false, wit
 	if t.length() > 0:
 		t = t[0].to_lower() + t.substr(1)
 	var n := int(d.get("duration", -1))
+	if with_time and d.get("battle", false):
+		return t + (" hela nästa strid" if at_start else " hela striden")
 	if not with_time or n <= 0 or t.contains("till nästa tur"):
 		return t
 	if at_start:
