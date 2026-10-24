@@ -79,7 +79,8 @@ func _ready() -> void:
 	_offer_help.call_deferred()
 	parchment = Parchment.new()
 	add_child(parchment)
-	if not run.data.realms.has(run.profile.realm):
+	if not run.data.realms.has(run.profile.realm) \
+			or (not run.dev_profile and not RunState.realm_open(run.profile, run.data, run.profile.realm)):
 		run.profile.realm = "crypt"
 	var shader := Shader.new()
 	shader.code = VIGNETTE_SHADER
@@ -164,6 +165,9 @@ func _tap(p: Vector2) -> void:
 		return
 	for realm_id in run.data.realms:
 		if _rect(realm_id).has_point(p):
+			if not RunState.realm_open(prof, run.data, realm_id):
+				run.ui("ui_page", -14.0)  # stängd (Trollberget före kapellet): raden under området säger varför
+				return
 			if prof.realm != realm_id:
 				prof.realm = realm_id
 				run.save()
@@ -343,6 +347,8 @@ func _place_vignettes(zoom: float, focus: Vector2) -> void:
 		_place(_vignettes[realm_id], _rect(realm_id), zoom, focus)
 	_place(_warden, _warden_rect(), zoom, focus)
 	_place(_witch, _witch_rect(), zoom, focus)
+	# Trollberget ligger där Väktaren stod uppe till vänster; häxan står kvar mellan berget och kapellet.
+	_warden.visible = not run.data.realms.has("mountain")
 
 
 func _place(node: TextureRect, r: Rect2, zoom: float, focus: Vector2) -> void:
@@ -355,7 +361,8 @@ func _place(node: TextureRect, r: Rect2, zoom: float, focus: Vector2) -> void:
 func _draw_decor() -> void:
 	var ink := Color(InkArt.INK, 0.6)
 	var k := _scale()
-	InkArt.icon(self, "compass", Vector2(88, 300) * k, 110 * k.y, 0.8)
+	# Trollberget: kompassen flyttade ned under bergets kartusch.
+	InkArt.icon(self, "compass", Vector2(72, 420) * k, 96 * k.y, 0.8)
 	InkArt.icon(self, "dragon", Vector2(772, 672) * k, 88 * k.y, 0.8)
 	InkArt.icon(self, "sword_in_stone", Vector2(530, 660) * k, 96 * k.y, 0.75)
 	InkArt.icon(self, "skeleton", Vector2(78, 596) * k, 150 * k.y, 0.8)
@@ -372,11 +379,16 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 	# Fördärvet ritas av vinjettens shader: bläcket når in till "inner" och drar sig tillbaka per djup.
 	# Den levande kartan: fördärvet (0–4) drar bläcket närmare mitten.
 	var g := LivingMap.growth(prof, realm_id) if _living(realm_id) else LivingMap.GROWTH_START
+	var open := RunState.realm_open(prof, run.data, realm_id)
+	# En stängd Realm (Trollberget före kapellet) syns blekare och helt täckt av fördärvet.
+	_vignettes[realm_id].modulate.a = 1.0 if open else 0.7
 	var mat := _vignettes[realm_id].material as ShaderMaterial
 	mat.set_shader_parameter("inner", 0.58 + 0.4 * minf(FREED_PER_DEPTH * cleared, FREED_MAX) - GROWTH_INK * (g - 1))
 	mat.set_shader_parameter("growth", float(g))
 	mat.set_shader_parameter("breath", breath(g) if _living(realm_id) else 0.0)
 	mat.set_shader_parameter("flow", 0.0 if _living(realm_id) and g == 0 else 1.0)
+	if not open:
+		mat.set_shader_parameter("inner", -0.4)  # stängd: fördärvet täcker hela området
 	var frame := r.grow(6)
 	var pts := PackedVector2Array([frame.position, Vector2(frame.end.x, frame.position.y), frame.end,
 			Vector2(frame.position.x, frame.end.y), frame.position])
@@ -390,12 +402,15 @@ func _draw_realm(realm_id: String, selected: bool) -> void:
 	if WorldEvents.in_event(prof, run.data, realm_id):
 		_draw_event_mark(r)
 	var name: String = run.data.realms[realm_id].name
-	var cart := Rect2(center.x - 190, r.end.y + 2, 380, 58)
+	var cart := Rect2(maxf(center.x - 190, 4.0), r.end.y + 2, 380, 58)
 	draw_texture_rect(InkArt.icon_texture("cartouche"), cart, false)
 	UiStyle.text(self, Vector2(cart.position.x, cart.get_center().y + 4), name.to_upper(), 15, InkArt.INK,
 			HORIZONTAL_ALIGNMENT_CENTER, cart.size.x, 0)
-	UiStyle.text(self, Vector2(cart.position.x, cart.end.y + 12), "Djup klarat: %d" % cleared, 14, InkArt.INK,
+	var under := "Djup klarat: %d" % cleared if open else RunState.realm_lock_text(run.data, realm_id)
+	UiStyle.text(self, Vector2(cart.position.x, cart.end.y + 12), under, 14, InkArt.INK,
 			HORIZONTAL_ALIGNMENT_CENTER, cart.size.x, 0)
+	if not open:
+		return
 	# Sigill för bossen i vinjettens hörn: fylls i takt med segrarna (x/3 till bosstrofén).
 	for boss in _bosses(realm_id):
 		var wins: int = mini(int(prof.boss_wins.get(boss, 0)), RunState.BOSS_WINS_FOR_TROPHY)

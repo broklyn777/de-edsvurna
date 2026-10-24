@@ -157,5 +157,54 @@
 			"found": "Spåret leder fram till",
 			"none": "Spåret tar slut i snåren. Inget nytt."
 		}
+	},
+	"troll_cup": {
+		"name": "Trollbägaren",
+		"text": "Berget står öppet på guldstolpar, och på en sten står en bägare full till brädden. Den som tar den måste springa – trollen följer efter. Den som dricker kommer inte ut igen.",
+		"options": [
+			{
+				"id": "knock",
+				"label": "TA BÄGAREN"
+			},
+			{
+				"id": "leave",
+				"label": "LÅT DEN STÅ"
+			}
+		]
+	},
+	"sunken_bell": {
+		"name": "Nedsänkt kyrkklocka",
+		"text": "Stenbys klocka ligger halvt begravd i grus. Trollen har slagit sönder kläppen men inte malmen. Slår ni på den går klangen genom hela raden – men trollen hör var ni är.",
+		"options": [
+			{
+				"id": "pull",
+				"label": "SLÅ PÅ KLOCKAN"
+			},
+			{
+				"id": "leave",
+				"label": "LÅT DEN LIGGA"
+			}
+		],
+		"results": {
+			"pull": "Klangen går genom berget och hela raden syns. Nästa trollgrupp vet var ni är (+15 % styrka)."
+		}
+	},
+	"light_crack": {
+		"name": "Ljusspricka",
+		"text": "Dagsljus sipprar in genom en spricka i berget. Trollen går en omväg runt strimman. I ljuset syns två vägar: en glimt av något som glänser, och spåren av dem som undviker ljuset.",
+		"options": [
+			{
+				"id": "valuables",
+				"label": "MOT GLIMTEN"
+			},
+			{
+				"id": "neighbours",
+				"label": "MOT SPÅREN"
+			}
+		],
+		"results": {
+			"found": "Ljusstrimman pekar ut",
+			"none": "Strimman bleknar. Inget nytt syns i ljuset."
+		}
 	}
 }

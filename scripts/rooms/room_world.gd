@@ -15,7 +15,8 @@ extends Node3D
 ## och korridoren utanför fortsätter mot +z. Mittpunkten står i CENTER.
 
 const KINDS := ["treasure", "shrine", "prisoner", "inscription", "campfire", "portal"]
-const STYLES := ["crypt", "chapel"]
+## "mountain" (Trollberget): kryptans rum i kallare ljus och grå granit, tills berget har en egen stil.
+const STYLES := ["crypt", "chapel", "mountain"]
 const NAMES := {
 	"treasure": "Skattkammare", "shrine": "Helgedom", "prisoner": "Fånge",
 	"inscription": "Inskrift", "campfire": "Lägereld", "portal": "Portal",
@@ -146,6 +147,13 @@ func _palette() -> Dictionary:
 			"floor": Color(0.55, 0.5, 0.45), "trim": Color(0.82, 0.65, 0.32), "torch": Color(1.0, 0.72, 0.4),
 			"accent": Color(1.0, 0.82, 0.45), "wood": Color(0.32, 0.18, 0.1),
 		}
+	if style == "mountain":
+		return {
+			"bg": Color(0.014, 0.02, 0.03), "ambient": Color(0.4, 0.44, 0.52), "ambient_energy": 0.55,
+			"fog": Color(0.07, 0.085, 0.11), "stone": Color(0.4, 0.41, 0.43), "stone_dark": Color(0.25, 0.26, 0.28),
+			"floor": Color(0.42, 0.43, 0.44), "trim": Color(0.55, 0.65, 0.78), "torch": Color(1.0, 0.6, 0.28),
+			"accent": Color(0.6, 0.78, 1.0), "wood": Color(0.25, 0.17, 0.11),
+		}
 	return {
 		"bg": Color(0.02, 0.018, 0.03), "ambient": Color(0.46, 0.39, 0.42), "ambient_energy": 0.55,
 		"fog": Color(0.08, 0.06, 0.12), "stone": Color(0.38, 0.35, 0.36), "stone_dark": Color(0.24, 0.22, 0.25),
@@ -173,7 +181,7 @@ func _build_environment() -> void:
 	add_child(we)
 
 	var moon := DirectionalLight3D.new()
-	moon.light_color = Color(0.7, 0.72, 1.0) if style == "crypt" else Color(1.0, 0.9, 0.75)
+	moon.light_color = Color(1.0, 0.9, 0.75) if style == "chapel" else Color(0.7, 0.72, 1.0)
 	moon.light_energy = 0.35
 	moon.shadow_enabled = true
 	moon.rotation_degrees = Vector3(-58, -30, 0)
@@ -611,7 +619,7 @@ func _build_inscription() -> void:
 	top.position = Vector3(0, 1.2, 0)
 	slab.add_child(top)
 	# Runorna: små ristade streck i ett rutnät, varje runa 2–3 streck.
-	var rune_color: Color = Color(0.45, 0.75, 1.0) if style == "crypt" else Color(1.0, 0.78, 0.35)
+	var rune_color: Color = Color(1.0, 0.78, 0.35) if style == "chapel" else Color(0.45, 0.75, 1.0)
 	var rows := 5
 	var cols := 4
 	var mats: Array[StandardMaterial3D] = []

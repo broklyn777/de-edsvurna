@@ -317,6 +317,11 @@ func _dev_args() -> void:
 			# --realm=chapel spelar i Det fördärvade kapellet (bara den här körningen)
 			state.set_realm(data, arg.get_slice("=", 1))
 			profile.realm = state.realm
+		elif arg.begins_with("--cleared="):
+			# --cleared=chapel:1 räknar Realmen som klarad på djupet (öppnar Trollberget; sparas inte)
+			dev_profile = true
+			for part in arg.get_slice("=", 1).split(","):
+				profile.realm_depth[part.get_slice(":", 0)] = int(part.get_slice(":", 1))
 		elif arg.begins_with("--depth="):
 			# --depth=<n> spelar på djup n (bara den här körningen)
 			state.depth = maxi(1, int(arg.get_slice("=", 1)))
@@ -1004,6 +1009,7 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 			if data.enemies[kind].get("boss", false):
 				profile.defeat_boss(kind)
 				narrate("first_boss")
+				narrate("boss_" + kind)  # Trollberget: Bergakungens krona (dialog.json "narrator")
 	mark_sneak(data, profile, state)
 	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
 	quest_reward = {}

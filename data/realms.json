@@ -255,5 +255,74 @@
 		"growth": {
 			"folk": "Spindelfolket"
 		}
+	},
+	"mountain": {
+		"name": "Trollberget",
+		"text": "Bergakungen och hans troll. Klockorna i dalen har tystnat, och berget står öppet om nätterna.",
+		"floors": [
+			"troll_1",
+			"troll_2",
+			"troll_3"
+		],
+		"short": "Berget",
+		"requires": {
+			"realm": "chapel",
+			"depth": 1
+		},
+		"objects": [
+			"troll_cup",
+			"sunken_bell",
+			"light_crack",
+			"hourglass"
+		],
+		"pools": [
+			[
+				"troll_1a",
+				"troll_1b",
+				"troll_1c",
+				"troll_1d"
+			],
+			[
+				"troll_2a",
+				"troll_2b",
+				"troll_2c",
+				"troll_2d"
+			],
+			[
+				"troll_3a",
+				"troll_3b",
+				"troll_3d",
+				"troll_2a"
+			]
+		],
+		"elite_pools": [
+			[
+				"troll_e1"
+			],
+			[
+				"troll_e2",
+				"troll_e3"
+			]
+		],
+		"map": {
+			"rect": [
+				40,
+				96,
+				240,
+				160
+			],
+			"vignette": "vagen",
+			"zoom_image": "vagen"
+		},
+		"style": "mountain",
+		"quests": {
+			"hunt": "Tullen vid ravinen",
+			"clear": "Stäng berget",
+			"collect": "Klockans delar"
+		},
+		"disciples": [],
+		"growth": {
+			"folk": "Trollfolket"
+		}
 	}
 }

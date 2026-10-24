@@ -270,6 +270,14 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   immun så länge en Kultist lever). Djup och skalning gäller alla Realms. Nya debuffar: Tystad (inga
   förmågor; makrorader med förmågor hoppas över), Sårbar (+50 % skada) och Försvagad (−50 % skada).
   Troféer har `rarity` (common/elite/boss); bossens trofé ändrar en regel med en kostnad.
+- **Trollberget** (Realm 4, steg 1, `docs/plan/trollens-realm.md`, `realms.json` "mountain", kort "Berget", `"style": "mountain"`):
+  bara de sju trollen som finns, pooler i tre tiers (`troll_1a` … `troll_3d`), våningsmöten `troll_1`/`troll_2`, elit Gråluvans
+  stuga (våning 1), Bron och Vaggan (våning 2), bossen Bergakungen. Öppnas när kapellet är klarat på djup 1 (`"requires"`,
+  `RunState.realm_open()`; kampanjkartan visar området täckt av fördärvet med "Öppnas när …"; `--cleared=chapel:1`). Questen
+  har egna namn (`"quests"`: Tullen vid ravinen, Stäng berget, Klockans delar). Föremålen Trollbägaren, Nedsänkt kyrkklocka
+  och Ljusspricka lånar sarkofagens, glasfönstrets och registrets val med egen text. Inga lärjungar, inga motdrag, ingen följd
+  eller gåva än. Vinjett `vagen.webp` (Drakvalvet), kryptans stämning, kallare ljus i strid och rumsögonblick. Berättarrutan
+  efter första segern mot Bergakungen (`narrator` "boss_mountain_king"). Tester: `tests/test_realm_mountain.gd`.
 - **Instabilitet och våningsregler** (0.17, Siralims Realm Instability och Realm Properties): på kampanjkartan
   väljs instabilitet 0–3. Nivå n ger n synliga och n dolda regler för hela körningen (`data/floor_rules.json`,
   t.ex. De döda vaknar, Förseglade ord, Vaksamma vakter, Speglande ben, Kaosvind), mer silver och bättre

@@ -97,7 +97,9 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 |---|---|---|---|
 | Körning | run, `RunState` | – | Siralim har realms och djup i stället. |
 | Våning | floor, `FLOORS`, `stat_mult` i encounters.json | – (en del av en Realm) | Våning 2 och 3 har starkare fiender (×1,08, ×1,10). |
-| Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs på kampanjkartan: Kryptan, Det fördärvade kapellet eller Sidenlunden (0.31). |
+| Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs på kampanjkartan: Kryptan, Det fördärvade kapellet, Sidenlunden (0.31) eller Trollberget (`mountain`). |
+| Stängd Realm, "Öppnas när …" | realms.json `requires` {realm, depth}, `RunState.realm_open()`, `realm_lock_text()` | – (Siralims Realms öppnas med Realm Depth) | Trollberget öppnas när kapellet är klarat på djup 1. Vårt val. |
+| Questens namn (Tullen vid ravinen …) | realms.json `quests`, `quest.title` | Realm Quest | En Realm kan ge Jakt, Rensa och Samla egna namn. |
 | Nivå | level, `Profile.heroes[id].level`, `HeroStats` | Level | +30 % av basvärdet per nivå, inget tak. Fiendernas nivå följer djup och våning. |
 | Erfarenhet | xp, `HeroStats.battle_xp()`, `add_xp()` | Experience | Per vunnen strid efter rumstyp och djup²; hela sällskapet får den. 5 · L² + 10 till nästa nivå. |
 | Personlighet | personality, `data/personalities.json` | Personality | 20 sorter: en stat växer 40 %, en annan 20 %. Byts i Biblioteket (Personality Tome) mot silver. |

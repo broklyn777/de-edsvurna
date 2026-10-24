@@ -237,6 +237,22 @@ func store_charges(sim: CombatSim) -> void:
 		charges[h.id] = h.charges.duplicate()
 
 
+## Trollberget (vårt val): en Realm med "requires" {realm, depth} i realms.json öppnas på kampanjkartan först när den
+## Realmen är klarad på det djupet (Profile.realm_depth). Utan "requires" är Realmen alltid öppen.
+static func realm_open(profile: Profile, data: Dictionary, realm_id: String) -> bool:
+	var req: Dictionary = data.get("realms", {}).get(realm_id, {}).get("requires", {})
+	return req.is_empty() or int(profile.realm_depth.get(String(req.realm), 0)) >= int(req.get("depth", 1))
+
+
+## Raden som kampanjkartan visar under en stängd Realm.
+static func realm_lock_text(data: Dictionary, realm_id: String) -> String:
+	var req: Dictionary = data.realms[realm_id].get("requires", {})
+	if req.is_empty():
+		return ""
+	var other: Dictionary = data.realms.get(String(req.realm), {})
+	return "Öppnas när %s är klarat på djup %d" % [String(other.get("short", req.realm)).to_lower(), int(req.get("depth", 1))]
+
+
 func set_realm(data: Dictionary, realm_id: String) -> void:
 	if data.get("realms", {}).has(realm_id):
 		realm = realm_id
@@ -469,14 +485,17 @@ static func roll_quest(rng: RandomNumberGenerator, floor_i := 1) -> Dictionary:
 	return q
 
 
+## Trollberget: en Realm kan ge questen ett eget namn (realms.json "quests" per typ, start_floor lägger det i "title"),
+## som då står i stället för typens ord.
 static func quest_text(q: Dictionary) -> String:
+	var title := String(q.get("title", ""))
 	match q.get("type", ""):
 		"hunt":
-			return "Jakt: besegra Nemesis (%d/%d)" % [q.progress, q.goal]
+			return "%s: besegra Nemesis (%d/%d)" % [title if title != "" else "Jakt", q.progress, q.goal]
 		"clear":
-			return "Rensa: besegra %d elitgrupper (%d/%d)" % [q.goal, q.progress, q.goal]
+			return "%s: besegra %d elitgrupper (%d/%d)" % [title if title != "" else "Rensa", q.goal, q.progress, q.goal]
 		"collect":
-			return "Samla: ta %d bevakade föremål (%d/%d)" % [q.goal, q.progress, q.goal]
+			return "%s: ta %d bevakade föremål (%d/%d)" % [title if title != "" else "Samla", q.goal, q.progress, q.goal]
 	return ""
 
 
@@ -485,6 +504,9 @@ func start_floor(data: Dictionary) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = run_seed * 977 + floor * 31 + 13
 	quest = roll_quest(rng, floor)
+	var titles: Dictionary = data.realms[realm].get("quests", {})
+	if titles.has(quest.type):
+		quest.title = titles[quest.type]
 	commons_fought = 0
 	trail_taken = false
 	var pools: Array = data.realms[realm].get("pools", [])

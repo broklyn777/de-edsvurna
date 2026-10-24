@@ -75,3 +75,6 @@ altaret, buren, stentavlan, lägerelden och portalen byggs av former i kod. Stat
 Drakvalvets illustrationer (`~/drakvalvet/public/illustrations/graskogen.webp`), samma källa som stendorren, vaktaren,
 under-tornet, nattlägret och sigillet.
 
+
+`assets/illustrations/vagen.webp` (Trollberget, kampanjkartans vinjett och zoombild tills en egen finns) kommer från
+samma källa (`~/drakvalvet/public/illustrations/vagen.webp`).

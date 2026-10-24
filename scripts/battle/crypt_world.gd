@@ -9,6 +9,7 @@ const CAMERA_LOOK := Vector3(0.4, 1.3, -0.9)
 
 ## 0.31: "grove" (Sidenlunden, realms.json "style") gör kryptan till en lund: grönare dimma, mossigt golv, stammar med
 ## nät i stället för pelare och kokonger i stället för ben. Sätts före add_child.
+## Trollberget: "mountain" ger kallt ljus, grå granit, grova stenpelare och flyttblock i stället för ben.
 var style := "crypt"
 var camera: Camera3D
 var shake := 0.0
@@ -26,6 +27,8 @@ func _ready() -> void:
 	_build_pillars()
 	if style == "grove":
 		_build_webs()
+	elif style == "mountain":
+		_build_boulders()
 	else:
 		_build_bones()
 	camera = Camera3D.new()
@@ -82,30 +85,31 @@ func _build_environment() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	var grove := style == "grove"
-	env.background_color = Color(0.015, 0.025, 0.02) if grove else Color(0.02, 0.018, 0.03)
+	var mountain := style == "mountain"
+	env.background_color = Color(0.015, 0.025, 0.02) if grove else (Color(0.014, 0.02, 0.03) if mountain else Color(0.02, 0.018, 0.03))
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.36, 0.44, 0.38) if grove else Color(0.4, 0.37, 0.46)
+	env.ambient_light_color = Color(0.36, 0.44, 0.38) if grove else (Color(0.38, 0.42, 0.5) if mountain else Color(0.4, 0.37, 0.46))
 	env.ambient_light_energy = 0.55
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.glow_enabled = true
 	env.glow_intensity = 0.6
 	env.glow_bloom = 0.05
 	env.fog_enabled = true
-	env.fog_light_color = Color(0.06, 0.1, 0.07) if grove else Color(0.08, 0.06, 0.12)
+	env.fog_light_color = Color(0.06, 0.1, 0.07) if grove else (Color(0.07, 0.085, 0.11) if mountain else Color(0.08, 0.06, 0.12))
 	env.fog_density = 0.02
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
 
 	var moon := DirectionalLight3D.new()
-	moon.light_color = Color(0.75, 0.9, 0.8) if grove else Color(0.7, 0.72, 1.0)
+	moon.light_color = Color(0.75, 0.9, 0.8) if grove else (Color(0.72, 0.82, 1.0) if mountain else Color(0.7, 0.72, 1.0))
 	moon.light_energy = 0.55
 	moon.shadow_enabled = true
 	moon.rotation_degrees = Vector3(-62, -35, 0)
 	add_child(moon)
 
 	var key := OmniLight3D.new()
-	key.light_color = Color(1.0, 0.85, 0.7)
+	key.light_color = Color(0.86, 0.9, 1.0) if mountain else Color(1.0, 0.85, 0.7)
 	key.light_energy = 1.2
 	key.omni_range = 9.0
 	key.position = Vector3(-1.0, 4.5, 2.5)
@@ -126,7 +130,7 @@ func _build_floor() -> void:
 	ramp.set_color(1, Color(0.9, 0.88, 0.85))
 	tex.color_ramp = ramp
 	var stone := StandardMaterial3D.new()
-	stone.albedo_color = Color(0.3, 0.36, 0.26) if style == "grove" else Color(0.42, 0.39, 0.38)
+	stone.albedo_color = Color(0.3, 0.36, 0.26) if style == "grove" else (Color(0.37, 0.39, 0.41) if style == "mountain" else Color(0.42, 0.39, 0.38))
 	stone.albedo_texture = tex
 	stone.uv1_scale = Vector3(6, 6, 6)
 	stone.roughness = 0.95
@@ -150,7 +154,7 @@ func _build_floor() -> void:
 	d.radial_segments = 64
 	dais.mesh = d
 	var dais_mat := stone.duplicate() as StandardMaterial3D
-	dais_mat.albedo_color = Color(0.34, 0.38, 0.3) if style == "grove" else Color(0.45, 0.42, 0.47)
+	dais_mat.albedo_color = Color(0.34, 0.38, 0.3) if style == "grove" else (Color(0.42, 0.44, 0.47) if style == "mountain" else Color(0.45, 0.42, 0.47))
 	dais.material_override = dais_mat
 	dais.position.y = 0.0
 	add_child(dais)
@@ -159,7 +163,7 @@ func _build_floor() -> void:
 	_runes.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	# 0.22.1: tonad, så att runcirkeln läses som en del av golvet och inte som en markering i striden.
 	_runes.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_runes.albedo_color = Color(0.85, 0.85, 0.8, 0.22) if style == "grove" else Color(0.42, 0.36, 0.55, 0.28)
+	_runes.albedo_color = Color(0.85, 0.85, 0.8, 0.22) if style == "grove" else (Color(0.62, 0.7, 0.82, 0.2) if style == "mountain" else Color(0.42, 0.36, 0.55, 0.28))
 	_runes.emission_enabled = false
 	for r in [3.2, 4.4]:
 		var ring := MeshInstance3D.new()
@@ -185,7 +189,7 @@ func _build_floor() -> void:
 
 func _build_pillars() -> void:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.22, 0.17, 0.12) if style == "grove" else Color(0.3, 0.28, 0.32)
+	mat.albedo_color = Color(0.22, 0.17, 0.12) if style == "grove" else (Color(0.34, 0.35, 0.37) if style == "mountain" else Color(0.3, 0.28, 0.32))
 	mat.roughness = 0.9
 	_trunks.clear()
 	for i in 10:
@@ -195,8 +199,10 @@ func _build_pillars() -> void:
 			continue  # inga pelare framför kameran
 		var pillar := MeshInstance3D.new()
 		var cyl := CylinderMesh.new()
-		cyl.top_radius = 0.3 if style == "grove" else 0.45
-		cyl.bottom_radius = 0.6 if style == "grove" else 0.55
+		cyl.top_radius = 0.3 if style == "grove" else (0.5 if style == "mountain" else 0.45)
+		cyl.bottom_radius = 0.6 if style == "grove" else (0.85 if style == "mountain" else 0.55)
+		if style == "mountain":
+			cyl.radial_segments = 7  # grov sten, inte svarvad
 		cyl.height = 5.0
 		pillar.mesh = cyl
 		pillar.material_override = mat
@@ -245,6 +251,42 @@ func _build_bones() -> void:
 		skull.material_override = mat
 		skull.position = Vector3(cos(a) * 5.8, 0.1, sin(a) * 5.0)
 		add_child(skull)
+
+
+## Trollberget: flyttblock och grus vid kanten, som om berget har kastat dem.
+func _build_boulders() -> void:
+	var rock := StandardMaterial3D.new()
+	rock.albedo_color = Color(0.4, 0.41, 0.42)
+	rock.roughness = 1.0
+	var moss := StandardMaterial3D.new()
+	moss.albedo_color = Color(0.24, 0.3, 0.22)
+	moss.roughness = 1.0
+	for i in 9:
+		var a := _rng.randf() * TAU
+		var d := _rng.randf_range(5.4, ARENA_RADIUS - 0.3)
+		var b := MeshInstance3D.new()
+		var s := SphereMesh.new()
+		var r := _rng.randf_range(0.25, 0.6)
+		s.radius = r
+		s.height = r * _rng.randf_range(1.1, 1.6)
+		s.radial_segments = 7
+		s.rings = 4
+		b.mesh = s
+		b.material_override = moss if i % 3 == 0 else rock
+		b.position = Vector3(cos(a) * d, r * 0.35, sin(a) * d * 0.85)
+		b.rotation = Vector3(_rng.randf() * 0.4, _rng.randf() * TAU, _rng.randf() * 0.4)
+		add_child(b)
+	for i in 26:
+		var a := _rng.randf() * TAU
+		var d := _rng.randf_range(4.9, ARENA_RADIUS - 0.4)
+		var g := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3.ONE * _rng.randf_range(0.06, 0.14)
+		g.mesh = box
+		g.material_override = rock
+		g.position = Vector3(cos(a) * d, 0.04, sin(a) * d * 0.85)
+		g.rotation = Vector3(_rng.randf() * TAU, _rng.randf() * TAU, 0)
+		add_child(g)
 
 
 ## Sidenlunden: nät mellan stammarna och kokonger på marken.

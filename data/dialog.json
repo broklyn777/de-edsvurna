@@ -1924,6 +1924,11 @@
 			"(Det sista benet slutar skramla. För en stund är det alldeles tyst där nere.)",
 			"(Långt ovanför, i borgens torn, slår klockan en gång. Ingen har dragit i repet.)",
 			"(Bland benen ligger ett mässingsbeslag. På det sitter en liten stämpel: en krona med en tom mitt.)"
+		],
+		"boss_mountain_king": [
+			"(Kronan var tung och kall. Infattningen i mitten var tom.)",
+			"(På insidan av ringen fanns samma stämpel som på beslaget i kryptan: en krona med en tom mitt.)",
+			"(Någon hade lovat Bergakungen att klockorna i dalen aldrig skulle ringa igen. Det löftet var inte hans eget.)"
 		]
 	},
 	"refs_note": "Bibelord ur 1917 års kyrkobibel, kontrollerade ordagrant mot Wikisource (Bibeln 1917) 2026-10-21.",

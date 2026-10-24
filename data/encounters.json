@@ -748,7 +748,8 @@
 		"enemies": [
 			"moss_troll",
 			"moss_troll"
-		]
+		],
+		"stat_mult": 0.72
 	},
 	"troll_1b": {
 		"name": "Grytans eld",
@@ -761,7 +762,8 @@
 		"enemies": [
 			"porridge_troll",
 			"moss_troll"
-		]
+		],
+		"stat_mult": 0.72
 	},
 	"troll_1c": {
 		"name": "Avundens snår",
@@ -774,7 +776,8 @@
 		"enemies": [
 			"grumpy_troll",
 			"club_troll"
-		]
+		],
+		"stat_mult": 0.72
 	},
 	"troll_2a": {
 		"name": "Klubbor i dimman",
@@ -788,7 +791,8 @@
 			"club_troll",
 			"moss_troll",
 			"grumpy_troll"
-		]
+		],
+		"stat_mult": 0.76
 	},
 	"troll_2b": {
 		"name": "Kittelgropen",
@@ -802,7 +806,8 @@
 			"porridge_troll",
 			"porridge_troll",
 			"club_troll"
-		]
+		],
+		"stat_mult": 0.76
 	},
 	"troll_e1": {
 		"name": "Gråluvans stuga",
@@ -817,7 +822,9 @@
 			"grumpy_troll",
 			"moss_troll"
 		],
-		"elite_group": true
+		"elite_group": true,
+		"stat_mult": 1.0,
+		"first_descent_stat_mult": 0.56
 	},
 	"troll_e2": {
 		"name": "Bron",
@@ -832,7 +839,9 @@
 			"moss_troll",
 			"moss_troll"
 		],
-		"elite_group": true
+		"elite_group": true,
+		"stat_mult": 1.0,
+		"first_descent_stat_mult": 0.72
 	},
 	"troll_3": {
 		"name": "Bergakungens sal",
@@ -846,7 +855,8 @@
 			"mountain_king",
 			"club_troll",
 			"troll_mother"
-		]
+		],
+		"stat_mult": 1.0
 	},
 	"grove_1": {
 		"name": "Lundens bryn",
@@ -1268,5 +1278,151 @@
 		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Vakthunden"
+	},
+	"troll_1d": {
+		"name": "Klubban vid grytan",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"club_troll",
+			"porridge_troll"
+		],
+		"stat_mult": 0.72
+	},
+	"troll_2c": {
+		"name": "Avund vid grytan",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grumpy_troll",
+			"porridge_troll",
+			"moss_troll"
+		],
+		"stat_mult": 0.76,
+		"template": "Straffar stöd"
+	},
+	"troll_2d": {
+		"name": "Stenraset",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"club_troll",
+			"club_troll",
+			"grumpy_troll"
+		],
+		"stat_mult": 0.76,
+		"template": "Straffar försvar"
+	},
+	"troll_3a": {
+		"name": "Hela byn i berget",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"porridge_troll",
+			"club_troll",
+			"grumpy_troll",
+			"moss_troll"
+		],
+		"stat_mult": 0.78,
+		"template": "Vanorna"
+	},
+	"troll_3b": {
+		"name": "Vanornas straff",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"club_troll",
+			"grumpy_troll",
+			"porridge_troll"
+		],
+		"stat_mult": 0.78,
+		"template": "Straffar stöd"
+	},
+	"troll_3d": {
+		"name": "Mossa och sten",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"moss_troll",
+			"moss_troll",
+			"club_troll",
+			"grumpy_troll"
+		],
+		"stat_mult": 0.78,
+		"template": "Nötning"
+	},
+	"troll_1": {
+		"name": "Trollstigen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"moss_troll",
+			"porridge_troll",
+			"club_troll",
+			"grumpy_troll"
+		],
+		"stat_mult": 1.0
+	},
+	"troll_2": {
+		"name": "Bergets port",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"club_troll",
+			"porridge_troll",
+			"grumpy_troll",
+			"moss_troll"
+		],
+		"stat_mult": 1.04
+	},
+	"troll_e3": {
+		"name": "Vaggan",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"troll_mother",
+			"porridge_troll",
+			"moss_troll"
+		],
+		"stat_mult": 1.0,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Hela inte i otakt"
 	}
 }
