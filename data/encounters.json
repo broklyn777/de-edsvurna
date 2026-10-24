@@ -161,7 +161,7 @@
 		],
 		"enemies": [
 			"ember_skeleton",
-			"ember_skeleton"
+			"bone_runner"
 		],
 		"stat_mult": 0.7
 	},
@@ -220,7 +220,8 @@
 		],
 		"enemies": [
 			"penitent",
-			"cultist"
+			"cultist",
+			"will_o_wisp"
 		],
 		"stat_mult": 0.64
 	},
@@ -528,7 +529,8 @@
 		],
 		"enemies": [
 			"cultist",
-			"corrupted_deacon"
+			"corrupted_deacon",
+			"wraith"
 		],
 		"stat_mult": 0.69,
 		"template": "Skyddad präst"
@@ -747,7 +749,7 @@
 		],
 		"enemies": [
 			"moss_troll",
-			"moss_troll"
+			"changeling_troll"
 		],
 		"stat_mult": 0.82
 	},
@@ -804,8 +806,8 @@
 		],
 		"enemies": [
 			"porridge_troll",
-			"porridge_troll",
-			"club_troll"
+			"club_troll",
+			"changeling_troll"
 		],
 		"stat_mult": 0.88
 	},
@@ -1255,8 +1257,8 @@
 		],
 		"enemies": [
 			"cult_zealot",
-			"cult_zealot",
-			"banner_bearer"
+			"banner_bearer",
+			"wraith"
 		],
 		"stat_mult": 0.7,
 		"template": "Familj med ledare"
@@ -1293,6 +1295,21 @@
 		],
 		"stat_mult": 0.82
 	},
+	"troll_1e": {
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"name": "Vaggan i snåret",
+		"enemies": [
+			"changeling_troll",
+			"porridge_troll"
+		],
+		"stat_mult": 0.82,
+		"template": "Fel mål"
+	},
 	"troll_2c": {
 		"name": "Avund vid grytan",
 		"party": [
@@ -1319,8 +1336,8 @@
 		],
 		"enemies": [
 			"club_troll",
-			"club_troll",
-			"grumpy_troll"
+			"grumpy_troll",
+			"changeling_troll"
 		],
 		"stat_mult": 0.88,
 		"template": "Straffar försvar"
@@ -1337,7 +1354,7 @@
 			"porridge_troll",
 			"club_troll",
 			"grumpy_troll",
-			"moss_troll"
+			"changeling_troll"
 		],
 		"stat_mult": 0.9,
 		"template": "Vanorna"
@@ -1358,6 +1375,23 @@
 		"stat_mult": 0.9,
 		"template": "Straffar stöd"
 	},
+	"troll_3c": {
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"name": "Bytingarna",
+		"enemies": [
+			"changeling_troll",
+			"changeling_troll",
+			"moss_troll",
+			"porridge_troll"
+		],
+		"stat_mult": 0.9,
+		"template": "Fel mål"
+	},
 	"troll_3d": {
 		"name": "Mossa och sten",
 		"party": [
@@ -1368,7 +1402,7 @@
 		],
 		"enemies": [
 			"moss_troll",
-			"moss_troll",
+			"changeling_troll",
 			"club_troll",
 			"grumpy_troll"
 		],
@@ -1387,7 +1421,7 @@
 			"moss_troll",
 			"porridge_troll",
 			"club_troll",
-			"grumpy_troll"
+			"changeling_troll"
 		],
 		"stat_mult": 1.1
 	},
@@ -1403,7 +1437,7 @@
 			"club_troll",
 			"porridge_troll",
 			"grumpy_troll",
-			"moss_troll"
+			"changeling_troll"
 		],
 		"stat_mult": 1.14
 	},
@@ -1417,8 +1451,8 @@
 		],
 		"enemies": [
 			"troll_mother",
-			"porridge_troll",
-			"moss_troll"
+			"changeling_troll",
+			"porridge_troll"
 		],
 		"stat_mult": 1.1,
 		"first_descent_stat_mult": 0.72,

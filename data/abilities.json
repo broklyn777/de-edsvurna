@@ -1441,7 +1441,7 @@
 			},
 			{
 				"type": "damage",
-				"power": 0.4
+				"power": 0.7
 			}
 		]
 	},
@@ -1950,6 +1950,56 @@
 				"type": "aura",
 				"aura": "burning",
 				"duration": 2
+			}
+		]
+	},
+	"porridge_feed": {
+		"name": "Grytans gröt",
+		"target": "ally",
+		"pick": "lowest",
+		"kind": "spell",
+		"school": "nature",
+		"cooldown": 2,
+		"cue": "heal",
+		"sound": "renew",
+		"text": "Grytmodern matar det troll som har lägst liv: helning 140 % av hennes Intelligence. Ett troll med Svedd hud kan inte helas.",
+		"effects": [
+			{
+				"type": "heal",
+				"power": 1.4
+			}
+		]
+	},
+	"changeling_claw": {
+		"name": "Bytingens klor",
+		"target": "enemy",
+		"pick": "lowest",
+		"ignore_taunt": true,
+		"melee": true,
+		"sound": "k_hero_hit",
+		"text": "Bortbytingen går förbi den som provocerar och river den hjälte som har lägst liv.",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"changeling_wail": {
+		"name": "Bytingens skrik",
+		"target": "all_enemies",
+		"kind": "spell",
+		"school": "shadow",
+		"tier": "small",
+		"cooldown": 4,
+		"sound": "shadow_hit",
+		"text": "Ett skrik som ur en vagga: varje hjälte blir Hånad (kan inte anfalla) i 1 tur med 30 % chans.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "scorned",
+				"duration": 1,
+				"chance": 0.3
 			}
 		]
 	}

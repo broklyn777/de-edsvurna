@@ -3608,5 +3608,46 @@
 				"target": "source"
 			}
 		]
+	},
+	"changeling_slip": {
+		"name": "Smyget",
+		"enemy": true,
+		"text": "Bortbytingen undviker 25 % av anfallen. Besvärjelser och indirekt skada träffar alltid.",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"kind": "attack"
+		},
+		"modify": {
+			"dodge_add": 0.25
+		}
+	},
+	"cradle_steel": {
+		"combo": {
+			"needs": "ally_hit",
+			"creates": "follow_up",
+			"scope": "party"
+		},
+		"name": "Stålet ur vaggan",
+		"trophy": true,
+		"rarity": "common",
+		"text": "När en fiende skadar någon annan i sällskapet som har under 50 % liv slår bäraren tillbaka för 60 % (en gång per tur).",
+		"answers": "Snabba fiender som jagar den svagaste (Bortbytingen, Benspringare, Gasten)",
+		"trigger": "damage",
+		"once_per_turn": true,
+		"when": {
+			"source": "enemy",
+			"target": "ally",
+			"target_not_self": true,
+			"direct": true,
+			"target_hp_below": 0.5
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 0.6,
+				"target": "source"
+			}
+		],
+		"lesson": "Stål i vaggan höll bytingarna borta från barnen. {bärare} har lärt sig att vakta den som är svagast."
 	}
 }

@@ -32,3 +32,52 @@ sitter på handlederna. Färger per troll med `colors` (`Troll_Shawl`, `Troll_Ap
 `Troll_LanternIron`). Bilder: `docs/provspel/troll-delar/`.
 
 **Namn** (VD 2026-10-23): allvarliga, inga skämtnamn. Utseendet farligt (stor påk, betar, framåtböjd).
+
+## Roller (2026-10-24, grenen `fiender-roller`)
+
+Underlag: `docs/provspel/provocera-matning.md` (alla troll hade samma kropp, ingen var snabb och skör). VD vill att
+WoW-trion (tanken provocerar, helaren helar, de andra slår) ska fungera och att svårigheten kommer av *blandningen*:
+vem provocerar man, vem fäller man först. Alla siffror är **VAL**, satta med botarna.
+
+| Troll | Roll | Stats (H / A / I / D / S) förr → nu | Ändring |
+|---|---|---|---|
+| Stenkrossaren | tung slagare | 58 / 14 / 5 / 2 / 7 → 56 / 16,5 / 5 / 1,5 / 6 | slår hårdast, ska provoceras (Klubban straffar den som Försvarar) |
+| Mossrygg | pansar | 60 / 12 / 6 / 2 / 7 → 58 / 10 / 6 / 3,5 / 5 | vill ha förmågor (som också stoppar Mossan) |
+| Grytmodern | helare | 52 / 11 / 10 / 1,5 / 8 → 46 / 9 / 12 / 1 / 8 | ny förmåga **Grytans gröt** (`porridge_feed`): helar trollet med lägst liv (140 % Int, nedkylning 2) när någon är under 65 %; ett troll med Svedd hud kan inte helas |
+| Avundsjätten | besvärjare | 56 / 12 / 8 / 2 / 8 → 54 / 11 / 13 / 1,5 / 9 | Avundens blick (förbi Provocera, mot den med högst Attack) 40 → 70 % skada |
+| **Bortbytingen** (`changeling_troll`) | snabb och skör | ny: 30 / 15 / 6 / 0,5 / 13 | se nedan |
+
+**Bortbytingen:** modellen `troll_bortbyting.glb` (skala 0,6). Grundanfallet **Bytingens klor** (`changeling_claw`) går förbi
+Provocera och river den hjälte som har lägst liv (100 %). Egen förmåga **Bytingens skrik** (`changeling_wail`, nedkylning 4):
+varje hjälte blir Hånad 1 tur med 30 % chans (en besvärjelse; förmågor går fortfarande, och de sveder Trollhud). Egenskaper:
+Trollhud och **Smyget** (`changeling_slip`, undviker 25 % av anfallen, besvärjelser och indirekt skada träffar alltid).
+Trofé **Stålet ur vaggan** (`cradle_steel`, vanlig, ett föremål ur folktron): när en fiende skadar någon annan i sällskapet
+som har under 50 % liv slår bäraren tillbaka för 60 % (en gång per tur). Lärdom: "Stål i vaggan höll bytingarna borta
+från barnen. {bärare} har lärt sig att vakta den som är svagast." Planens Moderns famn (livvakt när han har lägst liv)
+byggdes inte: den kräver ny kod och gör honom mindre skör. Ingen elitvariant (inga troll har det än).
+
+**Grupperna** (id:n behållna, två nya): varje vanlig grupp har minst två huvudroller (`tests/test_enemy_roles.gd`).
+
+| id | Namn | Förr | Nu |
+|---|---|---|---|
+| `troll_1a` | Mossiga backen | Mossrygg ×2 | Mossrygg, Bortbytingen |
+| `troll_1b` | Grytans eld | Grytmodern, Mossrygg | samma (helare + pansar) |
+| `troll_1c` | Avundens snår | Avundsjätten, Stenkrossaren | samma |
+| `troll_1d` | Klubban vid grytan | Stenkrossaren, Grytmodern | samma |
+| `troll_1e` *ny* | Vaggan i snåret | – | Bortbytingen, Grytmodern |
+| `troll_2b` | Kittelgropen | Grytmodern ×2, Stenkrossaren | Grytmodern, Stenkrossaren, Bortbytingen |
+| `troll_2d` | Stenraset | Stenkrossaren ×2, Avundsjätten | Stenkrossaren, Avundsjätten, Bortbytingen |
+| `troll_3a` | Hela byn i berget | Grytmodern, Stenkrossaren, Avundsjätten, Mossrygg | Mossrygg → Bortbytingen |
+| `troll_3c` *ny* | Bytingarna | – | Bortbytingen ×2, Mossrygg, Grytmodern |
+| `troll_3d` | Mossa och sten | Mossrygg ×2, Stenkrossaren, Avundsjätten | en Mossrygg → Bortbytingen |
+| `troll_1` | Trollstigen | Mossrygg, Grytmodern, Stenkrossaren, Avundsjätten | Avundsjätten → Bortbytingen |
+| `troll_2` | Bergets port | Stenkrossaren, Grytmodern, Avundsjätten, Mossrygg | Mossrygg → Bortbytingen |
+| `troll_e3` | Vaggan (elit) | Gråluva, Grytmodern, Mossrygg | Gråluva, Bortbytingen, Grytmodern |
+
+`troll_2a`, `troll_2c`, `troll_3b`, eliterna `troll_e1`, `troll_e2` och bossen är oförändrade (Stenkrossaren i bossmötet har
+de nya siffrorna; Attack 18 gjorde Bergakungen för svår och sänktes till 16,5).
+
+**Botarna** (`BALANS=grotta GROTTA_FYRA=1 GROTTA_KORT=1`, 100 körningar, MACRO / TUNED, se `docs/provspel/provocera-matning.md`):
+Berget d1 46 / 64 → 41 / 66 %, d3 27 / 36 → 29 / 41 %. Per grupp (`spider_diag.gd`, en strid, fulla Charges) vinns allt till
+100 %; bergets vanliga grupper kostar *mindre* liv än förr (tier 2 79–89 → 87–90 %), eftersom startmakrot slår fienden med
+lägst liv och då fäller Bortbytingen först. Svårigheten flyttade till elit och boss genom nötningen (Bron 74 → 72 %).

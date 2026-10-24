@@ -1700,11 +1700,11 @@
 		"family": "troll_kin",
 		"color": "#6f8f4a",
 		"stats": {
-			"health": 60,
-			"attack": 12,
+			"health": 58,
+			"attack": 10,
 			"intelligence": 6,
-			"defense": 2,
-			"speed": 7
+			"defense": 3.5,
+			"speed": 5
 		},
 		"crit_chance": 0.05,
 		"attack_ability": "troll_club_swing",
@@ -1752,10 +1752,10 @@
 		"family": "troll_kin",
 		"color": "#c8a070",
 		"stats": {
-			"health": 52,
-			"attack": 11,
-			"intelligence": 10,
-			"defense": 1.5,
+			"health": 46,
+			"attack": 9,
+			"intelligence": 12,
+			"defense": 1,
 			"speed": 8
 		},
 		"crit_chance": 0.05,
@@ -1765,6 +1765,12 @@
 			"porridge_greed"
 		],
 		"rules": [
+			{
+				"ability": "porridge_feed",
+				"if": {
+					"ally_hp_below": 0.65
+				}
+			},
 			{
 				"ability": "hot_porridge"
 			}
@@ -1810,11 +1816,11 @@
 		"family": "troll_kin",
 		"color": "#7a6a5a",
 		"stats": {
-			"health": 56,
-			"attack": 12,
-			"intelligence": 8,
-			"defense": 2,
-			"speed": 8
+			"health": 54,
+			"attack": 11,
+			"intelligence": 13,
+			"defense": 1.5,
+			"speed": 9
 		},
 		"crit_chance": 0.05,
 		"attack_ability": "troll_club_swing",
@@ -1860,11 +1866,11 @@
 		"family": "troll_kin",
 		"color": "#8a7a60",
 		"stats": {
-			"health": 58,
-			"attack": 14,
+			"health": 56,
+			"attack": 16.5,
 			"intelligence": 5,
-			"defense": 2,
-			"speed": 7
+			"defense": 1.5,
+			"speed": 6
 		},
 		"crit_chance": 0.05,
 		"attack_ability": "troll_club_swing",
@@ -1905,6 +1911,60 @@
 			}
 		},
 		"trophy": "kalles_club"
+	},
+	"changeling_troll": {
+		"name": "Bortbytingen",
+		"family": "troll_kin",
+		"color": "#a9aba6",
+		"stats": {
+			"health": 30,
+			"attack": 15,
+			"intelligence": 6,
+			"defense": 0.5,
+			"speed": 13
+		},
+		"crit_chance": 0.08,
+		"attack_ability": "changeling_claw",
+		"traits": [
+			"troll_hide",
+			"changeling_slip"
+		],
+		"rules": [
+			{
+				"ability": "changeling_wail"
+			}
+		],
+		"visual": {
+			"model": "troll_bortbyting",
+			"scale": 0.6,
+			"anims": {
+				"idle": "Idle_Loop",
+				"attack": [
+					"Sword_Attack",
+					"Punch_Jab"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"walk": "Walk_Loop",
+				"cast": "Spell_Simple_Shoot"
+			},
+			"colors": {
+				"Troll_Skin": "#a9aba6",
+				"Troll_Green": "#a9aba6",
+				"Troll_SkinDark": "#7f827d",
+				"Troll_Black": "#7f827d",
+				"Troll_Grey": "#7f827d",
+				"Troll_LightGreen": "#c0c2bc",
+				"Troll_Brown": "#47474e",
+				"Troll_Brown2": "#56565c",
+				"Troll_Strap": "#38352f",
+				"Troll_EyeGlint": "#eaf6ff"
+			},
+			"emit": {
+				"Troll_EyeGlint": "#cfeaff"
+			}
+		},
+		"trophy": "cradle_steel"
 	},
 	"bridge_troll": {
 		"name": "Brom, broarnas väktare",

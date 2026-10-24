@@ -1,9 +1,9 @@
 extends "res://tests/test_case.gd"
-## Trollberget (Realm 4, docs/plan/trollens-realm.md steg 1): bara de sju trollen som finns, öppnas när kapellet är
+## Trollberget (Realm 4, docs/plan/trollens-realm.md steg 1, Bortbytingen i steg 2): bara troll, öppnas när kapellet är
 ## klarat på djup 1, grottan följer reglerna, föremålen lånar andra föremåls val med egen text, questen får egna namn.
 
-const TROLLS := ["moss_troll", "porridge_troll", "grumpy_troll", "club_troll", "bridge_troll", "troll_mother",
-		"mountain_king"]
+const TROLLS := ["moss_troll", "porridge_troll", "grumpy_troll", "club_troll", "changeling_troll", "bridge_troll",
+		"troll_mother", "mountain_king"]
 
 var _data := GameData.load_all()
 
