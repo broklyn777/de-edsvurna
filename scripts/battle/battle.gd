@@ -590,11 +590,17 @@ func _on_elite(unit_id: String) -> void:
 ## Musik och stämning efter Realm; bossmöten får bossmusik och en signal när bossen syns.
 func _start_music() -> void:
 	var chapel: bool = run.state.realm == "chapel"
-	sfx.start_ambience("ambience_chapel" if chapel else "ambience_crypt", -12.0 if chapel else -11.0)
+	var mountain: bool = run.state.realm == "mountain"
+	if mountain:
+		sfx.start_ambience("ambience_mountain", -12.0)
+	else:
+		sfx.start_ambience("ambience_chapel" if chapel else "ambience_crypt", -12.0 if chapel else -11.0)
 	var boss := sim.enemies.any(func(e: CombatUnit) -> bool: return data.enemies[e.kind].get("boss", false))
 	if boss:
 		run.audio.play_music("music_boss", -16.0, 1.0)
 		get_tree().create_timer(0.6).timeout.connect(sfx.play.bind("boss_appears", -2.0, 0.0))
+	elif mountain:
+		run.audio.play_music("music_mountain", -15.0)
 	else:
 		run.audio.play_music("music_chapel" if chapel else "music_crypt", -15.0)
 
