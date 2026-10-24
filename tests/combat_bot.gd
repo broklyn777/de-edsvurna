@@ -186,6 +186,8 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	var levels: Dictionary = opts.get("levels", {}).duplicate(true)
 	var xp_total := 0  # 0.30.22: erfarenhet per hjälte i körningen (strider och spår)
 	var by_kind := {}
+	# strid-langd: turer per strid, per sort och per möte för elit, väktare och boss ({nyckel: [turer]}).
+	var turns_log := {}
 	# 0.27: grottan. Boten går ett steg i taget mot närmaste okända ruta (mot målet), slåss mot grupperna den kliver på
 	# (elitgrupper bara om questen kräver dem), tar skatter, helgedomar, fångar och lägereldar, och går till målet när
 	# questen är klar.
@@ -225,6 +227,14 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					else ("elit" if r.get("elite", false) or r.get("nemesis", false) else "vanlig"))
 			var bk: Array = by_kind.get(fk, [0, 0])
 			by_kind[fk] = [int(bk[0]) + 1, int(bk[1]) + (1 if result.outcome == "victory" else 0)]
+			var tl: Array = turns_log.get(fk, [])
+			tl.append(int(result.turns))
+			turns_log[fk] = tl
+			if fk != "vanlig":
+				var ek: String = fk + ": " + String(data.encounters[state.encounter()].name)
+				var el: Array = turns_log.get(ek, [])
+				el.append(int(result.turns))
+				turns_log[ek] = el
 			if state.floor == 0:
 				f0_fights += 1
 				f0_won += 1 if result.outcome == "victory" else 0
@@ -232,7 +242,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				floor_quests.append(_floor_entry(state, false))
 				return {"floor_quests": floor_quests, "seals_left": state.boss_seals.duplicate(), "cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 						"lost_at": "f%d_%s" % [state.floor, "end" if r.get("boss", false) else r.kind], "f0_fights": f0_fights,
-						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver, "by_kind": by_kind}
+						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver, "by_kind": by_kind, "turns": turns_log}
 			silver += state.battle_silver(depth)
 			state.vow_after_battle(data, result.sim)
 			if opts.has("finds"):
@@ -253,7 +263,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 							"personality": data.heroes[opts.joins].get("personality", "")}
 			if fights >= int(opts.get("max_fights", 999)):
 				return {"cleared": false, "fights": fights, "won": true, "rooms": rooms, "f0_fights": f0_fights,
-						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver, "by_kind": by_kind}
+						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver, "by_kind": by_kind, "turns": turns_log}
 			state.battle_won()
 			match r.kind:
 				"prisoner":
@@ -304,7 +314,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		rooms += 1
 	return {"floor_quests": floor_quests, "seals_left": state.boss_seals.duplicate(), "cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won, "finds": finds, "silver": silver,
-			"vow_kept": state.vow_kept(data), "xp": xp_total, "by_kind": by_kind}
+			"vow_kept": state.vow_kept(data), "xp": xp_total, "by_kind": by_kind, "turns": turns_log}
 
 
 ## 0.30.22: spåren efter de vanliga grupper boten lät vara (RunState.take_trail), när våningen är klar.

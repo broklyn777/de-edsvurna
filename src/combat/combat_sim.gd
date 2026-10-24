@@ -148,6 +148,8 @@ var _last_caster := {}
 var _team_revives := {}
 ## 0.28: helningar per lag under den pågående turen (Ordensregeln).
 var _team_heals := {}
+## strid-langd: hur många turer varje fiende har helat med varje förmåga eller egenskap ("källa:förmåga" → {n, turn}).
+var _enemy_heals_by := {}
 
 
 ## party: hjältar som ersätter mötets förvalda; traits: hero_id -> [trait_id, …] som ersätter
@@ -167,6 +169,8 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	sim.data = game_data
 	sim.depth = maxi(depth, 1)
 	sim.rules = opts.get("rules", []).duplicate()
+	if opts.get("counter", false) and big_fight_exhaustion > 0:
+		sim.exhaustion_turn = big_fight_exhaustion
 	sim.no_heal = bool(opts.get("no_heal", false))
 	sim._start_auras = opts.get("start_auras", []).duplicate()
 	var forced := int(opts.get("force_elites", 0))
@@ -257,6 +261,14 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 			scale_unit(e, lm)
 			e.speed = roundf(e.speed * lm)
 			e.base_stats.speed = e.speed
+		if opts.get("counter", false) and (big_fight_hp != 1.0 or big_fight_power != 1.0):
+			e.max_hp = snap_stat(e.max_hp * big_fight_hp)
+			e.hp = e.max_hp
+			e.attack = snap_stat(e.attack * big_fight_power)
+			e.intelligence = snap_stat(e.intelligence * big_fight_power)
+			e.base_stats.health = e.max_hp
+			e.base_stats.attack = e.attack
+			e.base_stats.intelligence = e.intelligence
 		if elites[i]:
 			make_elite(e, game_data.enemies[kind].elite)
 			if forced > 0 and opts.get("nemesis", false):
@@ -755,7 +767,7 @@ func _next_turn() -> void:
 		_emit({"type": "turn_start", "unit": u.id})
 		_break_snares()
 		_tick_turn_start(u)
-		if u.alive and turn_no > EXHAUSTION_TURN:
+		if u.alive and turn_no > exhaustion_turn:
 			_exhaust(u)
 		_check_outcome()
 		if u.alive and _wakes_or_thaws(u):
@@ -913,8 +925,19 @@ const EXHAUSTION_STEP := 0.004
 const EXHAUSTION_LOSS := 300
 
 
+## Turen då utmattningen börjar i just den här striden (EXHAUSTION_TURN, eller big_fight_exhaustion i elit-, Nemesis-
+## och bossstrider när den är satt).
+var exhaustion_turn := EXHAUSTION_TURN
+static var big_fight_exhaustion := 0
+## Prov (strid-langd): fiendernas liv och Attack/Intelligence i elit-, Nemesis- och bossstrider.
+static var big_fight_hp := 1.0
+static var big_fight_power := 1.0
+static var big_fight_step := EXHAUSTION_STEP
+
+
 func exhaustion_pct() -> float:
-	return minf(1.0, EXHAUSTION_STEP * (turn_no - EXHAUSTION_TURN)) if turn_no > EXHAUSTION_TURN else 0.0
+	var step := EXHAUSTION_STEP if exhaustion_turn == EXHAUSTION_TURN else big_fight_step
+	return minf(1.0, step * (turn_no - exhaustion_turn)) if turn_no > exhaustion_turn else 0.0
 
 
 func _exhaust(u: CombatUnit) -> void:
@@ -2055,6 +2078,36 @@ func _revive(u: CombatUnit, pct: float) -> void:
 	_emit({"type": "revive", "unit": u.id})
 
 
+## strid-langd (vårt val, textspelet: Kistornas råd tog 87 turer): fiendernas helningar mattas. Varje gång samma fiende
+## helar med samma förmåga eller egenskap helar den HEAL_FADE mindre, ned till HEAL_FADE_MIN (Likvakan, Gravens lagning,
+## Mässan). Den första helningen är hel, så fienden behåller sin roll, men en lång strid läker inte ihop av sig själv.
+static var heal_fade := 0.15
+static var heal_fade_min := 0.4
+const HEAL_FADE_NAME := "Mattad helning"
+
+
+func enemy_heal_fade(src: CombatUnit, ability_id: String) -> float:
+	if src == null or src.team != 1 or heal_fade <= 0.0:
+		return 1.0
+	return maxf(heal_fade_min, 1.0 - heal_fade * enemy_heals_before(src, ability_id))
+
+
+## Hur många tidigare turer fienden har helat med förmågan. En helning som träffar flera (Mässan) räknas en gång per tur.
+func enemy_heals_before(src: CombatUnit, ability_id: String) -> int:
+	var rec: Dictionary = _enemy_heals_by.get(src.id + ":" + ability_id, {})
+	if rec.is_empty():
+		return 0
+	return int(rec.n) - (1 if int(rec.turn) == turn_no else 0)
+
+
+func _count_enemy_heal(src: CombatUnit, ability_id: String) -> void:
+	var key := src.id + ":" + ability_id
+	var rec: Dictionary = _enemy_heals_by.get(key, {"n": 0, "turn": -1})
+	if int(rec.turn) != turn_no:
+		rec = {"n": int(rec.n) + 1, "turn": turn_no}
+	_enemy_heals_by[key] = rec
+
+
 ## VAL (som Siralim, där bara attacker blir kritiska): helningar blir aldrig kritiska.
 func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) -> void:
 	if not tgt.alive:
@@ -2085,6 +2138,11 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 	for x in _modifiers_named(src, "modify_heal", {"source": src.id, "target": tgt.id, "ability": ability_id}):
 		if x.modify.has("heal_mult"):
 			fx.append({"f": float(x.modify.heal_mult), "name": x.name})
+	var fade := enemy_heal_fade(src, ability_id)
+	if fade < 1.0:
+		fx.append({"f": fade, "name": HEAL_FADE_NAME})
+	if src.team == 1:
+		_count_enemy_heal(src, ability_id)
 	if _rule("withered_grace"):
 		_rule_hit("withered_grace")
 		fx.append({"f": 0.6, "name": data.floor_rules.get("withered_grace", {}).get("name", "Vissnad nåd")})

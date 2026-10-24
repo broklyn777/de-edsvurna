@@ -55,7 +55,9 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 		return
 	var frame := {"kind": "heal", "units": _snapshot(), "source": src.id, "target": tgt.id, "base": base,
 			"ability": ability_id, "ctx": _heal_ctx.duplicate(), "trait_ctx": _trait_ctx, "origin": _origin.duplicate(),
-			"rules": rules.duplicate(), "event": {}, "parent": _frames[-1] if not _frames.is_empty() else {}}
+			"rules": rules.duplicate(), "event": {}, "parent": _frames[-1] if not _frames.is_empty() else {},
+			"heals_before": enemy_heals_before(src, ability_id) if src.team == 1 else 0, "heal_fade": CombatSim.heal_fade,
+			"heal_fade_min": CombatSim.heal_fade_min}
 	_frames.append(frame)
 	super(src, tgt, base, ability_id)
 	_frames.pop_back()

@@ -803,6 +803,11 @@ func check_heal(sim: CombatSim, r: Dictionary) -> void:
 					factors.append(float(d.modify.heal_mult))
 	if r.rules.has("withered_grace"):
 		factors.append(0.6)
+	# strid-langd: fiendernas helningar mattas för varje tidigare helning med samma förmåga (formler.md §7).
+	var fade := Ref.heal_fade(int(r.get("heals_before", 0)), float(r.get("heal_fade", 0.0)), float(r.get("heal_fade_min", 1.0))) \
+			if int(src.team) == 1 else 1.0
+	if fade < 1.0:
+		factors.append(fade)
 	var amount := roundf(base * Ref.mods(factors))
 	var effective := minf(amount, float(tgt.max_hp) - float(tgt.hp))
 	if absf(float(e.amount) - amount) > EPS or absf(float(e.effective) - effective) > EPS:

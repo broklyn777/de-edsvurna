@@ -96,6 +96,13 @@ static func heal(intel: float, power: float, roll: float, factors: Array) -> flo
 	return roundf(intel * power * roll * mods(factors))
 
 
+## strid-langd: en fiendes n:te helning med samma förmåga (n = tidigare helningar) helar 1 − fade · n, minst min.
+static func heal_fade(n: int, fade: float, min_mult: float) -> float:
+	if fade <= 0.0 or n <= 0:
+		return 1.0
+	return maxf(min_mult, 1.0 - fade * n)
+
+
 # --- §1 Stats -------------------------------------------------------------------
 
 ## 0.26: stats avrundas till en decimal (talen delades med 10), Speed till heltal.

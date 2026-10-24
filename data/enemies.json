@@ -422,7 +422,7 @@
 			{
 				"ability": "defend",
 				"if": {
-					"self_hp_below": 0.6,
+					"self_hp_below": 0.35,
 					"self_last_attacked": true
 				}
 			}

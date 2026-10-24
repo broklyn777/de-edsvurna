@@ -1494,11 +1494,11 @@
 	"noted": {
 		"name": "Antecknat",
 		"enemy": true,
-		"text": "Tar 25 % mindre skada från en förmåga eller attack för varje gång just den redan har träffat Benskrivaren i striden (högst 75 %).",
+		"text": "Tar 25 % mindre skada från en förmåga eller attack för varje gång just den redan har träffat Benskrivaren i striden (högst 50 %).",
 		"trigger": "modify_damage_taken",
 		"modify": {
 			"damage_taken_less_per_repeat": 0.25,
-			"repeat_max": 0.75
+			"repeat_max": 0.5
 		}
 	},
 	"bell_toll_trait": {
@@ -3688,7 +3688,7 @@
 		"name": "Likvakan",
 		"enemy": true,
 		"passes_on_death": true,
-		"text": "Rådet: helas 3 % av sitt liv i början av varje egen tur. När bäraren faller ärver de andra i rådet egenskapen.",
+		"text": "Rådet: helas 3 % av sitt liv i början av varje egen tur (som alla fienders helningar mattas den för varje gång). När bäraren faller ärver de andra i rådet egenskapen.",
 		"trigger": "turn_start",
 		"when": {
 			"unit": "self"

@@ -1582,7 +1582,7 @@
 			"coffin_bearer",
 			"coffin_bearer"
 		],
-		"stat_mult": 1.14,
+		"stat_mult": 1.155,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "council_seal",

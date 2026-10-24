@@ -110,6 +110,7 @@ func test_noted_reduces_damage_from_the_same_source_and_ability() -> void:
 	assert_near(_factor(_hit_calc(sim, p, scribe, "attack"), "Antecknat"), 1.0, 1e-9)
 	assert_near(_factor(_hit_calc(sim, p, scribe, "attack"), "Antecknat"), 0.75, 1e-9)
 	assert_near(_factor(_hit_calc(sim, p, scribe, "attack"), "Antecknat"), 0.5, 1e-9)
+	assert_near(_factor(_hit_calc(sim, p, scribe, "attack"), "Antecknat"), 0.5, 1e-9, "strid-langd: taket är 50 %")
 	assert_near(_factor(_hit_calc(sim, sim.unit("brokk"), scribe, "attack"), "Antecknat"), 1.0, 1e-9,
 			"en annan källa är ny")
 
