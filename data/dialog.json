@@ -1248,7 +1248,7 @@
 				},
 				{
 					"id": "ragnhild_rescue_3",
-					"text": "»Min hjälp kommer från Herren, som har gjort himmel och jord.«",
+					"text": "»Min hjälp kommer från HERREN, som har gjort himmel och jord.«",
 					"ref": "Ps. 121:2"
 				}
 			],
@@ -1308,7 +1308,7 @@
 				},
 				{
 					"id": "ragnhild_fire_3",
-					"text": "»Herren är min herde, mig skall intet fattas.«",
+					"text": "»HERREN är min herde, mig skall intet fattas.«",
 					"ref": "Ps. 23:1"
 				}
 			],
@@ -1413,7 +1413,7 @@
 				},
 				{
 					"id": "ragnhild_alone_3",
-					"text": "»Herren skall bevara dig för allt ont, han skall bevara din själ.«",
+					"text": "»HERREN skall bevara dig för allt ont, han skall bevara din själ.«",
 					"ref": "Ps. 121:7"
 				}
 			]
@@ -1931,7 +1931,7 @@
 			"(Någon hade lovat Bergakungen att klockorna i dalen aldrig skulle ringa igen. Det löftet var inte hans eget.)"
 		]
 	},
-	"refs_note": "Bibelord ur 1917 års kyrkobibel, kontrollerade ordagrant mot Wikisource (Bibeln 1917) 2026-10-21.",
+	"refs_note": "Bibelord ur 1917 års kyrkobibel, kontrollerade ordagrant mot Wikisource (Bibeln 1917) 2026-10-21 och 2026-10-24 (docs/ideer/ragnhild-bibelord.md).",
 	"inn": {
 		"imma": {
 			"inn": [
@@ -2311,7 +2311,7 @@
 			"bored": [
 				{
 					"id": "ragnhild_bored_1",
-					"text": "”Allting har sin tid.” Min tid på bänken är slut.",
+					"text": "»Allting har sin tid.« Min tid på bänken är slut.",
 					"ref": "Pred. 3:1"
 				},
 				{
@@ -2322,7 +2322,7 @@
 			"welcome": [
 				{
 					"id": "ragnhild_welcome_1",
-					"text": "”HERREN skall bevara din utgång och din ingång, från nu och till evig tid.”",
+					"text": "»HERREN skall bevara din utgång och din ingång, från nu och till evig tid.«",
 					"ref": "Ps. 121:8"
 				},
 				{
