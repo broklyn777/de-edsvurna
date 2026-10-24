@@ -25,11 +25,15 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 
 
 ## Väljer vad hjälten gör. Returnerar:
-##   {ok: true, action, ability, target, line (1-baserad), text, skipped: [text]}
-##   {ok: false, text, skipped: [text]}  – inget passade
-static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary) -> Dictionary:
+##   {ok: true, action, ability, target, line (1-baserad), text, skipped: [text], notes: [text]}
+##   {ok: false, text, skipped: [text], notes: [text]}  – inget passade
+## skipped: rader som stämde men inte gick att utföra. notes (bara med explain, makro-UX förslag 1): varför varje
+## rad ovanför den valda inte valdes, också rader vars villkor inte stämde ("Rad 1 stämde inte: … (lägst: Brokk 64 %)").
+## När inget passade står raden som var närmast att stämma först.
+static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary, explain := false) -> Dictionary:
 	var lines: Array = macro.get("lines", [])
 	var skipped: Array[String] = []
+	var notes: Array[Dictionary] = []  # {text, near}
 	var i := 0
 	while i < mini(lines.size(), MAX_LINES):
 		# En kedja: rader med "Pröva nästa rad" följda av en rad med en riktig handling.
@@ -42,6 +46,8 @@ static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary) -> Dictiona
 			var hit := match_line(sim, u, line, bound)
 			if hit == null:
 				matched = false
+				if explain:
+					notes.append(why_not(sim, u, line, j + 1, bound))
 				break
 			bound = hit
 			why.append(describe_condition(sim, line))
@@ -54,16 +60,85 @@ static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary) -> Dictiona
 			if plan.ok:
 				plan.line = j + 1
 				plan.skipped = skipped
+				plan.notes = _note_texts(notes, false)
 				plan.text = "%s %s – rad %d matchade: %s." % [u.name, _describe_plan(sim, plan),
 						j + 1, " och ".join(why)]
 				return plan
 			skipped.append("Rad %d hoppades över: %s." % [j + 1, plan.reason])
+			if explain:
+				notes.append({"text": skipped[-1], "near": 0.0})
 		elif not matched:
 			# VAL: misslyckas en rad i en kedja hoppar vi till raden efter kedjan.
 			while j < lines.size() and lines[j].action == "test_next":
 				j += 1
 		i = j + 1
-	return {"ok": false, "skipped": skipped, "text": "%s: inget makro passade." % u.name}
+	return {"ok": false, "skipped": skipped, "notes": _note_texts(notes, true),
+			"text": "%s: inget makro passade." % u.name}
+
+
+static func _note_texts(notes: Array[Dictionary], nearest_first: bool) -> Array[String]:
+	var sorted: Array = notes.duplicate()
+	if nearest_first:
+		# Stabil sortering: lika nära behåller radordningen.
+		var idx := range(sorted.size())
+		idx.sort_custom(func(a: int, b: int) -> bool:
+			return sorted[a].near < sorted[b].near or (sorted[a].near == sorted[b].near and a < b))
+		sorted = idx.map(func(i: int) -> Dictionary: return notes[i])
+	var out: Array[String] = []
+	for n in sorted:
+		out.append(n.text)
+	return out
+
+
+## Varför en rad inte stämde, kort och med det närmaste värdet när det finns ett (makro-UX förslag 1).
+## Returnerar {text, near}: near är hur långt ifrån raden var (procentenheter liv), annars ett stort tal.
+static func why_not(sim: CombatSim, u: CombatUnit, line: Dictionary, number: int, bound: CombatUnit = null) -> Dictionary:
+	var subject: String = line.subject
+	var group := subject_units(sim, u, subject)
+	if bound != null and subject in ["any_ally", "any_enemy", "all_allies", "all_enemies"] and group.has(bound):
+		group = [bound]
+	var cond: String = line.cond
+	var v: Variant = line.get("value", 0)
+	var alive := group.filter(func(x: CombatUnit) -> bool: return x.alive)
+	var hint := ""
+	var near := 1000.0
+	var hp_cond := cond in ["hp_below", "hp_above"]
+	if group.is_empty():
+		hint = "finns inte"
+	elif alive.is_empty() and not cond in ["is_alive", "deaths_at_least", "revives_at_least"]:
+		hint = "har stupat" if group.size() == 1 else "ingen lever"
+	elif subject.begins_with("all_"):
+		for x in alive:
+			if not test_condition(sim, u, x, line, group):
+				hint = "inte %s" % x.name
+				if hp_cond:
+					hint += " %d %%" % roundi(x.hp_pct() * 100.0)
+					near = absf(x.hp_pct() * 100.0 - float(v))
+				break
+	elif hp_cond:
+		# Den som var närmast: lägst liv för "liv <", högst för "liv >".
+		var best: CombatUnit = null
+		for x in alive:
+			if best == null or (cond == "hp_below" and x.hp_pct() < best.hp_pct()) \
+					or (cond == "hp_above" and x.hp_pct() > best.hp_pct()):
+				best = x
+		var pct := best.hp_pct() * 100.0
+		near = absf(pct - float(v))
+		if group.size() == 1:
+			hint = "%s %d %%" % [best.name, roundi(pct)]
+		else:
+			hint = "%s: %s %d %%" % ["lägst" if cond == "hp_below" else "högst", best.name, roundi(pct)]
+	elif group.size() == 1:
+		hint = group[0].name
+	# I en kedja prövas raden bara mot den som matchade raden innan.
+	if bound != null and group.size() == 1 and group[0] == bound and not hint.begins_with(bound.name):
+		hint = "prövat mot " + bound.name + ("" if hint == "" else ", " + hint)
+	elif bound != null and hint == bound.name:
+		hint = "prövat mot " + bound.name
+	var text := "Rad %d stämde inte: %s" % [number, describe_condition(sim, line)]
+	if hint != "":
+		text += " (%s)" % hint
+	return {"text": text + ".", "near": near}
 
 
 ## Prövar en rad. Returnerar figuren som matchade ("that creature"), eller null.

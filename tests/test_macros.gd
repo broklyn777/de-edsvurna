@@ -177,3 +177,68 @@ func test_saved_order_line_picks_the_blinded_enemy() -> void:
 	assert_true(d.ok)
 	assert_eq(d.target, e.id)
 	assert_eq(d.ability, "holy_smite")
+
+
+# --- Makro-UX förslag 1: varför en rad inte valdes -----------------------------
+
+func test_explain_lists_lines_whose_condition_failed() -> void:
+	var sim := _sim()
+	var eira := sim.unit("eira")
+	sim.unit("brokk").hp = sim.unit("brokk").max_hp * 0.64
+	var macro := {"lines": [
+		_line("any_ally", "hp_below", 30, "defend"),
+		_line("any_enemy", "is_alive", 0, "attack")]}
+	var d := MacroRunner.decide(sim, eira, macro, true)
+	assert_true(d.ok)
+	assert_eq(d.notes.size(), 1, str(d.notes))
+	assert_true(d.notes[0].begins_with("Rad 1 stämde inte"), d.notes[0])
+	assert_true("lägst: Brokk 64 %" in d.notes[0], d.notes[0])
+	assert_eq(MacroRunner.decide(sim, eira, macro).notes.size(), 0, "utan explain byggs ingen text (botarna)")
+
+
+func test_explain_nearest_line_first_when_nothing_matched() -> void:
+	var sim := _sim()
+	var eira := sim.unit("eira")
+	sim.unit("alva").hp = sim.unit("alva").max_hp * 0.35
+	var d := MacroRunner.decide(sim, eira, {"lines": [
+		_line("any_ally", "has_status", "poisoned", "defend"),
+		_line("any_ally", "hp_below", 10, "defend"),
+		_line("any_ally", "hp_below", 30, "defend")]}, true)
+	assert_true(not d.ok)
+	assert_eq(d.notes.size(), 3)
+	assert_true(d.notes[0].begins_with("Rad 3"), "rad 3 var närmast (35 % mot 30 %): " + d.notes[0])
+	assert_true(d.notes[2].begins_with("Rad 1"), "villkor utan värde sist: " + d.notes[2])
+
+
+func test_explain_includes_lines_that_could_not_be_done() -> void:
+	var sim := _sim()
+	var eira := sim.unit("eira")
+	eira.charges["hunters_mark"] = 0
+	var d := MacroRunner.decide(sim, eira, {"lines": [
+		_line("any_enemy", "is_alive", 0, "ability", "hunters_mark"),
+		_line("any_enemy", "is_alive", 0, "attack")]}, true)
+	assert_true(d.ok)
+	assert_eq(d.skipped.size(), 1)
+	assert_true("inga Charges" in d.notes[0], str(d.notes))
+
+
+func test_why_not_names_missing_and_failing_units() -> void:
+	var sim := _sim()
+	var eira := sim.unit("eira")
+	var missing := MacroRunner.why_not(sim, eira, _line("enemy_6", "is_alive", 0, "attack"), 1)
+	assert_true("finns inte" in missing.text, missing.text)
+	var all := MacroRunner.why_not(sim, eira, _line("all_allies", "hp_below", 50, "defend"), 2)
+	assert_true("(inte " in all.text and "100 %" in all.text, all.text)
+
+
+# --- Makro-UX förslag 2: startraderna slutar med en rad som nästan alltid passar --
+
+func test_starter_lines_end_with_a_fallback() -> void:
+	var run_script: Script = load("res://scripts/game/run.gd")
+	for id in _data.macros:
+		var lines: Array = run_script.starter_lines(_data, id, _data.macros[id].lines)
+		assert_true(lines.size() <= 3, "%s: få rader i början (%d)" % [id, lines.size()])
+		assert_true(lines.any(func(l: Dictionary) -> bool: return l.action == "attack" and l.subject == "any_enemy"),
+				"%s har en anfallsrad" % id)
+	var brokk: Array = run_script.starter_lines(_data, "brokk", _data.macros.brokk.lines)
+	assert_eq(brokk[-1].cond, "lowest_hp", "Brokks två första rader passar inte efter tur 1: anfallsraden sist")

@@ -91,6 +91,123 @@ func _ready() -> void:
 	roll_rules()
 	_dev_args()
 	apply_name()  # en påhittad profil från en utvecklarflagga
+	_start_fps_governor()
+	if "--go-back" in OS.get_cmdline_user_args():  # bakåtknappen en gång efter en sekund (skärmdumpar)
+		get_tree().create_timer(1.0).timeout.connect(go_back)
+
+
+# --- Prestanda och Androids bakåtknapp (docs/research/prestanda-android.md punkt 1, 8 och 9) ---------------------
+
+## Bildtakten på skärmar utan 3D (borgen, kartorna, menyerna): 30 delar 60, 90 och 120 Hz jämnt och halverar ungefär
+## GPU-arbetet. Striden ritas som förut (ingen gräns) utom när den står still (paus, makroredigeraren, en fråga).
+## Kartornas glid och zoom och rumsögonblicken får 60 (skärmen svarar wants_smooth()).
+const MENU_FPS := 30
+const SMOOTH_FPS := 60
+const BATTLE_FPS := 0
+const EXIT_WINDOW_MS := 2500
+var _back_exit_until := 0
+var _toast_layer: CanvasLayer
+
+
+## En nod som räknar ut bildtakten varje bildruta, också när trädet är pausat (inställningsrutan i striden).
+class FpsGovernor extends Node:
+	var run: Node
+
+	func _process(_delta: float) -> void:
+		run.update_fps()
+
+
+func _start_fps_governor() -> void:
+	# Inte headless (testerna och botarna ska gå så fort de kan) och inte när en film spelas in (fast takt).
+	if DisplayServer.get_name() == "headless" or "--write-movie" in OS.get_cmdline_args():
+		return
+	var g := FpsGovernor.new()
+	g.run = self
+	g.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(g)
+
+
+static func wanted_fps(in_battle: bool, battle_still: bool, smooth: bool) -> int:
+	if in_battle:
+		return MENU_FPS if battle_still else BATTLE_FPS
+	return SMOOTH_FPS if smooth else MENU_FPS
+
+
+func update_fps() -> void:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var in_battle := scene.scene_file_path == BATTLE_SCENE
+	var still := get_tree().paused or Engine.time_scale == 0.0
+	var smooth: bool = scene.has_method("wants_smooth") and scene.wants_smooth()
+	var fps := wanted_fps(in_battle, still, smooth)
+	if Engine.max_fps != fps:
+		Engine.max_fps = fps
+
+
+## Androids bakåtknapp eller bakåtsvep. Med application/config/quit_on_go_back=false avslutas spelet inte längre direkt:
+## en öppen ruta stängs först, sedan gör skärmen sitt eget bakåt (go_back() eller ‹-knappen). Där det inte finns något
+## bakåt (borgen, profilerna, kartorna) avslutar ett andra tryck inom 2,5 sekunder spelet.
+func go_back() -> void:
+	for n in get_tree().root.find_children("*", "CanvasLayer", true, false):
+		if n.is_queued_for_deletion():
+			continue
+		if n is SettingsBox:
+			n._close()
+			return
+		if n is HelpBox:
+			n._next()
+			return
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	if scene.has_method("go_back") and scene.go_back():
+		return
+	if scene is TapScreen and not scene.scene_file_path in [BASE_SCENE, SLOTS_SCENE, ROOM_MAP_SCENE]:
+		scene._tap(scene.back_rect().get_center())
+		ui_tap()
+		return
+	if Time.get_ticks_msec() < _back_exit_until:
+		_save()
+		save_macros()
+		playtime.save()
+		get_tree().quit()
+		return
+	_back_exit_until = Time.get_ticks_msec() + EXIT_WINDOW_MS
+	_show_toast("Tryck bakåt igen för att avsluta")
+
+
+func _show_toast(text: String) -> void:
+	if _toast_layer != null:
+		_toast_layer.queue_free()
+	_toast_layer = CanvasLayer.new()
+	_toast_layer.layer = 120
+	_toast_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_toast_layer)
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_override("font", UiStyle.bold())
+	label.add_theme_font_size_override("font_size", 19)
+	label.add_theme_color_override("font_color", UiStyle.GOLD)
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(0, 0, 0, 0.82)
+	box.border_color = Color(UiStyle.TRAIT_GOLD, 0.7)
+	box.set_border_width_all(2)
+	box.set_corner_radius_all(6)
+	box.content_margin_left = 22
+	box.content_margin_right = 22
+	box.content_margin_top = 10
+	box.content_margin_bottom = 10
+	label.add_theme_stylebox_override("normal", box)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_toast_layer.add_child(label)
+	var vs := get_viewport().get_visible_rect().size
+	label.reset_size()
+	label.position = Vector2((vs.x - label.size.x) / 2.0, vs.y - label.size.y - 110.0)  # ovanför knappraden
+	var layer := _toast_layer
+	get_tree().create_timer(EXIT_WINDOW_MS / 1000.0, true, false, true).timeout.connect(func() -> void:
+		if is_instance_valid(layer):
+			layer.queue_free())
 
 
 ## Byter till sparplatsen: sökvägarna pekar dit (mappen skapas vid behov).
@@ -222,6 +339,8 @@ func _process(_delta: float) -> void:
 
 func _notification(what: int) -> void:
 	match what:
+		NOTIFICATION_WM_GO_BACK_REQUEST:
+			go_back()
 		NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_WM_CLOSE_REQUEST:
 			_focused = false
 			playtime.save()  # appen kan dödas i bakgrunden
@@ -753,11 +872,23 @@ func macro_hint(hero_id: String) -> Dictionary:
 
 ## En ny profils startrader för en följeslagare (0.23, 0.24.1): de två första, men inte raden som makroförslaget
 ## lär ut (som Alvas "hela den som har lågt liv"), så att förslaget visas när hen ansluter.
+## Makro-UX förslag 2, varianten nära Siralim: sist står alltid FIRST_LINE (anfall fienden med lägst liv), så att en ny
+## profils följeslagare aldrig står stilla för att ingen rad passade. Ingen fast standardrad utanför listan: raden är
+## en vanlig rad som går att ändra och ta bort, och ett makro där inget passar väntar fortfarande som i Siralim.
 static func starter_lines(game_data: Dictionary, hero_id: String, lines: Array) -> Array:
 	var hint: Dictionary = game_data.heroes.get(hero_id, {}).get("macro_hint", {}).get("line", {})
 	var rest := lines.filter(func(l: Dictionary) -> bool: return hint.is_empty() or l.get("cond", "") != hint.cond \
 			or l.get("action", "") != hint.action or l.get("ability", "") != hint.get("ability", ""))
-	return rest.slice(0, 2)
+	var out := rest.slice(0, 2)
+	if not out.any(func(l: Dictionary) -> bool: return _is_fallback(l)):
+		out.append(FIRST_LINE.duplicate(true))
+	return out
+
+
+## En rad som nästan alltid passar: anfall någon fiende (lägst liv eller som kan skadas).
+static func _is_fallback(l: Dictionary) -> bool:
+	return l.get("subject", "") == "any_enemy" and l.get("cond", "") in ["lowest_hp", "not_immune", "is_alive"] \
+			and l.get("action", "") == "attack"
 
 
 ## Hjältarna som makroskärmen visar (0.23.2): Paladinen och de som har anslutit.

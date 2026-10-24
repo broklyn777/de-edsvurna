@@ -103,6 +103,13 @@ func _can_go() -> bool:
 	return not companions.is_empty() or run.profile.recruited.is_empty()
 
 
+## Androids bakåtknapp (Run.go_back): som ‹ KARTAN.
+func go_back() -> bool:
+	_done()
+	run.ui_tap()
+	return true
+
+
 ## Sparar sällskapet och går tillbaka till kampanjkartan.
 func _done() -> void:
 	if not companions.is_empty():

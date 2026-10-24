@@ -115,6 +115,8 @@ func _ready() -> void:
 			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
 		elif arg == "--settings":
 			SettingsBox.open.call_deferred(self, true)  # 0.30: inställningarna öppna (skärmdumpar)
+		elif arg == "--macro-log-open":
+			(func() -> void: macro_log.expanded = true).call_deferred()  # hela makrologgen med "varför inte" (skärmdumpar)
 		elif arg == "--combo" or arg == "--offer-order" or arg == "--combo-first":
 			_dev_combo = true
 			_dev_combo_first = arg == "--combo-first"
@@ -521,6 +523,20 @@ func _give_dev_statuses() -> void:
 	sim._add_aura(p, sim.enemies[2 % sim.enemies.size()], "frozen")
 
 
+## Androids bakåtknapp (Run.go_back): stänger det som är öppet, annars pausar striden med inställningsrutan (LJUD).
+## Striden avslutas aldrig av ett felsvep; GE UPP finns kvar som knapp.
+func go_back() -> bool:
+	if _macro_editor != null:
+		return _macro_editor.go_back()
+	if damage_log.open:
+		damage_log.close()
+	elif macro_log.expanded:
+		macro_log.expanded = false
+	elif settings_chip.visible and not overlay.mode in ["confirm", "victory", "defeat"]:
+		SettingsBox.open(self, true)
+	return true
+
+
 ## 0.29.5: ändra makrona mitt i striden. Den som har turen (eller Paladinen) väljs först; ändringarna gäller direkt.
 func _open_macro_editor() -> void:
 	if _macro_editor != null or overlay.mode in ["confirm", "victory", "defeat"] or damage_log.open:
@@ -779,8 +795,8 @@ func _save_order() -> void:
 ## och spelaren väljer själv.
 func _run_macro() -> void:
 	var u := sim.current
-	var d := MacroRunner.decide(sim, u, run.macro_for(u.id))
-	macro_log.add({"text": d.text, "ok": d.ok, "skipped": d.skipped})
+	var d := MacroRunner.decide(sim, u, run.macro_for(u.id), true)
+	macro_log.add({"text": d.text, "ok": d.ok, "skipped": d.skipped, "notes": d.notes})
 	if not d.ok:
 		sfx.play("macro_nomatch", -4.0, 0.0)
 		overlay.message("Inget makro passade – välj själv")

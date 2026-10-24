@@ -298,6 +298,19 @@ func _visit(delta: float) -> void:
 		_visitor_arrives()
 
 
+## Androids bakåtknapp (Run.go_back): hoppar fram i ett samtal eller en hemkomst som ett tryck gör; en valmeny står
+## kvar (valen har egna följder). Annars frågar Run om spelet ska avslutas.
+func go_back() -> bool:
+	if _home_summary or not _visitor.is_empty():
+		_tap(Vector2(-1000, -1000))
+		return true
+	if not _conv.is_empty():
+		if not (_conv.menu and _conv.i == _conv.lines.size() - 1):
+			_advance()
+		return true
+	return false
+
+
 func _visitor_arrives() -> void:
 	var v := _visitor
 	_visitor = {}

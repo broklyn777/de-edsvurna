@@ -398,6 +398,13 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   **Radeditorn** (0.30.24, VD): ett sökfält filtrerar alla fyra kolumnerna (alla ord måste finnas; det valda syns alltid),
   villkoren har grupper (Vanliga, Liv, Status, Egenskaper, Charges, Artefakt, Alla; Vanliga utan de hundratals
   egenskaperna), högre rader och en bred rullningslist. `--macros "--macro-search=liv 30"` för skärmdumpar.
+  Sökfältet syns (makro-UX förslag 5, `docs/research/makro-ux.md`): en ritad lupp, guldram och förslagschips (liv,
+  förgiftad, Charges, lägst) som fyller i sökningen utan tangentbord; fokus av sig självt bara utan pekskärm.
+  **Varför inte** (förslag 1): `MacroRunner.decide(…, explain)` ger `notes`, en rad per rad ovanför den valda, också
+  villkor som inte stämde ("Rad 1 stämde inte: någon allierad har liv < 30 % (lägst: Brokk 64 %)", `why_not`); makrologgen
+  visar dem när den öppnas, och när inget passade står den närmaste raden först och syns i hörnet ("Närmast: …").
+  **Startraderna** (förslag 2, varianten nära Siralim): `Run.starter_lines` lägger `FIRST_LINE` sist, så att en ny profils
+  följeslagare inte står stilla; ingen fast standardrad utanför listan (det vore en avvikelse att ta upp med VD).
   **Spara som order** (0.30, prototyp): väljer spelaren själv något som makrot inte hade valt (en helning på en skadad,
   eller en förmåga mot en status den slår hårdare mot) visar striden en guldknapp i 9 sekunder som lägger en sådan rad
   överst i hjältens makro (`battle.gd` `_offer_order`, `_save_order`; `--offer-order`).
@@ -430,6 +437,12 @@ uppdaterad när nya begrepp tillkommer.
 - Stridslogiken i `src/combat/` ska vara ren logik utan noder, så den kan testas och simuleras headless.
 - Data (hjältar, fiender, förmågor, egenskaper) i `data/`.
 - Allt UI ska fungera med touch; musklick emuleras som touch.
+- Prestanda och bakåtknappen (`docs/research/prestanda-android.md` punkt 1, 2, 8, 9): `Run.update_fps` ger 30 bilder per
+  sekund utanför striden (60 när skärmen svarar `wants_smooth()`: kartornas zoom, rumsögonblick), striden utan gräns som
+  förut men 30 när den står still; inte headless eller med `--write-movie`. Pergamentet (`Parchment`) ritas en gång i en
+  SubViewport och bara om när storlek eller zoom ändras. `quit_on_go_back=false`: `Run.go_back` stänger en öppen ruta,
+  sedan skärmens `go_back()` eller ‹-knapp; striden pausar med inställningsrutan; i borgen, profilerna och grottan
+  avslutar ett andra tryck inom 2,5 s. `--go-back` trycker bakåt en gång efter en sekund (skärmdumpar).
 - Text (0.20.3): minst 15 px (`UiStyle.MIN_SIZE`, golv i `UiStyle.text`), brödtext ~17–19 px (`UiStyle.BODY_SIZE`,
   `UiStyle.para()` bryter rader). Kontrollera skärmar i 1280×720 och telefonens bredd: `godot --path . --resolution 1560x720`.
 
