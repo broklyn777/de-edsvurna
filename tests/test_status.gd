@@ -257,3 +257,19 @@ func test_unbound_wears_off_after_the_next_own_turn() -> void:
 	assert_true(brokk.auras.has("unbound"), "skyddar genom nästa tur")
 	sim._tick_turn_start(brokk)
 	assert_true(not brokk.auras.has("unbound"), "borta turen efter")
+
+
+## 0.30.32: Benstorm frös om en frusen hjälte och chansen att tina började om från 25 % (soak: 17–25 turer i crypt_3).
+func test_refreezing_keeps_the_thaw_chance() -> void:
+	var sim := _sim()
+	var brokk := sim.unit("brokk")
+	sim._add_aura(brokk, brokk, "frozen")
+	brokk.auras.frozen.thaw = 1.0  # två misslyckade försök
+	sim._add_aura(brokk, brokk, "frozen")
+	assert_eq(float(brokk.auras.frozen.thaw), 1.0, "påfylld frysning behåller chansen att tina")
+	assert_true(sim._wakes_or_thaws(brokk), "tinar nästa tur")
+	brokk.auras.erase("unbound")  # Fri efter upptiningen
+	sim._add_aura(brokk, brokk, "snared")
+	brokk.auras.snared.break = 0.8
+	sim._add_aura(brokk, brokk, "snared")
+	assert_eq(float(brokk.auras.snared.break), 0.8, "påfylld snara behåller chansen att slita sig loss")
