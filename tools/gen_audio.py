@@ -763,10 +763,9 @@ def ambience_mountain():
     return fold_loop(buf, int(loop * sr)), sr
 
 
-def mountain_call(v):
+def mountain_call(v, sr=ASR):
     """Kulning långt bort i dalen: en vallkulla kallar hem korna. Höga, långa toner med ett slag uppåt och
     fall nedåt i slutet (kulningens fraser), ingen känd melodi. Långt bort: lågpass, mycket efterklang."""
-    sr = ASR
     phrases = [[("D6", 1.6), ("A5", 0.5), ("D6", 1.2), ("C6", 0.4), ("A5", 1.8)],
                [("E6", 1.2), ("D6", 0.4), ("E6", 1.5), ("B5", 0.5), ("A5", 0.4), ("E5", 1.6)]][v]
     total = sum(d for _, d in phrases) + 4.0
@@ -838,6 +837,79 @@ def stone_land(v):
                          (lowpass(rubble(1.2, sr, 14 + 4 * v), 3000, sr), 0.05, 0.7)) * np.linspace(1, 0, int(1.5 * sr)) ** 0.5)
 
 
+def bowed(freq, dur, sr, bright=0.85, accent=0.0):
+    """Stråke på en nyckelharpa: ljusa deltoner, stråkbrus och ett svagt eko från resonanssträngarna (A och E)."""
+    n = int(dur * sr)
+    x = additive(freq, dur, sr, string_partials(16, bright), vib=0.004, vib_rate=5.5)
+    x += 0.08 * bandpass(noise(n), 1500, 5000, sr)
+    x *= env_adsr(n, sr, 0.06, 0.3 + accent, 0.75, min(0.3, dur * 0.4))
+    if accent:
+        x *= 1 + accent * np.exp(-np.arange(n) / sr * 6)
+    ring = sum(additive(hz(s), dur + 1.5, sr, [(1, 1)]) for s in ("A4", "E5", "A5"))
+    ring *= np.exp(-np.arange(len(ring)) / sr * 1.5) * np.minimum(1, np.arange(len(ring)) / sr / 0.2)
+    out = np.zeros(len(ring))
+    out[:n] += x
+    return out + 0.015 * ring
+
+
+def music_mountain():
+    """Trollberget: tungt, kallt och gammalt. A-dorisk polska i långsam 3/4 (tung etta, dragen tvåa, tom trea),
+    bordun i kvint som från en nyckelharpa, låga stråkar, en djup trumma på ettan och en kulning långt bort.
+    Egen melodi; inget ur Grieg (ingen stegvis stigande staccatofigur) och inga körer."""
+    bpm, bars = 84, 16
+    beat = 60 / bpm
+    bar = 3 * beat
+    loop = bars * bar
+    sr = MSR
+    buf = np.zeros(int((loop + 6) * sr))
+    t = np.arange(len(buf)) / sr
+    # bordun A–E: stråkdrag som sväller på varje etta
+    drone = (additive(hz("A1"), loop + 6, sr, string_partials(12, 0.7), vib=0.002, vib_rate=0.4)
+             + 0.7 * additive(hz("E2"), loop + 6, sr, string_partials(10, 0.7), vib=0.002, vib_rate=0.5))
+    pulse = 0.7 + 0.3 * np.exp(-((t % bar) / bar) * 3)
+    place(buf, fade(lowpass(drone * pulse, 900, sr), sr, 5, 5), 0, sr, 0.10)
+    # låga stråkar: dorisk följd (D-dur som fyran ger folktonen), ett tungt drag på tvåan
+    prog = [["A2", "C3", "E3"], ["A2", "C3", "E3"], ["D3", "F#3", "A3"], ["A2", "C3", "E3"],
+            ["G2", "B2", "D3"], ["A2", "C3", "E3"], ["F2", "A2", "C3"], ["E2", "G2", "B2"],
+            ["A2", "C3", "E3"], ["D3", "F#3", "A3"], ["A2", "C3", "E3"], ["G2", "B2", "D3"],
+            ["F2", "A2", "C3"], ["G2", "B2", "D3"], ["E2", "G#2", "B2"], ["A2", "C3", "E3"]]
+    roots = ["A1", "A1", "D2", "A1", "G1", "A1", "F1", "E1", "A1", "D2", "A1", "G1", "F1", "G1", "E1", "A1"]
+    low = string_partials(12, 0.6)
+    for b, ch in enumerate(prog):
+        t0 = b * bar
+        x = additive(hz(roots[b]), bar + 0.8, sr, low)
+        place(buf, lowpass(x, 700, sr) * env_adsr(len(x), sr, 0.08, 0.6, 0.7, 0.6), t0, sr, 0.20)
+        for note in ch:
+            x = additive(hz(note), 1.6 * beat, sr, low, vib=0.003, vib_rate=4.8)
+            x = lowpass(x, 1400, sr) * env_adsr(len(x), sr, 0.12, 0.4, 0.6, 0.35)
+            place(buf, x, t0 + beat, sr, 0.07)
+        # trumman på ettan, och ett dovt slag in i nästa takt var fjärde
+        place(buf, timpani(hz("A1"), 2.0, sr), t0, sr, 0.30)
+        place(buf, thump(0.8, sr, 60, 30), t0, sr, 0.25)
+        if b % 4 == 3:
+            place(buf, timpani(hz("A1"), 1.5, sr), t0 + 2.5 * beat, sr, 0.12)
+    # nyckelharpans melodi i takt 5–12 (egen polskefras i A-dorisk, låg och sträv): (ton, takt, slag, längd)
+    mel = [("E4", 4, 0, 1.5), ("D4", 4, 1.5, 0.5), ("C4", 4, 2, 1),
+           ("B3", 5, 0, 1), ("A3", 5, 1, 2),
+           ("C4", 6, 0, 0.5), ("D4", 6, 0.5, 0.5), ("E4", 6, 1, 1), ("F#4", 6, 2, 1),
+           ("E4", 7, 0, 3),
+           ("A4", 8, 0, 1.5), ("G4", 8, 1.5, 0.5), ("E4", 8, 2, 1),
+           ("F#4", 9, 0, 1), ("D4", 9, 1, 1), ("E4", 9, 2, 1),
+           ("C4", 10, 0, 1.5), ("B3", 10, 1.5, 0.5), ("G3", 10, 2, 1),
+           ("A3", 11, 0, 3)]
+    for note, b, at, length in mel:
+        d = length * beat
+        x = bowed(hz(note), d + 0.25, sr, 0.85, accent=0.4 if at == 0 else 0.0)
+        place(buf, lowpass(x, 3200, sr), b * bar + at * beat, sr, 0.10)
+        if length >= 1.5:  # förslag: ett kort grepp ovanifrån före långa toner, som i spelmansmusik
+            g = bowed(hz(note) * 2 ** (2 / 12), 0.09, sr, 0.85)
+            place(buf, lowpass(g, 3200, sr), b * bar + at * beat - 0.07, sr, 0.05)
+    # kulning långt bort, en gång per loop, efter att melodin tystnat
+    place(buf, lowpass(mountain_call(0, sr), 1800, sr), 12 * bar + 0.5 * beat, sr, 0.10)
+    buf = reverb(buf, sr, 4.0, 0.5, damp=1800, predelay=0.04)
+    return fold_loop(buf, int(loop * sr)), sr
+
+
 def mountain():
     """Bara Trollbergets ljud (behöver inte Kenney): python tools/gen_audio.py --berget"""
     x, sr = ambience_mountain()
@@ -851,6 +923,8 @@ def mountain():
         write(f"troll_growl/troll_growl_{v}.ogg", troll_growl(v), XSR, SQ)
         write(f"stone_throw/stone_throw_{v}.ogg", stone_throw(v), XSR, SQ)
         write(f"stone_land/stone_land_{v}.ogg", stone_land(v), XSR, SQ)
+    x, sr = music_mountain()  # sist, så att ljuden ovan blir desamma som förut
+    write("music/music_mountain.ogg", normalize(x, 0.8), sr, MQ)
 
 
 # ---------------------------------------------------------------- huvudprogram

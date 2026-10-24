@@ -23,6 +23,7 @@ sömlöst om man sätter `loop = true` på `AudioStreamOggVorbis` (i koden eller
 | `music_base.ogg` | D-dur, 72 bpm, harpa, stråkar, flöjt – lugn och hoppfull | Basen (alla platser: Kryptporten, Övningsgården, Smeden, Edsaltaret, Biblioteket, Makron) och lägret |
 | `music_crypt.ogg` | D-moll, 60 bpm, bordun, cello, gravklocka, avlägsen puka – dov | Strider i Benkryptan (våning 0–1) |
 | `music_chapel.ogg` | E-frygisk, orgel och kör, tritonus, svajande "gammalt band" – sakral och förvriden | Strider i Det fördärvade kapellet (våning 0–1) |
+| `music_mountain.ogg` (byggd, inte inkopplad) | A-dorisk polska i långsam 3/4 (84 bpm, 16 takter, 34 s): tung etta med en djup trumma, dragen tvåa, tom trea. Bordun i kvint (A–E) som från en nyckelharpa, låga stråkar, en egen spelmansfras med förslag i takt 5–12 och en kulning långt bort i takt 13. Tungt, kallt och gammalt; inget ur Grieg, inga körer | Strider på Trollberget (`docs/plan/trollens-realm.md` §12). Bossen (Bergakungen) använder `music_boss.ogg` |
 | `music_boss.ogg` | C-moll, 132 bpm, ostinato, pukor, mässing, kör – intensiv | Bosstrider (Benfursten, Den fallne biskopen), och i Övningsgården mot en boss |
 
 Förslag på inkoppling: en egen `_music`-spelare i `sfx.gd` med `play_music(name, volume_db := -14.0)`
@@ -82,12 +83,15 @@ soundfile, se filhuvudet). En full körning bygger dem sist, så att de andra lj
 | `stone_throw` | 2 | Ett stönande tag, skrap när stenen lossnar och ett tungt sus. `cue` för Kyrkkastarens `boulder_throw` och `moss_throw` |
 | `stone_land` | 2 | Stenen slår ned: krasch, djup duns, grus som rullar ut. `sound` för `boulder_throw`, `moss_throw`, `bridge_toll` |
 
-Kvar ur §12: vaggvisans nynnande, Bergsråets baklänges kulning och `bell_toll`, och musiken (`music_mountain.ogg`).
+Kvar ur §12: vaggvisans nynnande, Bergsråets baklänges kulning, `bell_toll` och en bossvariant av musiken (samma
+bordun, trumman dubbelt så tät).
 
 **Så kopplas stämningen in** (görs på Realmens gren): `_start_music()` i `scripts/battle/battle.gd` väljer i dag mellan
 kryptan och kapellet med en `if`. Förslag: `"ambience": "ambience_mountain"` (och gärna `"ambience_db": -11.0`) i
 Realmens post i `realms.json`, och `_start_music()` läser `data.realms[realm].get("ambience", "ambience_crypt")`.
-Ogg-filen loopas av `start_ambience()`. Kör `godot --headless --path . --import` en gång så att `.import`-filerna skapas.
+Ogg-filen loopas av `start_ambience()`. Musiken på samma sätt: `"music": "music_mountain"` i Realmens post,
+och `_start_music()` spelar `data.realms[realm].get("music", "music_crypt")` i stället för valet mellan kapellet och
+kryptan (bossar behåller `music_boss`). `play_music()` loopar ogg som de andra spåren. Kör `godot --headless --path . --import` en gång så att `.import`-filerna skapas.
 
 ## Strid: händelser
 
