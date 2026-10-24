@@ -21,7 +21,8 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"deaths_at_least", "revives_at_least", "is_alive", "highest_speed", "lowest_hp", "lowest_defense",
 		"highest_defense", "highest_attack", "own_turn",
 		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced",
-		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff", "is_charging", "charge_left_at_most"]
+		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff", "is_charging", "charge_left_at_most",
+		"is_channeling", "is_charge_target"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -247,6 +248,11 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return sim.is_charging(x)
 		"charge_left_at_most":
 			return sim.is_charging(x) and sim.charge_left(x) <= int(v)
+		# Väktarsteg 2: håller en annan fiendes laddning vid liv (Midnatt), och är målet för en laddning (Dom).
+		"is_channeling":
+			return sim.is_channeling(x)
+		"is_charge_target":
+			return sim.is_charge_target(x)
 		"lacks_artifact":
 			return x.artifact.get("type", "") != v
 	return false
@@ -408,6 +414,10 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "laddar en varslad attack"
 		"charge_left_at_most":
 			return "laddar, slår om högst %d %s" % [int(value), "tur" if int(value) == 1 else "turer"]
+		"is_channeling":
+			return "håller en laddning vid liv"
+		"is_charge_target":
+			return "är måltavla för en laddning"
 	return cond
 
 

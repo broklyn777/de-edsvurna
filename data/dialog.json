@@ -3720,5 +3720,38 @@
 			]
 		],
 		"toast": "FEMTE PLATSEN ÖPPEN: PALADINEN + %d FÖLJESLAGARE"
+	},
+	"gate_guard": {
+		"_comment": "Väktarsteg 2: Sven vid porten säger vem som vaktar det valda djupet (Dialog.gate_guard_line). {Vakt}/{vakt} väktarens ledare, {möte} mötet, {Boss}/{boss} huvudbossen, {plats} Realmen, {djup} djupet.",
+		"guardian": [
+			{
+				"id": "sven_guard_1",
+				"text": "Djup {djup} i {plats}? Där nere är det inte {boss} som vaktar nu. Det är {vakt}. {möte}, säger de som kom upp."
+			},
+			{
+				"id": "sven_guard_2",
+				"text": "{Vakt} vaktar djup {djup} i {plats} nu, inte {boss}. Jag vet inte vilket som är värst."
+			},
+			{
+				"id": "sven_guard_3",
+				"text": "De som kom upp från {plats} viskade om {möte}. Det är {vakt} som håller djup {djup}."
+			}
+		],
+		"boss": [
+			{
+				"id": "sven_boss_1",
+				"text": "Djup {djup} i {plats}. Där väntar {boss} själv. Ta det lugnt i trappan."
+			},
+			{
+				"id": "sven_boss_2",
+				"text": "{Boss} sitter på djup {djup} igen. Somliga saker flyttar sig aldrig."
+			}
+		],
+		"twisted": [
+			{
+				"id": "sven_twisted_1",
+				"text": "I {plats} har {boss} tagit allt nu. Det spelar ingen roll vilket djup du väljer."
+			}
+		]
 	}
 }

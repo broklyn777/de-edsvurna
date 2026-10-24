@@ -224,6 +224,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		var e := CombatUnit.from_data("%s_%d" % [kind, counts[kind]], game_data.enemies[kind], 1)
 		e.kind = kind
 		e.position = ENEMY_SLOTS[i]
+		apply_override(e, unit_override(enc, kind, counts[kind]))
 		var bonus := float(opts.get("stat_bonus", 1.0))
 		var mult := enemy_mult(enc, sim.depth)
 		# Elitgruppen på den första nedstigningen (RunState.FIRST_DESCENT_ELITE): mötets egen styrka ersätter stat_mult
@@ -268,6 +269,29 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		sim._add(e)
 		sim.enemies.append(e)
 	return sim
+
+
+## Väktarsteg 2 (docs/plan/bossbank.md): ett möte kan ge sina fiender egna egenskaper och regler som bara gäller i det
+## mötet ("overrides" i encounters.json), så att Klockaren som väktare ringer i Midnattsklockan men inte i en elitgrupp.
+## Nyckeln är fiendetypen, eller "typ#n" för den n:e av samma typ (två Kistbärare med olika egenskaper).
+## {"traits": [läggs till], "remove_traits": [tas bort], "rules": [ersätter], "name": "…"}.
+static func unit_override(enc: Dictionary, kind: String, n: int) -> Dictionary:
+	var ov: Dictionary = enc.get("overrides", {})
+	return ov.get("%s#%d" % [kind, n], ov.get(kind, {}))
+
+
+static func apply_override(e: CombatUnit, ov: Dictionary) -> void:
+	if ov.is_empty():
+		return
+	for t in ov.get("remove_traits", []):
+		e.traits.erase(t)
+	for t in ov.get("traits", []):
+		if not e.traits.has(t):
+			e.traits.append(t)
+	if ov.has("rules"):
+		e.rules = ov.rules
+	if ov.has("name"):
+		e.name = ov.name
 
 
 # --- Publikt API ------------------------------------------------------------
@@ -933,8 +957,54 @@ func windup_of(ability_id: String) -> Dictionary:
 func windup_breaks(ability_id: String, reason: String) -> bool:
 	var w := windup_of(ability_id)
 	if reason == "channel":
-		return str(w.get("channeled_by", "")) != ""
+		return str(w.get("channeled_by", "")) != "" or w.get("channeled_by_family", false)
+	if reason == "absolved":
+		return str(w.get("target_aura", "")) != ""
 	return (w.get("broken_by", []) as Array).has(reason)
+
+
+## Väktarsteg 2 (Midnattsklockan): figurer som håller en allierads laddning vid liv, så att den bryts när de alla är
+## döda – "channeled_by" (en typ) eller "channeled_by_family" (alla ur laddarens familj). Makrovillkoret "kanaliserar".
+func is_channeling(u: CombatUnit) -> bool:
+	return channel_of(u) != ""
+
+
+## Förmågan som figuren håller vid liv ("" om ingen).
+func channel_of(u: CombatUnit) -> String:
+	if u == null or not u.alive:
+		return ""
+	for e in units:
+		if e == u or e.team != u.team or not is_charging(e):
+			continue
+		var w := windup_of(e.charging.ability)
+		if str(w.get("channeled_by", "")) == u.kind and u.kind != "":
+			return e.charging.ability
+		if w.get("channeled_by_family", false) and e.family != "" and u.family == e.family:
+			return e.charging.ability
+	return ""
+
+
+## Sant om figuren är målet för en motståndares laddning (Inkvisitorns Dom, Benfurstens Dödsdom). Makrovillkoret
+## "är måltavla för en laddning".
+func is_charge_target(u: CombatUnit) -> bool:
+	if u == null or not u.alive:
+		return false
+	for e in units:
+		if e.team != u.team and is_charging(e) and charging_all(e):
+			return true
+		if e.team != u.team and is_charging(e) and (e.intent.get("targets", []) as Array).has(u.id):
+			return true
+	return false
+
+
+func _channel_alive(e: CombatUnit, ability_id: String) -> bool:
+	var w := windup_of(ability_id)
+	var kind := str(w.get("channeled_by", ""))
+	if kind != "" and not _allies(e).any(func(x: CombatUnit) -> bool: return x != e and x.kind == kind):
+		return false
+	if w.get("channeled_by_family", false) and family_count(e) == 0:
+		return false
+	return true
 
 
 func is_charging(u: CombatUnit) -> bool:
@@ -948,13 +1018,16 @@ func charge_left(u: CombatUnit) -> int:
 
 ## Sant om laddningen går mot hela sällskapet.
 func charging_all(u: CombatUnit) -> bool:
-	return is_charging(u) and ability(u.charging.ability).get("target", "") == "enemies"
+	return is_charging(u) and ability(u.charging.ability).get("target", "") in ["enemies", "all_enemies"]
 
 
 func _can_start_windup(e: CombatUnit, ability_id: String) -> bool:
 	if windup_of(ability_id).is_empty():
 		return true
 	if e.windup_guard:
+		return false
+	# Väktarsteg 2: en kanaliserad laddning börjar inte utan någon som håller den (Midnatt utan Benfolket).
+	if not _channel_alive(e, ability_id):
 		return false
 	# En Tystad fiende börjar inte en laddning som Tystad bryter (den skulle brytas direkt).
 	return not (has_flag(e, "silence") and windup_breaks(ability_id, "silenced"))
@@ -977,8 +1050,17 @@ func _windup_turn(e: CombatUnit) -> bool:
 				"targets": e.intent.get("targets", [])})
 		return true
 	_emit({"type": "windup_release", "unit": e.id, "ability": e.charging.ability})
+	_reset_windup_stack(e, e.charging.ability)
 	e.charging = {}
 	return false
+
+
+## Väktarsteg 2: "reset_stack" – räknaren som ledde fram till laddningen (Klockans slag) börjar om när den släpps eller
+## bryts.
+func _reset_windup_stack(u: CombatUnit, ability_id: String) -> void:
+	var key := str(windup_of(ability_id).get("reset_stack", ""))
+	if key != "":
+		u.stacks.erase(key)
 
 
 func _windup_damage(u: CombatUnit, amount: float) -> void:
@@ -992,13 +1074,13 @@ func _check_channels() -> void:
 	for e in units:
 		if not is_charging(e):
 			continue
-		var kind := str(windup_of(e.charging.ability).get("channeled_by", ""))
-		if kind != "" and not _allies(e).any(func(x: CombatUnit) -> bool: return x != e and x.kind == kind):
+		if windup_breaks(e.charging.ability, "channel") and not _channel_alive(e, e.charging.ability):
 			_break_windup(e, "channel")
 
 
 func _break_windup(u: CombatUnit, reason: String) -> void:
 	var ability_id: String = u.charging.ability
+	_reset_windup_stack(u, ability_id)
 	u.charging = {}
 	u.windup_guard = true
 	var cooldown: float = ability(ability_id).get("cooldown", 0.0)
@@ -1096,6 +1178,12 @@ func _rule_matches(u: CombatUnit, rule: Dictionary) -> bool:
 	if condition.has("self_stacks_at_least"):
 		var want: Dictionary = condition.self_stacks_at_least
 		if u.stacks.get(want.stack, 0.0) < float(want.n):
+			return false
+	# Väktarsteg 2 (Förhöret): någon motståndare bär minst n staplar av en status.
+	if condition.has("enemy_aura_stacks"):
+		var w: Dictionary = condition.enemy_aura_stacks
+		if not _enemies(u).any(func(x: CombatUnit) -> bool:
+				return x.auras.has(w.aura) and int(x.auras[w.aura].get("stacks", 1)) >= int(w.n)):
 			return false
 	return true
 
@@ -1257,6 +1345,24 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 					_consume_corpse(caster, t)
 				"self_damage":
 					_self_damage(caster, float(effect.get("pct_max_hp", 0.1)), ability_id)
+				# Väktarsteg 2: Klockans slag räknas, väcker familjen; Domen tar bort Skulden den dömde för.
+				"stack":
+					_add_stack(t, effect, {})
+					if effect.has("say"):
+						_emit({"type": "stack_said", "unit": t.id, "stack": effect.stack,
+								"text": str(effect.say).replace("{n}", str(int(t.stacks.get(effect.stack, 0.0))))})
+				"revive_family":
+					var woken := 0
+					for x in units:
+						if woken >= int(effect.get("max", 99)):
+							break
+						if not x.alive and not x.consumed and x.team == t.team and x != t and t.family != "" \
+								and x.family == t.family:
+							_revive(x, float(effect.get("pct", 0.5)))
+							woken += 1 if x.alive else 0
+				"remove_aura":
+					if t.auras.has(effect.aura):
+						_remove_aura(t, effect.aura, "consumed")
 	_release_bonus = {}
 	for r in releases:
 		_run_release(caster, r, targets)
@@ -1952,6 +2058,14 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 	if _rule("withered_grace"):
 		_rule_hit("withered_grace")
 		fx.append({"f": 0.6, "name": data.floor_rules.get("withered_grace", {}).get("name", "Vissnad nåd")})
+	# Väktarsteg 2: mindre helning tagen – statusar (Skuld) och egenskaper hos målet ("modify_heal_taken").
+	for aura_id in tgt.auras:
+		var hm := float(tgt.auras[aura_id].get("heal_taken_mult", 1.0))
+		if hm != 1.0:
+			fx.append({"f": hm, "name": status_name(tgt, aura_id)})
+	for x in _modifiers_named(tgt, "modify_heal_taken", {"source": src.id, "target": tgt.id, "ability": ability_id}):
+		if x.modify.has("heal_taken_mult"):
+			fx.append({"f": float(x.modify.heal_taken_mult), "name": x.name})
 	var mods := combine_mods(fx.map(func(x: Dictionary) -> float: return x.f))
 	var amount := roundf(base * mods)
 	var effective := minf(amount, tgt.max_hp - tgt.hp)
@@ -1973,7 +2087,7 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 ##   ger hela effekten en gång till), "removes": [statusar som den tar bort], "cannot_dispel", "snare" (kan inte
 ##   flyttas på tidslinjen), "leech" (andel av skadan som helar bäraren), "stun" (förlorar turen) m.fl.
 ## Resistant (bossar, 0.22 som originalet): bara statusarna med en Resistant-version ändras (se _add_aura).
-const FACTOR_KEYS := ["damage_taken_mult", "defense_mult", "damage_mult", "int_mult"]
+const FACTOR_KEYS := ["damage_taken_mult", "defense_mult", "damage_mult", "int_mult", "heal_taken_mult"]
 
 
 func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_override := 0.0) -> void:
@@ -2114,8 +2228,73 @@ func _remove_aura(u: CombatUnit, aura_id: String, reason: String) -> void:
 	if aura_id == "barrier":
 		u.barrier = 0.0
 	_emit({"type": "aura_removed", "unit": u.id, "aura": aura_id, "aura_kind": kind, "reason": reason})
+	_check_absolved(u, aura_id)
+	if reason == "expired":
+		_pass_aura(u, aura_id)
 	if is_control(aura_id) and u.alive and data.auras.has("unbound"):
 		_add_aura(u, u, "unbound")
+
+
+## Väktarsteg 2 (Förhöret): en laddning med "target_aura" bryts när målet inte längre bär statusen (Skulden rensades).
+func _check_absolved(u: CombatUnit, aura_id: String) -> void:
+	for e in units:
+		if e.team == u.team or not is_charging(e):
+			continue
+		if str(windup_of(e.charging.ability).get("target_aura", "")) == aura_id \
+				and (e.intent.get("targets", []) as Array).has(u.id):
+			_break_windup(e, "absolved")
+
+
+## Väktarsteg 2 (Systrarnas krona): en status med "pass_to" går vidare när den löper ut eller bäraren faller.
+## "trait:<id>" – till en annan levande i laget som bär egenskapen (slumpad); "weakest_ally" – till den allierade med
+## lägst liv (inte bäraren). Finns ingen annan stannar den hos bäraren (om hen lever).
+func _pass_aura(from: CombatUnit, aura_id: String) -> void:
+	var d: Dictionary = data.auras.get(aura_id, {})
+	var how := str(d.get("pass_to", ""))
+	if how == "" or outcome != "":
+		return
+	var pool: Array[CombatUnit] = []
+	for x in units:
+		if x == from or not x.alive or x.team != from.team:
+			continue
+		if how.begins_with("trait:") and not x.traits.has(how.trim_prefix("trait:")):
+			continue
+		pool.append(x)
+	var to: CombatUnit = null
+	if how == "weakest_ally":
+		for x in pool:
+			if to == null or x.hp_pct() < to.hp_pct():
+				to = x
+	elif not pool.is_empty():
+		to = pool[rng.randi() % pool.size()]
+	if to == null and from.alive:
+		to = from
+	if to == null:
+		return
+	_add_aura(from if from.alive else to, to, aura_id)
+	_emit({"type": "aura_passed", "unit": from.id, "to": to.id, "aura": aura_id})
+
+
+## Väktarsteg 2 (Kistornas råd): egenskaper med "passes_on_death" går vidare till de levande i laget som själva bär en
+## sådan egenskap (rådets medlemmar) när bäraren faller. Ordningen man fäller dem i blir ett val.
+func _pass_traits(dead: CombatUnit) -> void:
+	var heirs: Array[CombatUnit] = []
+	for x in units:
+		if x != dead and x.alive and x.team == dead.team and x.traits.any(func(t: String) -> bool:
+				return data.traits.get(t, {}).get("passes_on_death", false)):
+			heirs.append(x)
+	if heirs.is_empty():
+		return
+	for trait_id in dead.traits.duplicate():
+		if not data.traits.get(trait_id, {}).get("passes_on_death", false):
+			continue
+		var to: Array = []
+		for h in heirs:
+			if not h.traits.has(trait_id):
+				h.traits.append(trait_id)
+				to.append(h.id)
+		if not to.is_empty():
+			_emit({"type": "trait_passed", "unit": dead.id, "to": to, "trait": trait_id})
 
 
 ## 0.30.25: statusar som tar turer (Snärjd, Sover, Frusen). Efter en sådan blir figuren Fri en stund.
@@ -2244,6 +2423,9 @@ func _kill(u: CombatUnit, by: CombatUnit = null) -> void:
 		death.source = by.id  # 0.31: den som fällde (Den brutna gravspaden)
 	_emit(death)
 	_check_channels()
+	for aura_id in had:
+		_pass_aura(u, aura_id)
+	_pass_traits(u)
 	if outcome != "" and u.team == 1:
 		return
 	# Pånyttfödd (0.22): återuppstår med 50 % liv; statusen förbrukas.
@@ -2538,6 +2720,18 @@ func _run_trait_effect(owner: CombatUnit, trait_id: String, effect: Dictionary, 
 			_raise_stat(tgt, effect)
 		"steal_buff":
 			_steal_buff(owner, tgt)
+		# Väktarsteg 2 (Rådets sigill): bäraren ärver den fallnas troféegenskaper resten av striden.
+		"inherit_trophy":
+			var dead := unit(e.get("unit", ""))
+			if dead != null and dead != tgt:
+				for t in dead.traits:
+					if data.traits.get(t, {}).get("trophy", false) and not tgt.traits.has(t):
+						tgt.traits.append(t)
+						_emit({"type": "trait_passed", "unit": dead.id, "to": [tgt.id], "trait": t})
+		# Väktarsteg 2 (Kläppen): bryter en pågående laddning hos målet.
+		"interrupt":
+			if is_charging(tgt):
+				_break_windup(tgt, "bell")
 		"cast":
 			# Utan "target" väljer förmågan själv; annars mot figuren ur händelsen (t.ex. samma fiende).
 			# "ability_from_event": samma förmåga som i händelsen (Häxmästarinnans brutna spira kastar den igen).
@@ -2879,6 +3073,15 @@ func _pick_targets(caster: CombatUnit, ab: Dictionary) -> Array:
 		if not marked.is_empty():
 			pool.assign(marked)
 	match ab.get("pick", "lowest"):
+		# Väktarsteg 2 (Inkvisitorns Dom): den som bär flest staplar av statusen "pick_aura".
+		"aura_stacks":
+			var most: CombatUnit = null
+			for x in pool:
+				var n := int(x.auras.get(ab.get("pick_aura", ""), {}).get("stacks", 0))
+				if n > 0 and (most == null or n > int(most.auras[ab.pick_aura].get("stacks", 0))):
+					most = x
+			if most != null:
+				return [most.id]
 		"random":
 			return [pool[rng.randi() % pool.size()].id]
 		"first":

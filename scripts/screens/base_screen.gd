@@ -608,7 +608,13 @@ func _arrive(station: String) -> void:
 		extra = news
 	elif turn % 3 != 2:
 		extra = Dialog.idle_line(data, run.profile, who, turn)
-	_talk(who, [(greeting + " " + extra).strip_edges()], station, true)
+	var said: Array = [(greeting + " " + extra).strip_edges()]
+	# Väktarsteg 2: Sven säger vem som vaktar det valda djupet innan man går (dialog.json "gate_guard").
+	if station == "gate" and run.profile.intro_done:
+		var guard := Dialog.gate_guard_line(data, run.profile)
+		if guard != "":
+			said.append(guard)
+	_talk(who, said, station, true)
 
 
 const FIND_QUEST_SILVER := 20

@@ -807,6 +807,14 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	var lines: Array[String] = ["%d fiender: %s" % [kinds.size(), ", ".join(names)]]
 	if state.guardian_room(r):
 		lines.push_front(_guardian_line(data, state, enc, kinds))
+		# Väktarsteg 2: väktarens egen fråga och dess trofé (efter två segrar).
+		if String(enc.get("warning", "")) != "":
+			lines.insert(1, String(enc.warning))
+		var gt := RunState.guardian_trophy(data, r.encounter)
+		if gt != "" and data.traits.has(gt):
+			var wins := mini(int(run.profile.guardian_wins.get(r.encounter, 0)), RunState.GUARDIAN_WINS_FOR_TROPHY)
+			lines.append("Väktarens trofé: %s (%d/%d segrar)%s" % [data.traits[gt].name, wins,
+					RunState.GUARDIAN_WINS_FOR_TROPHY, ", i samlingen" if run.collection.has(gt) else ""])
 	elif r.get("boss", false):
 		lines.push_front(String(enc.get("name", "")))
 	if guards != "":
@@ -821,7 +829,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		var tr: String = data.enemies[k].get("trophy", "")
 		if tr != "" and data.traits.has(tr) and not trophies.has(data.traits[tr].name) and not data.enemies[k].get("boss", false):
 			trophies.append(data.traits[tr].name)
-	if not traits.is_empty():
+	# Väktarsteg 2: väktarens varning ersätter egenskapslistan (mötet ger egna egenskaper, och kortet ska rymmas).
+	if not traits.is_empty() and not state.guardian_room(r):
 		lines.append("Egenskaper: " + ", ".join(traits))
 	if not trophies.is_empty():
 		lines.append("Kan lämna: " + ", ".join(trophies))

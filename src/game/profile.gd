@@ -110,6 +110,9 @@ var instability := 0
 var vow := ""
 ## Segrar per boss (Siralims Masters): bosstrofén kräver RunState.BOSS_WINS_FOR_TROPHY.
 var boss_wins := {}
+## Väktarsteg 2: segrar per roterande väktare (mötets id); väktarens trofé kräver RunState.GUARDIAN_WINS_FOR_TROPHY.
+## Skilt från boss_wins: smörjelsen, berättarrutan och bosstroféerna hör till huvudbossen.
+var guardian_wins := {}
 ## Klarade Realm Quests, en per kombination av Realm och djup ("crypt:1").
 var quests_done: Array = []
 ## Djupaste klarade djup per Realm (kampanjkartans front, 0.18).
@@ -606,6 +609,16 @@ func defeat_boss(kind: String) -> void:
 	boss_wins[kind] = int(boss_wins.get(kind, 0)) + 1
 
 
+func defeat_guardian(enc_id: String) -> void:
+	guardian_wins[enc_id] = int(guardian_wins.get(enc_id, 0)) + 1
+
+
+## Väktare (möten) som har besegrats tillräckligt många gånger för att lämna sin trofé.
+func unlocked_guardians() -> Array:
+	return guardian_wins.keys().filter(func(k: String) -> bool:
+		return int(guardian_wins[k]) >= RunState.GUARDIAN_WINS_FOR_TROPHY)
+
+
 ## Bossar som har besegrats tillräckligt många gånger för att lämna sin trofé.
 func unlocked_boss_trophies() -> Array:
 	return boss_wins.keys().filter(func(k: String) -> bool:
@@ -689,6 +702,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "instability", instability)
 	cfg.set_value("progress", "vow", vow)
 	cfg.set_value("progress", "boss_wins", boss_wins)
+	cfg.set_value("progress", "guardian_wins", guardian_wins)
 	cfg.set_value("progress", "quests_done", quests_done)
 	cfg.set_value("progress", "realm_depth", realm_depth)
 	cfg.set_value("progress", "room_moments", room_moments)
@@ -773,6 +787,7 @@ static func load_from(path: String) -> Profile:
 	p.instability = clampi(int(cfg.get_value("progress", "instability", 0)), 0, RunState.MAX_INSTABILITY)
 	p.vow = String(cfg.get_value("progress", "vow", ""))
 	p.boss_wins = cfg.get_value("progress", "boss_wins", {})
+	p.guardian_wins = cfg.get_value("progress", "guardian_wins", {})
 	p.realm_depth = cfg.get_value("progress", "realm_depth", {})
 	p.room_moments = cfg.get_value("progress", "room_moments", true)
 	p.heroes = cfg.get_value("progress", "heroes", {})

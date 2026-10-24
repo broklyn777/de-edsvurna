@@ -460,6 +460,10 @@ func _dev_args() -> void:
 		elif arg.begins_with("--depth="):
 			# --depth=<n> spelar på djup n (bara den här körningen)
 			state.depth = maxi(1, int(arg.get_slice("=", 1)))
+		elif arg.begins_with("--gate-depth="):
+			# --gate-depth=<n> väljer djup n i profilen (sparas inte): Sven vid porten säger vem som vaktar det (väktarsteg 2)
+			dev_profile = true
+			profile.depth = maxi(1, int(arg.get_slice("=", 1)))
 		elif arg == "--map":
 			# --map startar en ny körning och visar rumskartan (med --realm, --depth, --instability före)
 			var keep_realm := state.realm
@@ -1161,8 +1165,10 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 				profile.defeat_boss(kind)
 				narrate("first_boss")
 				narrate("boss_" + kind)  # Trollberget: Bergakungens krona (dialog.json "narrator")
+		if data.encounters[state.encounter()].get("guardian", false):
+			profile.defeat_guardian(state.encounter())  # väktarsteg 2: väktarens trofé efter två segrar
 	mark_sneak(data, profile, state)
-	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
+	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies(), profile.unlocked_guardians())
 	quest_reward = {}
 	room_result = ""
 	var done_now := state.battle_won()

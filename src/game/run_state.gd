@@ -41,6 +41,10 @@ const MAX_INSTABILITY := 3
 const TROPHY_CHANCE_PER_INSTABILITY := 0.1
 ## Bosstroféer kräver så många segrar mot samma boss (Siralims Masters).
 const BOSS_WINS_FOR_TROPHY := 3
+## Väktarsteg 2: en roterande väktare lämnar sin egen regelbrytande trofé (encounters.json "trophy") efter så många
+## segrar mot just den väktaren (Profile.guardian_wins, skilt från boss_wins). VAL: två, inte tre – väktaren kommer bara
+## vart tredje djup, och den andra segern är den som visar att man har lärt sig svaret.
+const GUARDIAN_WINS_FOR_TROPHY := 2
 
 var oath := "oath_vengeance"
 ## Köpta perks i Kallet (Kallets altare). De bärs av Paladinen och verkar som Kallet.
@@ -378,8 +382,12 @@ func silver_mult(data: Dictionary) -> float:
 ## är besegrad BOSS_WINS_FOR_TROPHY gånger (unlocked_bosses). Elittroféerna och den första vanliga är
 ## säkra, resten kommer med trophy_chance(depth, instabilitet).
 func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = [],
-		unlocked_bosses: Array = []) -> Array[String]:
+		unlocked_bosses: Array = [], unlocked_guardians: Array = []) -> Array[String]:
 	var sure: Array[String] = []
+	# Väktarsteg 2: väktarens egen trofé, säker när väktaren är besegrad GUARDIAN_WINS_FOR_TROPHY gånger.
+	var g := guardian_trophy(data, encounter())
+	if g != "" and unlocked_guardians.has(encounter()) and not trophies.has(g):
+		sure.append(g)
 	# Den levande kartan: den förvridna bossen lämnar alltid sin trofé (den visar sig bara på steg 4).
 	for kind in lineup(data, encounter()):
 		var tt: String = data.enemies[kind].get("trophy", "")
@@ -417,6 +425,12 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = 
 			out.append(t)
 		first = false
 	return out
+
+
+## Väktarens trofé för mötet ("" om mötet inte är en väktare eller saknar trofé).
+static func guardian_trophy(data: Dictionary, enc_id: String) -> String:
+	var enc: Dictionary = data.encounters.get(enc_id, {})
+	return String(enc.get("trophy", "")) if enc.get("guardian", false) else ""
 
 
 func take_trophy(trophy_id: String) -> void:

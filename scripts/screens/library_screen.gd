@@ -55,6 +55,13 @@ func _all_trophies() -> Array:
 					if pair[0] != "" and not seen.has(pair[0]):
 						seen.append(pair[0])
 						out.append({"trophy": pair[0], "kind": kind, "realm": realm_id, "elite": pair[1]})
+		# Väktarsteg 2: de roterande väktarnas egna troféer (efter GUARDIAN_WINS_FOR_TROPHY segrar).
+		for enc_id in data.realms[realm_id].get("guardians", []):
+			var gt := RunState.guardian_trophy(data, enc_id)
+			if gt != "" and data.traits.has(gt) and not seen.has(gt):
+				seen.append(gt)
+				out.append({"trophy": gt, "kind": data.encounters[enc_id].enemies[0], "realm": realm_id, "elite": false,
+						"guardian": enc_id})
 	return out
 
 
@@ -93,6 +100,22 @@ func _draw() -> void:
 		var realm_name: String = data.realms[entry.realm].short
 		var boss: bool = d.get("boss", false)
 		var tag: String = RARITY["boss" if boss else ("elite" if entry.elite else "common")]
+		if entry.has("guardian"):
+			var g_need := RunState.GUARDIAN_WINS_FOR_TROPHY
+			var g_wins := mini(int(run.profile.guardian_wins.get(entry.guardian, 0)), g_need)
+			tag = "VÄKTARE %d/%d" % [g_wins, g_need]
+			if run.collection.has(entry.trophy):
+				UiStyle.card(self, _trophy_rect(i), t.name, "", selected == i, UiStyle.TRAIT_GOLD, tag)
+			else:
+				UiStyle.card(self, _trophy_rect(i), "Okänd trofé", "", selected == i, Color("#8a93a6"), tag)
+			if selected == i:
+				var enc_name := String(data.encounters[entry.guardian].get("name", ""))
+				detail_title = "%s – %s" % [t.name if run.collection.has(entry.trophy) else "Okänd trofé", tag]
+				detail_text = "%s (Från väktaren i %s.)" % [t.text, enc_name] if run.collection.has(entry.trophy) else \
+						"Från väktaren i %s (%s), efter %d segrar mot den." % [enc_name, realm_name, g_need]
+				if run.collection.has(entry.trophy):
+					detail_lesson = GameData.lesson(data, entry.trophy, _bearer(entry.trophy))
+			continue
 		if boss:
 			tag += " %d/%d" % [mini(int(run.profile.boss_wins.get(entry.kind, 0)), RunState.BOSS_WINS_FOR_TROPHY),
 					RunState.BOSS_WINS_FOR_TROPHY]

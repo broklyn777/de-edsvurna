@@ -281,6 +281,27 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   inga bossar: ledarens egen trofé, inga bosstroféer, `boss_wins`, smörjelse eller berättarruta; djupet, Realm Quest och
   upplåsningar som förut. Kortet säger VÄKTARE och när huvudbossen kommer. `stat_mult` mätt mot huvudbossen med
   `BALANS=grotta` (`KORNINGAR=300`) och `BALANS=vaktare`; `--depth=2 --map --enter=end` visar kortet.
+  **Väktarsteg 2** (`docs/plan/bossbank.md`): varje väktare ställer en egen fråga, med mötets egna egenskaper och regler
+  (`"overrides"` i encounters.json, nyckel typ eller "typ#n", `CombatSim.unit_override`), en varning på kortet (`"warning"`),
+  en hjälpruta första gången (`"help"`), en rad i Inspect och ett ord över figuren. **Midnattsklockan**: Klockan slår
+  (laddning, väcker en fallen ur Benfolket, "SLAG n AV 3"), efter två slag Midnatt mot alla i två turer, bryts bara när hela
+  Benfolket har fallit (`channeled_by_family`, `reset_stack`; HÅLLER MIDNATT; villkoret `is_channeling`). **Kistornas råd**:
+  Gravens kraft, Kistlocket, Likvakan (`passes_on_death`) går i arv till de andra när en faller (ÄRVER, `trait_passed`).
+  **Förhöret**: den som provocerar och träffas får Skuld (`guilt`, −20 % helning per stapel, `heal_taken_mult`); vid tre
+  staplar laddar Inkvisitorn Dom mot hen (`enemy_aura_stacks`, `pick: aura_stacks`), rensad Skuld bryter den (`target_aura`,
+  "absolved"; villkoret `is_charge_target`). **Systrarnas krona**: bara bäraren tar full skada (Körens skydd: halv skada), kronan går
+  vidare efter tre av bärarens turer eller när hen faller (aurans `pass_to`, `aura_passed`; BÄR KRONAN). Väktarens trofé
+  (`"trophy"` på mötet, rarity boss) efter **två** segrar mot just den väktaren (`RunState.GUARDIAN_WINS_FOR_TROPHY`,
+  `Profile.guardian_wins`, skilt från `boss_wins`): Midnattsklockans kläpp (var tredje handling bryter fiendernas
+  laddningar; +15 % skada tagen), Rådets sigill (ärver en fallen allierads trofé; −20 % helning tagen), Den vandrande kronan
+  (−30 % skada tagen, −15 % skada, går till den svagaste), Domstolens klubba (Skuld vid träff; +25 %/−15 % skada). Biblioteket
+  visar dem (VÄKTARE n/2). **Sven vid porten** säger vem som vaktar det valda djupet (`Dialog.gate_guard_line`, dialog.json
+  "gate_guard"; `--talk=gate --gate-depth=2 --line=1`). Lunden och Berget har ännu bara befordrade grupper.
+  Botarna (300 per rad, före → efter): grottan med fyra hjältar kryptan djup 2 MACRO/TUNED 9/30 → 10/30 %, djup 3 15/24 →
+  15/20; kapellet djup 2 10/31 → 8/28, djup 3 10/15 → 11/15. En strid med fulla Charges (`BALANS=vaktare`): Kistornas råd
+  d3 74/58 → 78/62, Abbedissans kör d2 89/74 → 91/78, Inkvisitorns domstol d3 20/8 → 22/11, men Midnattsklockan d2 58/44 →
+  78/68 (Midnatt tömmer Charges, så den är svårare i grottan än ensam; `stat_mult` valt efter grottan). Botarna svarar
+  inte på mekanikerna (inga nya rader i TUNED). `--windup=<förmåga> --windup-first` visar ett slag i striden.
 - **Trollberget** (Realm 4, steg 1, `docs/plan/trollens-realm.md`, `realms.json` "mountain", kort "Berget", `"style": "mountain"`):
   bara de sju trollen som finns, pooler i tre tiers (`troll_1a` … `troll_3d`), våningsmöten `troll_1`/`troll_2`, elit Gråluvans
   stuga (våning 1), Bron och Vaggan (våning 2), bossen Bergakungen. Öppnas när kapellet är klarat på djup 1 (`"requires"`,
