@@ -644,8 +644,8 @@ func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int
 	var opts := _options(art)
 	if opts.is_empty():
 		UiStyle.text(self, Vector2(x0, 490), "Inget i förrådet än. %s" % ({"stat": "Bärnsten hittas i alla strider och skattkammare.",
-				"trick": "Trick hittas i elitstrider, skattkammare, portaler och hos bossar – bara på det djupaste djupet.",
-				"nether": "Nether Stones hittas i skattkammare, portaler och hos bossar – bara på det djupaste djupet.",
+				"trick": "Trick hittas i elitstrider, skattkammare och hos bossar – bara på det djupaste djupet.",
+				"nether": "Nether Stones hittas i skattkammare och hos bossar – bara på det djupaste djupet.",
 				"trophy": "Troféer får man av besegrade fiender."}[slot.kind]),
 				18, Color(1, 1, 1, 0.65), HORIZONTAL_ALIGNMENT_LEFT, _w() - 460, 3)
 	for i in opts.size():

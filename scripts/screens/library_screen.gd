@@ -73,7 +73,7 @@ func _rumoured(entry: Dictionary) -> bool:
 
 func _draw() -> void:
 	var data: Dictionary = run.data
-	header("BIBLIOTEKET", "Alla troféer. Elitfiender är sällsynta (fler på djupare och instabilare våningar); bossens trofé kräver tre segrar.")
+	header("BIBLIOTEKET", "Alla troféer. Elitfiender är sällsynta (fler på djupare djup och högre instabilitet); bossens trofé kräver tre segrar.")
 	small_button(back_rect(), "‹ BASEN")
 	var all := _all_trophies()
 	UiStyle.text(self, Vector2(MARGIN, 108), "TROFÉER %d / %d – TRYCK FÖR ATT LÄSA" % [run.collection.size(), all.size()], 16,

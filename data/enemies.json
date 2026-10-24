@@ -859,7 +859,7 @@
 			"lich_undying_wrath"
 		],
 		"trophy": "lich_crown",
-		"boss_text": "Resistent. Väcker en fallen skelett var tredje tur, sveper sällskapet med Benstorm och vredgas under 50 % liv.",
+		"boss_text": "Resistent. Väcker ett fallet skelett var tredje tur, sveper sällskapet med Benstorm och vredgas under 50 % liv.",
 		"rules": [
 			{
 				"ability": "lich_doom",
@@ -1000,7 +1000,7 @@
 		},
 		"trophy": "wraith_veil",
 		"elite": {
-			"name": "Banshee",
+			"name": "Klagekvinnan",
 			"trophy": "surprise",
 			"trait": "surprise",
 			"tint": "#e0d0ff",
@@ -2096,7 +2096,7 @@
 		},
 		"trophy": "thread_spool",
 		"elite": {
-			"name": "Silkesnärjaren",
+			"name": "Silkessnärjaren",
 			"trophy": "silk_noose",
 			"trait": "silk_noose",
 			"tint": "#fff0d0",

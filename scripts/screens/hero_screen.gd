@@ -262,7 +262,7 @@ func _build_meaning(data: Dictionary, prof: Profile, level: int, personality: St
 	_meaning_lines.append("Fiendens anfall: ~%d skada mot %s (%d om %s försvarar sig) av %d liv" % [taken, hero.name,
 			defended, hero.name, hero.max_hp])
 	var faster := "snabbare" if hero.speed > foe.speed else ("lika snabb" if hero.speed == foe.speed else "långsammare")
-	_meaning_lines.append("Speed %s mot %s: %s än fienden – snabbare ger fler krittar och fler undvikanden" % [
+	_meaning_lines.append("Speed %s mot %s: %s än fienden – snabbare ger fler kritiska träffar och fler undvikanden" % [
 			HeroStats.shown(hero.speed), HeroStats.shown(foe.speed), faster])
 
 

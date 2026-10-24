@@ -48,7 +48,7 @@
 		"original": "Debuff: Weak"
 	},
 	"no_guard": {
-		"name": "Inga bönder",
+		"name": "Ingen gard",
 		"text": "Ingen kan Försvara eller Provocera.",
 		"silver": 0.15,
 		"original": "Can't Defend/Provoke",

@@ -673,7 +673,7 @@ func _open(station: String) -> void:
 ## 0.24.2: namnet skrivs om i krönikan hos Broder Alrik.
 func _rename() -> void:
 	var entry := NameEntry.new()
-	entry.title = "Skriv om ditt namn i krönikan"
+	entry.title = "Skriv om mitt namn i krönikan"
 	entry.hint = "Broder Alrik doppar pennan. Hur ska det stå?"
 	entry.confirm_label = "SKRIV IN"
 	entry.can_cancel = true

@@ -20,7 +20,7 @@ const WEAPON_CUES := {"Greatsword": "atk_sword", "Longsword": "atk_sword", "Shor
 const CHAIN_STEP := 0.22
 const ERROR_TEXT := {"cooldown": "Inte redo än", "dead": "Hjälten har stupat", "none": "Ingen sådan förmåga",
 		"charges": "Inga Charges kvar", "silenced": "Tystad – förmågor går inte",
-		"sealed": "Förseglad (Förseglade ord)", "forbidden": "Inga bönder: ingen kan försvara eller provocera"}
+		"sealed": "Förseglad (Förseglade ord)", "forbidden": "Ingen gard: ingen kan försvara eller provocera"}
 
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 var run: Node

@@ -120,7 +120,7 @@ func _draw() -> void:
 
 	var used := profile.points_used(data, profile.oath)
 	var points := profile.perk_points()
-	var heading := "LÅNA EN PERK FRÅN EN ANNAN ED" if anoint_mode else "PERKS I %s" % data.traits[profile.oath].name.to_upper()
+	var heading := "LÅNA EN PERK FRÅN ETT ANNAT KALL" if anoint_mode else "PERKS I %s" % data.traits[profile.oath].name.to_upper()
 	UiStyle.text(self, Vector2(_x0(), 114), "%s – PERK-POÄNG %d/%d (EN PER NY KLARAD QUEST)" % [heading, used, points],
 			14, Color(1, 1, 1, 0.6))
 	var perks := _perks()
