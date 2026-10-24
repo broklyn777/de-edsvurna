@@ -42,6 +42,11 @@ var silver_floor := 0  # silvret får inte bli lägre än så här (boten spende
 var collection_floor: Array = []
 var run_fights := 0  # strider i körningen (karriärläget)
 var lost_at := ""  # var körningen förlorades (karriärläget)
+var human := false  # SOAK=karriar_mansklig: boten tränar, smider, sätter material och väljer troféer som en spelare
+## HUMAN_OFF=sockets,trophies,campfire,train: stänger av en del av det mänskliga beteendet (för att se vad som bär).
+var human_off: Array = OS.get_environment("HUMAN_OFF").split(",", false)
+var run_turns := 0  # turer i körningens strider (alla figurers), för speltiden
+var run_steps := 0  # steg i grottan
 ## Den levande världen (WorldEvents): hur ofta händelserna startar och hur de slutar, följder och gåvor. VARLD=av stänger av.
 var world_stats := {"started": {}, "results": {}, "costs_on": {}, "gifts": {}, "tor": 0}
 
@@ -86,6 +91,15 @@ func _init() -> void:
 			if arg.begins_with("--descents="):
 				n = int(arg.get_slice("=", 1))
 		_career_report(from, runs, n)
+		quit()
+		return
+	if OS.get_environment("SOAK") == "karriar_mansklig":
+		var n := 40
+		for arg in OS.get_cmdline_user_args():
+			if arg.begins_with("--descents="):
+				n = int(arg.get_slice("=", 1))
+		human = true
+		_human_report(from, runs, n)
 		quit()
 		return
 	if OS.get_environment("SOAK") == "nivaer":
@@ -271,13 +285,14 @@ func _tick(use_bot: bool) -> void:
 		_save_and_load()
 	# Lägereld man står vid: troféerna kan bytas när som helst.
 	var r := state.current_room()
-	if r.get("kind", "") == "campfire" and pick.randf() < 0.1:
+	if r.get("kind", "") == "campfire" and pick.randf() < 0.1 and not human:
 		_swap_trophies()
 	var target := _choose_step(use_bot)
 	if target < 0:
 		_no_step()
 		return
 	var walk := state.step(target)
+	run_steps += walk.size()
 	if walk.is_empty():
 		_fail("steg", "step(%d) gav ingen väg fast can_step var tom" % target)
 		ended = "error"
@@ -350,6 +365,11 @@ func _arrive() -> bool:
 	match kind:
 		"campfire":
 			stats.campfires += 1
+			if human and not human_off.has("campfire"):
+				if not r.get("done", false):
+					_campfire()
+				_human_swap()
+				return true
 			var choice := pick.randi() % 3
 			if choice == 0 and not r.get("done", false):
 				_campfire()
@@ -538,6 +558,7 @@ func _fight() -> void:
 		ended = "error"
 		return
 	var won := sim.outcome == "victory"
+	run_turns += sim.turn_no
 	_award(sim, won)
 	state.store_charges(sim)
 	_log("strid %s: %s på %d turer%s" % [state.encounter(), sim.outcome, sim.turn_no, " (gav upp)" if sim.forfeited else ""])
@@ -627,7 +648,13 @@ func _battle_finished(victory: bool, forfeited: bool) -> void:
 	for t in offer:
 		profile.add_trophy(t)
 	# Lägret: välj en av troféerna (eller ingen) och ge den kanske till någon.
-	if not offer.is_empty() and pick.randf() < 0.8:
+	if human and not offer.is_empty() and not human_off.has("trophies"):
+		var best: String = offer[0]
+		for t in offer:
+			if _trophy_score(t) > _trophy_score(best):
+				best = t
+		state.take_trophy(best)  # efter striden väljer man bara; den bärs först efter en lägereld
+	elif not offer.is_empty() and pick.randf() < 0.8:
 		var chosen: String = offer[pick.randi() % offer.size()]
 		if pick.randf() < 0.5:
 			state.equip(state.party[pick.randi() % state.party.size()], chosen)
@@ -1228,3 +1255,238 @@ func _living_print(rows: Array, runs: int, descents: int) -> void:
 	print("    följder som började %s, gåvor %s, Tors bärnsten %d gånger, %.2f händelser per profil" % [
 			str(world_stats.costs_on), str(world_stats.gifts), world_stats.tor,
 			float(world_stats.started.values().reduce(func(a: int, b: int) -> int: return a + b, 0)) / maxi(runs, 1)])
+
+
+# --- SOAK=karriar_mansklig: en mänskligare karriär (docs/provspel/manskliga-botar.md) -------------------------------
+
+## Speltiden är en uppskattning (playtime.cfg har inga riktiga mätningar än): sekunder per tur i striden (alla figurers,
+## AUTO i 1×), per steg i grottan, per strid (in- och utgång, segerskärm) och per nedstigning (borgen, smedjan, kartan).
+const T_TURN := 2.5
+const T_STEP := 1.2
+const T_BATTLE := 10.0
+const T_HOME := 120.0
+## En spelare som förlorat på djup N och tränat till väntad nivå men förlorar igen tränar 3 nivåer till per nytt försök.
+const TRAIN_EXTRA := 3
+
+
+## Som _career_report, men boten beter sig som en spelare: efter en förlust på djup N går den ned ett djup och tränar
+## tills sällskapets snittnivå når fiendernas väntade nivå på N (HeroStats.expected_level), sedan försöker den igen.
+## Hemma smider den, höjer artefakter och sätter material (_human_home); troféerna väljs efter sällsynthet
+## (Förberedelser och lägereldar). KARRIAR_REALM=crypt/chapel/mountain/grove: Realmen efter första nedstigningen.
+func _human_report(from: int, runs: int, descents: int) -> void:
+	var realm_fixed := OS.get_environment("KARRIAR_REALM")
+	if not data.realms.has(realm_fixed):
+		realm_fixed = "crypt"
+	var profiles: Array = []  # per profil: {first_try, first_clear, sec_at_clear, train, attempts, best, sec, rows}
+	var t0 := Time.get_ticks_msec()
+	for s in range(from, from + runs):
+		seed_now = s
+		pick.seed = s * 7919 + 3
+		rng.seed = s * 104729 + 11
+		cfg = {"first": true, "realm": "crypt", "depth": 1, "instability": 0, "oath": "oath_vengeance", "party": [],
+				"level": 1, "policy": "bot", "p_random_action": 0.0, "descents": 0, "no_forfeit": true, "no_leave": true,
+				"no_save": true, "hints": true, "vow": ""}
+		_setup_profile()
+		var rec := {"first_try": {}, "first_clear": {}, "sec_at_clear": {}, "train": {}, "attempts": {}, "sec": 0.0,
+				"fights": 0, "turns": 0, "lost": {}}
+		var train_for := 0
+		var retries := {}  # försök på N efter att ha tränat till målet
+		var losses := 0
+		for d in descents:
+			profile.realm = realm_fixed if d > 0 else "crypt"
+			var depth := profile.depth
+			if not rec.first_try.has(depth):
+				rec.first_try[depth] = d
+			if train_for == 0:
+				rec.attempts[depth] = int(rec.attempts.get(depth, 0)) + 1
+			else:
+				rec.train[train_for] = int(rec.train.get(train_for, 0)) + 1
+			if not human_off.has("trophies"):
+				_wear_best()
+			run_fights = 0
+			run_turns = 0
+			run_steps = 0
+			lost_at = ""
+			cfg.first = d == 0
+			_run_quiet()
+			_home()
+			var won := ended == "cleared"
+			rec.sec += run_turns * T_TURN + run_steps * T_STEP + run_fights * T_BATTLE + T_HOME
+			rec.fights += run_fights
+			rec.turns += run_turns
+			if not won and lost_at != "":
+				var by: Dictionary = rec.lost.get(depth, {})
+				by[lost_at] = int(by.get(lost_at, 0)) + 1
+				rec.lost[depth] = by
+			if won and not rec.first_clear.has(depth):
+				rec.first_clear[depth] = d
+				rec.sec_at_clear[depth] = rec.sec
+			if verbose:
+				print("frö %d ned %d: %s djup %d nivå %.1f %s%s strider %d" % [s, d + 1, profile.realm, depth, _party_level(),
+						ended, " (tränar för %d)" % train_for if train_for > 0 else "", run_fights])
+			# Djupet för nästa gång.
+			if won:
+				losses = 0
+				if train_for == 0:
+					profile.choose_depth(depth + 1)
+			elif train_for == 0:
+				if depth > 1 and human_off.has("train"):
+					losses += 1
+					if losses >= 2:
+						profile.choose_depth(depth - 1)
+						losses = 0
+				elif depth > 1:
+					train_for = depth
+					retries[depth] = int(retries.get(depth, -1)) + 1
+					profile.choose_depth(depth - 1)
+				losses = 0
+			else:
+				losses += 1
+				if losses >= 2 and depth > 1:
+					profile.choose_depth(depth - 1)
+					losses = 0
+			if train_for > 0 and _party_level() >= HeroStats.expected_level(train_for) + TRAIN_EXTRA * int(retries[train_for]):
+				profile.choose_depth(train_for)
+				train_for = 0
+				losses = 0
+			_career_home()
+			if not human_off.has("sockets"):
+				_human_home()
+		rec.best = profile.best_depth
+		rec.level = _party_level()
+		profiles.append(rec)
+		if (s - from + 1) % 10 == 0:
+			print("… %d profiler, %.0f s" % [s - from + 1, (Time.get_ticks_msec() - t0) / 1000.0])
+	_human_print(profiles, runs, descents, realm_fixed)
+	_print_errors()
+
+
+func _party_level() -> float:
+	var party := Array(profile.party)
+	var lv := 0.0
+	for h in party:
+		lv += float(profile.hero(data, h).level)
+	return lv / maxf(party.size(), 1)
+
+
+## Hemma, efter _career_home (smedjan och perkarna): bärnsten i lediga Stat-platser efter hjältens roll, trick i
+## Trick-platser och den bästa Nether Stone i en tom Nether-plats.
+func _human_home() -> void:
+	for h in Array(profile.party):
+		var art := profile.artifact(h)
+		if art.is_empty():
+			continue
+		var role: String = data.heroes.get(h, {}).get("role", "")
+		var wish: Array = ["amber_blue", "amber_green"] if role in ["healer", "support", "control"] \
+				else (["amber_grey", "amber_green"] if role == "tank" else ["amber_red", "amber_green"])
+		for i in Forge.STAT_SLOT_LEVELS.size():
+			if not Forge.stat_slot_open(int(art.level), i) or String(art.stat_slots[i]) != "":
+				continue
+			var options: Array = wish + data.materials.amber.keys()
+			for m in options:
+				if int(profile.materials.get(m, 0)) >= Forge.AMBER_PER_SLOT and profile.socket(h, "stat", i, m):
+					break
+		for i in Forge.TRICK_SLOT_LEVELS.size():
+			if not Forge.trick_slot_open(int(art.level), i) or String(art.trick_slots[i]) != "":
+				continue
+			for m in data.materials.tricks.keys():
+				if int(profile.materials.get(m, 0)) >= 1 and profile.socket(h, "trick", i, m):
+					break
+		if Forge.nether_open(int(art.level)) and art.nether.is_empty() and not profile.stones.is_empty():
+			var best: Dictionary = profile.stones[0]
+			for st in profile.stones:
+				if int(st.get("number", 0)) > int(best.get("number", 0)):
+					best = st
+			profile.socket_stone(h, String(best.id))
+
+
+## Elit- och bosstroféer före vanliga.
+func _trophy_score(t: String) -> int:
+	return {"common": 1, "elite": 2, "boss": 2}.get(data.traits.get(t, {}).get("rarity", "common"), 1)
+
+
+## Förberedelser: de bästa troféerna ur samlingen, en per hjälte i sällskapet.
+func _wear_best() -> void:
+	var pool: Array = profile.collection.filter(func(t: String) -> bool:
+			return data.traits.has(t) and data.traits[t].get("trophy", false))
+	pool.sort_custom(func(a: String, b: String) -> bool: return _trophy_score(a) > _trophy_score(b))
+	var i := 0
+	for h in Array(profile.party):
+		if i >= pool.size():
+			break
+		profile.wear(h, pool[i])
+		i += 1
+
+
+## Lägerelden: byt till en bättre trofé ur körningens om den finns (den sämst klädda hjälten först).
+func _human_swap() -> void:
+	for t in state.trophies:
+		if state.wearer(t) != "":
+			continue
+		var worst := ""
+		var worst_score := 99
+		for h in state.party:
+			var cur: String = state.equipped.get(h, "")
+			var sc := 0 if cur == "" else _trophy_score(cur)
+			if sc < worst_score:
+				worst = h
+				worst_score = sc
+		if worst != "" and _trophy_score(t) > worst_score:
+			state.equip(worst, t)
+	profile.keep_worn(state.equipped, state.party)
+
+
+func _human_print(profiles: Array, runs: int, descents: int, realm_id: String) -> void:
+	print("")
+	print("=== Mänskliga karriärbotar: %s, %d profiler, %d nedstigningar ===" % [realm_id, runs, descents])
+	print("  djup  nådde  klarade  ned t.o.m. klar (median)  försök på djupet  träningsned  timmar t.o.m. klar (median)  fast")
+	for depth in range(1, 16):
+		var tried := profiles.filter(func(r: Dictionary) -> bool: return r.first_try.has(depth))
+		if tried.is_empty():
+			break
+		var cleared := tried.filter(func(r: Dictionary) -> bool: return r.first_clear.has(depth))
+		var ned := cleared.map(func(r: Dictionary) -> int: return int(r.first_clear[depth]) + 1)
+		var att := cleared.map(func(r: Dictionary) -> int: return int(r.attempts.get(depth, 0)))
+		var tr := cleared.map(func(r: Dictionary) -> int: return int(r.train.get(depth, 0)))
+		var hrs := cleared.map(func(r: Dictionary) -> float: return float(r.sec_at_clear[depth]) / 3600.0)
+		print("  %4d  %5d  %7d  %22s  %16s  %11s  %27s  %4d" % [depth, tried.size(), cleared.size(), _med(ned), _med(att),
+				_med(tr), _med(hrs, true), tried.size() - cleared.size()])
+	print("  Förluster per djup (var):")
+	for depth in range(1, 41):
+		var tally := {}
+		for r in profiles:
+			for k in r.lost.get(depth, {}):
+				tally[k] = int(tally.get(k, 0)) + int(r.lost[depth][k])
+		if tally.is_empty():
+			continue
+		var ks := tally.keys()
+		ks.sort_custom(func(a: String, b: String) -> bool: return tally[a] > tally[b])
+		print("    d%d: %s" % [depth, ", ".join(ks.map(func(k: String) -> String: return "%s %d" % [k, tally[k]]))])
+	var best := {}
+	for r in profiles:
+		best[r.best] = int(best.get(r.best, 0)) + 1
+	var keys := best.keys()
+	keys.sort()
+	print("  Högsta klarade djup: %s" % ", ".join(keys.map(func(k: int) -> String: return "d%d %d" % [k, best[k]])))
+	var sec := 0.0
+	var fights := 0
+	var turns := 0
+	for r in profiles:
+		sec += float(r.sec)
+		fights += int(r.fights)
+		turns += int(r.turns)
+	print("  Per profil: %.1f timmar, %.0f strider, %.0f turer, nivå %.1f" % [sec / 3600.0 / runs, float(fights) / runs,
+			float(turns) / runs, profiles.reduce(func(a: float, r: Dictionary) -> float: return a + float(r.level), 0.0) / runs])
+
+
+static func _med(list: Array, hours := false) -> String:
+	if list.is_empty():
+		return "-"
+	var l := list.duplicate()
+	l.sort()
+	var m: Variant = l[l.size() / 2]
+	var lo: Variant = l[l.size() / 4]
+	var hi: Variant = l[l.size() * 3 / 4]
+	if hours:
+		return "%.1f (%.1f–%.1f)" % [m, lo, hi]
+	return "%d (%d–%d)" % [m, lo, hi]
