@@ -19,7 +19,8 @@ func _enemy(sim: CombatSim, kind: String) -> CombatUnit:
 
 
 func test_trolls_have_data_trophies_and_traits() -> void:
-	for id in ["moss_troll", "porridge_troll", "grumpy_troll", "club_troll", "bridge_troll", "troll_mother", "mountain_king"]:
+	for id in ["moss_troll", "porridge_troll", "grumpy_troll", "club_troll", "changeling_troll", "bridge_troll", "troll_mother",
+			"mountain_king"]:
 		var e: Dictionary = _data.enemies[id]
 		assert_eq(e.family, "troll_kin", id)
 		assert_true(_data.traits.has(e.trophy) and _data.traits[e.trophy].get("trophy", false), "%s har en trofé" % id)

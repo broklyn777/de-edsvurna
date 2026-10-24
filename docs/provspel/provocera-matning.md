@@ -120,3 +120,21 @@ Hela listan per grupp och fiende finns i anteckningarna (`provocera/roller.txt`)
 - Gruppmätningen är en strid med fulla Charges. Den visar vilka grupper som är farliga i sig, inte under nötning.
 - Rollerna är en grov regel ur siffrorna. En fiende kan spela en roll genom en egenskap som regeln inte ser.
 - Mätt medan andra sessioner körde Godot. Det påverkar bara tiden (fasta frön).
+
+## Efter grenen `fiender-roller` (2026-10-24)
+
+Grupperna byggdes om efter rollerna ovan (Trollberget: `docs/plan/troll.md` "Roller"; kryptan: Glödande schakt är
+Glödskelett och Benspringare; kapellet: Botgången får ett Irrbloss, Den skyddade diakonen en Gast, Fanatikernas led är
+Blodsvuren, Fanbäraren och en Gast). Samma botar, fyra hjältar, 100 körningar, MACRO / TUNED:
+
+| Realm | d1 förr | d1 nu | d3 förr | d3 nu |
+|---|---|---|---|---|
+| Kryptan | 36 / 54 % | 35 / 54 % | 10 / 24 % | 11 / 24 % |
+| Kapellet | 44 / 45 % | 40 / 46 % | 12 / 11 % | 12 / 14 % |
+| Trollberget | 46 / 64 % | 41 / 66 % | 27 / 36 % | 29 / 41 % |
+| Lunden (orörd) | 49 / 64 % | – | 29 / 47 % | – |
+
+Hela körningarna ligger inom ±5 enheter. Enskilda vanliga grupper blev **inte** dyrare: startmakrot slår fienden med lägst
+liv, så den snabba och sköra fienden faller först och hinner göra lite (Bergets tier 2: 79–89 → 87–90 % liv kvar; Den
+skyddade diakonen 99 → 94 %). Eftersom livet fylls på efter varje strid är det Charges som nöts; dyrare vanliga strider
+betyder en svårare körning om inte elit eller boss blir mildare. Det är VD:s val.

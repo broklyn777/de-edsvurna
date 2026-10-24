@@ -74,7 +74,15 @@ VD sade "kör". Projektledaren tog besluten nedan; alla är **VAL** tills VD sä
   Stenhjärta (−60 % skada) gäller nästan hela tiden. `PARTY_SCALE` räcker inte. Berget öppnas efter kapellet, då de
   flesta har fler hjältar, men **VD** bör avgöra om Stenhjärta ska räkna per hjälte eller vara mildare för små sällskap.
 
-**Kvar ur planen:** de fyra nya trollen och deras troféer och elitvarianter (§4.2), motdragen (§4.3), elitgrupperna e3–e6
+## Steg 2 – roller och Bortbytingen (2026-10-24, grenen `fiender-roller` från test-0.30)
+
+Trollen har fått tydliga roller (Stenkrossaren slagare, Mossrygg pansar, Grytmodern helare med **Grytans gröt**, Avundsjätten
+förbi Provocera) och **Bortbytingen** finns som fiende: snabb och skör, river den svagaste förbi Provocera, Bytingens skrik
+(Hånad), Smyget och trofén **Stålet ur vaggan** (§4.2 i enklare form, utan Moderns famn). Grupperna byggdes om så att var och en
+blandar 2–4 roller; två nya (`troll_1e` Vaggan i snåret, `troll_3c` Bytingarna), och elitgruppen Vaggan har Bortbytingen i
+stället för Mossrygg. Detaljer, tabeller och botarnas siffror: `docs/plan/troll.md` "Roller".
+
+**Kvar ur planen:** tre av de fyra nya trollen och deras troféer och elitvarianter (§4.2), motdragen (§4.3), elitgrupperna e3–e6
 med nya troll, Sång genom berget och de andra föremålens fulla versioner (§6), föremålsnamnen i Samla, fångarna (§8),
 tull och klockgåva (§9), den kronade Bergakungen (steg 4), världshändelsen (§10), tuschvägen och bron på kartan (§11),
 egen stämning, musik och ljud (§12), egna modeller och en egen vinjett (§13).

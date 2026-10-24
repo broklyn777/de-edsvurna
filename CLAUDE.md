@@ -343,6 +343,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
 - **Trollfolket** (0.30.23, `docs/plan/troll.md`, ännu utan Realm; `--encounter=troll_1a` … `troll_3`): familjen `troll_kin`
   med artregeln Trollhud (en förmåga stoppar läkningen, `troll_scorched`), sju troll med var sin egen förmåga och trofé, bossen
   Bergakungen (Stenhjärta). Modellerna `troll*.glb` ur Drakvalvets ogre, färgade per troll med `colors`.
+  **Roller** (grenen `fiender-roller`, `tests/test_enemy_roles.gd`): Stenkrossaren slår hårt, Mossrygg är pansar, Grytmodern
+  helar (Grytans gröt, inte ett troll med Svedd hud), Avundsjätten går förbi Provocera och **Bortbytingen** (`changeling_troll`)
+  är snabb och skör och river den svagaste förbi Provocera; bergets vanliga grupper blandar 2–4 roller.
 - **Drakvalvets fiender** (0.31, `docs/plan/drakvalvet-fiender.md`, `tests/test_enemies_crypt.gd`/`_chapel.gd`): **Likätaren**
   (`ghoul`, Benfolket) äter lik ur familjen (Likmåltid, `consume_corpse`, `CombatUnit.consumed`: kan aldrig väckas) och växer
   (Gravhunger, högst 3); elitvarianten Gravgnagaren äter aldrig hjältar. **Blodsvuren** (`cult_zealot`, Kultens folk; elit
