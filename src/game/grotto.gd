@@ -93,18 +93,19 @@ func group_cells() -> Array[int]:
 ## Slumpar en våning tills reglerna håller. pools: [pool för tier 0, 1, 2] (möten ur realms.json "pools"); boss: bossens
 ## möte (sista våningen); guard: ett starkare möte för den bevakade skatten; quest: våningens quest ({type, goal});
 ## prisoner: {hero, first, guarded} eller {}. elite_pools (0.27, realms.json "elite_pools"): elitgrupperna per våning;
-## tom = eliten kommer ur den vanliga poolen och får en påtvingad elitvariant som förut.
+## tom = eliten kommer ur den vanliga poolen och får en påtvingad elitvariant som förut. nemesis_pool: Nemesis möte
+## i en Jakt (tom = våningens elitpool).
 static func generate(seed_value: int, floor_index: int, is_last: bool, pools: Array, boss: String, guard: String,
-		quest: Dictionary, prisoner := {}, elite_pools := [], objects := []) -> Grotto:
+		quest: Dictionary, prisoner := {}, elite_pools := [], objects := [], nemesis_pool := []) -> Grotto:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	for attempt in 400:
-		var g := _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools)
+		var g := _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools, nemesis_pool)
 		if g != null and g.problems(quest).is_empty():
 			g._place_objects(seed_value, objects)
 			return g
 	push_warning("Grotto: inget frö höll reglerna (%d), använder det sista försöket" % seed_value)
-	var last := _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools)
+	var last := _roll(rng, floor_index, is_last, pools, boss, guard, quest, prisoner, elite_pools, nemesis_pool)
 	last._place_objects(seed_value, objects)
 	return last
 
@@ -126,7 +127,7 @@ func _place_objects(seed_value: int, objects: Array) -> void:
 
 
 static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, pools: Array, boss: String,
-		guard: String, quest: Dictionary, prisoner: Dictionary, elite_pools := []) -> Grotto:
+		guard: String, quest: Dictionary, prisoner: Dictionary, elite_pools := [], nemesis_pool := []) -> Grotto:
 	var g := Grotto.new()
 	g.floor = floor_index
 	g.last_floor = is_last
@@ -161,6 +162,9 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 			enc = pick.call(tier)
 		else:
 			var ep: Array = elite_pools[clampi(floor_index, 0, elite_pools.size() - 1)]
+			# Mot upprepning: Nemesis kan dras ur en egen pool (RunState.nemesis_pool: båda våningarnas elit på våning 2).
+			if e == 0 and quest.get("type", "") == "hunt" and not nemesis_pool.is_empty():
+				ep = nemesis_pool
 			enc = ep[rng.randi() % ep.size()]
 		g.cells[at] = {"kind": "elite", "encounter": enc, "tier": tier, "elite": true}
 		if e == 0 and quest.get("type", "") == "hunt":

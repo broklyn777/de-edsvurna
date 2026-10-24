@@ -7,6 +7,9 @@ extends Control
 const NIGHT_CAMP := preload("res://assets/illustrations/nattlagret.webp")
 const MARGIN := 28.0
 const GAP := 14.0
+## Lägrets märken (mot upprepning): grönt för nya troféer, ett varmt sken för de sällsynta.
+const NEW_GREEN := Color("#7fe08a")
+const RARE_GLOW := Color("#ff9a3c")
 
 var chosen := ""
 var selected := ""
@@ -151,9 +154,26 @@ func _draw() -> void:
 				HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 
 	for i in run.offer.size():
-		var t: Dictionary = data.traits[run.offer[i]]
-		UiStyle.card(self, _offer_rect(i), t.name, t.text, chosen == run.offer[i], UiStyle.TRAIT_GOLD,
-				"FRÅN " + _source_name(run.offer[i]).to_upper())
+		var id: String = run.offer[i]
+		var t: Dictionary = data.traits[id]
+		# Mot upprepning: NY eller ÄGD (och vem som bär den), och de sällsynta står först och glöder.
+		var fresh: bool = run.offer_new.has(id)
+		var rare := RunState.is_rare_trophy(data, id)
+		var tag := ("NY" if fresh else "ÄGD") + " · " + _source_name(id).to_upper()
+		if rare:
+			tag = "SÄLLSYNT NY" if fresh else "SÄLLSYNT"  # källan står i lärdomen under korten
+		var body: String = t.text if fresh else _owned_note(id) + " " + String(t.text)
+		var accent: Color = RARE_GLOW if rare else (NEW_GREEN if fresh else UiStyle.TRAIT_GOLD)
+		var r := _offer_rect(i)
+		UiStyle.card(self, r, t.name, body, chosen == id, accent, tag, 0.25 + 0.2 * sin(_t * 4.0) if rare else 0.0)
+		if rare:
+			draw_rect(r.grow(5.0), Color(RARE_GLOW, 0.55 + 0.35 * sin(_t * 4.0)), false, 3.0)
+	# Inget nytt: ingen valskärm, bara en kort rad (troféerna finns redan i samlingen och följer med i körningen).
+	if not run.offer_known.is_empty():
+		var names: Array = run.offer_known.map(func(id: String) -> String: return String(data.traits[id].name))
+		var line := "Inget nytt den här gången: %s finns redan i samlingen och följer med i körningen." % ", ".join(names)
+		UiStyle.text(self, Vector2(MARGIN, 200), line, 17, Color(1, 1, 1, 0.75), HORIZONTAL_ALIGNMENT_CENTER,
+				size.x - MARGIN * 2, 3)
 
 	# Lärdomen (VD 2026-10-23) för den valda trofén, kursiv på en rad under korten.
 	var lesson_id := chosen if chosen != "" else (selected if _swap() else "")
@@ -177,7 +197,12 @@ func _draw() -> void:
 		draw_rect(r, Color(UiStyle.GOLD, 0.6 + 0.4 * sin(_t * 8.0)) if on else Color(UiStyle.TRAIT_GOLD, 0.4), false, 2.0)
 		var who := state.wearer(inv[i])
 		var label: String = data.traits[inv[i]].name + (" · " + String(data.heroes[who].short) if who != "" else "")
-		UiStyle.text(self, r.position + Vector2(10, 26), label, 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 16, 3)
+		var left := 10.0
+		if state.fresh_trophies.has(inv[i]):  # ny för profilen under den här körningen
+			UiStyle.text(self, r.position + Vector2(8, 26), "NY", 15, NEW_GREEN, HORIZONTAL_ALIGNMENT_LEFT, 30, 3)
+			left = 36.0
+		UiStyle.text(self, r.position + Vector2(left, 26), label, 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT,
+				r.size.x - left - 6, 3)
 
 	for i in state.party.size():
 		var hero_id := state.party[i]
@@ -222,8 +247,23 @@ func _draw() -> void:
 	UiStyle.text(self, m.position + Vector2(0, m.size.y / 2 + 8), "MAKRON", 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, m.size.x, 4)
 
 
+## "Bärs av Brokk." eller "I samlingen." för en trofé profilen redan äger.
+func _owned_note(trophy_id: String) -> String:
+	var who: String = run.state.wearer(trophy_id)
+	if who == "":
+		for hero_id in run.profile.worn:
+			if run.profile.worn[hero_id] == trophy_id:
+				who = hero_id
+	if who != "" and run.data.heroes.has(who):
+		return "Bärs av %s." % String(run.data.heroes[who].get("short", run.data.heroes[who].name))
+	return "I samlingen."
+
+
 func _source_name(trophy_id: String) -> String:
 	for kind in run.data.enemies:
 		if run.data.enemies[kind].get("trophy", "") == trophy_id:
 			return run.data.enemies[kind].name
+		var elite: Dictionary = run.data.enemies[kind].get("elite", {})
+		if String(elite.get("trophy", "")) == trophy_id:
+			return String(elite.get("name", run.data.enemies[kind].name))
 	return ""

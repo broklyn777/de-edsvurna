@@ -381,8 +381,11 @@ func silver_mult(data: Dictionary) -> float:
 ## (alltid), sedan från monstren i striden och påfyllnad ur samma Realm. Bosstroféer bara om bossen
 ## är besegrad BOSS_WINS_FOR_TROPHY gånger (unlocked_bosses). Elittroféerna och den första vanliga är
 ## säkra, resten kommer med trophy_chance(depth, instabilitet).
+## Mot upprepning (textspelet: Den slocknade glöden i 17 av 38 läger): owned är profilens samling. Troféer man inte äger
+## går före ägda, påfyllnaden tar olika först, och de sällsynta (väktarens, den förvridnas, elitvarianternas, bossens)
+## står först. En trofé som redan finns i körningen (t.ex. ur skatten bakom gruppen) erbjuds aldrig.
 func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = [],
-		unlocked_bosses: Array = [], unlocked_guardians: Array = []) -> Array[String]:
+		unlocked_bosses: Array = [], unlocked_guardians: Array = [], owned: Array = []) -> Array[String]:
 	var sure: Array[String] = []
 	# Väktarsteg 2: väktarens egen trofé, säker när väktaren är besegrad GUARDIAN_WINS_FOR_TROPHY gånger.
 	var g := guardian_trophy(data, encounter())
@@ -397,26 +400,52 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = 
 		var t: String = data.enemies[kind].get("elite", {}).get("trophy", "")
 		if t != "" and not sure.has(t) and not trophies.has(t):
 			sure.append(t)
-	var offer: Array[String] = []
 	# 0.23.3: bara de fiender som faktiskt mötte sällskapet (ett litet sällskap möter färre).
+	var bosses: Array[String] = []
+	var fresh: Array[String] = []
+	var known: Array[String] = []
 	for kind in lineup(data, encounter()):
 		if data.enemies[kind].get("boss", false) and not unlocked_bosses.has(kind):
 			continue
 		var t: String = data.enemies[kind].get("trophy", "")
-		if t != "" and not offer.has(t) and not trophies.has(t):
-			offer.append(t)
-	var rest: Array[String] = []
+		if t == "" or trophies.has(t) or sure.has(t) or bosses.has(t) or fresh.has(t) or known.has(t):
+			continue
+		if data.enemies[kind].get("boss", false):
+			bosses.append(t)
+		elif owned.has(t):
+			known.append(t)
+		else:
+			fresh.append(t)
+	var rest_fresh: Array[String] = []
+	var rest_known: Array[String] = []
 	var realm_kinds := []
 	for enc_id in floor_ids:
 		realm_kinds.append_array(data.encounters[enc_id].enemies)
+	# Realmens vanliga fiender ur grupperna också (inte elit eller miniboss), så att påfyllnaden har något nytt att ge.
+	for pool in pools_for(data, realm, depth):
+		for enc_id in pool:
+			for kind in data.encounters.get(enc_id, {}).get("enemies", []):
+				if String(data.enemies.get(kind, {}).get("rank", "")) == "" and not realm_kinds.has(kind):
+					realm_kinds.append(kind)
 	for kind in data.enemies:
 		if not realm_kinds.has(kind):
 			continue  # påfyllnaden kommer från samma Realm
 		var t: String = data.enemies[kind].get("trophy", "")
-		if t != "" and not offer.has(t) and not trophies.has(t) and not data.enemies[kind].get("boss", false):
-			rest.append(t)
-	while offer.size() < OFFER_SIZE and not rest.is_empty():
-		offer.append(rest.pop_at(rng.randi() % rest.size()))
+		if t == "" or trophies.has(t) or sure.has(t) or bosses.has(t) or fresh.has(t) or known.has(t) \
+				or data.enemies[kind].get("boss", false):
+			continue
+		if owned.has(t):
+			rest_known.append(t)
+		else:
+			rest_fresh.append(t)
+	var offer: Array[String] = bosses + fresh
+	while offer.size() < OFFER_SIZE and not rest_fresh.is_empty():
+		offer.append(rest_fresh.pop_at(rng.randi() % rest_fresh.size()))
+	for t in known:
+		if offer.size() < OFFER_SIZE:
+			offer.append(t)
+	while offer.size() < OFFER_SIZE and not rest_known.is_empty():
+		offer.append(rest_known.pop_at(rng.randi() % rest_known.size()))
 	var out: Array[String] = sure.duplicate()
 	var chance := minf(1.0, trophy_chance(depth, instability) + LivingMap.trophy_bonus(growth))
 	var first := true
@@ -425,6 +454,17 @@ func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = 
 			out.append(t)
 		first = false
 	return out
+
+
+## Sant för en trofé som ska synas mer i lägret: väktarens, bossens, elitvarianternas och de förvridnas (rarity elite/boss).
+static func is_rare_trophy(data: Dictionary, trophy_id: String) -> bool:
+	var rarity := String(data.traits.get(trophy_id, {}).get("rarity", "common"))
+	if rarity != "common":
+		return true
+	for enc_id in data.encounters:
+		if data.encounters[enc_id].get("guardian", false) and String(data.encounters[enc_id].get("trophy", "")) == trophy_id:
+			return true
+	return false
 
 
 ## Väktarens trofé för mötet ("" om mötet inte är en väktare eller saknar trofé).
@@ -514,6 +554,7 @@ func start_expedition(data: Dictionary, seed_value: int) -> void:
 	run_seed = seed_value
 	floor = 0
 	finished = false
+	twists_used = []
 	start_floor(data)
 
 
@@ -558,13 +599,16 @@ func start_floor(data: Dictionary) -> void:
 		quest.title = titles[quest.type]
 	commons_fought = 0
 	trail_taken = false
-	var pools: Array = data.realms[realm].get("pools", [])
+	var pools: Array = pools_for(data, realm, depth)
 	if pools.is_empty():
 		pools = [floor_ids]
 	var boss := boss_encounter(data)
 	var guard: String = floor_ids[mini(floor, floor_ids.size() - 2)] if floor_ids.size() > 1 else ""
+	var elite_pools := elite_pools_for(data)
 	map = Grotto.generate(run_seed * 101 + floor * 7 + 1, floor, is_last_floor(), pools, boss, guard, quest,
-			prisoners.get(str(floor), {}), data.realms[realm].get("elite_pools", []), data.realms[realm].get("objects", []))
+			prisoners.get(str(floor), {}), elite_pools, data.realms[realm].get("objects", []),
+			nemesis_pool(elite_pools, floor))
+	_vary_groups(data)
 	if is_last_floor() and boss != floor_ids[floor_ids.size() - 1]:
 		map.cells[map.goal].guardian = true  # en roterande väktare leder bossstriden (kortet, förlusttipsen)
 	pos = map.start
@@ -575,6 +619,112 @@ func start_floor(data: Dictionary) -> void:
 	came_from = -1
 	battle_pending = false
 	_roll_hints(rng)
+
+
+## Mot upprepning (docs/plan/mot-upprepning.md §2, VD 2026-10-24, textspelet): de vanliga grupperna byts per djupband.
+## realms.json "depth_pools": [{from, pools: [tier 0, 1, 2]}] i stigande ordning; det sista bandet vars "from" djupet nått
+## gäller, annars "pools" (djup 1–2). Banden blandar fiender som redan finns i nya grupper, och några grupper har en
+## prägel ("twist" i encounters.json) som ändrar vem man ska fälla först.
+static func pools_for(data: Dictionary, realm_id: String, at_depth: int) -> Array:
+	var r: Dictionary = data.get("realms", {}).get(realm_id, {})
+	var out: Array = r.get("pools", [])
+	for band in r.get("depth_pools", []):
+		if at_depth >= int(band.get("from", 999)):
+			out = band.get("pools", out)
+	return out
+
+
+## Elitgrupperna per våning för det här djupet. Våning 1 roterar mellan 2–3 grupper (VD 2026-10-24), utom på profilens
+## första nedstigning, där den första (Kolossens vakt, Lansens anstormning …) står kvar med sin milda styrka.
+## En väktares ledare (Klockaren, Abbedissan …) visar sig inte som vanlig elit på djupen intill väktarens djup
+## (GUARDIAN_GAP), så att väktaren inte kommer tillbaka som elitgrupp strax före eller efter.
+const GUARDIAN_GAP := 1
+
+
+func elite_pools_for(data: Dictionary) -> Array:
+	var src: Array = data.realms[realm].get("elite_pools", [])
+	var out := []
+	for i in src.size():
+		var ep: Array = (src[i] as Array).filter(func(id: String) -> bool: return not guardian_leader_near(data, id))
+		if ep.is_empty():
+			ep = (src[i] as Array).duplicate()
+		if first_descent and i == 0:
+			ep = [src[0][0]]
+		out.append(ep)
+	return out
+
+
+## Sant om elitgruppen leds av en fiende som leder en väktare på djupet eller ett djup intill (GUARDIAN_GAP).
+func guardian_leader_near(data: Dictionary, enc_id: String) -> bool:
+	var kinds: Array = data.encounters.get(enc_id, {}).get("enemies", [])
+	for d in range(depth - GUARDIAN_GAP, depth + GUARDIAN_GAP + 1):
+		var g := guardian_for(data, realm, d) if d >= 1 else ""
+		if g == "" or not data.encounters.has(g):
+			continue
+		for k in data.encounters[g].enemies:
+			if String(data.enemies.get(k, {}).get("rank", "")) == "miniboss" and kinds.has(k):
+				return true
+	return false
+
+
+## Nemesis (Jakt) dras ur våningens elitgrupper på våning 1 och ur båda våningarnas på våning 2 (mot-upprepning §1).
+static func nemesis_pool(elite_pools: Array, floor_i: int) -> Array:
+	var out := []
+	for i in mini(floor_i, elite_pools.size() - 1) + 1:
+		for id in elite_pools[i]:
+			if not out.has(id):
+				out.append(id)
+	return out
+
+
+## Grupper med en prägel som redan har mötts i den här nedstigningen (samma variant två gånger blir upprepning igen).
+var twists_used: Array = []
+## Troféer som var nya för profilen när de hittades under körningen (lägret märker dem NY).
+var fresh_trophies: Array = []
+## Chansen per våning att en vanlig grupp är en inkräktare från en annan Realm (realms.json "intruders", från ett djup).
+const INTRUDER_CHANCE := 0.4
+
+
+## Efter att våningen lagts: en prägel används högst en gång per nedstigning (annars grundgruppen, "base"), och från
+## realms.json "intruders"."from" kan en vanlig grupp bytas mot en grupp ur en annan Realm (Siralims varelser från andra
+## Realms). Eget frö, så att resten av grottan blir densamma.
+func _vary_groups(data: Dictionary) -> void:
+	for c in map.cells:
+		if not c.has("encounter") or c.get("boss", false) or c.get("elite", false) or c.get("nemesis", false):
+			continue
+		var e: Dictionary = data.encounters.get(c.encounter, {})
+		if not e.has("twist"):
+			continue
+		if twists_used.has(c.encounter) and data.encounters.has(String(e.get("base", ""))):
+			c.encounter = String(e.base)
+		else:
+			twists_used.append(c.encounter)
+	var intr: Dictionary = data.realms[realm].get("intruders", {})
+	if intr.is_empty() or depth < int(intr.get("from", 999)) or practice or first_descent:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = run_seed * 389 + floor * 53 + 3
+	if rng.randf() >= INTRUDER_CHANCE:
+		return
+	var spots := []
+	for i in map.cells.size():
+		if map.cells[i].get("kind", "") == "battle":
+			spots.append(i)
+	var sources: Array = intr.get("realms", []).filter(func(id: String) -> bool: return data.realms.has(id))
+	if spots.is_empty() or sources.is_empty():
+		return
+	var at: int = spots[rng.randi() % spots.size()]
+	var src_realm: String = sources[rng.randi() % sources.size()]
+	var pools := pools_for(data, src_realm, depth)
+	var pool: Array = pools[clampi(int(map.cells[at].get("tier", floor)), 0, pools.size() - 1)]
+	var enc_id: String = pool[rng.randi() % pool.size()]
+	var base := String(data.encounters[enc_id].get("base", ""))
+	if data.encounters[enc_id].has("twist") and data.encounters.has(base):
+		enc_id = base  # inkräktarna är främlingar här; deras egen prägel hör hemma i deras Realm
+	map.cells[at].encounter = enc_id
+	map.cells[at].intruder = src_realm
+	if intr.has("stat_mult"):
+		map.cells[at].stat_mult = float(intr.stat_mult)
 
 
 ## 0.30.22 Ledtråd (docs/plan/nya-grottor.md A, Siralims quests som pekar ut en plats): varje mål för questen (Nemesis,
@@ -946,7 +1096,7 @@ func campfire(data: Dictionary) -> int:
 
 ## Skatt: silver (andel av våningens belöning) och ibland en trofé ur samma Realm; en bevakad skatt har bättre chans
 ## (plan: "trofé eller sällsynt material"). Returnerar {silver, trophy}.
-func treasure(data: Dictionary, rng: RandomNumberGenerator) -> Dictionary:
+func treasure(data: Dictionary, rng: RandomNumberGenerator, owned: Array = []) -> Dictionary:
 	var r := current_room()
 	r.done = true
 	var guarded: bool = r.get("guarded", false)
@@ -959,6 +1109,10 @@ func treasure(data: Dictionary, rng: RandomNumberGenerator) -> Dictionary:
 				var t: String = data.enemies[kind].get("trophy", "")
 				if t != "" and not data.enemies[kind].get("boss", false) and not trophies.has(t) and not pool.has(t):
 					pool.append(t)
+		# Mot upprepning: troféer profilen inte äger först (owned = samlingen).
+		var fresh := pool.filter(func(t: String) -> bool: return not owned.has(t))
+		if not fresh.is_empty():
+			pool = fresh
 		if not pool.is_empty():
 			out.trophy = pool[rng.randi() % pool.size()]
 	return out
@@ -1253,7 +1407,8 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "party_slots", "realm_party", "quest_hints", "trail_taken", "growth", "twisted",
-		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour"]
+		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour",
+		"twists_used", "fresh_trophies"]
 
 
 func to_dict() -> Dictionary:

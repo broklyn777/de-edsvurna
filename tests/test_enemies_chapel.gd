@@ -55,7 +55,9 @@ func test_new_chapel_enemies_have_data_trophies_and_traits() -> void:
 	var chapel: Dictionary = _data.realms.chapel
 	for enc_id in chapel.elite_pools[0] + chapel.elite_pools[1] + chapel.pools[1] + chapel.pools[2]:
 		assert_true(_data.encounters.has(enc_id), enc_id)
-	assert_eq(chapel.elite_pools[0], ["chapel_e1"], "våning 1 har bara Lansens anstormning")
+	# Mot upprepning: våning 1 roterar, Lansens anstormning först (första nedstigningen behåller den).
+	assert_eq(chapel.elite_pools[0][0], "chapel_e1", "våning 1 börjar med Lansens anstormning")
+	assert_true(chapel.elite_pools[0].size() >= 2, "våning 1 roterar mellan flera elitgrupper")
 	assert_eq(chapel.pools[0], ["chapel_1a", "chapel_1b", "chapel_1c", "chapel_1d"], "tier 0: de gamla och Paktens vakt (0.31)")
 
 

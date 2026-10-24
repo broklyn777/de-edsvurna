@@ -1566,7 +1566,8 @@
 					}
 				]
 			}
-		}
+		},
+		"second_warning": "Andra mötet: Klockaren känner igen er. Ni vet vad det tredje slaget kräver – fäll hela Benfolket innan det kommer."
 	},
 	"crypt_g2": {
 		"name": "Kistornas råd",
@@ -1603,7 +1604,8 @@
 					"council_wake"
 				]
 			}
-		}
+		},
+		"second_warning": "Andra mötet: rådet minns ordningen ni valde förra gången. Välj den igen, eller pröva en ny."
 	},
 	"chapel_g1": {
 		"name": "Abbedissans kör",
@@ -1637,7 +1639,8 @@
 					"choir_shield"
 				]
 			}
-		}
+		},
+		"second_warning": "Andra mötet: abbedissan minns er. Följ kronan – den flyttar efter tre av bärarens turer."
 	},
 	"chapel_g2": {
 		"name": "Inkvisitorns domstol",
@@ -1678,7 +1681,8 @@
 					}
 				]
 			}
-		}
+		},
+		"second_warning": "Andra mötet: Inkvisitorn har era namn i sina papper sedan förra förhöret."
 	},
 	"grove_g1": {
 		"name": "Strypvävarens krona",
@@ -1696,7 +1700,8 @@
 		],
 		"stat_mult": 1.1,
 		"guardian": true,
-		"template": "Väktare"
+		"template": "Väktare",
+		"second_warning": "Andra mötet: Strypvävaren har knutit om sina trådar sedan förra gången."
 	},
 	"grove_g2": {
 		"name": "Vävarnas par",
@@ -1713,7 +1718,8 @@
 		],
 		"stat_mult": 1.54,
 		"guardian": true,
-		"template": "Väktare"
+		"template": "Väktare",
+		"second_warning": "Andra mötet: vävarnas par har lagat nätet ni slet sönder."
 	},
 	"troll_g1": {
 		"name": "Tullen vid bron",
@@ -1733,7 +1739,8 @@
 		],
 		"stat_mult": 1.17,
 		"guardian": true,
-		"template": "Väktare"
+		"template": "Väktare",
+		"second_warning": "Andra mötet: Brom minns er. Tullen är densamma – han slår den som skadade honom senast."
 	},
 	"troll_g2": {
 		"name": "Gråluvans ätt",
@@ -1754,6 +1761,777 @@
 		],
 		"stat_mult": 1.44,
 		"guardian": true,
-		"template": "Väktare"
+		"template": "Väktare",
+		"second_warning": "Andra mötet: Gråluva minns er och sjunger igen. Anfall eller försvara när sången närmar sig."
+	},
+	"crypt_1d": {
+		"name": "Likätarens stig",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"ghoul",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.65
+	},
+	"crypt_1e": {
+		"name": "Mögelnischen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"mold_skeleton",
+			"skeleton_warrior"
+		],
+		"stat_mult": 0.65
+	},
+	"crypt_1f": {
+		"name": "Prästens nisch",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"skeleton_warrior",
+			"skeleton_archer",
+			"grave_priest"
+		],
+		"stat_mult": 0.6,
+		"twist": {
+			"id": "sermon",
+			"name": "Likpredikan",
+			"text": "Gravprästen predikar över de fallna: när en i gruppen faller får han en Barriär och blir Bärsärk. Fäll prästen först."
+		},
+		"overrides": {
+			"grave_priest": {
+				"traits": [
+					"grief_wrath"
+				]
+			}
+		},
+		"base": "crypt_1b"
+	},
+	"crypt_2h": {
+		"name": "Väktarens port",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_warden",
+			"skeleton_archer",
+			"mold_skeleton"
+		],
+		"stat_mult": 0.62,
+		"twist": {
+			"id": "guard_crypt",
+			"name": "Livvakten",
+			"text": "Gravväktaren har svurit att skydda Benfolket och tar halva skadan som riktas mot de andra. Fäll väktaren först."
+		},
+		"overrides": {
+			"grave_warden": {
+				"traits": [
+					"bodyguard"
+				]
+			}
+		},
+		"base": "crypt_2a"
+	},
+	"crypt_2i": {
+		"name": "Skramlarnas schakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"rattler",
+			"ember_skeleton",
+			"bone_runner"
+		],
+		"stat_mult": 0.7
+	},
+	"crypt_2j": {
+		"name": "Kistbärarnas gång",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"coffin_bearer",
+			"rattler",
+			"bone_runner"
+		],
+		"stat_mult": 0.62,
+		"twist": {
+			"id": "bound_crypt",
+			"name": "Bundna",
+			"text": "Kistbäraren och Skramlaren är bundna: så länge båda står tar de 40 % mindre skada. Välj vem som får stå kvar."
+		},
+		"overrides": {
+			"coffin_bearer": {
+				"traits": [
+					"bound_pair"
+				]
+			},
+			"rattler": {
+				"traits": [
+					"bound_pair"
+				]
+			}
+		},
+		"base": "crypt_2e"
+	},
+	"crypt_2k": {
+		"name": "Mögelgropen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"mold_skeleton",
+			"ghoul",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.7
+	},
+	"crypt_3f": {
+		"name": "Gravväktarnas led",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_warden",
+			"rattler",
+			"grave_priest"
+		],
+		"stat_mult": 0.72
+	},
+	"crypt_3g": {
+		"name": "Benvakten",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"skeleton_warrior",
+			"ghoul",
+			"grave_priest"
+		],
+		"stat_mult": 0.68,
+		"twist": {
+			"id": "sermon",
+			"name": "Likpredikan",
+			"text": "Gravprästen predikar över de fallna: när en i gruppen faller får han en Barriär och blir Bärsärk. Fäll prästen först."
+		},
+		"overrides": {
+			"grave_priest": {
+				"traits": [
+					"grief_wrath"
+				]
+			}
+		},
+		"base": "crypt_3a"
+	},
+	"crypt_3h": {
+		"name": "Furstens förgård",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_warden",
+			"ember_skeleton",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.68,
+		"twist": {
+			"id": "guard_crypt",
+			"name": "Livvakten",
+			"text": "Gravväktaren har svurit att skydda Benfolket och tar halva skadan som riktas mot de andra. Fäll väktaren först."
+		},
+		"overrides": {
+			"grave_warden": {
+				"traits": [
+					"bodyguard"
+				]
+			}
+		},
+		"base": "crypt_3b"
+	},
+	"crypt_3i": {
+		"name": "Glödens bärare",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"ember_skeleton",
+			"ember_skeleton",
+			"coffin_bearer"
+		],
+		"stat_mult": 0.68
+	},
+	"crypt_3j": {
+		"name": "Gravens skyddare",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_warden",
+			"coffin_bearer",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.66,
+		"twist": {
+			"id": "bound_warden",
+			"name": "Bundna",
+			"text": "Gravväktaren och Kistbäraren är bundna: så länge båda står tar de 40 % mindre skada. Välj vem som får stå kvar."
+		},
+		"overrides": {
+			"grave_warden": {
+				"traits": [
+					"bound_pair"
+				]
+			},
+			"coffin_bearer": {
+				"traits": [
+					"bound_pair"
+				]
+			}
+		},
+		"base": "crypt_3d"
+	},
+	"crypt_e8": {
+		"name": "Skrivarens avskrifter",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"bone_scribe",
+			"skeleton_warrior",
+			"skeleton_archer"
+		],
+		"stat_mult": 1.3,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Variera handlingarna"
+	},
+	"crypt_e9": {
+		"name": "Dimmans första natt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grave_mist",
+			"bone_runner",
+			"skeleton_archer"
+		],
+		"stat_mult": 0.92,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Döda öppnaren"
+	},
+	"chapel_1e": {
+		"name": "Gastarnas bänkrad",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cultist",
+			"corrupted_deacon",
+			"wraith"
+		],
+		"stat_mult": 0.56,
+		"twist": {
+			"id": "bound_chapel",
+			"name": "Bundna",
+			"text": "Kultisten och diakonen är bundna: så länge båda står tar de 40 % mindre skada. Välj vilken hjälp som får stå kvar: barriären eller helningen."
+		},
+		"overrides": {
+			"cultist": {
+				"traits": [
+					"bound_pair"
+				]
+			},
+			"corrupted_deacon": {
+				"traits": [
+					"bound_pair"
+				]
+			}
+		},
+		"base": "chapel_1b"
+	},
+	"chapel_1f": {
+		"name": "Irrblossens bänk",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"will_o_wisp",
+			"cult_zealot",
+			"penitent"
+		],
+		"stat_mult": 0.6
+	},
+	"chapel_1g": {
+		"name": "Spegelns förgård",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"mirror_warden",
+			"cultist"
+		],
+		"stat_mult": 0.6
+	},
+	"chapel_2h": {
+		"name": "Häxornas cirkel",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"witch",
+			"wraith",
+			"cultist"
+		],
+		"stat_mult": 0.65,
+		"twist": {
+			"id": "grief_witch",
+			"name": "Sorgens vrede",
+			"text": "Häxan sörjer högt: när en i gruppen faller får hon en Barriär och blir Bärsärk. Fäll häxan först."
+		},
+		"overrides": {
+			"witch": {
+				"traits": [
+					"grief_wrath"
+				]
+			}
+		},
+		"base": "chapel_2b"
+	},
+	"chapel_2i": {
+		"name": "Förbannelsens kor",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"penitent",
+			"witch",
+			"cultist"
+		],
+		"stat_mult": 0.65,
+		"twist": {
+			"id": "guard_chapel",
+			"name": "Botgörarens ed",
+			"text": "Botgöraren tar halva skadan som riktas mot Kultens folk. Fäll botgöraren först."
+		},
+		"overrides": {
+			"penitent": {
+				"traits": [
+					"bodyguard"
+				]
+			}
+		},
+		"base": "chapel_2c"
+	},
+	"chapel_2j": {
+		"name": "De fallnas bröder",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"fallen_knight",
+			"mirror_warden",
+			"wraith"
+		],
+		"stat_mult": 0.62
+	},
+	"chapel_2k": {
+		"name": "Blodsvurnas kor",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cult_zealot",
+			"witch",
+			"corrupted_deacon"
+		],
+		"stat_mult": 0.69
+	},
+	"chapel_3h": {
+		"name": "Häxornas nötning",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cultist",
+			"corrupted_deacon",
+			"witch"
+		],
+		"stat_mult": 0.6,
+		"twist": {
+			"id": "bound_chapel",
+			"name": "Bundna",
+			"text": "Kultisten och diakonen är bundna: så länge båda står tar de 40 % mindre skada. Välj vilken hjälp som får stå kvar: barriären eller helningen."
+		},
+		"overrides": {
+			"cultist": {
+				"traits": [
+					"bound_pair"
+				]
+			},
+			"corrupted_deacon": {
+				"traits": [
+					"bound_pair"
+				]
+			}
+		},
+		"base": "chapel_3d"
+	},
+	"chapel_3i": {
+		"name": "Botgörarnas procession",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"penitent",
+			"witch",
+			"corrupted_deacon"
+		],
+		"stat_mult": 0.66,
+		"twist": {
+			"id": "guard_chapel",
+			"name": "Botgörarens ed",
+			"text": "Botgöraren tar halva skadan som riktas mot Kultens folk. Fäll botgöraren först."
+		},
+		"overrides": {
+			"penitent": {
+				"traits": [
+					"bodyguard"
+				]
+			}
+		},
+		"base": "chapel_3b"
+	},
+	"chapel_3j": {
+		"name": "Spegelns procession",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"mirror_warden",
+			"banner_bearer",
+			"cult_zealot"
+		],
+		"stat_mult": 0.64
+	},
+	"chapel_3k": {
+		"name": "Biskopens livvakt",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"fallen_knight",
+			"witch",
+			"cultist"
+		],
+		"stat_mult": 0.66,
+		"twist": {
+			"id": "grief_witch",
+			"name": "Sorgens vrede",
+			"text": "Häxan sörjer högt: när en i gruppen faller får hon en Barriär och blir Bärsärk. Fäll häxan först."
+		},
+		"overrides": {
+			"witch": {
+				"traits": [
+					"grief_wrath"
+				]
+			}
+		},
+		"base": "chapel_3a"
+	},
+	"chapel_e8": {
+		"name": "Förmannens förpost",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"cult_overseer",
+			"cultist",
+			"witch"
+		],
+		"stat_mult": 1.0,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Döda livvakten"
+	},
+	"chapel_e9": {
+		"name": "Grimmens kyrkogård",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"church_grim",
+			"wraith",
+			"cultist"
+		],
+		"stat_mult": 1.1,
+		"first_descent_stat_mult": 0.72,
+		"elite_group": true,
+		"template": "Fokusera"
+	},
+	"troll_1f": {
+		"name": "Mossiga backen",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"moss_troll",
+			"changeling_troll"
+		],
+		"extra": [
+			"porridge_troll"
+		],
+		"stat_mult": 0.78,
+		"twist": {
+			"id": "guard_moss",
+			"name": "Mossryggens vakt",
+			"text": "Mossrygg tar halva skadan som riktas mot de andra trollen. Stoppa hans läkning med en förmåga och fäll honom först."
+		},
+		"overrides": {
+			"moss_troll": {
+				"traits": [
+					"bodyguard"
+				]
+			}
+		},
+		"base": "troll_1a"
+	},
+	"troll_1g": {
+		"name": "Grytans eld",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"porridge_troll",
+			"club_troll"
+		],
+		"extra": [
+			"changeling_troll"
+		],
+		"stat_mult": 0.78,
+		"twist": {
+			"id": "grief_pot",
+			"name": "Grytans sorg",
+			"text": "Grytmodern sörjer sina: när ett troll faller får hon en Barriär och blir Bärsärk. Fäll henne först."
+		},
+		"overrides": {
+			"porridge_troll": {
+				"traits": [
+					"grief_wrath"
+				]
+			}
+		},
+		"base": "troll_1b"
+	},
+	"troll_2e": {
+		"name": "Avund vid grytan",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"grumpy_troll",
+			"porridge_troll",
+			"moss_troll"
+		],
+		"extra": [
+			"club_troll"
+		],
+		"stat_mult": 0.84,
+		"twist": {
+			"id": "bound_troll",
+			"name": "Bundna",
+			"text": "Grytmodern och Avundsjätten är bundna: så länge båda står tar de 40 % mindre skada. Välj vem som får stå kvar."
+		},
+		"overrides": {
+			"porridge_troll": {
+				"traits": [
+					"bound_pair"
+				]
+			},
+			"grumpy_troll": {
+				"traits": [
+					"bound_pair"
+				]
+			}
+		},
+		"base": "troll_2c"
+	},
+	"troll_2f": {
+		"name": "Klubbor i dimman",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"moss_troll",
+			"club_troll",
+			"grumpy_troll"
+		],
+		"extra": [
+			"changeling_troll"
+		],
+		"stat_mult": 0.84,
+		"twist": {
+			"id": "guard_moss",
+			"name": "Mossryggens vakt",
+			"text": "Mossrygg tar halva skadan som riktas mot de andra trollen. Stoppa hans läkning med en förmåga och fäll honom först."
+		},
+		"overrides": {
+			"moss_troll": {
+				"traits": [
+					"bodyguard"
+				]
+			}
+		},
+		"base": "troll_2a"
+	},
+	"troll_3e": {
+		"name": "Hela byn i berget",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"porridge_troll",
+			"club_troll",
+			"grumpy_troll",
+			"changeling_troll"
+		],
+		"extra": [
+			"moss_troll",
+			"grumpy_troll"
+		],
+		"stat_mult": 0.86,
+		"twist": {
+			"id": "grief_pot",
+			"name": "Grytans sorg",
+			"text": "Grytmodern sörjer sina: när ett troll faller får hon en Barriär och blir Bärsärk. Fäll henne först."
+		},
+		"overrides": {
+			"porridge_troll": {
+				"traits": [
+					"grief_wrath"
+				]
+			}
+		},
+		"base": "troll_3a"
+	},
+	"troll_e4": {
+		"name": "Trollmors vaktpost",
+		"party": [
+			"paladin",
+			"brokk",
+			"alva",
+			"eira"
+		],
+		"enemies": [
+			"troll_mother",
+			"club_troll",
+			"moss_troll"
+		],
+		"extra": [
+			"changeling_troll"
+		],
+		"stat_mult": 1.1,
+		"first_descent_stat_mult": 0.56,
+		"elite_group": true
 	}
 }

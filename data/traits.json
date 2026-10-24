@@ -3891,5 +3891,47 @@
 		"modify": {
 			"damage_mult": 0.85
 		}
+	},
+	"grief_wrath": {
+		"name": "Sorgens vrede",
+		"enemy": true,
+		"text": "När en annan i gruppen faller får bäraren en Barriär för 12 % av sitt max liv och blir Bärsärk i 2 turer.",
+		"trigger": "death",
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "health",
+				"pct": 0.12,
+				"target": "self"
+			},
+			{
+				"type": "aura",
+				"aura": "berserk",
+				"duration": 2,
+				"target": "self"
+			}
+		]
+	},
+	"bodyguard": {
+		"name": "Livvakt",
+		"enemy": true,
+		"text": "Tar 50 % av den skada som riktas mot andra ur sin familj.",
+		"trigger": "passive",
+		"guard_family": 0.5
+	},
+	"bound_pair": {
+		"name": "Bundna",
+		"enemy": true,
+		"text": "Tar 40 % mindre skada så länge en annan bunden i gruppen står.",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"ally_has_trait": "bound_pair"
+		},
+		"modify": {
+			"damage_taken_mult": 0.6
+		}
 	}
 }
