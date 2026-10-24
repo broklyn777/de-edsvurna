@@ -285,7 +285,8 @@ func _show_room(r: Dictionary) -> void:
 			_shrine_options = run.state.shrine_options(run.data, run.rng)
 			var options := []
 			for o in _shrine_options:
-				options.append({"label": RunState.shrine_text(run.data, o), "shrine": o})
+				options.append({"label": RunState.shrine_text(run.data, o), "sub": run.state.shrine_detail(run.data, o),
+						"shrine": o})
 			_dialog = {"title": "Helgedom", "text": "Välj en gåva – eller låt Pandemonium avgöra.", "options": options}
 
 
@@ -438,12 +439,22 @@ func _leave_dialog() -> Dictionary:
 func _dialog_rect() -> Rect2:
 	if _dialog.has("hero"):
 		return Rect2(size.x / 2 - 380, size.y / 2 - 210, 760, 420)  # befrielsen: porträtt, egenskap och makroförslag
+	if _has_subs():
+		return Rect2(size.x / 2 - 380, size.y / 2 - 190, 760, 380)  # val med en rad om vad de gör (helgedomen)
 	return Rect2(size.x / 2 - 330, size.y / 2 - 150, 660, 300)
+
+
+## Har något val en andra rad (vad gåvan gör)? Då blir knapparna högre.
+func _has_subs() -> bool:
+	for o in _dialog.get("options", []):
+		if String(o.get("sub", "")) != "":
+			return true
+	return false
 
 
 func _option_rect(i: int, n: int) -> Rect2:
 	var d := _dialog_rect()
-	var h := 46.0
+	var h := 64.0 if _has_subs() else 46.0
 	return Rect2(d.position.x + 30, d.end.y - 24 - (n - i) * (h + 8), d.size.x - 60, h)
 
 
@@ -852,8 +863,15 @@ func _draw_dialog() -> void:
 		var r := _option_rect(i, options.size())
 		draw_rect(r, Color(0.25, 0.15, 0.08, 0.9))
 		draw_rect(r, UiStyle.GOLD, false, 2.0)
-		UiStyle.text(self, r.position + Vector2(0, r.size.y / 2 + 7), options[i].label, 17, UiStyle.GOLD,
-				HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 2)
+		var sub := String(options[i].get("sub", ""))
+		if sub == "":
+			UiStyle.text(self, r.position + Vector2(0, r.size.y / 2 + 7), options[i].label, 17, UiStyle.GOLD,
+					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 2)
+		else:
+			UiStyle.text(self, r.position + Vector2(10, 26), UiStyle.fit(options[i].label, 17, r.size.x - 20), 17,
+					UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 20, 2)
+			UiStyle.text(self, r.position + Vector2(10, 50), UiStyle.fit(sub, 15, r.size.x - 20), 15,
+					Color(0.96, 0.9, 0.78), HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 20, 0)
 
 
 ## Fynden i körningen (0.20) uppe till höger, och om det här djupet ger trick och Nether Stones.

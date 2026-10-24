@@ -262,14 +262,26 @@ func _walk(delta: float) -> void:
 func _has_homecoming() -> bool:
 	var h: Dictionary = run.profile.homecoming
 	return not h.get("remarks", []).is_empty() or not h.get("titles", []).is_empty() \
-			or not h.get("summary", []).is_empty()
+			or not h.get("summary", []).is_empty() or not h.get("tips", []).is_empty()
 
 
 func _start_homecoming() -> void:
 	_home_pending = false
 	pal = _v(keep.yard.home)
 	_trail.append(pal)
-	_home_queue = Array(run.profile.homecoming.get("remarks", [])).duplicate()
+	_home_queue = Array(run.profile.homecoming.get("remarks", [])).duplicate(true)
+	# tydliga-val: efter en förlust Gorms konkreta råd (LossTips) sist; pratar han redan läggs råden efter hans replik.
+	var tips: Array = run.profile.homecoming.get("tips", [])
+	if not tips.is_empty():
+		var gorm := {}
+		for r in _home_queue:
+			if String(r.speaker) == "gorm":
+				gorm = r
+		if gorm.is_empty():
+			_home_queue.append({"speaker": "gorm", "text": "Ett råd innan du går ned igen. " + String(tips[0]),
+					"extra": tips.slice(1)})
+		else:
+			gorm.extra = tips.duplicate()
 	_next_visitor()
 
 
@@ -285,7 +297,8 @@ func _next_visitor() -> void:
 	var r: Dictionary = _home_queue.pop_front()
 	var who := String(r.speaker)
 	var spot: Vector2 = VISIT_SPOTS[mini(_visitors.size(), VISIT_SPOTS.size() - 1)]
-	_visitor = {"who": who, "text": String(r.get("text", "")), "from": _person_pos(who), "to": pal + spot, "t": 0.0}
+	_visitor = {"who": who, "text": String(r.get("text", "")), "extra": Array(r.get("extra", [])), "from": _person_pos(who),
+			"to": pal + spot, "t": 0.0}
 
 
 func _visit(delta: float) -> void:
@@ -315,7 +328,10 @@ func _visitor_arrives() -> void:
 	var v := _visitor
 	_visitor = {}
 	_visitors.append({"who": v.who, "at": v.to})
-	_talk(String(v.who), [String(v.text)], "", false, _next_visitor)
+	_talk(String(v.who), [String(v.text)] + Array(v.get("extra", [])), "", false, _next_visitor)
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--home-line=") and not _conv.is_empty():
+			_conv.i = clampi(int(arg.get_slice("=", 1)), 0, _conv.lines.size() - 1)  # en viss rad (Gorms råd, skärmdumpar)
 
 
 func _home_done() -> void:

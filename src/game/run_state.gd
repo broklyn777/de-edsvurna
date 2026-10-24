@@ -913,6 +913,47 @@ static func shrine_text(data: Dictionary, o: Dictionary) -> String:
 	return "Pandemonium: en slumpad effekt, bra eller dålig"
 
 
+## Pandemoniums utfall (apply_shrine "chaos", samma ordning). Aurans namn ur datan.
+const CHAOS_AURA := "holy_shield"
+
+
+## Gåvans verkan i en rad, ur datan (aurans text och varaktighet, förmågans Charges), för knappen under namnet.
+func shrine_detail(data: Dictionary, o: Dictionary) -> String:
+	match o.kind:
+		"charge":
+			var full := int(data.abilities[o.ability].get("charges", 0))
+			var now := int(charges.get(o.hero, {}).get(o.ability, 0))
+			return "%d av %d kvar blir %d" % [now, full, now + int(o.amount)]
+		"blessing":
+			return aura_brief(data, o.aura, true)
+	return "+1 Charge på allt, %s (%s), −1 Charge eller en våningsregel" % [
+		data.auras[CHAOS_AURA].name, aura_brief(data, CHAOS_AURA, true, false)]
+
+
+## Vad en aura gör, kort och ur datan: texten utan namnet ("tar 25 % mindre skada") och hur länge.
+## at_start: auran ges före striden (Helgedomens gåva). Varaktigheten räknas i ägarens turer och tickar i början av
+## turen (CombatSim._tick_turn_start), så 1 tur tar slut när var och en står på tur första gången ("fram till egen första tur").
+static func aura_brief(data: Dictionary, aura_id: String, at_start := false, with_time := true) -> String:
+	var d: Dictionary = data.auras.get(aura_id, {})
+	var t := String(d.get("text", d.get("name", aura_id)))
+	var colon := t.find(": ")
+	if colon >= 0:
+		t = t.substr(colon + 2)
+	t = t.strip_edges().trim_suffix(".")
+	if t.length() > 0:
+		t = t[0].to_lower() + t.substr(1)
+	var n := int(d.get("duration", -1))
+	if not with_time or n <= 0 or t.contains("till nästa tur"):
+		return t
+	if at_start:
+		if n == 1:
+			return t + " fram till egen första tur"
+		if n == 2:
+			return t + " under egen första tur"
+		return t + " under egna %d första turer" % (n - 1)
+	return t + (", 1 tur" if n == 1 else ", %d turer" % n)
+
+
 ## Tar emot gåvan. Pandemonium slår om: +1 Charge på alla förmågor, Barriär till nästa strid, en
 ## förlorad Charge eller en våningsregel i nästa strid. Returnerar en text om vad som hände.
 func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -> String:
@@ -922,6 +963,7 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 			charges[o.hero][o.ability] = int(charges[o.hero][o.ability]) + int(o.amount)
 		"blessing":
 			next_auras.append(o.aura)
+			text += " (%s)" % aura_brief(data, o.aura, true)
 		"chaos":
 			match rng.randi() % 4:
 				0:
@@ -930,8 +972,9 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 							charges[hero_id][ability_id] = int(charges[hero_id][ability_id]) + 1
 					text = "Pandemonium: +1 Charge på alla förmågor!"
 				1:
-					next_auras.append("holy_shield")
-					text = "Pandemonium: sällskapet börjar nästa strid under Helig sköld!"
+					next_auras.append(CHAOS_AURA)
+					text = "Pandemonium: sällskapet börjar nästa strid med %s (%s)!" % [data.auras[CHAOS_AURA].name,
+							aura_brief(data, CHAOS_AURA, true)]
 				2:
 					var hero_id: String = charges.keys()[rng.randi() % charges.size()]
 					var list: Array = charges[hero_id].keys()
