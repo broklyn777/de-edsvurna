@@ -1793,8 +1793,15 @@
 				"Troll_Brown": "#b8463c",
 				"Troll_Brown2": "#efe3c4",
 				"Troll_Strap": "#7a4a2a",
-				"Troll_EyeGlint": "#ffcf70"
-			}
+				"Troll_EyeGlint": "#ffcf70",
+				"Troll_Apron": "#a8987a",
+				"Troll_ApronStain": "#4a1c14",
+				"Troll_ApronTie": "#3a2818"
+			},
+			"parts": [
+				"troll_delar/Troll_Apron",
+				"troll_delar/Troll_ApronBand"
+			]
 		},
 		"trophy": "porridge_bowl"
 	},
@@ -1946,7 +1953,14 @@
 				"Troll_Brown": "#2a3a50",
 				"Troll_Brown2": "#3a4c66",
 				"Troll_Strap": "#d0a840",
-				"Troll_EyeGlint": "#ffe680"
+				"Troll_EyeGlint": "#ffe680",
+				"Troll_LanternIron": "#1e1e22"
+			},
+			"parts": [
+				"troll_delar/Troll_Lantern"
+			],
+			"emit": {
+				"Troll_LanternGlow": "#ffc45a"
 			}
 		},
 		"trophy": "toll_buckle"
@@ -2001,8 +2015,12 @@
 				"Troll_Brown": "#6a4a8a",
 				"Troll_Brown2": "#9a7ac0",
 				"Troll_Strap": "#e8d8b0",
-				"Troll_EyeGlint": "#c8f0ff"
-			}
+				"Troll_EyeGlint": "#c8f0ff",
+				"Troll_Shawl": "#4e4954"
+			},
+			"parts": [
+				"troll_delar/Troll_Shawl"
+			]
 		},
 		"trophy": "grey_shawl"
 	},

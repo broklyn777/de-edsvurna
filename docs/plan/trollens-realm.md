@@ -483,7 +483,7 @@ som i Lunden.
 |---|---|---|
 | `troll.glb` | Avundsjätten, Stenkrossaren, Brom (×1,3), Gråluva (utan klubba) | grundtrollet, 2,2 m, tintas med `colors` |
 | `troll_mossrygg.glb` | Mossrygg | mosstuvor på rygg och axlar |
-| `troll_slev.glb` | Grytmodern | med slev (förklädet saknas fortfarande, `troll.md`) |
+| `troll_slev.glb` | Grytmodern | med slev; förklädet ur `troll_delar.glb` |
 | `troll_grumse.glb` | Bergakungen | stenkrona med tom infattning, 2,98 m |
 
 **Nya troll ur befintliga filer** (ingen ny modell behövs, `scale`, `colors`, `hide`, `weapons`):
@@ -492,7 +492,7 @@ som i Lunden.
   Då behövs en egen variant i Blender med längre armar.
 - **Kyrkkastaren:** `troll.glb`, `hide: ["Troll_Club"]`, en sten i handen. Kastet använder `Spell_Simple_Shoot` med en
   projektil (`travel`).
-  - **Behövs:** en del `Troll_Boulder` i Blender, eller en sten som projektil i `fx.gd` (finns för Mosskast).
+  - **Finns:** `troll_delar/Troll_Boulder` (sten i höger hand, `parts`). Projektilen i kastet är fortfarande `fx.gd`:s.
 - **Den namnlöse byggaren:** `troll_grumse.glb` utan kronan (`hide: ["Troll_Crown"]`), `scale` 1,15, kall grå sten och
   mörkare ögon. Han ska läsas som Bergakungens äldre släkt, inte som kungen själv.
 - **Varg** (`varg.glb`) kan bli trollens husdjur i en senare grupp (inte i förslaget).
@@ -501,8 +501,7 @@ som i Lunden.
 - **Bergsrået:** en kvinnlig gestalt, vacker framifrån och ihålig som ett murket träd bakifrån (folktrons rå). Förslag:
   `haxa.glb` eller `gast.glb` med en grå och mossgrön tint och glöd. **VD:** duger en omfärgad häxa, eller ska
   Drakvalvets kvinnliga figurer byggas om i Blender?
-- **Delarna som står kvar i `troll.md`:** Grytmoderns förkläde, Gråluvans sjal och Broms lykta. Gråluvans sjal får
-  mer vikt här, eftersom hon finns i tre elitgrupper.
+- **Delarna** (förkläde, sjal, lykta, sten) finns i `troll_delar.glb` sedan 2026-10-24.
 - **Rumsögonblicken** (`scripts/rooms/`): grottans fyra stilar finns. Berget får kryptans stil med kallare ljus och
   mossa (VAL, som Lunden) tills en egen stil finns.
 
