@@ -360,6 +360,8 @@ Sedan: Drömmen och munnen (Twin Emperors) och Moderns vrede, när Sidenlunden o
 
 ## 6. Frågor till VD
 
+**VD:s svar 2026-10-24:** idéerna om bossarna lät "superbra". 2: ja, vissa bossar får kräva två tankar. 3: nej, inga frivilliga svåra lägen (Löften och instabilitet räcker). 5: ja, en räddad fånge kan bli lärjunge. 6: ja, rena DPS-test får finnas ibland. 1, 4, 7 och 8 är obesvarade.
+
 1. **Vilka WoW-bossar minns du som roligast, och varför?** Var det mekaniken, tilldelningen eller berättelsen? Det styr om vi
    prioriterar råd (Assembly/Blood Prince) eller pussel med vän att rädda (Valithria).
 2. **Tankbyte:** vill du att vissa bossar *kräver* två tankar (Förhöret), eller ska Försvara alltid räcka som reservsvar?
