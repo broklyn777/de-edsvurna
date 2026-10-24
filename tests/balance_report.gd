@@ -500,13 +500,19 @@ func _seals(data: Dictionary) -> void:
 	var party := ["paladin", "brokk", "alva", "eira"]
 	for realm_id in realms:
 		var r: Dictionary = data.realms[realm_id]
+		var only := OS.get_environment("SIGILL_MOTE")  # SIGILL_MOTE=crypt_g2: bara det mötet
 		for enc_id in [r.floors[r.floors.size() - 1]] + r.get("guardians", []):
+			if only != "" and enc_id != only:
+				continue
+			var vs := variants.duplicate()
+			if data.encounters[enc_id].get("guardian", false):
+				vs += [["mur-väktare", [RunState.GUARDIAN_WARD]]]
 			for depth in depths:
 				var lv := HeroStats.expected_level(depth)
 				var line := "  %-8s %-24s d%d" % [r.short, data.encounters[enc_id].name, depth]
 				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
 					line += "  %s" % _skill_name(skill)
-					for v in variants:
+					for v in vs:
 						var won := 0
 						for seed_value in range(1, RUNS + 1):
 							var opts := {"levels": Bot.party_levels(data, lv, party), "floor": 2, "counter": true}

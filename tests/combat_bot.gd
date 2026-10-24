@@ -324,8 +324,8 @@ static func _floor_entry(state: RunState, passed: bool) -> Dictionary:
 	return {"floor": state.floor, "type": state.quest.get("type", ""), "passed": passed, "left": left}
 
 
-## Bryt två av tre sigill: vilket sigill boten lämnar, en gång per våning (bot_leave på rutan). SIGILL=elit (förval)
-## lämnar det som en elitgrupp vaktar, SIGILL=slump ett slumpat, SIGILL=ward/haste/mend alltid den fördelen.
+## Bryt två av tre sigill: vilket sigill boten lämnar, en gång per våning (bot_leave på rutan). SIGILL=slump (förval)
+## lämnar ett slumpat, SIGILL=nara det närmaste start, SIGILL=ward/haste/mend alltid den fördelen.
 static func _bot_pick_seal(state: RunState, rng: RandomNumberGenerator) -> void:
 	if state.quest.get("type", "") != RunState.SEAL_QUEST or state.map == null:
 		return
@@ -333,17 +333,16 @@ static func _bot_pick_seal(state: RunState, rng: RandomNumberGenerator) -> void:
 	if seals.is_empty() or seals.any(func(i: int) -> bool: return state.map.cell(i).get("bot_leave", false)):
 		return
 	var rule := OS.get_environment("SIGILL")
-	var leave: int = seals[0]
+	var pick := RandomNumberGenerator.new()
+	pick.seed = state.run_seed * 7 + state.floor  # eget frö: valet rubbar inte resten av körningen
+	var leave: int = seals[pick.randi() % seals.size()]
 	match rule:
-		"slump":
-			leave = seals[rng.randi() % seals.size()]
+		"nara":
+			seals.sort_custom(func(a: int, b: int) -> bool: return Grotto.dist(a, state.map.start) < Grotto.dist(b, state.map.start))
+			leave = seals[seals.size() - 1]
 		"ward", "haste", "mend":
 			for i in seals:
 				if state.map.cell(i).get("seal", "") == rule:
-					leave = i
-		_:
-			for i in seals:
-				if state.map.cell(i).get("elite", false):
 					leave = i
 	state.map.cell(leave)["bot_leave"] = true
 

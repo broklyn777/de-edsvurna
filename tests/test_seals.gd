@@ -30,13 +30,11 @@ func test_three_seals_follow_the_placement_rules() -> void:
 			var seals := s.seals()
 			assert_eq(seals.size(), 3)
 			var kinds := {}
-			var elites := 0
 			for x in seals:
 				kinds[x.seal] = true
 				assert_true(s.map.cell(x.cell).has("encounter"), "varje sigill har en vakt")
-				elites += 1 if s.map.cell(x.cell).get("elite", false) else 0
+				assert_true(not s.map.cell(x.cell).get("elite", false), "vakterna är lika starka, ingen elit")
 			assert_eq(kinds.size(), 3, "tre olika fördelar")
-			assert_eq(elites, 1, "en elitgrupp vaktar ett av sigillen")
 			assert_eq(s.quest_hints.size(), 3, "ett rykte per sigill")
 
 
@@ -55,8 +53,11 @@ func test_first_descent_never_rolls_seals() -> void:
 		t.set_realm(data, "crypt")
 		t.fill_charges(data)
 		t.start_expedition(data, seed_value)
+		assert_true(t.quest.type != "seals", "aldrig på den första våningen (frö %d)" % seed_value)
+		t.quest.done = true
+		t.next_floor(data)
 		seen = seen or t.quest.type == "seals"
-	assert_true(seen, "sigillen rullas annars")
+	assert_true(seen, "sigillen rullas på den sista våningen")
 
 
 func test_breaking_two_opens_the_exit_and_the_third_holds() -> void:
@@ -71,6 +72,7 @@ func test_breaking_two_opens_the_exit_and_the_third_holds() -> void:
 	assert_true(_break(s, seals[1].cell), "det andra brutna klarar questen")
 	assert_true(not (s.goal_locked()))
 	assert_true(s.map.cell(seals[2].cell).get("held", false))
+	assert_true(s.revealed.has(seals[2].cell) or s.visited.has(seals[2].cell), "det som håller syns på kartan")
 	assert_eq(s.boss_seals, [RunState.SEAL_TRAITS[seals[2].seal]])
 	assert_true(not _break(s, seals[2].cell), "det tredje går inte att bryta")
 	assert_true(not (s.map.cell(seals[2].cell).get("broken", false)))
@@ -161,3 +163,17 @@ func test_seals_survive_save_and_load() -> void:
 	RunState.delete_saved(path)
 	assert_eq(v.boss_seals, u.boss_seals)
 	assert_true(v.map.cell(seals[2].cell).get("held", false))
+
+
+func test_guardians_get_the_milder_wall_and_haste_strikes_harder() -> void:
+	var data := GameData.load_all()
+	var s := _run(data, 2)
+	s.boss_seals = [RunState.SEAL_TRAITS.ward]
+	assert_eq(s.end_fight_seals({"boss": true}), ["seal_ward"])
+	s.map.cells[s.map.goal] = {"kind": "end", "encounter": "crypt_g2", "boss": true, "guardian": true}
+	assert_eq(s.end_fight_seals(s.map.cell(s.map.goal)), [RunState.GUARDIAN_WARD])
+	var enc: String = data.realms.crypt.floors[data.realms.crypt.floors.size() - 1]
+	var sim := CombatSim.create(data, enc, 5, ["paladin", "brokk", "alva", "eira"], {}, {}, {}, 1, {"boss_traits": ["seal_haste"]})
+	sim.begin()
+	var boss := _bearer(sim, "seal_haste")
+	assert_true(boss != null and boss.auras.has("seal_strike"), "första anfallet +50 %")

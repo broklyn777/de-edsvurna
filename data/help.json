@@ -21,9 +21,9 @@
 		"seals": {
 			"title": "Tre sigill",
 			"text": [
-				"Fienden har satt tre sigill på våningen, och varje sigill vaktas av en grupp – ett av dem av en elitgrupp. Besegra vakten så bryts sigillet.",
-				"Två brutna sigill öppnar trappan eller bossen. Det tredje står kvar och ger slutstriden sin fördel, som står på sigillets kort. Välj vilket ni lämnar.",
-				"Från första våningen följer fördelen med till bossen på den sista. Rubriken KVAR ÅT BOSSEN visar vad som väntar."
+				"Fienden har satt tre sigill på våningen, och varje sigill vaktas av en grupp. Besegra vakten så bryts sigillet.",
+				"Två brutna sigill öppnar bossen. Det tredje står kvar och ger slutstriden sin fördel, som står på sigillets kort. Välj vilket ni lämnar.",
+				"Sigillen finns bara på den sista våningen. Rubriken KVAR ÅT BOSSEN visar vad som väntar."
 			]
 		},
 		"realm_quest": {

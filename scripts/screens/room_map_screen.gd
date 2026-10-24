@@ -883,7 +883,7 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	elif r.get("boss", false):
 		lines.push_front(String(enc.get("name", "")))
 	if r.get("boss", false):
-		for l in RunState.seal_lines(data, state.boss_seals):
+		for l in RunState.seal_lines(data, state.end_fight_seals(r)):
 			lines.insert(1, "Sigill som står kvar – %s: %s" % [l.name, l.text])
 	if guards != "" and r.kind == "seal":
 		lines.push_front(guards)  # sigillet och dess fördel först: det är kortets val

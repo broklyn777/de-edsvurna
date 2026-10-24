@@ -163,7 +163,7 @@ func test_quests_lead_to_fights() -> void:
 					s.battle_won()
 					s.break_seal()
 				assert_true(s.quest.done, "två av tre sigill")
-	assert_eq(seen.size(), 4, "alla fyra sorterna förekommer")
+	assert_eq(seen.size(), 3, "alla tre sorterna förekommer på första våningen (sigillen bara på den sista, test_seals)")
 
 
 func test_campfire_restores_charges_once() -> void:

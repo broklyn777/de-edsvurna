@@ -1200,7 +1200,7 @@ func _card(r: Dictionary) -> void:
 		guards = ("Vaktar %s. Två sigill är redan brutna; det här går inte längre att bryta." % sl.name
 				if state.quest.get("done", false) else "Vaktar %s. Lämnas det: %s" % [sl.name, sl.text])
 	if r.get("boss", false):
-		for l in RunState.seal_lines(data, state.boss_seals):
+		for l in RunState.seal_lines(data, state.end_fight_seals(r)):
 			lines.append("Sigill som står kvar – %s: %s" % [l.name, l.text])
 	if guards != "":
 		lines.append(guards)

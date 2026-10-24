@@ -193,31 +193,20 @@ static func _roll(rng: RandomNumberGenerator, floor_index: int, is_last: bool, p
 			used_quadrants.append(_quadrant(at))
 			g.cells[at] = {"kind": "item", "encounter": pick.call(tier_for.call(at)), "tier": tier_for.call(at)}
 			guards += 1
-	# Sigillen (Bryt två av tre sigill): tre, i olika fjärdedelar, var och en bevakad av en grupp; den första av en
-	# elitgrupp (en bit bort). Vilket sigill som ger vilken fördel slumpas (quest "seal_kinds").
+	# Sigillen (Bryt två av tre sigill): tre, i olika fjärdedelar, var och en bevakad av en lika stark vanlig grupp ur
+	# våningens svårare pool (VD: valet ska gälla fördelen, inte att slippa en elit). Fördelarna slumpas (quest "seal_kinds").
 	if quest.get("type", "") == "seals":
 		var kinds: Array = quest.get("seal_kinds", SEAL_KINDS).duplicate()
 		var used_quadrants := []
 		for n in SEAL_COUNT:
-			var elite_guard := n == 0
 			var at := g._free_cell(rng, func(i: int) -> bool:
-				return not used_quadrants.has(_quadrant(i)) and dist(i, g.goal) >= 2 \
-						and dist(i, g.start) >= (ELITE_MIN_DIST if elite_guard else SEAL_MIN_DIST))
+				return not used_quadrants.has(_quadrant(i)) and dist(i, g.goal) >= 2 and dist(i, g.start) >= SEAL_MIN_DIST)
 			if at < 0:
 				return null
 			used_quadrants.append(_quadrant(at))
 			var kind: String = kinds.pop_at(rng.randi() % kinds.size())
-			if elite_guard:
-				var tier := mini(base_tier + 1, 2)
-				var enc := ""
-				if elite_pools.is_empty():
-					enc = pick.call(tier)
-				else:
-					var ep: Array = elite_pools[clampi(floor_index, 0, elite_pools.size() - 1)]
-					enc = ep[rng.randi() % ep.size()]
-				g.cells[at] = {"kind": "seal", "seal": kind, "encounter": enc, "tier": tier, "elite": true}
-			else:
-				g.cells[at] = {"kind": "seal", "seal": kind, "encounter": pick.call(tier_for.call(at)), "tier": tier_for.call(at)}
+			var tier := mini(base_tier + 1, 2)
+			g.cells[at] = {"kind": "seal", "seal": kind, "encounter": pick.call(tier), "tier": tier}
 			guards += 1
 	# Fången: den första tidigt och obevakad, de andra bevakade av en grupp.
 	if not prisoner.is_empty():

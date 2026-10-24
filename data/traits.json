@@ -3906,17 +3906,36 @@
 			}
 		]
 	},
+	"seal_ward_spread": {
+		"name": "Murens sigill",
+		"enemy": true,
+		"seal": true,
+		"text": "Sigillet som lämnades: väktaren och hela dess följe börjar striden med en Barriär för 6 % av sitt liv.",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "barrier",
+				"pct_max_hp": 0.06,
+				"target": "allies"
+			}
+		]
+	},
 	"seal_haste": {
 		"name": "Vaksamhetens sigill",
 		"enemy": true,
 		"seal": true,
-		"text": "Sigillet som lämnades: bossen börjar överst på tidslinjen och är Smidig (25 % extra chans att undvika anfall) sina två första turer.",
+		"text": "Sigillet som lämnades: bossen börjar överst på tidslinjen, är Smidig (25 % extra chans att undvika anfall) sina två första turer och gör 50 % mer skada med sitt första anfall.",
 		"trigger": "battle_start",
 		"start_first": true,
 		"effects": [
 			{
 				"type": "aura",
 				"aura": "agile",
+				"target": "self"
+			},
+			{
+				"type": "aura",
+				"aura": "seal_strike",
 				"target": "self"
 			}
 		]

@@ -482,14 +482,18 @@ func wearer(trophy_id: String) -> String:
 
 const QUEST_TYPES := ["hunt", "clear", "collect"]
 ## Bryt två av tre sigill (VD, ChatGPT:s förslag i docs/provspel/chatgpt-om-textspel.md): en fjärde quest som rullas lika
-## ofta som de andra, men aldrig på profilens första nedstigning. Tre sigill, var och en bevakad av en grupp (ett av en
-## elitgrupp); att bryta två öppnar trappan eller bossen. Det sigill man lämnar ger slutstriden (bossen eller väktaren;
-## från våning 1 bossen på den sista) sin fördel: en egenskap hos bossen (traits.json "seal_*").
+## ofta som de andra, men bara på den sista våningen (högst en fördel per körning) och aldrig på profilens första
+## nedstigning. Tre sigill, var och en bevakad av en lika stark grupp (så att valet gäller fördelen); att bryta två öppnar
+## bossen. Det sigill man lämnar ger slutstriden (bossen eller väktaren) sin fördel: en egenskap (traits.json "seal_*").
 const SEAL_QUEST := "seals"
 const SEAL_GOAL := 2
 ## Utvecklare (--quest=<typ>) och tester: varje våning får den questen.
 static var dev_quest := ""
 const SEAL_TRAITS := {"ward": "seal_ward", "haste": "seal_haste", "mend": "seal_mend"}
+## Murens sigill mot en väktare (VD): barriären får inte landa på en ledare som för sin kraft vidare (Kistornas råd).
+## Väktaren och hela följet får 6 % var i stället för bossens 20 % (BALANS=sigill, djup 3: rådet 77/62 % utan sigill, 78/59 %
+## med; 20 % på ledaren gav 28/12 %, 12 % på ledaren 42/20 %).
+const GUARDIAN_WARD := "seal_ward_spread"
 ## Lägereld: Charges som fylls per förmåga (högst till max). Charges är Siralims (4–8 per förmåga), så
 ## lägerelden före våningens slut är det som gör att de räcker en hel körning.
 const CAMPFIRE_CHARGES := 3
@@ -581,7 +585,7 @@ static func quest_text(q: Dictionary) -> String:
 func start_floor(data: Dictionary) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = run_seed * 977 + floor * 31 + 13
-	quest = roll_quest(rng, floor, not first_descent and not practice)
+	quest = roll_quest(rng, floor, not first_descent and not practice and is_last_floor())
 	if dev_quest != "" and quest.type != dev_quest:  # --quest=<typ> (utvecklare, tester)
 		for n in 200:
 			quest = roll_quest(rng, floor, true)
@@ -946,9 +950,9 @@ func battle_opts() -> Dictionary:
 		opts.counter = true
 	if r.get("nemesis", false):
 		opts.nemesis = true
-	# Sigillen som lämnades ger slutstriden sina fördelar (CombatSim "boss_traits").
+	# Sigillet som lämnades ger slutstriden sin fördel (CombatSim "boss_traits").
 	if r.get("boss", false) and not boss_seals.is_empty():
-		opts.boss_traits = boss_seals.duplicate()
+		opts.boss_traits = end_fight_seals(r)
 	# 0.28.2: föremålens strider (sarkofagen, klockorna) och glasfönstrets beredda grupp.
 	var mult := float(r.get("stat_mult", 1.0)) * next_stat_mult
 	if mult != 1.0:
@@ -1040,10 +1044,18 @@ func break_seal() -> bool:
 		var c := map.cell(i)
 		if not c.get("broken", false):
 			c.held = true
+			if not visited.has(i) and not revealed.has(i):
+				revealed.append(i)  # det som håller syns på kartan
 			var trait_id: String = SEAL_TRAITS.get(String(c.get("seal", "")), "")
 			if trait_id != "" and not boss_seals.has(trait_id):
 				boss_seals.append(trait_id)
 	return true
+
+
+## Egenskaperna slutstriden på rutan får av sigillen (väktare: den mildare muren).
+func end_fight_seals(r: Dictionary) -> Array:
+	return boss_seals.map(func(t: String) -> String:
+		return GUARDIAN_WARD if t == SEAL_TRAITS.ward and guardian_room(r) else t)
 
 
 ## Sigillen på våningen: [{cell, seal (fördelens id), trait, broken, held}].
