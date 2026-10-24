@@ -179,7 +179,7 @@ func _help() -> void:
 	out.append("Alltid: look, hero <id>, macro <id> [add <rad> <subjekt> <villkor>[=värde] <handling>[:förmåga] [mål] | del <rad> | move <från> <till>], trophies")
 	match String(meta.get("mode", "home")):
 		"home":
-			out.append("Hemma: realm <crypt|chapel>, depth <n>, party <id,id,id>, smith <id> (höj artefakten), perk <id>, perkreset, wear <hjälte> <trofé|none>, start")
+			out.append("Hemma: realm <crypt|chapel>, depth <n>, party <id,id,id>, smith <id> (höj artefakten), socket <id> <plats> <bärnsten>, arttrophy <id> <trofé>, perk <id>, perkreset, wear <hjälte> <trofé|none>, start")
 		"grotto":
 			out.append("Grottan: go <ruta> (t.ex. go d5) eller go n|s|e|w, fight, back, swap <hjälte> <trofé|none> (vid lägereld), camp (lägereldens val igen), leave (gå hem)")
 		"dialog":
@@ -199,7 +199,7 @@ func _hero_id(s: String) -> String:
 func _trophy_id(s: String) -> String:
 	if data.traits.has(s):
 		return s
-	for t in profile.collection:
+	for t in profile.collection + (Array(state.trophies) if state != null else []):
 		if String(data.traits[t].name).to_lower().replace(" ", "_") == s.to_lower() or t == s:
 			return t
 	return ""
@@ -249,6 +249,27 @@ func _home_cmd(w: PackedStringArray) -> void:
 				out.append("Perken %s köpt." % data.traits[pid].name)
 			else:
 				out.append("Det gick inte (poäng eller nivå).")
+		"socket":
+			# socket <hjälte> <plats 1–2> <bärnsten>: en stat-plats i artefakten (5 bärnsten per plats).
+			var id := _hero_id(w[1] if w.size() > 1 else "")
+			if id != "" and w.size() > 3 and profile.socket(id, "stat", int(w[2]) - 1, w[3]):
+				out.append("%s sitter nu i %ss artefakt." % [data.materials.amber.get(w[3], {}).get("name", w[3]), data.heroes[id].name])
+			else:
+				out.append("Det gick inte (platsen stängd, eller för lite bärnsten: %d behövs)." % Forge.AMBER_PER_SLOT)
+		"arttrophy":
+			var id := _hero_id(w[1] if w.size() > 1 else "")
+			var t := _trophy_id(w[2]) if w.size() > 2 else ""
+			if id != "" and t != "" and profile.set_artifact_trophy(id, t):
+				out.append("%s sitter nu i %ss artefakt (troféplatsen)." % [data.traits[t].name, data.heroes[id].name])
+			else:
+				out.append("Det gick inte (troféplatsen öppnas på nivå %d)." % Forge.TROPHY_LEVEL)
+		"trick":
+			# trick <hjälte> <plats 1–2> <trick>: en trick-plats i artefakten (tricket förstörs om det tas ut).
+			var id := _hero_id(w[1] if w.size() > 1 else "")
+			if id != "" and w.size() > 3 and profile.socket(id, "trick", int(w[2]) - 1, w[3]):
+				out.append("%s sitter nu i %ss artefakt." % [data.materials.tricks.get(w[3], {}).get("name", w[3]), data.heroes[id].name])
+			else:
+				out.append("Det gick inte (platsen stängd eller tricket saknas).")
 		"perkreset":
 			out.append("Perkarna återställda: %d poäng tillbaka." % profile.reset_perks(data, profile.oath))
 		"wear":
@@ -318,15 +339,19 @@ const STEP_REASONS := {"here": "ni står redan där", "group": "en grupp står i
 func _grotto_cmd(w: PackedStringArray) -> void:
 	match w[0]:
 		"go":
-			var i := _cell_index(w[1] if w.size() > 1 else "")
-			var why := state.can_step(i) if i >= 0 else "far"
-			if why != "":
-				out.append("Det går inte: %s." % STEP_REASONS.get(why, why))
-				return
-			var was_new := not state.visited.has(i)
-			var walk := state.step(i)
-			out.append("Ni går till %s%s." % [_cell_name(i), " (%d steg)" % walk.size() if walk.size() > 1 else ""])
-			_arrive(was_new)
+			# go <ruta> [<ruta> …]: flera tryck i rad; stannar när något händer (en grupp, en ruta med val).
+			for k in range(1, maxi(w.size(), 2)):
+				var i := _cell_index(w[k] if w.size() > k else "")
+				var why := state.can_step(i) if i >= 0 else "far"
+				if why != "":
+					out.append("Det går inte: %s." % STEP_REASONS.get(why, why))
+					return
+				var was_new := not state.visited.has(i)
+				var walk := state.step(i)
+				out.append("Ni går till %s%s." % [_cell_name(i), " (%d steg)" % walk.size() if walk.size() > 1 else ""])
+				_arrive(was_new)
+				if meta.mode != "grotto" or state.at_group():
+					return
 		"back":
 			if state.back():
 				out.append("Ni backar till %s. Gruppen står kvar och spärrar rutorna intill sig." % _cell_name(state.pos))
@@ -344,7 +369,7 @@ func _grotto_cmd(w: PackedStringArray) -> void:
 				return
 			var id := _hero_id(w[1] if w.size() > 1 else "")
 			var t := "" if w.size() < 3 or w[2] == "none" else _trophy_id(w[2])
-			if id == "" or not state.party.has(id) or (t != "" and not state.trophies.has(t)):
+			if id == "" or not state.party.has(id) or (w.size() > 2 and w[2] != "none" and not state.trophies.has(t)):
 				out.append("Okänd hjälte, eller trofén finns inte bland körningens troféer.")
 				return
 			state.equip(id, t)
@@ -415,10 +440,12 @@ func _object_dialog(r: Dictionary) -> void:
 	var options := []
 	for o in state.object_options(data):
 		if o.get("disabled", false):
-			text += " (Ett val går inte än: ni har inte sett någon grupp att barrikadera bort.)"
+			# room_map_screen visar bänkens text ("Gedigen ek …") för alla avstängda val, även timglasets.
+			text += " (Ett val går inte: %s)" % ("ingen elitgrupp kvar att visa, eller inga Charges att offra" if o.id == "scout" else "ni har inte sett någon grupp att barrikadera bort")
 			continue
 		options.append({"label": o.label, "act": "object", "obj": o.id})
-	options.append({"label": "LÅT DET VARA"})
+	if not options.any(func(o: Dictionary) -> bool: return String(o.get("obj", "")) in ["leave", "none", "skip"] or String(o.label).begins_with("LÅT")):
+		options.append({"label": "LÅT DET VARA"})
 	_dialog(def.get("name", "Föremål"), text, options)
 
 
@@ -634,6 +661,12 @@ func _fight() -> void:
 		out.append("Det här avgjorde striden:")
 		for row in rows:
 			out.append("  [%s] %s (%s): %s" % [row.tag, row.name, row.who, row.text])
+	# battle.gd: dolda regler som slog till blir kända, och elitfienderna lämnar sina troféer.
+	for id in sim.rules_triggered:
+		if not state.rules_revealed.has(id):
+			state.rules_revealed.append(id)
+	state.last_elites = sim.enemies.filter(func(e: CombatUnit) -> bool: return e.elite).map(
+			func(e: CombatUnit) -> String: return e.kind)
 	_award(sim, won)
 	state.store_charges(sim)
 	_battle_finished(sim, won)
@@ -669,7 +702,8 @@ func _event_text(sim: CombatSim, e: Dictionary, labels: Dictionary, trait_counts
 				"skip":
 					what = "står över"
 				"artifact":
-					what = "(artefakt) " + String(sim.ability(e.ability).get("name", e.ability))
+					# Gratis kast: hjältarnas artefakter, och fiendernas egenskaper som kastar (t.ex. Benstorm vid vrede).
+					what = ("(artefakt) " if sim.unit(e.unit) != null and sim.unit(e.unit).team == 0 else "(utlöst) ") + String(sim.ability(e.ability).get("name", e.ability))
 				_:
 					what = String(sim.ability(e.ability).get("name", e.ability))
 			var tg: Array = (e.get("targets", []) as Array).map(func(id: String) -> String: return L.call(id))
@@ -854,9 +888,14 @@ func _end_descent(outcome: String) -> void:
 	var changes := LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
 	var world := WorldEvents.after_descent(profile, data, state.realm, outcome, state.wins, state.realm_quest_done, before)
 	for c in changes:
-		out.append("Kartan: %s" % str(c.get("text", c)) if c is Dictionary else "Kartan: %s" % str(c))
-	if not world.get("event_start", {}).is_empty():
-		out.append("I världen: %s" % str(world.event_start.get("name", world.event_start.get("id", ""))))
+		if c is Dictionary:
+			out.append("Kartan: fördärvet i %s %s (%d → %d)." % [data.realms[String(c.realm)].name,
+					"viker" if int(c.to) < int(c.from) else "växer", int(c.from), int(c.to)])
+	for l in WorldEvents.summary(profile, data, world):
+		out.append("Medan ni var borta: " + String(l))
+	var line := WorldEvents.map_line(profile, data)
+	if line != "":
+		out.append("Kampanjkartan: " + line)
 	profile.keep_worn(state.equipped, state.party)
 	state.finished = true
 	meta.mode = "home"
@@ -939,8 +978,9 @@ func _hero_sheet(s: String) -> void:
 		out.append("  Trofé: %s – %s" % [data.traits[profile.worn[id]].name, data.traits[profile.worn[id]].get("text", "")])
 	var art := profile.artifact(id)
 	if not art.is_empty():
-		out.append("  Artefakt: %s nivå %d, förmåga %s" % [data.artifacts[art.type].name, int(art.level),
-				data.abilities.get(art.ability, {}).get("name", "–")])
+		out.append("  Artefakt: %s nivå %d, förmåga %s; stat-platser %s; troféplats %s" % [data.artifacts[art.type].name,
+				int(art.level), data.abilities.get(art.ability, {}).get("name", "–"),
+				str(art.stat_slots), data.traits.get(art.trophy, {}).get("name", "tom" if Forge.trophy_open(int(art.level)) else "stängd")])
 	for a in data.heroes[id].abilities:
 		out.append("  Förmåga %s: %s" % [data.abilities[a].name, data.abilities[a].get("text", data.abilities[a].get("desc", ""))])
 
@@ -977,6 +1017,8 @@ func _home_screen() -> void:
 			", ".join(profile.realm_depth.keys().map(func(r: String) -> String: return "%s %d" % [data.realms[r].name, profile.realm_depth[r]]))])
 	var g := RunState.guardian_for(data, profile.realm, profile.depth)
 	out.append("Djupets slut: %s" % (data.encounters[g].get("name", g) if g != "" else "huvudbossen"))
+	if WorldEvents.map_line(profile, data) != "":
+		out.append("Kampanjkartan: " + WorldEvents.map_line(profile, data))
 	out.append("Sällskap:")
 	for id in profile.party:
 		out.append("  " + _hero_line(id))
@@ -1060,8 +1102,8 @@ func _grotto_screen() -> void:
 				" De röda ringarna (rr) visar ungefär var målen finns." if not state.active_hints().is_empty() else ""])
 	else:
 		var route := m.path(state.pos, m.goal, state.visited)
-		out.append("Questen är klar: %s (%s) är öppen. Väg: %s" % ["bossen" if m.last_floor else "trappan", _cell_name(m.goal),
-				" ".join(Array(route).map(func(i: int) -> String: return _cell_name(i)))])
+		out.append("Questen är klar: %s (%s) är öppen. %s" % ["bossen" if m.last_floor else "trappan", _cell_name(m.goal),
+				("Väg: " + " ".join(Array(route).map(func(i: int) -> String: return _cell_name(i)))) if not route.is_empty() else "Ingen känd väg dit än."])
 	var seen_groups: Array = state.seen.filter(func(i: int) -> bool: return m.has_group(i))
 	for i in seen_groups:
 		var c := m.cell(i)
