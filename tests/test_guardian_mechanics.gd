@@ -157,14 +157,17 @@ func test_council_traits_pass_to_the_survivors() -> void:
 	var passed := ev.filter(func(e: Dictionary) -> bool: return e.type == "trait_passed")
 	assert_eq(passed.size(), 1)
 	assert_eq(passed[0].to.size(), 2)
-	# Gravväckaren tar nu 30 % mindre skada; den sista ärver allt.
+	# Gravväckaren tar nu mindre skada (Kistlocket); den sista ärver allt.
 	var paladin := _hero(sim, "paladin")
-	var before := sim.expected_damage(paladin, wake, "attack")
+	var with_lid := sim.expected_damage(paladin, caller, "attack")
+	caller.traits.erase("council_lid")
+	var without := sim.expected_damage(paladin, caller, "attack")
+	caller.traits.append("council_lid")
+	assert_near(with_lid / without, float(_data.traits.council_lid.modify.damage_taken_mult), 0.01, "Kistlocket verkar hos arvingen")
 	wake.hp = 1.0
 	sim._kill(wake)
-	assert_true(caller.traits.has("council_wake") and caller.traits.has("council_lid") and caller.traits.has("council_power"))
-	assert_true(sim.expected_damage(paladin, caller, "attack") < sim.expected_damage(paladin, caller, "attack") / 0.7 - 0.01)
-	assert_true(before > 0.0)
+	assert_true(caller.traits.has("council_wake") and caller.traits.has("council_lid") and caller.traits.has("council_power"),
+			"den sista bär alla tre")
 
 
 func test_council_wake_heals_and_power_hits_harder() -> void:
@@ -174,12 +177,14 @@ func test_council_wake_heals_and_power_hits_harder() -> void:
 	sim.drain_events()
 	sim.current = wake
 	sim._emit({"type": "turn_start", "unit": wake.id})
-	assert_near(wake.hp, wake.max_hp * 0.58, 1.0, "Likvakan helar 8 %")
+	var pct := float(_data.traits.council_wake.effects[0].pct_max_hp)
+	assert_near(wake.hp, wake.max_hp * (0.5 + pct), 1.0, "Likvakan helar en andel av livet")
 	var caller := _enemy(sim, "grave_caller")
 	var brokk := _hero(sim, "brokk")
 	var with_power := sim.expected_damage(caller, brokk, caller.attack_ability)
 	caller.traits.erase("council_power")
-	assert_near(with_power / sim.expected_damage(caller, brokk, caller.attack_ability), 1.35, 0.01, "Gravens kraft +35 %")
+	assert_near(with_power / sim.expected_damage(caller, brokk, caller.attack_ability), float(_data.traits.council_power.modify.damage_mult), 0.01,
+			"Gravens kraft")
 
 
 # --- 3. Inkvisitorns domstol ---------------------------------------------------
@@ -253,7 +258,7 @@ func test_only_the_crown_bearer_takes_full_damage() -> void:
 	sim._add_aura(abbess, deacon, "sisters_crown")
 	abbess.auras.erase("sisters_crown")
 	var crowned := sim.expected_damage(paladin, deacon, "attack")
-	assert_near(full / crowned, 0.35, 0.01, "utan kronan: 35 % av skadan")
+	assert_near(full / crowned, 0.5, 0.01, "utan kronan: halva skadan")
 	# Häxan hör inte till kören och tar alltid full skada.
 	var witch := _enemy(sim, "witch")
 	if witch != null:

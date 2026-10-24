@@ -1325,9 +1325,14 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 						_emit({"type": "stack_said", "unit": t.id, "stack": effect.stack,
 								"text": str(effect.say).replace("{n}", str(int(t.stacks.get(effect.stack, 0.0))))})
 				"revive_family":
+					var woken := 0
 					for x in units:
-						if not x.alive and x.team == t.team and x != t and t.family != "" and x.family == t.family:
+						if woken >= int(effect.get("max", 99)):
+							break
+						if not x.alive and not x.consumed and x.team == t.team and x != t and t.family != "" \
+								and x.family == t.family:
 							_revive(x, float(effect.get("pct", 0.5)))
+							woken += 1 if x.alive else 0
 				"remove_aura":
 					if t.auras.has(effect.aura):
 						_remove_aura(t, effect.aura, "consumed")

@@ -231,7 +231,7 @@ class Overheads extends Node2D:
 			return
 		var col := Color("#ffd36a")
 		var pulse := 0.75 + 0.25 * sin(_t * 6.0)
-		UiStyle.text(self, head + Vector2(-110, 24), tag, 15, Color(col, pulse), HORIZONTAL_ALIGNMENT_CENTER, 220, 4)
+		UiStyle.text(self, head + Vector2(-110, 42), tag, 15, Color(col, pulse), HORIZONTAL_ALIGNMENT_CENTER, 220, 4)
 
 	func _draw_intent(u: CombatUnit, at: Vector2) -> void:
 		if u.intent.is_empty():
@@ -247,8 +247,12 @@ class Overheads extends Node2D:
 		var target_name := ""
 		for id in u.intent.get("targets", []):
 			var t := sim.unit(id)
+			if t == u and ab.get("target", "") == "self":
+				break  # väktarsteg 2: Klockan slår riktas mot Klockaren själv; ingen pil
 			if t and t.alive:
 				target_name = "→ " + t.name
+				if ab.get("target", "") == "all_enemies":
+					target_name = "→ hela sällskapet"  # väktarsteg 2: Midnatt
 				break
 			# 0.31: en avsikt mot ett lik (Likmåltid, Väck de döda) säger vad den gör.
 			if t and ab.get("target", "") == "dead_ally":

@@ -59,6 +59,7 @@ var _dev_combo := false  # 0.30: --combo förblindar fienderna vid start och kö
 var _dev_combo_first := false
 var _dev_inspect := ""
 var _dev_windup := false  # 0.31: --windup låter en fiende med en varslad attack börja ladda direkt (skärmdumpar)
+var _dev_windup_ability := ""  # väktarsteg 2: --windup=<förmåga> väljer vilken (t.ex. midnight_bell)
 var _dev_log := false
 var _dev_ask_forfeit := false
 ## Effekter som väntar på att vapnet eller projektilen ska träffa: [{left, call}].
@@ -131,8 +132,9 @@ func _ready() -> void:
 			_dev_log = true  # öppnar skadeloggen efter några turer (skärmdumpar)
 		elif arg == "--ask-forfeit":
 			_dev_ask_forfeit = true  # visar frågan om att ge upp när striden har börjat (skärmdumpar)
-		elif arg == "--windup":
+		elif arg == "--windup" or arg.begins_with("--windup="):
 			_dev_windup = true
+			_dev_windup_ability = arg.get_slice("=", 1) if arg.contains("=") else ""
 		elif arg.begins_with("--inspect="):
 			_dev_inspect = arg.get_slice("=", 1)  # Inspect när striden har börjat (skärmdumpar)
 	var state: RunState = run.state
@@ -1178,6 +1180,8 @@ const WINDUP_REASONS := {"silenced": "Tystad", "stagger": "skakad loss av skadan
 
 
 func _windup_target(e: Dictionary) -> String:
+	if sim.ability(e.ability).get("target", "") == "all_enemies":
+		return " mot hela sällskapet"
 	for id in e.get("targets", []):
 		var t := sim.unit(id)
 		if t != null and t.alive and t.team == 0:
@@ -1231,6 +1235,8 @@ static func windup_text(s: CombatSim, u: CombatUnit) -> String:
 func _start_dev_windup() -> void:
 	for en in sim.enemies:
 		for r in en.rules:
+			if _dev_windup_ability != "" and r.ability != _dev_windup_ability:
+				continue
 			if not sim.windup_of(r.ability).is_empty():
 				en.intent = {"ability": r.ability, "targets": sim._pick_targets(en, sim.ability(r.ability))}
 				sim._start_windup(en, r.ability, maxi(2, int(sim.windup_of(r.ability).get("turns", 1))))  # två turer: syns längre

@@ -2025,7 +2025,7 @@
 	"midnight_bell": {
 		"name": "Klockan slår",
 		"target": "self",
-		"cooldown": 1,
+		"cooldown": 3,
 		"cue": "provoke",
 		"sound": "bone_crush",
 		"windup": {
@@ -2039,7 +2039,8 @@
 		"effects": [
 			{
 				"type": "revive_family",
-				"pct": 0.5
+				"pct": 0.25,
+				"max": 1
 			},
 			{
 				"type": "stack",
@@ -2070,7 +2071,7 @@
 		"effects": [
 			{
 				"type": "damage",
-				"power": 1.6
+				"power": 0.8
 			}
 		]
 	},

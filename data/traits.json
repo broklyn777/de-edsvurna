@@ -3654,33 +3654,33 @@
 		"name": "Tre slag till midnatt",
 		"enemy": true,
 		"trigger": "passive",
-		"text": "Klockan slår och väcker de fallna ur Benfolket. Efter två slag laddar Klockaren Midnatt mot hela sällskapet i två turer; den bryts bara om hela Benfolket ligger dött. Försvara dämpar."
+		"text": "Klockan slår och väcker en fallen ur Benfolket. Efter två slag laddar Klockaren Midnatt mot alla; den bryts bara om hela Benfolket faller."
 	},
 	"council_power": {
 		"name": "Gravens kraft",
 		"enemy": true,
 		"passes_on_death": true,
-		"text": "Rådet: gör 35 % mer skada. När bäraren faller ärver de andra i rådet egenskapen.",
+		"text": "Rådet: gör 25 % mer skada. När bäraren faller ärver de andra i rådet egenskapen.",
 		"trigger": "modify_damage",
 		"modify": {
-			"damage_mult": 1.35
+			"damage_mult": 1.25
 		}
 	},
 	"council_lid": {
 		"name": "Kistlocket",
 		"enemy": true,
 		"passes_on_death": true,
-		"text": "Rådet: tar 30 % mindre skada. När bäraren faller ärver de andra i rådet egenskapen.",
+		"text": "Rådet: tar 15 % mindre skada. När bäraren faller ärver de andra i rådet egenskapen.",
 		"trigger": "modify_damage_taken",
 		"modify": {
-			"damage_taken_mult": 0.7
+			"damage_taken_mult": 0.85
 		}
 	},
 	"council_wake": {
 		"name": "Likvakan",
 		"enemy": true,
 		"passes_on_death": true,
-		"text": "Rådet: helas 8 % av sitt liv i början av varje egen tur. När bäraren faller ärver de andra i rådet egenskapen.",
+		"text": "Rådet: helas 3 % av sitt liv i början av varje egen tur. När bäraren faller ärver de andra i rådet egenskapen.",
 		"trigger": "turn_start",
 		"when": {
 			"unit": "self"
@@ -3688,7 +3688,7 @@
 		"effects": [
 			{
 				"type": "heal",
-				"pct_max_hp": 0.08,
+				"pct_max_hp": 0.03,
 				"target": "self"
 			}
 		]
@@ -3713,13 +3713,13 @@
 	"choir_shield": {
 		"name": "Körens skydd",
 		"enemy": true,
-		"text": "Tar 65 % mindre skada så länge en annan i kören bär Systrarnas krona.",
+		"text": "Tar halv skada så länge en annan i kören bär Systrarnas krona.",
 		"trigger": "modify_damage_taken",
 		"when": {
 			"self_lacks_aura": "sisters_crown"
 		},
 		"modify": {
-			"damage_taken_mult": 0.35
+			"damage_taken_mult": 0.5
 		}
 	},
 	"choir_crown_start": {

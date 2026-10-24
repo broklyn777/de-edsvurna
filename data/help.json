@@ -52,7 +52,7 @@
 		"guardian_bell": {
 			"title": "Tre slag till midnatt",
 			"text": [
-				"Klockaren vaktar djupet med sin klocka. Varje slag väcker de fallna ur Benfolket, och efter två slag laddar han Midnatt mot hela sällskapet.",
+				"Klockaren vaktar djupet med sin klocka. Varje slag väcker en fallen ur Benfolket, och efter två slag laddar han Midnatt mot hela sällskapet.",
 				"Midnatt går inte att tysta. Den bryts bara om alla ur Benfolket faller innan den slår. De som håller den vid liv står märkta: HÅLLER MIDNATT.",
 				"Makrona kan svara: villkoret \"håller en laddning vid liv\" under Laddning. Hinner ni inte, Försvara."
 			]
@@ -76,7 +76,7 @@
 		"guardian_crown": {
 			"title": "Systrarnas krona",
 			"text": [
-				"Abbedissan och hennes diakoner delar en krona. Bara den som bär den tar full skada; de andra i kören tar en tredjedel.",
+				"Abbedissan och hennes diakoner delar en krona. Bara den som bär den tar full skada; de andra i kören tar halv skada.",
 				"Kronan flyttar efter tre av bärarens turer, eller när bäraren faller.",
 				"Makrona kan följa den: \"Om någon fiende har Systrarnas krona → Anfall den som matchade\"."
 			]

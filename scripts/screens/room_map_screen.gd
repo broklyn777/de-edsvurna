@@ -829,7 +829,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		var tr: String = data.enemies[k].get("trophy", "")
 		if tr != "" and data.traits.has(tr) and not trophies.has(data.traits[tr].name) and not data.enemies[k].get("boss", false):
 			trophies.append(data.traits[tr].name)
-	if not traits.is_empty():
+	# Väktarsteg 2: väktarens varning ersätter egenskapslistan (mötet ger egna egenskaper, och kortet ska rymmas).
+	if not traits.is_empty() and not state.guardian_room(r):
 		lines.append("Egenskaper: " + ", ".join(traits))
 	if not trophies.is_empty():
 		lines.append("Kan lämna: " + ", ".join(trophies))

@@ -1473,12 +1473,12 @@
 			"bone_runner",
 			"grave_priest"
 		],
-		"stat_mult": 1.05,
+		"stat_mult": 1.025,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "midnight_clapper",
 		"help": "guardian_bell",
-		"warning": "Tre slag till midnatt: klockan väcker Benfolket, och det tredje slaget bryts bara om alla ur Benfolket ligger döda.",
+		"warning": "Tre slag till midnatt: klockan väcker Benfolket, och det tredje slaget bryts bara om hela Benfolket har fallit.",
 		"overrides": {
 			"bell_ringer": {
 				"traits": [
@@ -1518,12 +1518,12 @@
 			"coffin_bearer",
 			"coffin_bearer"
 		],
-		"stat_mult": 1.28,
+		"stat_mult": 1.14,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "council_seal",
 		"help": "guardian_council",
-		"warning": "Kistornas råd: när en i rådet faller ärver de andra hens egenskap. Ordningen ni fäller dem i är ett val.",
+		"warning": "Kistornas råd: när en i rådet faller ärver de andra hens egenskap. Välj ordningen.",
 		"overrides": {
 			"grave_caller": {
 				"traits": [
@@ -1556,7 +1556,7 @@
 			"corrupted_deacon",
 			"witch"
 		],
-		"stat_mult": 1.05,
+		"stat_mult": 0.96,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "wandering_crown",
@@ -1589,12 +1589,12 @@
 			"cult_overseer",
 			"witch"
 		],
-		"stat_mult": 1.65,
+		"stat_mult": 1.6,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "tribunal_gavel",
 		"help": "guardian_tribunal",
-		"warning": "Förhöret: den som provocerar samlar Skuld, och vid tre staplar laddar Inkvisitorn Dom mot hen. Byt tank, Försvara eller rensa Skulden.",
+		"warning": "Förhöret: den som provocerar samlar Skuld; vid tre staplar laddar Inkvisitorn Dom mot hen. Byt tank, Försvara eller rensa.",
 		"overrides": {
 			"inquisitor": {
 				"traits": [
