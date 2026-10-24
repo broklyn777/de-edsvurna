@@ -407,6 +407,38 @@ func complete_quest(realm_id: String, at_depth: int) -> Dictionary:
 	return {"silver": amount, "point": point}
 
 
+## Nivåskalan profilen är sparad i: 1 = 0.19:s (en nivå var tredje–sjunde strid), 2 = kurvan (VD 2026-10-25,
+## HeroStats.old_level). Äldre profiler räknas om en gång när de läses (convert_levels).
+const LEVEL_SCALE := 2
+## Sant när profilen räknades om från 0.19:s skala; Broder Alrik förklarar det en gång (dialog.json, "levels_rescaled").
+var levels_rescaled := false
+
+
+## Räknar om hjältarnas nivåer från 0.19:s skala (HeroStats.convert_legacy: styrkan så lik som hela nivåer tillåter).
+## Historiken behåller de nivåer som finns i den nya skalan, med striden där de nåddes första gången.
+func convert_levels() -> void:
+	var changed := false
+	for hero_id in heroes:
+		var h: Dictionary = heroes[hero_id]
+		var old := int(h.get("level", 1))
+		var c := HeroStats.convert_legacy(old, int(h.get("xp", 0)))
+		if int(c.level) != old:
+			changed = true
+		h.level = int(c.level)
+		h.xp = int(c.xp)
+		var log: Array = []
+		var seen := {}
+		for entry in h.get("log", []):
+			var lv := int(HeroStats.convert_legacy(int(entry.get("level", 1)), 0).level)
+			if lv <= 1 or lv > int(h.level) or seen.has(lv):
+				continue
+			seen[lv] = true
+			log.append({"level": lv, "battle": int(entry.get("battle", 0))})
+		h.log = log
+	if changed:
+		levels_rescaled = true
+
+
 ## Hjältens utveckling; skapas på nivå 1 med den förvalda personligheten (även för gamla profiler).
 func hero(data: Dictionary, hero_id: String) -> Dictionary:
 	if not heroes.has(hero_id):
@@ -442,11 +474,10 @@ func grant_xp(data: Dictionary, party: Array, xp: int) -> Dictionary:
 	return out
 
 
+## Avståndet räknas i 0.19:s skala (HeroStats.old_level), så att ikapphämtningen är lika stark som förut.
 static func catch_up(level: float, party_avg: float) -> float:
-	if HeroStats.variant != "":  # prototyp: avståndet räknat i dagens nivåer
-		return minf(1.0 + CATCH_UP_PER_LEVEL * maxf(HeroStats.old_level(party_avg) - HeroStats.old_level(level), 0.0),
-				CATCH_UP_MAX)
-	return minf(1.0 + CATCH_UP_PER_LEVEL * maxf(party_avg - level, 0.0), CATCH_UP_MAX)
+	return minf(1.0 + CATCH_UP_PER_LEVEL * maxf(HeroStats.old_level(party_avg) - HeroStats.old_level(level), 0.0),
+			CATCH_UP_MAX)
 
 
 ## En befriad lärjunge ansluter (0.23). Textspelet: Sefir anslöt på nivå 2 när sällskapet var på 17, och nya
@@ -723,6 +754,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "realm_depth", realm_depth)
 	cfg.set_value("progress", "room_moments", room_moments)
 	cfg.set_value("progress", "heroes", heroes)
+	cfg.set_value("progress", "level_scale", LEVEL_SCALE)
+	cfg.set_value("progress", "levels_rescaled", levels_rescaled)
 	cfg.set_value("progress", "bonus_points", bonus_points)
 	cfg.set_value("progress", "bosses_defeated", bosses_defeated)
 	cfg.set_value("progress", "anointed", anointed)
@@ -807,6 +840,9 @@ static func load_from(path: String) -> Profile:
 	p.realm_depth = cfg.get_value("progress", "realm_depth", {})
 	p.room_moments = cfg.get_value("progress", "room_moments", true)
 	p.heroes = cfg.get_value("progress", "heroes", {})
+	p.levels_rescaled = bool(cfg.get_value("progress", "levels_rescaled", false))
+	if int(cfg.get_value("progress", "level_scale", 1)) < LEVEL_SCALE:
+		p.convert_levels()
 	if cfg.has_section_key("progress", "quests_done"):
 		p.quests_done = cfg.get_value("progress", "quests_done", [])
 		p.bonus_points = int(cfg.get_value("progress", "bonus_points", 0))

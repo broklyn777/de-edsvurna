@@ -300,7 +300,7 @@ func test_numbers_audit_in_the_chapel_elite_groups() -> void:
 	for enc_id in _data.realms.chapel.elite_pools[0] + _data.realms.chapel.elite_pools[1]:
 		for depth in [1, 3]:
 			audit.run_battle(enc_id, 1, depth, 11 + i, parties[i % parties.size()], {}, i % 2 == 0, [],
-					5 * (depth - 1) + 3, {}, 1.0, {"counter": true})
+					HeroStats.expected_level(depth), {}, 1.0, {"counter": true})
 			i += 1
 	assert_eq(audit.mismatches, [], "inga avvikelser")
 	assert_true(audit.counts.damage > 100)

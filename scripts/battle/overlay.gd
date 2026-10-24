@@ -113,10 +113,14 @@ func _draw_level_ups(w: float, h: float, a: float) -> void:
 		if t <= 0.0:
 			continue
 		var parts: Array = []
-		for stat in HeroStats.STATS:
-			var g := float(u.gains.get(stat, 0))
-			if g > 0.0:
-				parts.append("+%s %s" % [HeroStats.shown(g * t), HeroStats.STAT_NAMES[stat]])
+		if not Array(u.get("jump", [])).is_empty():
+			# Nivåskalan (VD 2026-10-25): hoppet i det striden gör, mot en typisk fiende på djupet (som hjältebladet).
+			parts.append(LevelJump.text(u.jump))
+		else:
+			for stat in HeroStats.STATS:
+				var g := float(u.gains.get(stat, 0))
+				if g > 0.0:
+					parts.append("+%s %s" % [HeroStats.shown(g * t), HeroStats.STAT_NAMES[stat]])
 		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - t * 4.0)
 		draw_set_transform(Vector2(w / 2, y + i * 40), 0, Vector2.ONE * pop)
 		UiStyle.text(self, Vector2(-w / 2, 0), "%s nådde nivå %d!" % [u.name, u.level], 20, Color(UiStyle.GOLD, a * minf(1.0, t * 3.0)),

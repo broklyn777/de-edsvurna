@@ -88,7 +88,7 @@ func _save() -> void:
 		state.save(_path("run.cfg"))
 
 
-## En profil mitt i spelet: fyra hjältar på nivå 10–12, artefakter, troféer, kryptan djup 1–3 och kapellet 1–2 klarade.
+## En profil mitt i spelet: fyra hjältar på nivå 7 (0.19:s nivå 10–12), artefakter, troféer, kryptan djup 1–3 och kapellet 1–2 klarade.
 func _new_profile(seed_value: int) -> void:
 	for f in ["meta.json", "profile.cfg", "run.cfg", "log.txt"]:
 		if FileAccess.file_exists(_path(f)):
@@ -100,12 +100,13 @@ func _new_profile(seed_value: int) -> void:
 	profile.hero_name = "Arn"
 	profile.oath = "oath_vengeance"
 	for h in ["imma", "alva", "brokk", "eira", "solveig", "tove"]:
-		profile.recruit(data, h, 10.0)
+		profile.recruit(data, h, HeroStats.new_level(10.0))
 	profile.set_party(["brokk", "alva", "eira"])
+	# Nivåerna i 0.19:s skala, räknade om till kurvan (HeroStats.convert_legacy): samma styrka som förut.
 	var levels := {"paladin": 12, "brokk": 11, "alva": 11, "eira": 10, "imma": 9, "solveig": 8, "tove": 7}
 	for h in levels:
 		var hero := profile.hero(data, h)
-		hero.level = levels[h]
+		hero.level = int(HeroStats.convert_legacy(levels[h], 0).level)
 		hero.xp = 0
 	var arts := {"paladin": ["sword", "holy_smite", 5], "brokk": ["shield", "", 4], "alva": ["staff", "", 4],
 			"eira": ["boots", "", 3]}
@@ -143,7 +144,7 @@ func _new_profile(seed_value: int) -> void:
 	macros = data.macros.duplicate(true)
 	meta = {"mode": "home", "seed": seed_value, "descent": 0}
 	rng.seed = seed_value
-	out.append("Ny profil skapad: %s, Domens kall, fyra hjältar på nivå 10–12, kryptan djup 3 och kapellet djup 2 klarade." % profile.hero_name)
+	out.append("Ny profil skapad: %s, Domens kall, fyra hjältar på nivå 7 (förr 10–12), kryptan djup 3 och kapellet djup 2 klarade." % profile.hero_name)
 
 
 # --- Kommandon -----------------------------------------------------------------

@@ -110,9 +110,15 @@ static func stat_round(v: float, stat := "") -> float:
 	return roundf(v) if stat == "speed" else roundf(v * 10.0) / 10.0
 
 
-## En stat på en nivå: bas × (1 + tillväxt × (nivå − 1)), tillväxt 30 % (personlighet 40/20 %), avrundat.
+## Nivåskalan (VD 2026-10-25): nivå L växer som tillväxtnivån g(L) = L upp till 5, sedan 5 + 2,34 · (L − 5)^1,4.
+static func growth_level(level: float) -> float:
+	var l := maxf(level, 1.0)
+	return l if l <= 5.0 else 5.0 + 2.34 * pow(l - 5.0, 1.4)
+
+
+## En stat på en nivå: bas × (1 + tillväxt × (g(nivå) − 1)), tillväxt 30 % (personlighet 40/20 %), avrundat.
 static func level_stat(base: float, level: int, growth: float, stat := "") -> float:
-	return stat_round(base * (1.0 + growth * (maxi(level, 1) - 1)), stat)
+	return stat_round(base * (1.0 + growth * (growth_level(level) - 1.0)), stat)
 
 
 ## Artefaktnivåns styrka: +10 % per nivå över 1 (nivå 1–10).
@@ -127,9 +133,15 @@ static func depth_mult(depth: int) -> float:
 	return 1.0 + 0.03 * (maxi(depth, 1) - 1)
 
 
-## Fiendernas nivå: 5 × (djup − 1) + 2,25 + 1,5 per våning.
-static func enemy_level(depth: int, floor_i: int) -> float:
+## Fiendernas tillväxtnivå: 5 × (djup − 1) + 2,25 + 1,5 per våning (stats växer med den, som förut).
+static func enemy_growth_level(depth: int, floor_i: int) -> float:
 	return 5.0 * (maxi(depth, 1) - 1) + 2.25 + 1.5 * clampi(floor_i, 0, 2)
+
+
+## Fiendernas nivå som den visas: omvändningen av growth_level.
+static func enemy_level(depth: int, floor_i: int) -> float:
+	var x := enemy_growth_level(depth, floor_i)
+	return x if x <= 5.0 else 5.0 + pow((x - 5.0) / 2.34, 1.0 / 1.4)
 
 
 ## Sällskapets storlek (0.23.3, vårt val): 1–4 hjältar.

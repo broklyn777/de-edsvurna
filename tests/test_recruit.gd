@@ -65,7 +65,7 @@ func test_recruits_join_weak_and_the_party_has_room_for_three() -> void:
 	assert_true(p.recruit(_data, "alva", 1.0))
 	assert_eq(int(p.hero(_data, "alva").level), 1)
 	assert_true(p.recruit(_data, "eira", 6.0))
-	assert_eq(int(p.hero(_data, "eira").level), 4, "två nivåer under snittet när sällskapet redan är starkt (textspelet)")
+	assert_eq(int(p.hero(_data, "eira").level), 5, "två nivåer (0.19:s skala) under snittet när sällskapet redan är starkt (textspelet)")
 	assert_true(not p.recruit(_data, "alva"), "bara en gång")
 	p.recruit(_data, "tove")
 	p.set_party(["alva", "eira", "tove", "brokk"])

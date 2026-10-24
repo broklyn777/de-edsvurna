@@ -56,7 +56,7 @@ func _init() -> void:
 	# NIVAER=k2|k3|kurva|k2seg: prototyp av andra nivåtakter (HeroStats.set_variant, docs/plan/nivaer-och-charges.md).
 	if OS.get_environment("NIVAER") != "":
 		HeroStats.set_variant(OS.get_environment("NIVAER"))
-		print("Nivåvariant: %s" % HeroStats.variant)
+		print("Nivåskala: %s" % ("idag (0.19)" if HeroStats.legacy else "kurvan"))
 	# DJUPSTEG=0.03: fiendernas stats per djup för mätningen (spelets värde är CombatSim.DEPTH_STEP).
 	if OS.get_environment("DJUPSTEG") != "":
 		CombatSim.depth_step = float(OS.get_environment("DJUPSTEG"))
@@ -817,7 +817,7 @@ func _elite_attrition(data: Dictionary) -> void:
 	print("=== Elitgrupper under nötning, upp till %d lägen per grupp ===" % n)
 	for realm_id in realms:
 		for depth in depths:
-			var lv: int = 5 * (depth - 1) + 3
+			var lv: int = HeroStats.expected_level(depth)
 			for party in parties:
 				var label := "4 hjältar" if party.size() == 4 and parties.size() == 1 else "+".join(party)
 				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:

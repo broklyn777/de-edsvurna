@@ -177,11 +177,12 @@ func test_rescued_disciples_join_near_the_party() -> void:
 	assert_eq(Profile.join_level(1.0), 1)
 	assert_eq(Profile.join_level(3.0), 1)
 	assert_eq(Profile.join_level(4.0), 2, "som förut")
-	assert_eq(Profile.join_level(17.0, 17.0), 15, "Sefir: två under snittet, inte nivå 2")
-	assert_eq(Profile.join_level(13.0, 9.0), 10, "aldrig över den svagaste + 1")
+	# Nivåskalan (kurvan): två nivåer under i 0.19:s skala är mindre än en nivå högt upp.
+	assert_eq(Profile.join_level(9.0, 9.0), 9, "Sefir: två under snittet (0.19:s skala), inte nivå 2")
+	assert_eq(Profile.join_level(9.0, 5.0), 6, "aldrig över den svagaste + 1")
 	var p := Profile.new()
-	assert_true(p.recruit(_data, "sefir", 17.0, 16.0))
-	assert_eq(int(p.hero(_data, "sefir").level), 15)
+	assert_true(p.recruit(_data, "sefir", 9.0, 8.0))
+	assert_eq(int(p.hero(_data, "sefir").level), 9)
 	assert_eq(int(p.hero(_data, "sefir").xp), 0)
 	# Ikapphämtningen finns kvar för den som ligger under snittet.
-	assert_true(Profile.catch_up(15.0, 17.0) > 1.0)
+	assert_true(Profile.catch_up(7.0, 9.0) > 1.0)

@@ -1089,9 +1089,11 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 			for lv in ups.get(hero_id, []):
 				var p: String = profile.hero(data, hero_id).personality
 				out.append({"hero": hero_id, "name": data.heroes[hero_id].name, "level": lv,
-						"gains": HeroStats.gains(data, hero_id, lv, p)})
+						"gains": HeroStats.gains(data, hero_id, lv, p),
+						"jump": LevelJump.compute(data, profile, hero_id, lv, state.realm, state.depth, state.party)})
 	_save()
 	return out
+
 
 
 ## 0.24 (plan §3): en kort replik från sällskapet efter striden, som visas på rumskartan.

@@ -257,7 +257,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 			e.base_stats.intelligence = e.intelligence
 		if opts.has("levels"):
 			e.level = HeroStats.enemy_level(sim.depth, int(opts.get("floor", 0)))
-			var lm := HeroStats.level_mult(e.level)
+			var lm := HeroStats.enemy_level_mult(sim.depth, int(opts.get("floor", 0)))
 			scale_unit(e, lm)
 			e.speed = roundf(e.speed * lm)
 			e.base_stats.speed = e.speed

@@ -87,7 +87,7 @@ func _init() -> void:
 	OS.add_logger(catcher)
 	if OS.get_environment("NIVAER") != "":
 		HeroStats.set_variant(OS.get_environment("NIVAER"))
-		print("Nivåvariant: %s" % HeroStats.variant)
+		print("Nivåskala: %s" % ("idag (0.19)" if HeroStats.legacy else "kurvan"))
 	if OS.get_environment("DJUPSTEG") != "":
 		CombatSim.depth_step = float(OS.get_environment("DJUPSTEG"))
 		print("Djupsteg: +%.1f %% per djup" % (CombatSim.depth_step * 100.0))
@@ -1236,7 +1236,7 @@ func _career_print(rows: Array, runs: int, descents: int) -> void:
 ## (Paladinen och alla hjältar), andelen vunna strider där någon steg i nivå, och strider per Paladinens nivå.
 func _pace_print(rows: Array, descents: int) -> void:
 	print("")
-	print("  Nivåtakten (variant: %s):" % (HeroStats.variant if HeroStats.variant != "" else "i dag"))
+	print("  Nivåtakten (variant: %s):" % ("i dag (0.19)" if HeroStats.legacy else "kurvan"))
 	print("  ned  pal.nivå efter  pal.nivåer  alla nivåer  strider m. nivå  strider/pal.nivå")
 	var tot_f := 0.0
 	var tot_p := 0.0

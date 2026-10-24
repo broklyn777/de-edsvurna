@@ -3,7 +3,7 @@ extends "res://tests/test_case.gd"
 ## nedstigningen och den första nedstigningen med Paladinen och Imma.
 
 var _data := GameData.load_all()
-const WHEN_KEYS := ["recruited", "not_recruited", "min_recruited", "min_descents", "min_best_depth", "boss", "min_bosses", "seen_realm", "intro_done", "help_seen"]
+const WHEN_KEYS := ["recruited", "not_recruited", "min_recruited", "min_descents", "min_best_depth", "boss", "min_bosses", "seen_realm", "intro_done", "help_seen", "levels_rescaled"]
 
 
 func test_every_station_has_a_person_and_a_conversation() -> void:

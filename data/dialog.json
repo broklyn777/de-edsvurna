@@ -129,6 +129,14 @@
 			],
 			"idle": [
 				{
+					"id": "alrik_levels_rescaled",
+					"text": "Jag har skrivit om krönikan, {namn}. Nivåerna räknas nu glesare: färre steg, men vart och ett väger mer. Ingen av er har blivit svagare, det lovar jag. Jag räknade två gånger.",
+					"when": {
+						"levels_rescaled": true
+					},
+					"once": true
+				},
+				{
 					"text": "Jag har skrivit en hel sida om Benfursten. Två ord är felstavade, men ändå.",
 					"when": {
 						"boss": "bone_lich"

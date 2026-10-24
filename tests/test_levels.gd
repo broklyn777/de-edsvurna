@@ -54,7 +54,7 @@ func test_xp_levels_up_without_a_cap() -> void:
 	var ups := HeroStats.add_xp(p, HeroStats.xp_to_next(1) + 5)
 	assert_eq(ups, [2])
 	assert_eq(p.xp, 5)
-	ups = HeroStats.add_xp(p, 10000)
+	ups = HeroStats.add_xp(p, 60000)
 	assert_true(ups.size() > 8, "inget tak")
 	assert_true(p.xp < HeroStats.xp_to_next(p.level))
 	assert_true(HeroStats.xp_to_next(10) > HeroStats.xp_to_next(3), "högre nivåer kostar mer")
@@ -62,7 +62,7 @@ func test_xp_levels_up_without_a_cap() -> void:
 
 func test_expected_level_and_enemy_levels_follow_depth() -> void:
 	assert_eq(HeroStats.expected_level(1), 3)
-	assert_eq(HeroStats.expected_level(3), 13)
+	assert_eq(HeroStats.expected_level(3), 7, "kurvan: djup 3 är nivå 7 (förr 13)")
 	assert_true(HeroStats.enemy_level(1, 0) < HeroStats.expected_level(1) and
 			HeroStats.expected_level(1) < HeroStats.enemy_level(1, 2), "väntad nivå mitt i djupet")
 	assert_true(HeroStats.battle_xp("end", 1, true) > HeroStats.battle_xp("end", 1) and
@@ -102,12 +102,12 @@ func test_profile_keeps_levels_and_old_profiles_start_at_one() -> void:
 
 
 func test_personality_change_recomputes_backwards() -> void:
-	var a := HeroStats.level_stats(_data, "eira", 6, "rastlos")
-	var b := HeroStats.level_stats(_data, "eira", 6, "stadig")
+	var a := HeroStats.level_stats(_data, "eira", 5, "rastlos")
+	var b := HeroStats.level_stats(_data, "eira", 5, "stadig")
 	var base: Dictionary = _data.heroes.eira.stats
-	assert_eq(a.speed, roundf(base.speed * 3.0), "Rastlös: Speed 40 % × 5 nivåer")
-	assert_eq(b.speed, roundf(base.speed * 2.0), "Stadig: Speed 20 %")
-	assert_eq(b.defense, roundf(base.defense * 3.0))
+	assert_eq(a.speed, roundf(base.speed * 2.6), "Rastlös: Speed 40 % × 4 nivåer")
+	assert_eq(b.speed, roundf(base.speed * 1.8), "Stadig: Speed 20 %")
+	assert_eq(b.defense, CombatSim.snap_stat(base.defense * 2.6))
 
 
 func test_enemy_level_follows_depth_and_floor_not_the_party() -> void:
@@ -134,3 +134,89 @@ func test_battle_opts_carry_the_floor() -> void:
 	state.start_expedition(_data, 3)
 	state.floor = 1
 	assert_eq(state.battle_opts().floor, 1)
+
+
+## Nivåskalan (VD 2026-10-25, variant C "kurva"): de fyra första nivåerna som förut, sedan glesare och större.
+func test_level_curve_first_levels_as_before_then_sparser() -> void:
+	assert_eq([HeroStats.xp_to_next(1), HeroStats.xp_to_next(2), HeroStats.xp_to_next(3), HeroStats.xp_to_next(4)],
+			[15, 30, 55, 90], "nivå 2–5 kommer lika tätt som förut")
+	for l in range(1, 6):
+		assert_near(HeroStats.old_level(l), float(l), 1e-6)
+	var last := 0
+	for l in range(1, 20):
+		var need := HeroStats.xp_to_next(l)
+		assert_true(need > last, "nivå %d kostar mer än nivån innan" % (l + 1))
+		last = need
+		assert_near(HeroStats.new_level(HeroStats.old_level(l + 0.5)), l + 0.5, 1e-4, "omvändningen")
+	# Varje nivå efter den femte ger mer än en nivå gav förut (+30 % av basen).
+	for l in range(5, 13):
+		assert_true(HeroStats.old_level(l + 1) - HeroStats.old_level(l) > 2.0, "nivå %d är ett stort steg" % (l + 1))
+	assert_eq(HeroStats.expected_level(10), 13, "djup 10 är ungefär nivå 13")
+
+
+## Fienderna är lika starka som förut på varje djup och våning (bara talet på deras nivå ändras).
+func test_enemy_strength_unchanged_by_the_curve() -> void:
+	for depth in range(1, 11):
+		for f in 3:
+			var old := HeroStats.LEVELS_PER_DEPTH * (depth - 1) + HeroStats.FLOOR_START + HeroStats.FLOOR_STEP * f
+			assert_near(HeroStats.level_mult(HeroStats.enemy_level(depth, f)), 1.0 + HeroStats.GROWTH * (old - 1.0), 1e-4,
+					"djup %d våning %d" % [depth, f + 1])
+
+
+## Omräkningen av en gammal nivå: den nya nivån med närmast samma styrka.
+func test_convert_legacy_levels_keeps_strength() -> void:
+	for old in range(1, 6):
+		assert_eq(int(HeroStats.convert_legacy(old, 3).level), old, "nivå 1–5 är desamma")
+	assert_eq(int(HeroStats.convert_legacy(4, 7).xp), 7, "erfarenheten står kvar under knät")
+	for old in range(6, 60):
+		var c := HeroStats.convert_legacy(old, 0)
+		var lv := int(c.level)
+		var dist := absf(HeroStats.old_level(lv) - old)
+		assert_true(dist <= absf(HeroStats.old_level(lv + 1) - old) and dist <= absf(HeroStats.old_level(lv - 1) - old),
+				"nivå %d → %d: närmast i styrka" % [old, lv])
+		assert_true(int(c.xp) >= 0 and int(c.xp) < HeroStats.xp_to_next(lv))
+	assert_eq(int(HeroStats.convert_legacy(12, 0).level), 7)
+	assert_eq(int(HeroStats.convert_legacy(24, 0).level), 9)
+
+
+## En profil sparad i 0.19:s skala räknas om en gång när den läses, och Broder Alrik förklarar det.
+func test_old_save_is_converted_once() -> void:
+	var path := "user://test_progress_rescale.cfg"
+	var cfg := ConfigFile.new()
+	cfg.set_value("progress", "silver", 100)
+	cfg.set_value("progress", "heroes", {"paladin": {"level": 12, "xp": 40, "personality": "modig", "battles": 50,
+			"wins": 45, "deaths": 0, "revives": 0, "log": [{"level": 2, "battle": 1}, {"level": 6, "battle": 9},
+			{"level": 9, "battle": 20}, {"level": 12, "battle": 40}]},
+			"brokk": {"level": 4, "xp": 12, "personality": "envis", "battles": 3, "wins": 3, "deaths": 0, "revives": 0, "log": []}})
+	cfg.save(path)
+	var p := Profile.load_from(path)
+	assert_eq(int(p.hero(_data, "paladin").level), 7)
+	assert_eq(int(p.hero(_data, "brokk").level), 4, "låga nivåer är desamma")
+	assert_eq(int(p.hero(_data, "brokk").xp), 12)
+	assert_true(p.levels_rescaled)
+	var log: Array = p.hero(_data, "paladin").log
+	assert_eq(log.map(func(e: Dictionary) -> int: return int(e.level)), [2, 5, 6, 7], "historiken i den nya skalan")
+	var line := Dialog.idle_line(_data, p, "alrik", 0)
+	assert_true(line.contains("Nivåerna"), "Broder Alrik förklarar: " + line)
+	p.save(path)
+	var q := Profile.load_from(path)
+	assert_eq(int(q.hero(_data, "paladin").level), 7, "räknas inte om två gånger")
+	assert_true(not Dialog.idle_line(_data, q, "alrik", 1).contains("Nivåerna"), "en gång")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var fresh := Profile.new()
+	assert_true(not fresh.levels_rescaled, "en ny profil har inget att förklara")
+
+
+## Segerskärmen visar hoppet i skada och helning (LevelJump, som hjältebladet).
+func test_level_jump_shows_damage_and_heal() -> void:
+	var p := Profile.new()
+	p.recruit(_data, "alva")
+	p.hero(_data, "alva").level = 6
+	var jump := LevelJump.compute(_data, p, "alva", 6, "crypt", 2, ["paladin", "alva"])
+	assert_true(jump.size() >= 2, "liv och en förmåga")
+	assert_eq(jump[0].label, "Liv")
+	assert_true(int(jump[0].after) > int(jump[0].before), "mer liv")
+	var heal: Array = jump.filter(func(j: Dictionary) -> bool: return j.unit == "helning")
+	assert_eq(heal.size(), 1, "Alva helar")
+	assert_true(int(heal[0].after) > int(heal[0].before), "starkare helning")
+	assert_true(LevelJump.text(jump).contains("→"), LevelJump.text(jump))

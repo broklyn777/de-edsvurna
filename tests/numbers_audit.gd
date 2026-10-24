@@ -108,7 +108,7 @@ static func setups(data: Dictionary) -> Array:
 					out.append({"i": i, "encounter": encounter, "floor": floor_i, "depth": depth, "party": party,
 							"artifacts": audit_artifacts(party, i) if variant >= 2 else {},
 							"statuses": variant % 2 == 1 or variant == 2, "rules": rule_sets[i % rule_sets.size()],
-							"level": 0 if variant == 0 else 5 * (depth - 1) + 2 + floor_i,
+							"level": 0 if variant == 0 else roundi(HeroStats.new_level(5 * (depth - 1) + 2 + floor_i)),
 							"traits": audit_traits(data, party, i), "bonus": bonuses[i % bonuses.size()]})
 					i += 1
 	return out
@@ -167,7 +167,7 @@ func check_units(sim: CombatSim, encounter: String, depth: int, floor_i: int, pa
 				str(want_kinds), str(enc.enemies)])
 	for e in sim.enemies:
 		var want := Ref.enemy_stats(data.enemies[e.kind].stats, float(enc.get("stat_mult", 1.0)), depth, party.size(),
-				Ref.enemy_level(depth, floor_i), e.elite, opts.has("levels"), float(opts.get("stat_bonus", 1.0)))
+				Ref.enemy_growth_level(depth, floor_i), e.elite, opts.has("levels"), float(opts.get("stat_bonus", 1.0)))
 		var got := {"health": e.max_hp, "attack": e.attack, "intelligence": e.intelligence, "defense": e.defense,
 				"speed": e.speed}
 		for s in want:

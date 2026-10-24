@@ -37,9 +37,7 @@ static func growth(data: Dictionary, personality: String, stat: String) -> float
 
 ## 0.26: Health, Attack, Intelligence och Defense med en decimal (CombatSim.STAT_STEP), Speed i heltal.
 static func stat_at(base: float, level: int, g: float, stat := "") -> float:
-	var v := base * (1.0 + g * (maxi(level, 1) - 1))
-	if variant != "":
-		v = base * (1.0 + g * (old_level(level) - 1.0))
+	var v := base * (1.0 + g * (old_level(level) - 1.0))
 	return roundf(v) if stat == "speed" else CombatSim.snap_stat(v)
 
 
@@ -132,18 +130,15 @@ static var XP_NEED_FLAT := 10
 
 
 static func xp_to_next(level: int) -> int:
-	if variant != "":
-		var need := _threshold_xp(level + 1) - _threshold_xp(level)
-		return roundi(need * (1.0 + _slow * maxf(level - _slow_from, 0.0)))
-	return XP_NEED_SQ * level * level + XP_NEED_LIN * level + XP_NEED_FLAT
+	if legacy or level + 1 <= KNEE:
+		return XP_NEED_SQ * level * level + XP_NEED_LIN * level + XP_NEED_FLAT
+	return roundi(_threshold_xp(level + 1) - _threshold_xp(level))
 
 
 ## Den väntade nivån för ett djup (3, 8, 13 …): ungefär fiendernas nivå mellan våning 1 och 2. Ett sällskap
 ## här klarar djupet ungefär som i 0.18; två nivåer över är det rustat. Bara för rapporten och texterna.
 static func expected_level(depth: int) -> int:
-	if variant != "":
-		return roundi(new_level(LEVELS_PER_DEPTH * (maxi(depth, 1) - 1) + 3))
-	return LEVELS_PER_DEPTH * (maxi(depth, 1) - 1) + 3
+	return roundi(new_level(LEVELS_PER_DEPTH * (maxi(depth, 1) - 1) + 3))
 
 
 ## Fiendernas nivå (som i Siralim där den följer djupet och inte ens egna varelser): bara djup och
@@ -156,9 +151,18 @@ static var FLOOR_STEP := 1.5
 
 
 static func enemy_level(depth: int, floor_index: int) -> float:
-	if variant != "":
-		return new_level(LEVELS_PER_DEPTH * (maxi(depth, 1) - 1) + FLOOR_START + FLOOR_STEP * clampi(floor_index, 0, 2))
+	return new_level(enemy_growth_level(depth, floor_index))
+
+
+## Fiendernas nivå i 0.19:s skala (tillväxtnivån, old_level): 5 × (djup − 1) + 2,25 + 1,5 per våning.
+static func enemy_growth_level(depth: int, floor_index: int) -> float:
 	return LEVELS_PER_DEPTH * (maxi(depth, 1) - 1) + FLOOR_START + FLOOR_STEP * clampi(floor_index, 0, 2)
+
+
+## Fiendernas multiplikator på djupet och våningen, räknad direkt i 0.19:s skala (ingen avrundning fram och tillbaka
+## genom kurvan, så att striderna blir exakt lika starka som förut).
+static func enemy_level_mult(depth: int, floor_index: int) -> float:
+	return 1.0 + GROWTH * (enemy_growth_level(depth, floor_index) - 1.0)
 
 
 ## Sällskapets snittnivå ur opts.levels.
@@ -173,9 +177,7 @@ static func party_level(levels: Dictionary) -> float:
 
 ## Hur mycket en nivå höjer en stat med vanlig tillväxt (fiender som möter hjältar på väntad nivå).
 static func level_mult(level: float) -> float:
-	if variant != "":
-		return 1.0 + GROWTH * (old_level(level) - 1.0)
-	return 1.0 + GROWTH * (maxf(level, 1.0) - 1.0)
+	return 1.0 + GROWTH * (old_level(level) - 1.0)
 
 
 static func battle_xp(kind: String, depth: int, boss := false) -> int:
@@ -194,87 +196,45 @@ static func add_xp(progress: Dictionary, xp: int) -> Array:
 	return ups
 
 
-# --- Prototyp (grenen forslag-nivaer, docs/plan/nivaer-och-charges.md): andra nivåtakter -------------------------
-# Bara botarna slår på dem (miljövariabeln NIVAER i tests/soak.gd och tests/balance_report.gd). Tom = spelet som i dag.
-# En variant är en avbildning g från den nya nivån L till "dagens nivå" g(L): stats, fiendernas multiplikator och den
-# samlade erfarenheten följer dagens kurva i g(L), så balansen är densamma och bara antalet nivåer ändras.
-#   k2:     g(L) = 2L − 1        (hälften så många nivåer, varje nivå +60 % av basen)
-#   k3:     g(L) = 3L − 2        (en tredjedel, +90 % per nivå)
-#   kurva:  g(L) = 1 + 1,5 · (L − 1)^1,4   (allt glesare uppåt, varje nivå större)
-#   k2s:    som k2, men de fyra första nivåerna (första nedstigningen) kommer som i dag: g(L) = L upp till nivå 5,
-#           sedan 2L − 5.
-#   k3s:    som k3 med samma början: g(L) = L upp till nivå 5, sedan 3L − 10.
-#   k2seg:  som k2s, men erfarenheten till nästa nivå × (1 + 0,10 · (L − 6)) från nivå 7: verkligt långsammare.
-static var variant := ""
-static var _k := 1.0
-static var _a := 0.0
-static var _p := 1.0
-static var _slow := 0.0
-static var _slow_from := 0.0
-static var _knee := 1.0
+# --- Nivåskalan (VD 2026-10-25, variant C "kurva" i docs/plan/nivaer-och-charges.md) -------------------------------
+# En nivå L motsvarar "tillväxtnivån" g(L) i 0.19:s skala: stats, fiendernas multiplikator och den samlade erfarenheten
+# följer 0.19:s kurva i g(L), så striderna är lika starka som förut och bara antalet nivåer (och hoppet per nivå) ändras.
+#   g(L) = L upp till KNEE (de fyra första nivåerna kommer lika tätt som förut, första nedstigningen är finjusterad för det),
+#   sedan KNEE + CURVE_A · (L − KNEE)^CURVE_P: allt glesare uppåt och varje nivå större (+32–40 % på djup 2–3, +17 % på
+#   djup 10, förr +3 %). Djup 10 är ungefär nivå 13 (förr 48).
+# VAL: Siralim ger +30 % av basen per nivå och har ingen sådan skala; styrkan på ett givet djup är densamma.
+# legacy = true är 0.19:s skala (g(L) = L), bara för botarnas jämförelser (NIVAER=idag i soak.gd och balance_report.gd).
+const KNEE := 5.0
+const CURVE_A := 2.34
+const CURVE_P := 1.4
+static var legacy := false
 
 
+## Botarnas jämförelse: "idag" = 0.19:s skala, allt annat = spelets.
 static func set_variant(name: String) -> void:
-	variant = name
-	_k = 1.0
-	_a = 0.0
-	_p = 1.0
-	_slow = 0.0
-	_knee = 1.0
-	match name:
-		"k2":
-			_k = 2.0
-		"k3":
-			_k = 3.0
-		"k2s":
-			_k = 2.0
-			_knee = 5.0
-		"k3s":
-			_k = 3.0
-			_knee = 5.0
-		"kurva":
-			_a = 1.5
-			_p = 1.4
-		"k2seg":
-			_k = 2.0
-			_knee = 5.0
-			_slow = 0.10
-			_slow_from = 6.0
-		"":
-			pass
-		_:
-			push_error("okänd nivåvariant: " + name)
-			variant = ""
+	legacy = name == "idag"
 
 
-## Den nya nivån som dagens nivå (kontinuerlig).
+## Nivån L som tillväxtnivå i 0.19:s skala (kontinuerlig).
 static func old_level(level: float) -> float:
 	var l := maxf(level, 1.0)
-	if variant == "":
+	if legacy or l <= KNEE:
 		return l
-	if _a > 0.0:
-		return 1.0 + _a * pow(l - 1.0, _p)
-	if l <= _knee:
-		return l
-	return _knee + _k * (l - _knee)
+	return KNEE + CURVE_A * pow(l - KNEE, CURVE_P)
 
 
-## Dagens nivå som ny nivå (omvändningen av old_level).
+## En tillväxtnivå i 0.19:s skala som nivå (omvändningen av old_level, kontinuerlig).
 static func new_level(old: float) -> float:
 	var x := maxf(old, 1.0)
-	if variant == "":
+	if legacy or x <= KNEE:
 		return x
-	if _a > 0.0:
-		return 1.0 + pow((x - 1.0) / _a, 1.0 / _p)
-	if x <= _knee:
-		return x
-	return _knee + (x - _knee) / _k
+	return KNEE + pow((x - KNEE) / CURVE_A, 1.0 / CURVE_P)
 
 
-## Erfarenheten (räknad från nivå 1) där den nya nivån L nås: mitt emellan när dagens kurva skulle ha nått den första
-## mellanliggande nivån, g(L − 1) + 1, och g(L) själv. Då ligger hjälten ungefär lika mycket före som efter dagens kurva
-## (räknat i strider). Med tröskeln vid g(L) låg hen efter, vilket fällde första nedstigningen från 98 till 60 % (k2);
-## med en tröskel mitt emellan i nivåer fortfarande till 75–83 %. För i dag (g(L) = L) blir det precis dagens kurva.
+## Erfarenheten (räknad från nivå 1) där nivå L nås: mitt emellan när 0.19:s kurva skulle ha nått den första
+## mellanliggande nivån, g(L − 1) + 1, och g(L) själv. Då ligger hjälten ungefär lika mycket före som efter 0.19:s kurva
+## (räknat i strider); med tröskeln vid g(L) låg hen efter och första nedstigningen föll (prototypen k2: 98 → 60 %).
+## Upp till KNEE är det precis 0.19:s kurva.
 static func _threshold_xp(level: int) -> float:
 	if level <= 1:
 		return 0.0
@@ -283,7 +243,35 @@ static func _threshold_xp(level: int) -> float:
 	return (_cum_xp(first) + _cum_xp(top)) / 2.0
 
 
-## Dagens samlade erfarenhet från nivå 1 till nivå x (summan av 5 · l² + 10 för l = 1 … x − 1, kontinuerlig).
+## 0.19:s samlade erfarenhet från nivå 1 till nivå x (summan av 5 · l² + 10 för l = 1 … x − 1, kontinuerlig).
 static func _cum_xp(x: float) -> float:
 	var n := x - 1.0
 	return XP_NEED_SQ * n * (n + 1.0) * (2.0 * n + 1.0) / 6.0 + XP_NEED_LIN * n * (n + 1.0) / 2.0 + XP_NEED_FLAT * n
+
+
+## Samlad erfarenhet för nivå och erfarenhet mot nästa (heltal, som add_xp räknar).
+static func total_xp(level: int, xp: int) -> int:
+	var sum := xp
+	for l in range(1, maxi(level, 1)):
+		sum += xp_to_next(l)
+	return sum
+
+
+## Omräkningen av en profil från 0.19:s skala (sparad före 0.31, Profile.LEVEL_SCALE): den nya nivån vars tillväxt ligger
+## närmast den gamla (styrkan så lik som hela nivåer tillåter), och erfarenheten mot nästa nivå så att den samlade
+## erfarenheten blir densamma när det går (aldrig en hel nivå eller mer). Ger {level, xp}.
+static func convert_legacy(old_level_value: int, old_xp: int) -> Dictionary:
+	var old_lv := maxi(old_level_value, 1)
+	var best := 1
+	var l := 1
+	while old_level(l) <= old_lv + 0.001:
+		best = l
+		l += 1
+	if best < l and absf(old_level(l) - old_lv) < absf(old_level(best) - old_lv):
+		best = l
+	var legacy_total := 0.0
+	for k in range(1, old_lv):
+		legacy_total += XP_NEED_SQ * k * k + XP_NEED_LIN * k + XP_NEED_FLAT
+	legacy_total += old_xp
+	var xp := clampi(roundi(legacy_total - total_xp(best, 0)), 0, maxi(xp_to_next(best) - 1, 0))
+	return {"level": best, "xp": xp}
