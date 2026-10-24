@@ -119,9 +119,13 @@ func _draw_level_ups(w: float, h: float, a: float) -> void:
 		if not Array(u.get("jump", [])).is_empty():
 			# Nivåskalan (VD 2026-10-25): hoppet i det striden gör, mot en typisk fiende på djupet (som hjältebladet).
 			var jump: Array = u.jump
-			rows.append(LevelJump.text(jump.slice(0, 2)))
-			if jump.size() > 2:
-				rows.append(LevelJump.text(jump.slice(2)))
+			if level_ups.size() >= 3:
+				# Många nivåer på en gång: en rad var; med en helning får livet ge plats åt förmågorna.
+				rows.append(LevelJump.text(jump.slice(1) if jump.size() > 2 else jump))
+			else:
+				rows.append(LevelJump.text(jump.slice(0, 2)))
+				if jump.size() > 2:
+					rows.append(LevelJump.text(jump.slice(2)))
 		else:
 			var parts: Array = []
 			for stat in HeroStats.STATS:
@@ -151,7 +155,7 @@ func _draw_level_ups(w: float, h: float, a: float) -> void:
 				y += UiStyle.para(self, Vector2(cx, y + 18), "%s: ”%s”" % [line.name, line.text], 16,
 						Color(1, 1, 1, 0.8 * a * rt), cw, 4)
 			y += 4
-		y += 14
+		y += 8 if level_ups.size() >= 3 else 14
 
 
 ## Det här avgjorde striden: till vänster om resultatet, spegelvänt mot fynden. Taggen säger vilken del av bygget

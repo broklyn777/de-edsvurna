@@ -113,8 +113,9 @@ func _draw() -> void:
 	var title := String(h.get("title", h.role))
 	if hero_id == "paladin" and HeroStats.oath_rank(level) > 0:
 		title = Dialog.oath_rank_title(data, HeroStats.oath_rank(level))  # edsgraden (VD 2026-10-25)
-	UiStyle.text(self, Vector2(MARGIN, 104), "%s · NIVÅ %d" % [title.to_upper(), level], 24,
-			Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, 600, 3)
+	var head_size := 24 if title.length() < 16 else 20  # edsgraden är lång: rymmas före fiendernas nivå (x 470)
+	UiStyle.text(self, Vector2(MARGIN, 104), UiStyle.fit("%s · NIVÅ %d" % [title.to_upper(), level], head_size, 455),
+			head_size, Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, 600, 3)
 	var bar := Rect2(MARGIN, 118, 420, 18)
 	UiStyle.bar(self, bar, float(prog.xp) / need, UiStyle.GOLD)
 	var bar_text := "%d / %d erfarenhet till nivå %d" % [int(prog.xp), need, level + 1]
