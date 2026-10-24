@@ -128,16 +128,21 @@ func test_nemesis_draws_from_both_floors_on_floor_two() -> void:
 
 
 func test_guardian_leader_stays_away_from_its_depths() -> void:
-	# Midnattsklockan (Klockaren) vaktar kryptans djup 2, 5, 8 …; Klockstapeln ska inte synas intill.
+	# Midnattsklockan (Klockaren) vaktar kryptans djup 2, 5, 8 …; Klockstapeln syns inte på väktarens eget djup
+	# (GUARDIAN_GAP 0), men finns kvar på djupen emellan.
 	for d in [1, 2, 3, 4, 5, 6]:
 		var s := RunState.new()
 		s.set_realm(_data, "crypt")
 		s.depth = d
-		assert_true(not s.elite_pools_for(_data)[1].has("crypt_e5"), "djup %d: ingen Klockstapel" % d)
+		var has_bell: bool = s.elite_pools_for(_data)[1].has("crypt_e5")
+		if d in [2, 5]:
+			assert_true(not has_bell, "djup %d: ingen Klockstapel" % d)
+		else:
+			assert_true(has_bell, "djup %d: Klockstapeln finns" % d)
 	var c := RunState.new()
 	c.set_realm(_data, "chapel")
-	c.depth = 4
-	assert_true(not c.elite_pools_for(_data)[1].has("chapel_e6"), "kapellet djup 4: ingen Abbedissans mässa")
+	c.depth = 5
+	assert_true(not c.elite_pools_for(_data)[1].has("chapel_e6"), "kapellet djup 5: ingen Abbedissans mässa")
 	assert_true(not c.elite_pools_for(_data)[1].is_empty())
 
 
