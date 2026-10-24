@@ -159,6 +159,11 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	if opts.has("party"):
 		state.party.assign(opts.party)  # 0.23: sällskap med 2–4 hjältar
 	state.fill_charges(data)
+	# Prototyp (sallskap-fem): opts.owned = hjältar profilen äger, opts.slots = platser (5 = den femte öppen).
+	state.owned_heroes = int(opts.get("owned", 0))
+	state.party_slots = int(opts.get("slots", Profile.BASE_SLOTS))
+	if opts.has("realm_party"):
+		state.realm_party = int(opts.realm_party)  # BALANS=fem: Trollberget som förr, balanserat mot fyra
 	if opts.has("vow"):
 		state.set_vow(data, opts.vow)  # 0.30.17: löftet för hela körningen
 	if opts.has("recruited"):
@@ -180,6 +185,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	# Nivåer (0.19): opts.levels = startnivåer per hjälte; med opts.grow växer de av erfarenheten.
 	var levels: Dictionary = opts.get("levels", {}).duplicate(true)
 	var xp_total := 0  # 0.30.22: erfarenhet per hjälte i körningen (strider och spår)
+	var by_kind := {}
 	# 0.27: grottan. Boten går ett steg i taget mot närmaste okända ruta (mot målet), slåss mot grupperna den kliver på
 	# (elitgrupper bara om questen kräver dem), tar skatter, helgedomar, fångar och lägereldar, och går till målet när
 	# questen är klar.
@@ -198,7 +204,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth", "owned", "slots", "realm_party"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
@@ -212,13 +218,18 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			var result := run_fight(data, seed_value * 31 + fights, skill, state.encounter(), state.party, fight_traits,
 					state.charges, artifacts, depth, battle_opts)
 			fights += 1
+			# Prototyp (sallskap-fem): strider och segrar per sort (vanlig, elit, väktare, boss).
+			var fk := "boss" if r.get("boss", false) and not state.guardian_room(r) else ("väktare" if r.get("boss", false)
+					else ("elit" if r.get("elite", false) or r.get("nemesis", false) else "vanlig"))
+			var bk: Array = by_kind.get(fk, [0, 0])
+			by_kind[fk] = [int(bk[0]) + 1, int(bk[1]) + (1 if result.outcome == "victory" else 0)]
 			if state.floor == 0:
 				f0_fights += 1
 				f0_won += 1 if result.outcome == "victory" else 0
 			if result.outcome != "victory":
 				return {"cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 						"lost_at": "f%d_%s" % [state.floor, "end" if r.get("boss", false) else r.kind], "f0_fights": f0_fights,
-						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver}
+						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver, "by_kind": by_kind}
 			silver += state.battle_silver(depth)
 			state.vow_after_battle(data, result.sim)
 			if opts.has("finds"):
@@ -239,7 +250,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 							"personality": data.heroes[opts.joins].get("personality", "")}
 			if fights >= int(opts.get("max_fights", 999)):
 				return {"cleared": false, "fights": fights, "won": true, "rooms": rooms, "f0_fights": f0_fights,
-						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver}
+						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver, "by_kind": by_kind}
 			state.battle_won()
 			match r.kind:
 				"prisoner":
@@ -286,7 +297,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		rooms += 1
 	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won, "finds": finds, "silver": silver,
-			"vow_kept": state.vow_kept(data), "xp": xp_total}
+			"vow_kept": state.vow_kept(data), "xp": xp_total, "by_kind": by_kind}
 
 
 ## 0.30.22: spåren efter de vanliga grupper boten lät vara (RunState.take_trail), när våningen är klar.
@@ -435,7 +446,7 @@ static func _bot_recruit(data: Dictionary, state: RunState, levels: Dictionary, 
 	if hero_id == "" or r.get("rescued", false):
 		return
 	r.rescued = true
-	if state.party.size() > Profile.MAX_COMPANIONS:
+	if state.party.size() >= state.party_slots:
 		return
 	state.party.append(hero_id)
 	state.add_charges_for(data, hero_id)

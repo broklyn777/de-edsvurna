@@ -255,7 +255,7 @@ func test_owning_four_heroes_means_full_strength_enemies() -> void:
 	s.pos = s.map.indices("elite")[0]
 	s.owned_heroes = 4
 	var opts := s.battle_opts()
-	assert_true(opts.get("full_party", false))
+	assert_eq(opts.get("full_party", 0), 4, "fiender som mot fyra")
 	assert_near(float(opts.get("stat_bonus", 1.0)), 1.0, 1e-6, "ingen mildring för små sällskap")
 	var full := CombatSim.create(_data, "crypt_1", 3, ["paladin", "imma"], {}, {}, {}, 1, {"full_party": true})
 	var small := CombatSim.create(_data, "crypt_1", 3, ["paladin", "imma"], {}, {}, {}, 1, {})

@@ -751,6 +751,9 @@
 			"moss_troll",
 			"changeling_troll"
 		],
+		"extra": [
+			"porridge_troll"
+		],
 		"stat_mult": 0.82
 	},
 	"troll_1b": {
@@ -765,6 +768,9 @@
 			"porridge_troll",
 			"moss_troll"
 		],
+		"extra": [
+			"club_troll"
+		],
 		"stat_mult": 0.82
 	},
 	"troll_1c": {
@@ -778,6 +784,9 @@
 		"enemies": [
 			"grumpy_troll",
 			"club_troll"
+		],
+		"extra": [
+			"changeling_troll"
 		],
 		"stat_mult": 0.82
 	},
@@ -794,6 +803,9 @@
 			"moss_troll",
 			"grumpy_troll"
 		],
+		"extra": [
+			"changeling_troll"
+		],
 		"stat_mult": 0.88
 	},
 	"troll_2b": {
@@ -809,6 +821,9 @@
 			"club_troll",
 			"changeling_troll"
 		],
+		"extra": [
+			"grumpy_troll"
+		],
 		"stat_mult": 0.88
 	},
 	"troll_e1": {
@@ -823,6 +838,9 @@
 			"troll_mother",
 			"grumpy_troll",
 			"moss_troll"
+		],
+		"extra": [
+			"porridge_troll"
 		],
 		"elite_group": true,
 		"stat_mult": 1.1,
@@ -841,6 +859,9 @@
 			"moss_troll",
 			"moss_troll"
 		],
+		"extra": [
+			"porridge_troll"
+		],
 		"elite_group": true,
 		"stat_mult": 1.1,
 		"first_descent_stat_mult": 0.72
@@ -857,6 +878,10 @@
 			"mountain_king",
 			"club_troll",
 			"troll_mother"
+		],
+		"extra": [
+			"changeling_troll",
+			"grumpy_troll"
 		],
 		"stat_mult": 1.05
 	},
@@ -1293,6 +1318,9 @@
 			"club_troll",
 			"porridge_troll"
 		],
+		"extra": [
+			"grumpy_troll"
+		],
 		"stat_mult": 0.82
 	},
 	"troll_1e": {
@@ -1306,6 +1334,9 @@
 		"enemies": [
 			"changeling_troll",
 			"porridge_troll"
+		],
+		"extra": [
+			"moss_troll"
 		],
 		"stat_mult": 0.82,
 		"template": "Fel mål"
@@ -1323,6 +1354,9 @@
 			"porridge_troll",
 			"moss_troll"
 		],
+		"extra": [
+			"club_troll"
+		],
 		"stat_mult": 0.88,
 		"template": "Straffar stöd"
 	},
@@ -1338,6 +1372,9 @@
 			"club_troll",
 			"grumpy_troll",
 			"changeling_troll"
+		],
+		"extra": [
+			"moss_troll"
 		],
 		"stat_mult": 0.88,
 		"template": "Straffar försvar"
@@ -1356,6 +1393,10 @@
 			"grumpy_troll",
 			"changeling_troll"
 		],
+		"extra": [
+			"moss_troll",
+			"grumpy_troll"
+		],
 		"stat_mult": 0.9,
 		"template": "Vanorna"
 	},
@@ -1371,6 +1412,9 @@
 			"club_troll",
 			"grumpy_troll",
 			"porridge_troll"
+		],
+		"extra": [
+			"moss_troll"
 		],
 		"stat_mult": 0.9,
 		"template": "Straffar stöd"
@@ -1389,6 +1433,10 @@
 			"moss_troll",
 			"porridge_troll"
 		],
+		"extra": [
+			"club_troll",
+			"grumpy_troll"
+		],
 		"stat_mult": 0.9,
 		"template": "Fel mål"
 	},
@@ -1404,6 +1452,10 @@
 			"moss_troll",
 			"changeling_troll",
 			"club_troll",
+			"grumpy_troll"
+		],
+		"extra": [
+			"porridge_troll",
 			"grumpy_troll"
 		],
 		"stat_mult": 0.9,
@@ -1423,6 +1475,10 @@
 			"club_troll",
 			"changeling_troll"
 		],
+		"extra": [
+			"grumpy_troll",
+			"porridge_troll"
+		],
 		"stat_mult": 1.1
 	},
 	"troll_2": {
@@ -1439,6 +1495,10 @@
 			"grumpy_troll",
 			"changeling_troll"
 		],
+		"extra": [
+			"moss_troll",
+			"changeling_troll"
+		],
 		"stat_mult": 1.14
 	},
 	"troll_e3": {
@@ -1453,6 +1513,9 @@
 			"troll_mother",
 			"changeling_troll",
 			"porridge_troll"
+		],
+		"extra": [
+			"grumpy_troll"
 		],
 		"stat_mult": 1.1,
 		"first_descent_stat_mult": 0.72,
@@ -1577,6 +1640,9 @@
 			"club_troll",
 			"moss_troll"
 		],
+		"extra": [
+			"porridge_troll"
+		],
 		"stat_mult": 1.17,
 		"guardian": true,
 		"template": "Väktare"
@@ -1594,6 +1660,9 @@
 			"changeling_troll",
 			"porridge_troll",
 			"grumpy_troll"
+		],
+		"extra": [
+			"club_troll"
 		],
 		"stat_mult": 1.44,
 		"guardian": true,

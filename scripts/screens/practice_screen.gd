@@ -103,7 +103,8 @@ func _right_x() -> float:
 
 func _hero_rect(i: int) -> Rect2:
 	var x0 := _right_x()
-	var w := (size.x - MARGIN - x0 - GAP * 3) / 4.0
+	var n := maxi(4, run.profile.party.size())  # prototyp (sallskap-fem)
+	var w := (size.x - MARGIN - x0 - GAP * (n - 1)) / float(n)
 	return Rect2(x0 + i * (w + GAP), 124, w, 104)
 
 
@@ -205,7 +206,8 @@ func _enemy_list(enc: Dictionary) -> String:
 	var data: Dictionary = run.data
 	var names := {}
 	# Fienderna som faktiskt möter sällskapet (ett litet sällskap möter färre, CombatSim.enemy_lineup).
-	for kind in CombatSim.enemy_lineup(data, enc.enemies, run.profile.party.size()):
+	var party_n: int = run.profile.party.size()
+	for kind in CombatSim.enemy_lineup(data, CombatSim.encounter_kinds(enc, party_n), party_n):
 		names[data.enemies[kind].name] = names.get(data.enemies[kind].name, 0) + 1
 	var parts: Array[String] = []
 	for n in names:

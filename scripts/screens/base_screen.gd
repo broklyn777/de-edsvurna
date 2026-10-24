@@ -532,6 +532,7 @@ func _start_dialog() -> void:
 	if Intro.current(data, run.profile).get("event", "") == "came_home" and run.profile.total_descents() > 0 \
 			and run.profile.recruited.has("imma"):
 		run.intro("came_home")
+	var slot_opened: bool = run.check_slot_unlock()  # prototyp (sallskap-fem): den femte platsen öppnas
 	var story: Array = run.pending_story
 	run.pending_story = []
 	if not run.intro_lines.is_empty():
@@ -540,6 +541,8 @@ func _start_dialog() -> void:
 	if Intro.auto_talk(data, run.profile):
 		var step := Intro.current(data, run.profile)
 		_talk("", story + Intro.lines(step), "", false, _after_intro_talk.bind(""))
+	elif slot_opened:
+		_talk("", story, "", false, func() -> void: _toast(run.slot_toast))
 	elif not story.is_empty():
 		_talk("", story, "", false)
 

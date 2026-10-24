@@ -74,7 +74,7 @@ func _tap(p: Vector2) -> void:
 			var id: String = roster[i]
 			if companions.has(id):
 				companions.erase(id)
-			elif companions.size() < 3:
+			elif companions.size() < run.profile.max_companions():
 				companions.append(id)
 			else:
 				companions.pop_front()
@@ -162,9 +162,14 @@ func _trophy_rect(i: int) -> Rect2:
 	return Rect2(MARGIN + (i % 7) * (w + GAP), _trophy_top() + 76 + (i / 7) * 42, w, 36)
 
 
-## Sällskapet med det var och en bär.
+## Sällskapet med det var och en bär: en kolumn per plats (4 eller 5), och en till för den låsta platsen.
+func _wearer_cols() -> int:
+	return maxi(4, run.profile.party_slots() + (1 if run.profile.next_slot_lock() != "" else 0))
+
+
 func _wearer_rect(i: int) -> Rect2:
-	var w := (size.x - MARGIN * 2 - GAP * 3) / 4.0
+	var n := _wearer_cols()
+	var w := (size.x - MARGIN * 2 - GAP * (n - 1)) / float(n)
 	return Rect2(MARGIN + i * (w + GAP), _trophy_top() + 14, w, 48)
 
 
@@ -210,7 +215,9 @@ func _draw() -> void:
 	UiStyle.text(self, Vector2(0, 76), "Sällskapet och troféerna de bär. Realm, djup och instabilitet väljer du på kampanjkartan.", 16,
 			Color(1, 1, 1, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 	var roster := _roster()
-	var head := "FÖLJESLAGARE – VÄLJ EN TILL TRE (%d/3)" % companions.size() if not run.profile.recruited.is_empty() \
+	var most: int = run.profile.max_companions()
+	var head := "FÖLJESLAGARE – VÄLJ EN TILL %s (%d/%d)" % [["EN", "TVÅ", "TRE", "FYRA", "FEM"][clampi(most - 1, 0, 4)],
+			companions.size(), most] if not run.profile.recruited.is_empty() \
 			else "FÖLJESLAGARE – INGA ÄN. DU GÅR NED ENSAM."
 	UiStyle.text(self, Vector2(MARGIN, 230), head, 16, Color(1, 1, 1, 0.6))
 	for i in roster.size():
@@ -246,6 +253,10 @@ func _draw() -> void:
 				HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 20, 3)
 		UiStyle.text(self, r.position + Vector2(10, 40), data.traits[t].name if t != "" else "Ingen trofé", 16,
 				UiStyle.TRAIT_GOLD if t != "" else Color(1, 1, 1, 0.45), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 20, 3)
+	# Prototyp (sallskap-fem): den femte platsen syns låst från att profilen äger fyra hjältar.
+	var lock: String = run.profile.next_slot_lock(true)
+	if lock != "":
+		UiStyle.locked_slot(self, _wearer_rect(run.profile.party_slots()), "FEMTE PLATSEN", lock)
 	if run.collection.is_empty():
 		UiStyle.text(self, Vector2(MARGIN, _trophy_top() + 102), "Samlingen är tom. Besegra monster för att hitta troféer.", 18, Color(1, 1, 1, 0.45))
 	for i in run.collection.size():

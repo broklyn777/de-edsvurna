@@ -3702,5 +3702,23 @@
 			"grove": "Nät över handelsvägen genom lunden, så järnet kostar mer. Rensa lunden, så smider jag billigare igen.",
 			"caravan": "Karavanen gick förlorad, och järnet är dyrt en tid."
 		}
+	},
+	"party_slot": {
+		"_comment": "Prototyp (sallskap-fem): när den femte platsen öppnas (Benfursten och biskopen besegrade på djup 4, Profile.SLOT_UNLOCKS). Platshållare, VD väljer berättelsen.",
+		"lines": [
+			[
+				"narrator",
+				"(Den kvällen dukar Mor Elin fram en tallrik för mycket vid långbordet. Ingen säger något om det.)"
+			],
+			[
+				"gorm",
+				"Benfursten och biskopen har fallit för andra gången. Det talas om det ända nere i dalen, och folk kommer att knacka på porten."
+			],
+			[
+				"gorm",
+				"I bergen håller fem ihop bättre än fyra. Men fem munnar ska också mättas – välj vem du tar med."
+			]
+		],
+		"toast": "FEMTE PLATSEN ÖPPEN: PALADINEN + %d FÖLJESLAGARE"
 	}
 }

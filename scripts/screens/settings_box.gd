@@ -67,6 +67,12 @@ func _reset_rect(i := -1) -> Rect2:
 	return Rect2(r.position.x + W / 2.0 - 250 + i * 270, y, 230, 44)
 
 
+## Prototyp (sallskap-fem): FPS PÅ/AV i hörnet bredvid KLAR.
+func _fps_rect() -> Rect2:
+	var r := _panel()
+	return Rect2(r.position.x + 30, r.end.y - 64, 150, 42)
+
+
 func _done_rect() -> Rect2:
 	var r := _panel()
 	return Rect2(r.position.x + (W - 200) / 2.0, r.end.y - 66, 200, 46)
@@ -100,6 +106,9 @@ func _input_on(event: InputEvent) -> void:
 			elif not _confirm_reset and _reset_rect().has_point(p):
 				_confirm_reset = true
 				_run().ui("ui_tap", -8.0)
+			elif _fps_rect().has_point(p):
+				GameSettings.show_fps = not GameSettings.show_fps
+				FpsMeter.set_shown(_run(), GameSettings.show_fps)
 			elif _done_rect().has_point(p):
 				_close()
 		_view.queue_redraw()
@@ -172,6 +181,7 @@ func _paint() -> void:
 					Color(1, 1, 1, 0.9 if i == 0 else 0.7), HORIZONTAL_ALIGNMENT_CENTER, W - 60)
 		_small_button(_reset_rect(), "NOLLSTÄLL SPELTID", Color(0, 0, 0, 0.5))
 	UiStyle.big_button(_view, _done_rect(), "KLAR", 0.0)
+	_small_button(_fps_rect(), "FPS: " + ("PÅ" if GameSettings.show_fps else "AV"), Color(0, 0, 0, 0.5))
 
 
 func _small_button(b: Rect2, label: String, fill: Color) -> void:

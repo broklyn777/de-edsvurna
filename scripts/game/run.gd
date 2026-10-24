@@ -92,6 +92,8 @@ func _ready() -> void:
 	_dev_args()
 	apply_name()  # en påhittad profil från en utvecklarflagga
 	_start_fps_governor()
+	if GameSettings.show_fps or "--fps" in OS.get_cmdline_user_args():
+		FpsMeter.set_shown(self, true)
 	if "--go-back" in OS.get_cmdline_user_args():  # bakåtknappen en gång efter en sekund (skärmdumpar)
 		get_tree().create_timer(1.0).timeout.connect(go_back)
 
@@ -361,6 +363,19 @@ func _dev_args() -> void:
 			# --artifact=<hjälte>:<typ>:<förmåga>, t.ex. brokk:shield:healing_light (bara den här körningen)
 			var parts := arg.get_slice("=", 1).split(":")
 			state.artifacts[parts[0]] = {"type": parts[1], "ability": parts[2] if parts.size() > 2 else ""}
+		elif arg == "--party5":
+			# --party5 (prototyp): den femte platsen öppen (som om kapellets boss var besegrad; sparas inte). Före
+			# --all-companions för fem i striden.
+			dev_profile = true
+			profile.force_slots = 5
+			state.party_slots = 5
+		elif arg == "--slot-unlock":
+			# --slot-unlock (prototyp): villkoret räknas som uppfyllt (sparas inte), borgen visar när den femte platsen öppnas
+			dev_profile = true
+			for realm_id in Profile.SLOT_UNLOCKS[0].requires:
+				profile.realm_depth[realm_id] = maxi(int(Profile.SLOT_UNLOCKS[0].requires[realm_id]),
+						int(profile.realm_depth.get(realm_id, 0)))
+			profile.slots_seen = Profile.BASE_SLOTS
 		elif arg == "--all-companions":
 			# --all-companions: en påhittad profil (sparas inte) som har befriat alla lärjungar
 			dev_profile = true
@@ -368,7 +383,7 @@ func _dev_args() -> void:
 				if id != "paladin":
 					profile.recruit(data, id, 3.0)
 			profile.intro_done = true
-			profile.set_party(["imma", "alva", "brokk"])
+			profile.set_party(["imma", "alva", "brokk", "eira"])  # med --party5 fyra följeslagare, annars tre
 			# och några troféer, en av dem på Imma (0.26.3, för skärmdumpar av Förberedelser)
 			for kind in ["skeleton_warrior", "skeleton_archer", "ember_skeleton", "grave_guard"]:
 				if data.enemies.has(kind) and data.enemies[kind].has("trophy"):
@@ -378,6 +393,7 @@ func _dev_args() -> void:
 			# och samma sällskap i körningen, så att --all-companions --floor=0 visar fyra hjältar i striden
 			state.party = profile.party.duplicate()
 			state.owned_heroes = profile.recruited.size() + 1
+			state.party_slots = profile.party_slots()
 			state.fill_charges(data)
 		elif arg == "--new-profile":
 			# --new-profile: börja som en ny spelare (sparas inte): Paladinen och Brokk
@@ -685,6 +701,8 @@ func _resume_run() -> void:
 		return
 	state = saved
 	state.owned_heroes = profile.recruited.size() + 1  # 0.30.21: körningar sparade före fältet
+	state.party_slots = profile.party_slots()
+	state.realm_party = int(data.realms.get(state.realm, {}).get("party", Profile.BASE_SLOTS))
 	playtime.resume_run(slot, state.floor)  # löptiden fortsätter där den slutade
 	if state.battle_pending:
 		# Appen stängdes under en strid: striden börjar om, som om man just gått in i rummet.
@@ -933,7 +951,7 @@ func rescue_prisoner() -> String:
 	var h: Dictionary = data.heroes[hero_id]
 	var p: Dictionary = data.personalities.get(profile.hero(data, hero_id).personality, {})
 	var text := "%s befrias! %s, %s." % [h.name, h.get("title", ""), p.get("name", "")]
-	if state.party.size() <= Profile.MAX_COMPANIONS:
+	if state.party.size() < state.party_slots:
 		state.party.append(hero_id)
 		state.add_charges_for(data, hero_id)
 		profile.set_party(state.party.slice(1))
@@ -1172,6 +1190,23 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 	_save()
 	save_run()
 	get_tree().change_scene_to_file(CAMP_SCENE)
+
+
+## Prototyp (sallskap-fem): när en ny plats i sällskapet har öppnats (Profile.SLOT_UNLOCKS) berättar borgen det en
+## gång: berättaren och Gorm (dialog.json "party_slot"), sedan en skylt. Ger true om ögonblicket köades.
+func check_slot_unlock() -> bool:
+	var n := profile.earned_slots()
+	if n <= profile.slots_seen:
+		return false
+	profile.slots_seen = n
+	pending_story += Intro.speech(data.dialog.get("party_slot", {}).get("lines", []))
+	slot_toast = String(data.dialog.get("party_slot", {}).get("toast", "%d")) % (n - 1)
+	_save()
+	return true
+
+
+## Skylten efter ögonblicket (borgen visar den).
+var slot_toast := ""
 
 
 ## 0.25 (plan §2): berättarens rader för ett tillfälle som bara händer en gång per profil (Profile.narrated).

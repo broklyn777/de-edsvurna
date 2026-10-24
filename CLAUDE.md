@@ -304,6 +304,17 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Våning 1:s elitgrupp och Nemesis ×0,80 för högst två hjältar (`RunState.SMALL_PARTY_ELITE`, andra nedstigningen 26 → 41 %).
   **Balanserat mot fyra** (0.30.21, VD): `PARTY_SCALE` och mildringen ovan gäller bara när profilen äger färre än fyra hjältar
   (`RunState.owned_heroes`); den som har fyra och går med färre möter samma fiender som mot fyra (`full_party`), en bedrift.
+  **Sällskap om fem** (prototyp, grenen `sallskap-fem`, VD): platserna kommer ur `Profile.party_slots()` (4, eller 5 när
+  `Profile.SLOT_UNLOCKS` är uppfyllt: huvudbossen besegrad på djup 4 i både kryptan och kapellet; `max_companions()`,
+  `RunState.party_slots`). Den låsta platsen syns grå i Förberedelser och Värdshuset från att profilen äger fyra
+  (`next_slot_lock()`); när den öppnas visar borgen berättaren och Gorm en gång (`Run.check_slot_unlock`, `slots_seen`,
+  `dialog.json` "party_slot"). Trollberget (`realms.json` "party": 5) är **alltid** balanserat mot fem
+  (`RunState.full_party_size()`, `CombatSim.party_scale_size`, `PARTY_SCALE[5]`; mötenas `"extra"` i encounters.json kommer
+  med mot fem, upp till sex fiender, `CombatSim.max_enemies`); kampanjkartan varnar med färre platser
+  (`RunState.realm_too_big`). Kryptan och kapellet är oförändrade (fyra). Striden: lägre ramar för fem (`PartyFrame.compact`).
+  Flaggor: `--party5` (före `--all-companions`), `--slot-unlock --keep`, `--fps` (eller FPS PÅ i inställningarna,
+  `FpsMeter`). Botarna: `BALANS=grotta GROTTA_FEM=1` (GROTTA_TYPER=1 vinst per sorts strid, GROTTA_TAK=5 högst fem
+  fiender, GROTTA_FEMTE), `BALANS=fem` (en strid per möte med fulla Charges).
 - **Troféjakt** (0.17): sällsynta elitvarianter (5 %, mer med djup och instabilitet) glöder, har ett eget
   namn och en egen regelbrytande trofé (som de själva bär). Bosstroféer kräver tre segrar mot samma boss
   (Siralims Masters, `Profile.boss_wins`). Biblioteket visar alla troféer; Inspect visar vad ett monster lämnar.

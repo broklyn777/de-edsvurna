@@ -429,7 +429,7 @@ func _rescue() -> void:
 	avg /= maxi(state.party.size(), 1)
 	profile.recruit(data, hero_id, avg)
 	_take_hint(hero_id)
-	if state.party.size() <= Profile.MAX_COMPANIONS:
+	if state.party.size() < state.party_slots:
 		state.party.append(hero_id)
 		state.add_charges_for(data, hero_id)
 		profile.set_party(state.party.slice(1))
@@ -1123,7 +1123,7 @@ func _career_home() -> void:
 		var list: Array = Array(profile.recruited).duplicate()
 		list.sort_custom(func(a: String, b: String) -> bool:
 				return int(profile.hero(data, a).level) > int(profile.hero(data, b).level))
-		profile.set_party(list.slice(0, Profile.MAX_COMPANIONS))
+		profile.set_party(list.slice(0, profile.max_companions()))
 
 
 func _career_print(rows: Array, runs: int, descents: int) -> void:

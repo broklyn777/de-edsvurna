@@ -57,6 +57,10 @@ func _init() -> void:
 		_grotto(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "fem":
+		_five_by_type(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "elitdiag":
 		_elite_diag(data)
 		quit()
@@ -481,7 +485,12 @@ func _grotto(data: Dictionary) -> void:
 	var fresh := Bot.new_profile_macros(data)
 	if OS.get_environment("GROTTA_DJUP") != "":
 		grotto_depth = int(OS.get_environment("GROTTA_DJUP"))
-	print("=== Grottan (0.27), djup %d, %d körningar per rad ===" % [grotto_depth, RUNS])
+	if OS.get_environment("GROTTA_TAK") != "":
+		CombatSim.max_enemies = int(OS.get_environment("GROTTA_TAK"))  # prototyp: högst så många fiender (5 = lättare)
+	print("=== Grottan (0.27), djup %d, %d körningar per rad, högst %d fiender ===" % [grotto_depth, RUNS, CombatSim.max_enemies])
+	if OS.get_environment("GROTTA_FEM") == "1":
+		_grotto_five(data)
+		return
 	if grotto_depth > 1 or OS.get_environment("GROTTA_FYRA") == "1":  # GROTTA_FYRA=1: bara fyra hjältar, också på djup 1
 		var lv := HeroStats.expected_level(grotto_depth)
 		for realm_id in (realms_for_grotto()):
@@ -495,6 +504,77 @@ func _grotto(data: Dictionary) -> void:
 		_grotto_line(data, realm_id, "Paladinen + Imma, nivå 3", ["paladin", "imma"], 3, {"bot_macros": fresh})
 		_grotto_line(data, realm_id, "första: ensam, Imma efter strid 1", ["paladin"], 1,
 				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"})
+
+
+## Prototyp (sallskap-fem, GROTTA_FEM=1): Trollberget (NIVA_REALM ändrar) på GROTTA_DJUP med väntad nivå. Fyra hjältar som
+## förut, fyra när profilen äger fem (fienderna som mot fem), och fem med var och en av lärjungarna som femte (GROTTA_FEMTE
+## = id:n med komma). GROTTA_TAK=5: högst fem fiender.
+const FIFTHS := ["imma", "solveig", "tove", "sefir", "lirien", "ragnhild", "hulda", "ronja"]
+
+
+func _grotto_five(data: Dictionary) -> void:
+	var lv := HeroStats.expected_level(grotto_depth)
+	var realms := ["mountain"] if OS.get_environment("NIVA_REALM") == "" else [OS.get_environment("NIVA_REALM")]
+	var four := ["paladin", "brokk", "alva", "eira"]
+	var fifths: Array = FIFTHS if OS.get_environment("GROTTA_FEMTE") == "" else Array(OS.get_environment("GROTTA_FEMTE").split(","))
+	for realm_id in realms:
+		_grotto_line(data, realm_id, "4, förr (berget mot fyra)", four, lv, {"realm_party": 4})
+		_grotto_line(data, realm_id, "4 hjältar (berget mot fem)", four, lv, {})
+		for fifth in fifths:
+			_grotto_line(data, realm_id, "5: + %s" % data.heroes[fifth].get("short", data.heroes[fifth].name), four + [fifth],
+					lv, {"owned": 5, "slots": 5})
+
+
+## Prototyp (sallskap-fem, BALANS=fem): Trollberget (NIVA_REALM) på GROTTA_DJUP per sorts strid, en strid med fulla
+## Charges på väntad nivå för våningen: vanliga grupper (alla tre tiers), elitgrupper, väktarna och huvudbossen. Rader:
+## fyra som förr (berget mot fyra), fyra mot fem och fem med var och en av FIFTHS (GROTTA_FEMTE). FEM_N strider per möte
+## (förval 20). GROTTA_TAK=5: högst fem fiender.
+func _five_by_type(data: Dictionary) -> void:
+	if OS.get_environment("GROTTA_DJUP") != "":
+		grotto_depth = int(OS.get_environment("GROTTA_DJUP"))
+	if OS.get_environment("GROTTA_TAK") != "":
+		CombatSim.max_enemies = int(OS.get_environment("GROTTA_TAK"))
+	var n := int(OS.get_environment("FEM_N")) if OS.get_environment("FEM_N") != "" else 20
+	var realm_id := "mountain" if OS.get_environment("NIVA_REALM") == "" else OS.get_environment("NIVA_REALM")
+	var m: Dictionary = data.realms[realm_id]
+	# [typ, möte, våning, motdrag]
+	var fights := []
+	for tier in m.pools.size():
+		for enc_id in m.pools[tier]:
+			fights.append(["vanlig", enc_id, mini(tier, 1), false])
+	for f in m.elite_pools.size():
+		for enc_id in m.elite_pools[f]:
+			fights.append(["elit", enc_id, f, true])
+	for enc_id in m.get("guardians", []):
+		fights.append(["väktare", enc_id, 2, true])
+	fights.append(["boss", m.floors[2], 2, true])
+	print("=== Sällskap om fem: %s djup %d per sorts strid, %d strider per möte, högst %d fiender ===" % [m.short,
+			grotto_depth, n, CombatSim.max_enemies])
+	var four := ["paladin", "brokk", "alva", "eira"]
+	var fifths: Array = FIFTHS if OS.get_environment("GROTTA_FEMTE") == "" else Array(OS.get_environment("GROTTA_FEMTE").split(","))
+	var rows := [["4, förr (mot fyra)", four, 0], ["4 (mot fem)", four, 5]]
+	for fifth in fifths:
+		rows.append(["5: + %s" % data.heroes[fifth].get("short", data.heroes[fifth].name), four + [fifth], 5])
+	for row in rows:
+		var line := "  %-24s" % row[0]
+		for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+			var won := {}
+			var total := {}
+			for fight in fights:
+				var lv := roundi(HeroStats.enemy_level(grotto_depth, int(fight[2])))
+				for seed_value in range(1, n + 1):
+					var opts := {"levels": Bot.party_levels(data, lv, row[1]), "floor": fight[2], "counter": fight[3]}
+					if int(row[2]) > 0:
+						opts.full_party = int(row[2])
+					if fight[0] == "elit":
+						opts.force_elites = 1
+					var r := Bot.run_fight(data, seed_value, skill, fight[1], row[1], {}, {}, {}, grotto_depth, opts)
+					won[fight[0]] = int(won.get(fight[0], 0)) + (1 if r.outcome == "victory" else 0)
+					total[fight[0]] = int(total.get(fight[0], 0)) + 1
+			line += "  %s" % _skill_name(skill)
+			for kind in ["vanlig", "elit", "väktare", "boss"]:
+				line += " %s %3d %%" % [kind, roundi(100.0 * int(won.get(kind, 0)) / maxi(int(total.get(kind, 0)), 1))]
+		print(line)
 
 
 func realms_for_grotto() -> Array:
@@ -515,6 +595,7 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 		var steps := 0
 		var lost := {}
 		var xp := 0
+		var kinds := {}
 		for seed_value in range(1, RUNS + 1):
 			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
 			opts.merge(extra.duplicate(true))
@@ -525,11 +606,21 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 			fights += int(r.fights)
 			steps += int(r.rooms)
 			xp += int(r.get("xp", 0))
+			for k in r.get("by_kind", {}):
+				var a: Array = kinds.get(k, [0, 0])
+				kinds[k] = [int(a[0]) + int(r.by_kind[k][0]), int(a[1]) + int(r.by_kind[k][1])]
 			if r.cleared:
 				fights_cleared += int(r.fights)
 		line += "  %s%s %3d %% (strider %.1f, klarade %.1f, steg %d, erf %d)" % [_skill_name(skill),
 				{"careful": "-försiktig", "direct": "-direkt"}.get(policy, ""), roundi(100.0 * cleared / RUNS),
 				float(fights) / RUNS, float(fights_cleared) / maxi(cleared, 1), roundi(float(steps) / RUNS), xp / RUNS]
+		# GROTTA_TYPER=1 (prototyp sallskap-fem): vinst per sorts strid i körningarna (vunna/utkämpade).
+		if OS.get_environment("GROTTA_TYPER") == "1":
+			var bits := []
+			for k in ["vanlig", "elit", "väktare", "boss"]:
+				if kinds.has(k):
+					bits.append("%s %d/%d" % [k, int(kinds[k][1]), int(kinds[k][0])])
+			line += " [" + ", ".join(bits) + "]"
 		# GROTTA_FORLUST=1: var körningarna förloras (våning och rumstyp, f1_end = bossen).
 		if OS.get_environment("GROTTA_FORLUST") != "":
 			var keys := lost.keys()

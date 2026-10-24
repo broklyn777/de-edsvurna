@@ -15,6 +15,8 @@ var active := false
 var targetable := false
 ## 0.29.5: hjälten kör sitt makro (AUTO) eller väntar på spelaren (MANUELL). Tryck på ramen för att byta.
 var auto := false
+## Prototyp (sallskap-fem): fem hjältar får lägre ramar; artefakten visas som en symbol på namnraden.
+var compact := false
 var _ghost := 1.0
 var _ghost_hold := 0.0
 var _hit_flash := 0.0
@@ -24,10 +26,11 @@ var _press := 0.0
 var _t := 0.0
 
 
-func setup(u: CombatUnit, s: CombatSim) -> void:
+func setup(u: CombatUnit, s: CombatSim, small := false) -> void:
 	unit = u
 	sim = s
-	size = Vector2(240, 112 if not u.artifact.is_empty() else 98)
+	compact = small
+	size = Vector2(240, 112 if not u.artifact.is_empty() and not compact else 98)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
@@ -118,7 +121,10 @@ func _draw() -> void:
 			draw_rect(Rect2(6, 80, size.x - 12, 16), Color(UiStyle.TRAIT_GOLD, 0.25 * _trait_flash))
 		UiStyle.text(self, Vector2(10, 93), UiStyle.fit(trait_name, 13, size.x - 20), 13, col)
 
-	if not unit.artifact.is_empty():
+	if not unit.artifact.is_empty() and compact:
+		var icon: String = sim.data.artifacts.get(unit.artifact.type, {}).get("icon", "diamond")
+		Glyphs.draw(self, icon, Vector2(size.x - 100, 15), 6.0, Color("#b9c4d6"))
+	elif not unit.artifact.is_empty():
 		var kind: Dictionary = sim.data.artifacts.get(unit.artifact.type, {})
 		var ab: String = unit.artifact.ability
 		Glyphs.draw(self, kind.get("icon", "diamond"), Vector2(16, 103), 5.0, Color("#b9c4d6"))

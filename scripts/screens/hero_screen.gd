@@ -226,7 +226,7 @@ func _draw_meaning(data: Dictionary, prof: Profile, _b: Dictionary, level: int, 
 static func sheet_party(prof: Profile, id: String) -> Array:
 	var party: Array = prof.party.duplicate()
 	if not party.has(id):
-		if party.size() >= 4:
+		if party.size() >= prof.party_slots():
 			party.pop_back()
 		party.append(id)
 	return party

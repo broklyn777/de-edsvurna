@@ -9,6 +9,8 @@ const SFX_BUS := "Sfx"
 
 static var music := 1.0
 static var sfx := 1.0
+## Prototyp (sallskap-fem): bildtakten i ett hörn (FpsMeter), för att mäta på telefonen.
+static var show_fps := false
 
 
 ## Skapar kanalerna om de saknas (Sfx anropar detta innan spelarna får sin kanal).
@@ -26,6 +28,7 @@ static func load_and_apply() -> void:
 	if cfg.load(PATH) == OK:
 		music = clampf(float(cfg.get_value("audio", "music", 1.0)), 0.0, 1.0)
 		sfx = clampf(float(cfg.get_value("audio", "sfx", 1.0)), 0.0, 1.0)
+		show_fps = bool(cfg.get_value("debug", "show_fps", false))
 	apply()
 
 
@@ -33,6 +36,7 @@ static func save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("audio", "music", music)
 	cfg.set_value("audio", "sfx", sfx)
+	cfg.set_value("debug", "show_fps", show_fps)
 	cfg.save(PATH)
 
 

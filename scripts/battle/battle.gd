@@ -259,7 +259,7 @@ func _build_ui() -> void:
 	ui.add_child(timeline)
 	for h in sim.heroes:
 		var f := PartyFrame.new()
-		f.setup(h, sim)
+		f.setup(h, sim, sim.heroes.size() >= 5)
 		f.tapped.connect(_on_frame_tapped)
 		ui.add_child(f)
 		frames[h.id] = f
@@ -317,7 +317,7 @@ func _layout() -> void:
 	var y := 12.0
 	for h in sim.heroes:
 		frames[h.id].position = Vector2(12, y)
-		y += frames[h.id].size.y + 8
+		y += frames[h.id].size.y + (6 if sim.heroes.size() >= 5 else 8)
 	action_bar.position = Vector2(vs.x - action_bar.size.x - 18, vs.y - action_bar.size.y - 8)
 	auto_chip.position = Vector2(vs.x - auto_chip.size.x - 12, 12)
 	macro_log.position = Vector2(12, vs.y - macro_log.size.y - 12)
