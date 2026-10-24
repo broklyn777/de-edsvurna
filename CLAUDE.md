@@ -644,6 +644,11 @@ godot --headless --path . --script res://tests/numbers_audit_report.gd
 # Varje perk för sig (hela kryptan med startmakrona)
 godot --headless --path . --script res://tests/perk_report.gd
 
+# Textspel (provspel utan grafik, tests/text_play.gd): spelets logik ett kommando per anrop, läget och log.txt i mappen;
+# help visar kommandona (go d5, fight, back, choose 1, take 1, swap, macro, smith, socket, start …). Provspel:
+# docs/provspel/textspel-dagbok.md och textspel-logg.md
+godot --headless --path . --script res://tests/textplay_cli.gd -- --dir=/tmp/tp new
+
 # Skärmdump av spelet (sparas efter 30 bildrutor, sedan avslut)
 godot --path . -- --screenshot=/tmp/shot.png --frames=30
 
