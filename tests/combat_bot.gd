@@ -94,6 +94,10 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 		var macro: Dictionary = macros.get(sim.current.id, data.macros.get(sim.current.id, {"lines": []}))
 		# Ett "svar" i balansrapporten (BALANS=elitsvar): en fokusrad före hjältens första Anfall-rad, så att helningar
 		# och skydd högre upp går först.
+		# Mätningen av Provocera (docs/provspel/provocera-matning.md): NO_PROVOKE=1 tar bort raderna med Provocera.
+		if OS.get_environment("NO_PROVOKE") == "1":
+			macro = {"lines": macro.get("lines", []).filter(func(l: Dictionary) -> bool:
+					return l.get("action", "") != "provoke")}
 		var hero_line: Dictionary = opts.get("hero_lines", {}).get(sim.current.id, {})
 		if opts.has("focus_line") or not hero_line.is_empty():
 			var lines: Array = macro.get("lines", []).duplicate()

@@ -11,6 +11,10 @@ func _init() -> void:
 	var n := int(OS.get_environment("DIAG_N")) if OS.get_environment("DIAG_N") != "" else 40
 	var r: Dictionary = data.realms[realm_id]
 	var party := ["paladin", "brokk", "alva", "eira"]
+	# Mätningen av Provocera: samma variabler som balance_report.gd (PROVOKE_CD) och combat_bot.gd (NO_PROVOKE).
+	if not OS.get_environment("PROVOKE_CD") in ["", "0"]:
+		data.abilities.provoke.cooldown = float(int(OS.get_environment("PROVOKE_CD")) - 1)
+	var depth := int(OS.get_environment("DIAG_DEPTH")) if OS.get_environment("DIAG_DEPTH") != "" else 1
 	if OS.get_environment("DIAG_MODE") == "boss":
 		_boss(data, n)
 		quit()
@@ -26,18 +30,26 @@ func _init() -> void:
 	for f in r.elite_pools.size():
 		for enc in r.elite_pools[f]:
 			rows.append([enc, f])
-	rows.append([r.floors[2], 1])
+	rows.append([r.floors[2], 2])
 	for row in rows:
-		var lv := 3 + int(row[1])
+		var lv := 3 + int(row[1]) if depth == 1 else roundi(HeroStats.enemy_level(depth, int(row[1])))
 		var wins := 0
 		var alive := 0
+		var hp_left := 0.0
 		for s in range(1, n + 1):
-			var res := Bot.run_fight(data, s, Bot.Skill.MACRO, row[0], party, {}, {}, {}, 1,
-					{"levels": Bot.party_levels(data, lv, party), "counter": true})
+			var res := Bot.run_fight(data, s, Bot.Skill.MACRO, row[0], party, {}, {}, {}, depth,
+					{"levels": Bot.party_levels(data, lv, party), "counter": true, "floor": int(row[1])})
 			wins += 1 if res.outcome == "victory" else 0
 			alive += int(res.alive)
-		print("  %-10s %-26s nivå %d  vinst %3d %%  överlevande %.1f" % [row[0], data.encounters[row[0]].name, lv,
-				roundi(100.0 * wins / n), float(alive) / n])
+			var sim: CombatSim = res.sim
+			var hp := 0.0
+			var max_hp := 0.0
+			for h in sim.heroes:
+				hp += h.hp if h.alive else 0.0
+				max_hp += h.max_hp
+			hp_left += hp / max_hp
+		print("  %-10s %-26s nivå %d  vinst %3d %%  överlevande %.1f  liv %2d %%" % [row[0], data.encounters[row[0]].name, lv,
+				roundi(100.0 * wins / n), float(alive) / n, roundi(100.0 * hp_left / n)])
 	quit()
 
 
