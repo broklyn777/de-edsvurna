@@ -648,9 +648,9 @@ static func pools_for(data: Dictionary, realm_id: String, at_depth: int) -> Arra
 
 ## Elitgrupperna per våning för det här djupet. Våning 1 roterar mellan 2–3 grupper (VD 2026-10-24), utom på profilens
 ## första nedstigning, där den första (Kolossens vakt, Lansens anstormning …) står kvar med sin milda styrka.
-## En väktares ledare (Klockaren, Abbedissan …) visar sig inte som vanlig elit på djupen intill väktarens djup
-## (GUARDIAN_GAP), så att väktaren inte kommer tillbaka som elitgrupp strax före eller efter.
-const GUARDIAN_GAP := 1
+## En väktares ledare (Klockaren, Abbedissan …) visar sig inte som vanlig elit på väktarens eget djup
+## (GUARDIAN_GAP 0; med ±1 försvann fyra elitgrupper helt, eftersom väktarna roterar var tredje djup).
+const GUARDIAN_GAP := 0
 
 
 func elite_pools_for(data: Dictionary) -> Array:
