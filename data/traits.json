@@ -3609,6 +3609,14 @@
 			}
 		]
 	},
+	"mothers_embrace": {
+		"name": "Moderns famn",
+		"enemy": true,
+		"text": "Det största levande trollet tar hälften av varje anfall mot Bortbytingen. Förmågor träffar honom fullt.",
+		"trigger": "passive",
+		"shelter_family": 0.5,
+		"shelter_kind": "attack"
+	},
 	"changeling_slip": {
 		"name": "Smyget",
 		"enemy": true,

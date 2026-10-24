@@ -503,7 +503,7 @@ func _remember_number(e: Dictionary) -> void:
 		_recent_numbers.pop_front()
 	damage_log.add(e)
 	if _dev_calc and e.type == "damage" and sim.unit(e.source).team == 0 and e.calc.get("scaled", false) \
-			and e.calc.get("kind", "") == "attack" and sim.turn_no >= 4:
+			and (e.calc.has("shelter") or (e.calc.get("kind", "") == "attack" and sim.turn_no >= 4)):  # Moderns famn först
 		_dev_calc = false
 		overlay.show_calc(DamageExplain.title(data, e), DamageExplain.lines(data, e))
 		_calc_open = true
@@ -670,6 +670,9 @@ func _show_inspect(unit_id: String) -> void:
 			lines.append("%s: %s" % [t.name, t.text])
 			if t.get("trophy", false) and t.has("lesson") and u.team == 0:
 				lines.append(BattleOverlay.LESSON_MARK + GameData.lesson(data, trait_id, u.name))
+	var keeper := sim.shelter_keeper(u)  # Moderns famn (Bortbytingen)
+	if keeper != null:
+		lines.append("Just nu tar %s hälften av varje anfall." % keeper.name)
 	if lines.size() == 1:
 		lines.append("Inga egenskaper.")
 	lines.append_array(StatusIcons.lines(data, u))  # 0.22: statusarna med text och turer kvar
@@ -936,7 +939,8 @@ func _handle(e: Dictionary) -> void:
 				_after(_effect_delay(e), _float.bind(e.unit, "FRI", Color("#bfe8ff"), 20, false))  # 0.30.25
 		# 0.28: livvakten tar en del av skadan; Ordensregeln stoppar en helning.
 		"guarded":
-			_after(_effect_delay(e), _float.bind(e.unit, "VAKT %d" % int(e.amount), Color("#ffc86a"), 20, false))
+			var guard_word := "FAMN" if String(e.get("shelter", "")) != "" else "VAKT"  # Moderns famn (Bortbytingen)
+			_after(_effect_delay(e), _float.bind(e.unit, "%s %d" % [guard_word, int(e.amount)], Color("#ffc86a"), 20, false))
 		"heal_blocked":
 			_after(_effect_delay(e), _float.bind(e.unit, "INGEN HELNING", StatusIcons.DEBUFF, 18, false))
 		"charge_restored":
