@@ -1784,13 +1784,13 @@
 				"cast": "Spell_Simple_Shoot"
 			},
 			"colors": {
-				"Troll_Skin": "#d0a080",
-				"Troll_Green": "#d0a080",
-				"Troll_SkinDark": "#a87a5c",
-				"Troll_Black": "#a87a5c",
-				"Troll_Grey": "#a87a5c",
-				"Troll_LightGreen": "#e4b898",
-				"Troll_Brown": "#b8463c",
+				"Troll_Skin": "#857561",
+				"Troll_Green": "#857561",
+				"Troll_SkinDark": "#62553f",
+				"Troll_Black": "#62553f",
+				"Troll_Grey": "#62553f",
+				"Troll_LightGreen": "#9a8a72",
+				"Troll_Brown": "#8a3a2e",
 				"Troll_Brown2": "#efe3c4",
 				"Troll_Strap": "#7a4a2a",
 				"Troll_EyeGlint": "#ffcf70",
@@ -2064,12 +2064,17 @@
 				"cast": "Spell_Simple_Shoot"
 			},
 			"colors": {
-				"Troll_Skin": "#8e8c86",
-				"Troll_Green": "#8e8c86",
-				"Troll_LightGreen": "#a6a49c",
+				"Troll_Skin": "#56544e",
+				"Troll_Green": "#56544e",
+				"Troll_LightGreen": "#68665e",
 				"Troll_CrownRim": "#e0b84a",
 				"Troll_EyeGlint": "#7fd8ff",
-				"Troll_Strap": "#6a5a48"
+				"Troll_Strap": "#6a5a48",
+				"Troll_SkinDark": "#403e39",
+				"Troll_Black": "#403e39",
+				"Troll_Grey": "#403e39",
+				"Troll_Wood": "#6a6760",
+				"Troll_Bark": "#47453f"
 			}
 		},
 		"trophy": "mountain_crown"

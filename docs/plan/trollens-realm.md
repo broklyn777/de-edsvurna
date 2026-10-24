@@ -554,9 +554,18 @@ som i Lunden.
 | `troll_grumse.glb` | Bergakungen | stenkrona med tom infattning, 2,98 m |
 
 **Nya troll ur befintliga filer** (ingen ny modell behövs, `scale`, `colors`, `hide`, `weapons`):
-- **Bortbytingen:** `troll.glb`, `scale` 0,6, `hide: ["Troll_Club"]`, blekare och gråare hud, stora ljusa ögon
-  (`Troll_EyeGlint`). Han ska se fel ut, inte söt: smal och långarmad. GISSNING: skalan ensam kan göra honom för knubbig.
-  Då behövs en egen variant i Blender med längre armar.
+- **Bortbytingen:** egen modell `troll_bortbyting.glb` (2026-10-24): trollets rigg med 30 % längre armar (benen i
+  riggen flyttade, egna animationer), smal bål, smala ben, utan klubba. Ingen fiende ännu; `visual` att använda:
+  ```json
+  {"model": "troll_bortbyting", "scale": 0.6,
+   "anims": {"idle": "Idle_Loop", "attack": ["Sword_Attack", "Punch_Jab"], "hit": "Hit_Chest", "death": "Death01",
+             "walk": "Walk_Loop", "cast": "Spell_Simple_Shoot"},
+   "colors": {"Troll_Skin": "#a9aba6", "Troll_Green": "#a9aba6", "Troll_SkinDark": "#7f827d", "Troll_Black": "#7f827d",
+              "Troll_Grey": "#7f827d", "Troll_LightGreen": "#c0c2bc", "Troll_Brown": "#47474e", "Troll_Brown2": "#56565c",
+              "Troll_Strap": "#38352f", "Troll_EyeGlint": "#eaf6ff"},
+   "emit": {"Troll_EyeGlint": "#cfeaff"}}
+  ```
+  Bild: `docs/provspel/troll-delar/bortbytingen-*.png`.
 - **Kyrkkastaren:** `troll.glb`, `hide: ["Troll_Club"]`, en sten i handen. Kastet använder `Spell_Simple_Shoot` med en
   projektil (`travel`).
   - **Finns:** `troll_delar/Troll_Boulder` (sten i höger hand, `parts`). Projektilen i kastet är fortfarande `fx.gd`:s.
