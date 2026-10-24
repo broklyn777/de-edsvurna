@@ -363,5 +363,33 @@
 		"text": "Vacklande: laddningen bröts; tar 25 % mer skada fram till sin nästa tur.",
 		"glyph": "diamond",
 		"cannot_dispel": true
+	},
+	"guilt": {
+		"name": "Skuld",
+		"duration": 4,
+		"debuff": true,
+		"stacking": "stack",
+		"max_stacks": 3,
+		"heal_taken_mult": 0.8,
+		"glyph": "skull",
+		"text": "Skuld: tar emot 20 % mindre helning per stapel (högst tre). Rensas som andra debuffar."
+	},
+	"sisters_crown": {
+		"name": "Systrarnas krona",
+		"duration": 3,
+		"cannot_dispel": true,
+		"pass_to": "trait:choir_shield",
+		"glyph": "cross",
+		"text": "Systrarnas krona: bäraren tar full skada, de andra i kören är skyddade. Kronan går vidare efter tre av bärarens turer, eller när bäraren faller."
+	},
+	"wandering_crown": {
+		"name": "Den vandrande kronan",
+		"duration": 3,
+		"cannot_dispel": true,
+		"pass_to": "weakest_ally",
+		"damage_taken_mult": 0.7,
+		"damage_mult": 0.85,
+		"glyph": "shield",
+		"text": "Den vandrande kronan: tar 30 % mindre skada men gör 15 % mindre. Går vidare till den allierade med lägst liv efter tre turer."
 	}
 }

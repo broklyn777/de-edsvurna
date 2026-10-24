@@ -1,6 +1,6 @@
 {
 	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
-	"order": ["timeline", "combo", "windup", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "living_map", "forfeit"],
+	"order": ["timeline", "combo", "windup", "guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "living_map", "forfeit"],
 	"entries": {
 		"timeline": {
 			"title": "Tidslinjen",
@@ -47,6 +47,38 @@
 				"Ringen runt fiendens avsikt betyder att den samlar kraft till ett stort slag. Siffran är hur många av dess egna turer som är kvar innan det slår.",
 				"Medan den laddar gör den ingenting annat. Försvara dämpar slaget, och Tystad eller tillräckligt med skada under laddningen bryter den. En bruten fiende vacklar och tar 25 % mer skada en stund.",
 				"Makrona kan svara: villkoren \"laddar en varslad attack\" och \"laddar, slår om högst 1 tur\" finns under Laddning i radeditorn."
+			]
+		},
+		"guardian_bell": {
+			"title": "Tre slag till midnatt",
+			"text": [
+				"Klockaren vaktar djupet med sin klocka. Varje slag väcker de fallna ur Benfolket, och efter två slag laddar han Midnatt mot hela sällskapet.",
+				"Midnatt går inte att tysta. Den bryts bara om alla ur Benfolket faller innan den slår. De som håller den vid liv står märkta: HÅLLER MIDNATT.",
+				"Makrona kan svara: villkoret \"håller en laddning vid liv\" under Laddning. Hinner ni inte, Försvara."
+			]
+		},
+		"guardian_council": {
+			"title": "Kistornas råd",
+			"text": [
+				"Gravväckaren och två Kistbärare har var sin egenskap: Gravens kraft, Kistlocket och Likvakan.",
+				"När en i rådet faller ärver de andra hens egenskap. Den sista bär alla tre. Vilken ni fäller först är ett val.",
+				"Granska dem för att se vem som bär vad. Makrona kan välja mål med \"har egenskapen\"."
+			]
+		},
+		"guardian_tribunal": {
+			"title": "Förhöret",
+			"text": [
+				"Den som provocerar och träffas får Skuld: 20 % mindre helning per stapel.",
+				"Vid tre staplar laddar Inkvisitorn Dom mot den hjälten, och den går inte att leda bort med Provocera. Försvara dämpar den, och rensas Skulden bryts domen.",
+				"Byt tank när staplarna växer, eller låt helaren rensa. Villkoret \"är måltavla för en laddning\" finns under Laddning."
+			]
+		},
+		"guardian_crown": {
+			"title": "Systrarnas krona",
+			"text": [
+				"Abbedissan och hennes diakoner delar en krona. Bara den som bär den tar full skada; de andra i kören tar en tredjedel.",
+				"Kronan flyttar efter tre av bärarens turer, eller när bäraren faller.",
+				"Makrona kan följa den: \"Om någon fiende har Systrarnas krona → Anfall den som matchade\"."
 			]
 		},
 		"macros": {

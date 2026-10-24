@@ -158,6 +158,10 @@ func _ready() -> void:
 		var ids := ["timeline"]
 		if not state.practice and run.profile.total_descents() >= 2:
 			ids.append("forfeit")
+		# Väktarsteg 2: väktarens egen fråga förklaras första gången (encounters.json "help").
+		var guard_help := String(data.encounters[state.encounter()].get("help", ""))
+		if guard_help != "":
+			ids.push_front(guard_help)
 		HelpBox.offer(self, ids, true)
 	if warp_turns > 0:
 		sim.begin()
@@ -654,6 +658,19 @@ func _trophy_line(u: CombatUnit) -> String:
 	return "Trofé: %s%s" % [name, " · i samlingen" if owned else " · ny!"]
 
 
+## Väktarsteg 2: väktarens egen trofé (på ledaren), med segrarna som behövs.
+func _guardian_trophy_line(u: CombatUnit) -> String:
+	var enc_id: String = run.state.encounter()
+	var trophy_id := RunState.guardian_trophy(data, enc_id)
+	var kinds: Array = data.encounters[enc_id].get("enemies", [])
+	if trophy_id == "" or kinds.is_empty() or u.kind != kinds[0]:
+		return ""
+	var wins := int(run.profile.guardian_wins.get(enc_id, 0))
+	var need := RunState.GUARDIAN_WINS_FOR_TROPHY
+	return "Väktarens trofé: %s – kräver %d segrar mot väktaren (%d/%d)%s" % [data.traits[trophy_id].name, need,
+			mini(wins, need), need, " · i samlingen" if run.collection.has(trophy_id) else ""]
+
+
 ## Visar figurens stats och egenskaper (dolda delar och artefaktens egenskap räknas inte).
 func _show_inspect(unit_id: String) -> void:
 	var u := sim.unit(unit_id)
@@ -675,8 +692,13 @@ func _show_inspect(unit_id: String) -> void:
 	lines.append_array(StatusIcons.lines(data, u))  # 0.22: statusarna med text och turer kvar
 	if sim.is_charging(u):
 		lines.append(windup_text(sim, u))
+	if sim.is_channeling(u):
+		lines.append("Håller en laddning vid liv: faller alla som håller den, bryts den.")
 	if u.team == 1:
 		lines.append(_trophy_line(u))
+		var guard_line := _guardian_trophy_line(u)
+		if guard_line != "":
+			lines.append(guard_line)
 		var trophy_id: String = data.enemies[u.kind].get("elite", {}).get("trophy", "") if u.elite \
 				else data.enemies[u.kind].get("trophy", "")
 		if trophy_id != "" and data.traits[trophy_id].has("lesson"):
@@ -968,6 +990,13 @@ func _handle(e: Dictionary) -> void:
 				_after(_effect_delay(e), _float.bind(e.unit, "KAN INTE VÄCKAS", Color("#a8c070"), 18, false))
 		"windup_start", "windup_tick", "windup_delayed", "windup_broken":
 			_after(_effect_delay(e) + 0.05, _on_windup.bind(e))
+		# Väktarsteg 2: klockans slag, rådets arv och kronan som flyttar.
+		"stack_said":
+			_after(_effect_delay(e) + 0.2, _float.bind(e.unit, String(e.text), Color("#ffb347"), 26, true))
+		"trait_passed":
+			_after(_effect_delay(e) + 0.3, _on_trait_passed.bind(e))
+		"aura_passed":
+			_after(_effect_delay(e) + 0.1, _on_aura_passed.bind(e))
 		"chaos_calm":
 			_after(_cursor + 0.1, _float.bind(e.unit, "KAOSVINDEN LÄGGER SIG", UiStyle.TRAIT_GOLD, 18, true))
 		"elite":
@@ -1120,6 +1149,10 @@ func _on_windup(e: Dictionary) -> void:
 	match e.type:
 		"windup_start":
 			sfx.play("cast_shadow", -10.0, 0.1)
+			var warn_word := String(sim.windup_of(e.ability).get("warn", ""))
+			if warn_word != "":
+				_float(e.unit, warn_word, warn, 28, true)  # väktarsteg 2: MIDNATT NÄRMAR SIG, DOM
+				world.add_shake(2.0)
 			note = "%s laddar %s – slår om %d %s%s." % [u.name, ab_name, int(e.left), "tur" if int(e.left) == 1 else "turer",
 					_windup_target(e)]
 			if _help_ok:
@@ -1140,7 +1173,8 @@ func _on_windup(e: Dictionary) -> void:
 		damage_log.add_note(note, warn)
 
 
-const WINDUP_REASONS := {"silenced": "Tystad", "stagger": "skakad loss av skadan", "channel": "kanalen föll"}
+const WINDUP_REASONS := {"silenced": "Tystad", "stagger": "skakad loss av skadan", "channel": "kanalen föll",
+		"absolved": "Skulden rensades", "bell": "kläppen slog först"}
 
 
 func _windup_target(e: Dictionary) -> String:
@@ -1149,6 +1183,28 @@ func _windup_target(e: Dictionary) -> String:
 		if t != null and t.alive and t.team == 0:
 			return " mot " + t.name
 	return ""
+
+
+## Väktarsteg 2 (Kistornas råd, Rådets sigill): de som ärver en fallens egenskap.
+func _on_trait_passed(e: Dictionary) -> void:
+	var t: Dictionary = data.traits.get(e.trait, {})
+	var name := String(t.get("name", e.trait))
+	for id in e.get("to", []):
+		if models.has(id):
+			_float(id, "ÄRVER " + name.to_upper(), UiStyle.TRAIT_GOLD if sim.unit(id).team == 0 else Color("#ffb347"), 20,
+					true)
+	var note := "%s föll; %s går vidare till %s." % [sim.unit(e.unit).name, name, ", ".join((e.get("to", []) as Array).map(
+			func(id: String) -> String: return sim.unit(id).name))]
+	macro_log.add({"text": note, "ok": true, "skipped": [], "notes": []})
+	damage_log.add_note(note, Color("#ffb347"))
+
+
+func _on_aura_passed(e: Dictionary) -> void:
+	if e.to == e.unit:
+		return
+	var note := "%s går från %s till %s." % [data.auras[e.aura].name, sim.unit(e.unit).name, sim.unit(e.to).name]
+	macro_log.add({"text": note, "ok": true, "skipped": [], "notes": []})
+	damage_log.add_note(note, Color("#ffb347"))
 
 
 ## Raden i Inspect: vad laddningen gör och hur den bryts.
@@ -1163,6 +1219,10 @@ static func windup_text(s: CombatSim, u: CombatUnit) -> String:
 				how.append("%d %% av livet i skada" % roundi(float(w.get("stagger", 0.0)) * 100.0))
 	if str(w.get("channeled_by", "")) != "":
 		how.append("döda den som kanaliserar")
+	if w.get("channeled_by_family", false):
+		how.append("att alla som håller den vid liv faller")
+	if str(w.get("target_aura", "")) != "":
+		how.append("att målets %s rensas" % s.data.auras.get(w.target_aura, {}).get("name", w.target_aura))
 	var left := s.charge_left(u)
 	return "Laddar %s: slår %s. Bryts av %s; Försvara dämpar." % [s.ability(u.charging.ability).get("name", ""),
 			"nästa tur" if left <= 1 else "om %d turer" % left, " eller ".join(how) if not how.is_empty() else "ingenting"]

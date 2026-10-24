@@ -1475,7 +1475,35 @@
 		],
 		"stat_mult": 1.05,
 		"guardian": true,
-		"template": "Väktare"
+		"template": "Väktare",
+		"trophy": "midnight_clapper",
+		"help": "guardian_bell",
+		"warning": "Tre slag till midnatt: klockan väcker Benfolket, och det tredje slaget bryts bara om alla ur Benfolket ligger döda.",
+		"overrides": {
+			"bell_ringer": {
+				"traits": [
+					"midnight_rule"
+				],
+				"remove_traits": [
+					"bell_toll_trait"
+				],
+				"rules": [
+					{
+						"ability": "midnight_doom",
+						"if": {
+							"self_stacks_at_least": {
+								"stack": "midnight",
+								"n": 2
+							},
+							"family_at_least": 1
+						}
+					},
+					{
+						"ability": "midnight_bell"
+					}
+				]
+			}
+		}
 	},
 	"crypt_g2": {
 		"name": "Kistornas råd",
@@ -1492,7 +1520,27 @@
 		],
 		"stat_mult": 1.28,
 		"guardian": true,
-		"template": "Väktare"
+		"template": "Väktare",
+		"trophy": "council_seal",
+		"help": "guardian_council",
+		"warning": "Kistornas råd: när en i rådet faller ärver de andra hens egenskap. Ordningen ni fäller dem i är ett val.",
+		"overrides": {
+			"grave_caller": {
+				"traits": [
+					"council_power"
+				]
+			},
+			"coffin_bearer#1": {
+				"traits": [
+					"council_lid"
+				]
+			},
+			"coffin_bearer#2": {
+				"traits": [
+					"council_wake"
+				]
+			}
+		}
 	},
 	"chapel_g1": {
 		"name": "Abbedissans kör",
@@ -1510,7 +1558,23 @@
 		],
 		"stat_mult": 1.05,
 		"guardian": true,
-		"template": "Väktare"
+		"template": "Väktare",
+		"trophy": "wandering_crown",
+		"help": "guardian_crown",
+		"warning": "Systrarnas krona: bara den som bär kronan tar full skada. Kronan flyttar efter tre av bärarens turer.",
+		"overrides": {
+			"corrupted_abbess": {
+				"traits": [
+					"choir_shield",
+					"choir_crown_start"
+				]
+			},
+			"corrupted_deacon": {
+				"traits": [
+					"choir_shield"
+				]
+			}
+		}
 	},
 	"chapel_g2": {
 		"name": "Inkvisitorns domstol",
@@ -1527,7 +1591,31 @@
 		],
 		"stat_mult": 1.65,
 		"guardian": true,
-		"template": "Väktare"
+		"template": "Väktare",
+		"trophy": "tribunal_gavel",
+		"help": "guardian_tribunal",
+		"warning": "Förhöret: den som provocerar samlar Skuld, och vid tre staplar laddar Inkvisitorn Dom mot hen. Byt tank, Försvara eller rensa Skulden.",
+		"overrides": {
+			"inquisitor": {
+				"traits": [
+					"tribunal_guilt"
+				],
+				"rules": [
+					{
+						"ability": "inquisitor_verdict",
+						"if": {
+							"enemy_aura_stacks": {
+								"aura": "guilt",
+								"n": 3
+							}
+						}
+					},
+					{
+						"ability": "inquisitor_silence"
+					}
+				]
+			}
+		}
 	},
 	"grove_g1": {
 		"name": "Strypvävarens krona",

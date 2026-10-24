@@ -163,6 +163,51 @@ static func inn_line(data: Dictionary, profile: Profile, id: String, turn: int) 
 	return e if e is Dictionary else {"text": String(e)}
 
 
+## Väktarsteg 2 (mot-upprepning.md §5.4): Sven vid porten säger vem som vaktar det djup man har valt, innan man går
+## (dialog.json "gate_guard": guardian, boss, twisted). {Vakt}/{vakt} är väktarens ledare, {möte} mötets namn, {Boss}/{boss}
+## huvudbossen, {plats} Realmen, {djup} djupet. Varianten växlar med antalet nedstigningar. "" om inget passar.
+static func gate_guard_line(data: Dictionary, profile: Profile) -> String:
+	var realm: Dictionary = data.get("realms", {}).get(profile.realm, {})
+	var lines: Dictionary = data.get("dialog", {}).get("gate_guard", {})
+	if realm.is_empty() or lines.is_empty():
+		return ""
+	var floors: Array = realm.get("floors", [])
+	var boss := _boss_name(data, String(floors[floors.size() - 1]) if not floors.is_empty() else "")
+	var kind := "boss"
+	var guard_enc := RunState.guardian_for(data, profile.realm, profile.depth)
+	var twisted := LivingMap.twisted_encounter(data, profile.realm)
+	if LivingMap.growth(profile, profile.realm) >= LivingMap.GROWTH_MAX and twisted != "" and data.encounters.has(twisted):
+		kind = "twisted"
+		boss = _boss_name(data, twisted)
+	elif guard_enc != "" and data.encounters.has(guard_enc):
+		kind = "guardian"
+	var pool: Array = lines.get(kind, [])
+	if pool.is_empty():
+		return ""
+	var text := line_text(pool[posmod(profile.total_descents(), pool.size())])
+	var leader := ""
+	var enc_name := ""
+	if kind == "guardian":
+		var kinds: Array = data.encounters[guard_enc].get("enemies", [])
+		leader = String(data.enemies.get(kinds[0], {}).get("name", "")) if not kinds.is_empty() else ""
+		enc_name = String(data.encounters[guard_enc].get("name", ""))
+	return text.replace("{Vakt}", leader).replace("{vakt}", _mid(leader)).replace("{Boss}", boss) \
+			.replace("{boss}", _mid(boss)).replace("{möte}", enc_name) \
+			.replace("{plats}", String(realm.get("short", "")).to_lower()).replace("{djup}", str(profile.depth))
+
+
+static func _boss_name(data: Dictionary, enc_id: String) -> String:
+	for k in data.get("encounters", {}).get(enc_id, {}).get("enemies", []):
+		if data.enemies.get(k, {}).get("boss", false):
+			return String(data.enemies[k].name)
+	return ""
+
+
+## Ett namn mitt i en mening: "Den fördärvade abbedissan" blir "den fördärvade abbedissan".
+static func _mid(name: String) -> String:
+	return "d" + name.substr(1) if name.begins_with("Den ") or name.begins_with("De ") else name
+
+
 ## Svaret från en stängd station under introt (personen vid stationen säger det).
 static func reply(data: Dictionary, station_id: String) -> String:
 	return data.get("intro", {}).get("replies", {}).get(station_id, "Inte än.")

@@ -2021,5 +2021,90 @@
 				"chance": 0.3
 			}
 		]
+	},
+	"midnight_bell": {
+		"name": "Klockan slår",
+		"target": "self",
+		"cooldown": 1,
+		"cue": "provoke",
+		"sound": "bone_crush",
+		"windup": {
+			"turns": 1,
+			"text": "lyfter klubban mot klockan",
+			"broken_by": [
+				"silenced"
+			],
+			"vulnerable_after": 1.25
+		},
+		"effects": [
+			{
+				"type": "revive_family",
+				"pct": 0.5
+			},
+			{
+				"type": "stack",
+				"stack": "midnight",
+				"amount": 1,
+				"max": 2,
+				"say": "SLAG {n} AV 3"
+			}
+		]
+	},
+	"midnight_doom": {
+		"name": "Midnatt",
+		"target": "all_enemies",
+		"kind": "spell",
+		"school": "shadow",
+		"tier": "large",
+		"travel": 0.4,
+		"sound": "shadow_hit",
+		"windup": {
+			"turns": 2,
+			"text": "låter det tredje slaget samlas",
+			"broken_by": [],
+			"channeled_by_family": true,
+			"reset_stack": "midnight",
+			"vulnerable_after": 1.25,
+			"warn": "MIDNATT NÄRMAR SIG"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.6
+			}
+		]
+	},
+	"inquisitor_verdict": {
+		"name": "Dom",
+		"target": "enemy",
+		"pick": "aura_stacks",
+		"pick_aura": "guilt",
+		"ignore_taunt": true,
+		"kind": "spell",
+		"school": "shadow",
+		"tier": "large",
+		"travel": 0.4,
+		"cooldown": 3,
+		"sound": "shadow_hit",
+		"windup": {
+			"turns": 1,
+			"text": "dömer {mål}",
+			"broken_by": [
+				"silenced"
+			],
+			"target_aura": "guilt",
+			"vulnerable_after": 1.25,
+			"warn": "DOM"
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 2.6
+			},
+			{
+				"type": "remove_aura",
+				"aura": "guilt"
+			}
+		]
 	}
 }

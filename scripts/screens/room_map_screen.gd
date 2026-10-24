@@ -807,6 +807,14 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	var lines: Array[String] = ["%d fiender: %s" % [kinds.size(), ", ".join(names)]]
 	if state.guardian_room(r):
 		lines.push_front(_guardian_line(data, state, enc, kinds))
+		# Väktarsteg 2: väktarens egen fråga och dess trofé (efter två segrar).
+		if String(enc.get("warning", "")) != "":
+			lines.insert(1, String(enc.warning))
+		var gt := RunState.guardian_trophy(data, r.encounter)
+		if gt != "" and data.traits.has(gt):
+			var wins := mini(int(run.profile.guardian_wins.get(r.encounter, 0)), RunState.GUARDIAN_WINS_FOR_TROPHY)
+			lines.append("Väktarens trofé: %s (%d/%d segrar)%s" % [data.traits[gt].name, wins,
+					RunState.GUARDIAN_WINS_FOR_TROPHY, ", i samlingen" if run.collection.has(gt) else ""])
 	elif r.get("boss", false):
 		lines.push_front(String(enc.get("name", "")))
 	if guards != "":

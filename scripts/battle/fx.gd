@@ -215,7 +215,23 @@ class Overheads extends Node2D:
 				StatusIcons.draw(self, sim.data, u, head + Vector2(-n * 12.0, 0), 22.0)
 			if u.team == 1:
 				UiStyle.text(self, head + Vector2(-90, -18), u.name, 13, Color(u.color, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 180, 4)
+				_draw_guardian_tag(u, head)
 				_draw_intent(u, head + Vector2(0, -50 if sim.is_charging(u) else -42))
+
+	## Väktarsteg 2: en rad under livmätaren för den som bär Systrarnas krona och de som håller en laddning vid liv.
+	func _draw_guardian_tag(u: CombatUnit, head: Vector2) -> void:
+		var tag := ""
+		if u.auras.has("sisters_crown"):
+			tag = "BÄR KRONAN · FULL SKADA"
+		else:
+			var held := sim.channel_of(u)
+			if held != "":
+				tag = "HÅLLER " + String(sim.ability(held).get("name", "")).to_upper()
+		if tag == "":
+			return
+		var col := Color("#ffd36a")
+		var pulse := 0.75 + 0.25 * sin(_t * 6.0)
+		UiStyle.text(self, head + Vector2(-110, 24), tag, 15, Color(col, pulse), HORIZONTAL_ALIGNMENT_CENTER, 220, 4)
 
 	func _draw_intent(u: CombatUnit, at: Vector2) -> void:
 		if u.intent.is_empty():

@@ -3649,5 +3649,239 @@
 			}
 		],
 		"lesson": "Stål i vaggan höll bytingarna borta från barnen. {bärare} har lärt sig att vakta den som är svagast."
+	},
+	"midnight_rule": {
+		"name": "Tre slag till midnatt",
+		"enemy": true,
+		"trigger": "passive",
+		"text": "Klockan slår och väcker de fallna ur Benfolket. Efter två slag laddar Klockaren Midnatt mot hela sällskapet i två turer; den bryts bara om hela Benfolket ligger dött. Försvara dämpar."
+	},
+	"council_power": {
+		"name": "Gravens kraft",
+		"enemy": true,
+		"passes_on_death": true,
+		"text": "Rådet: gör 35 % mer skada. När bäraren faller ärver de andra i rådet egenskapen.",
+		"trigger": "modify_damage",
+		"modify": {
+			"damage_mult": 1.35
+		}
+	},
+	"council_lid": {
+		"name": "Kistlocket",
+		"enemy": true,
+		"passes_on_death": true,
+		"text": "Rådet: tar 30 % mindre skada. När bäraren faller ärver de andra i rådet egenskapen.",
+		"trigger": "modify_damage_taken",
+		"modify": {
+			"damage_taken_mult": 0.7
+		}
+	},
+	"council_wake": {
+		"name": "Likvakan",
+		"enemy": true,
+		"passes_on_death": true,
+		"text": "Rådet: helas 8 % av sitt liv i början av varje egen tur. När bäraren faller ärver de andra i rådet egenskapen.",
+		"trigger": "turn_start",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_max_hp": 0.08,
+				"target": "self"
+			}
+		]
+	},
+	"tribunal_guilt": {
+		"name": "Förhöret",
+		"enemy": true,
+		"text": "Den som provocerar och träffas av Inkvisitorn eller hans följe får en stapel Skuld (20 % mindre helning per stapel). Vid tre staplar laddar Inkvisitorn Dom mot den hjälten; Försvara dämpar, och rensad Skuld bryter domen.",
+		"trigger": "damage",
+		"when": {
+			"source": "ally",
+			"target_has_aura": "provoke"
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "guilt",
+				"target": "target"
+			}
+		]
+	},
+	"choir_shield": {
+		"name": "Körens skydd",
+		"enemy": true,
+		"text": "Tar 65 % mindre skada så länge en annan i kören bär Systrarnas krona.",
+		"trigger": "modify_damage_taken",
+		"when": {
+			"self_lacks_aura": "sisters_crown"
+		},
+		"modify": {
+			"damage_taken_mult": 0.35
+		}
+	},
+	"choir_crown_start": {
+		"name": "Systrarnas krona",
+		"enemy": true,
+		"text": "Abbedissan bär kronan när striden börjar. Bara den som bär kronan tar full skada; kronan flyttar efter tre av bärarens turer.",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "sisters_crown",
+				"target": "self"
+			}
+		]
+	},
+	"midnight_clapper": {
+		"combo": {
+			"needs": "acted",
+			"creates": "interrupt",
+			"scope": "enemies"
+		},
+		"name": "Midnattsklockans kläpp",
+		"trophy": true,
+		"rarity": "boss",
+		"guardian": "crypt_g1",
+		"text": "Var tredje gång bäraren agerar ljuder kläppen: alla fiender som laddar en varslad attack avbryts och vacklar. Men bäraren tar 15 % mer skada.",
+		"answers": "Fiender som laddar stora slag",
+		"trigger": "acted",
+		"when": {
+			"unit": "self"
+		},
+		"every": 3,
+		"effects": [
+			{
+				"type": "interrupt",
+				"target": "enemies"
+			}
+		],
+		"parts": [
+			"midnight_clapper_cost"
+		],
+		"lesson": "Klockaren räknade slagen fram till midnatt. {bärare} har lärt sig att slå ett slag för tidigt."
+	},
+	"midnight_clapper_cost": {
+		"name": "Midnattsklockans kläpp (kostnad)",
+		"hidden": true,
+		"text": "Bäraren tar 15 % mer skada.",
+		"trigger": "modify_damage_taken",
+		"modify": {
+			"damage_taken_mult": 1.15
+		}
+	},
+	"council_seal": {
+		"combo": {
+			"needs": "ally_death",
+			"creates": "inherit",
+			"scope": "self"
+		},
+		"name": "Rådets sigill",
+		"trophy": true,
+		"rarity": "boss",
+		"guardian": "crypt_g2",
+		"text": "När en allierad faller ärver bäraren hens troféegenskap resten av striden. Men bäraren tar emot 20 % mindre helning.",
+		"answers": "Strider där någon faller tidigt",
+		"trigger": "death",
+		"when": {
+			"unit": "ally"
+		},
+		"effects": [
+			{
+				"type": "inherit_trophy",
+				"target": "self"
+			}
+		],
+		"parts": [
+			"council_seal_cost"
+		],
+		"lesson": "Kistornas råd gav sina fallna vidare till dem som stod kvar. {bärare} har lärt sig att bära det de fallna kunde."
+	},
+	"council_seal_cost": {
+		"name": "Rådets sigill (kostnad)",
+		"hidden": true,
+		"text": "Bäraren tar emot 20 % mindre helning.",
+		"trigger": "modify_heal_taken",
+		"modify": {
+			"heal_taken_mult": 0.8
+		}
+	},
+	"wandering_crown": {
+		"combo": {
+			"needs": "battle_start",
+			"creates": "damage_reduction",
+			"scope": "party"
+		},
+		"name": "Den vandrande kronan",
+		"trophy": true,
+		"rarity": "boss",
+		"guardian": "chapel_g1",
+		"text": "Bäraren börjar striden med kronan: den som bär den tar 30 % mindre skada men gör 15 % mindre. Efter tre av bärarens turer, eller när hen faller, går kronan till den allierade med lägst liv.",
+		"answers": "Fiender som slår hårt mot en i taget",
+		"trigger": "battle_start",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "wandering_crown",
+				"target": "self"
+			}
+		],
+		"lesson": "Systrarna lät kronan skydda en i taget. {bärare} har lärt sig att låta skyddet gå dit det behövs."
+	},
+	"tribunal_gavel": {
+		"combo": {
+			"needs": "direct_hit",
+			"creates": "guilt",
+			"scope": "enemy"
+		},
+		"name": "Domstolens klubba",
+		"trophy": true,
+		"rarity": "boss",
+		"guardian": "chapel_g2",
+		"text": "Bärarens direkta träffar ger målet en stapel Skuld (20 % mindre helning per stapel, högst tre). Bäraren gör 25 % mer skada mot den som har Skuld, men 15 % mindre mot andra.",
+		"answers": "Fiender som helar sig",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "guilt",
+				"target": "target"
+			}
+		],
+		"parts": [
+			"tribunal_gavel_bonus",
+			"tribunal_gavel_cost"
+		],
+		"lesson": "Inkvisitorn dömde den som stod längst fram. {bärare} har lärt sig att döma det som verkligen är skyldigt."
+	},
+	"tribunal_gavel_bonus": {
+		"name": "Domstolens klubba",
+		"hidden": true,
+		"text": "+25 % skada mot den som har Skuld.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_has_aura": "guilt"
+		},
+		"modify": {
+			"damage_mult": 1.25
+		}
+	},
+	"tribunal_gavel_cost": {
+		"name": "Domstolens klubba (kostnad)",
+		"hidden": true,
+		"text": "−15 % skada mot den som inte har Skuld.",
+		"trigger": "modify_damage",
+		"when": {
+			"target_lacks_aura": "guilt"
+		},
+		"modify": {
+			"damage_mult": 0.85
+		}
 	}
 }

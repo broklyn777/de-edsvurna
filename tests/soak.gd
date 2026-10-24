@@ -610,8 +610,11 @@ func _battle_finished(victory: bool, forfeited: bool) -> void:
 		for kind in data.encounters[state.encounter()].enemies:
 			if data.enemies[kind].get("boss", false):
 				profile.defeat_boss(kind)
+		if data.encounters[state.encounter()].get("guardian", false):
+			profile.defeat_guardian(state.encounter())
 	RunScript.mark_sneak(data, profile, state)
-	var offer := state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies())
+	var offer := state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies(),
+			profile.unlocked_guardians())
 	var done_now := state.battle_won()
 	match state.current_room().get("kind", ""):
 		"prisoner":
