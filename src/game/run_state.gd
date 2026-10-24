@@ -493,7 +493,7 @@ static func quest_text(q: Dictionary) -> String:
 		"hunt":
 			return "%s: besegra Nemesis (%d/%d)" % [title if title != "" else "Jakt", q.progress, q.goal]
 		"clear":
-			return "%s: besegra %d elitgrupper (%d/%d)" % [title if title != "" else "Rensa", q.goal, q.progress, q.goal]
+			return "%s: besegra %d %s (%d/%d)" % [title if title != "" else "Rensa", q.goal, "elitgrupp" if q.goal == 1 else "elitgrupper", q.progress, q.goal]
 		"collect":
 			return "%s: ta %d bevakade föremål (%d/%d)" % [title if title != "" else "Samla", q.goal, q.progress, q.goal]
 	return ""
