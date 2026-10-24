@@ -455,18 +455,28 @@ func _use_object() -> void:
 
 ## 0.30.25: en levande hjälte som inte har fått agera på fyra varv är låst av kontroll (Snärjd, Sover, Frusen i kedja;
 ## provspelet i Sidenlunden). Rapporteras en gång per strid.
+## 0.30.32: två mått. Svält: hjälten har inte stått på tur alls (Snärjd längst ned, eller knuffad); en tur som Frusen eller
+## Sover tog räknas här, för då stod hen på tidslinjen. Kedja: fler än MAX_SKIPS egna turer i rad tagna av en status
+## (Frusen tinar senast på tredje försöket, Sover släpper efter två). Förr räknades tagna turer som overksamhet mot
+## 4 × levande, och en vanlig frysning på två turer gav varning när figurer dog och någon knuffades ned på tidslinjen.
+const MAX_SKIPS := 3
 func _check_control(sim: CombatSim, events: Array, acted: Dictionary, encounter: String) -> void:
-	# En tur räknas när hjälten fick välja (även Hoppa över tur), inte när en status tog den.
-	var prev := {}
+	var skips: Dictionary = acted.get("_skips", {})
+	acted["_skips"] = skips
+	var pending: Dictionary = acted.get("_pending", {})  # turen började; tas den av en status kommer status_skip
+	acted["_pending"] = pending
 	for e in events:
 		var u := sim.unit(e.get("unit", ""))
 		if u == null or u.team != 0:
 			continue
 		if e.type in ["turn_start", "revive"]:
-			prev[u.id] = acted.get(u.id, sim.turn_no)
+			if pending.get(u.id, false) or e.type == "revive":
+				skips[u.id] = 0  # förra turen fick hen agera
+			pending[u.id] = e.type == "turn_start"
 			acted[u.id] = sim.turn_no
-		elif e.type == "status_skip" and prev.has(u.id):
-			acted[u.id] = prev[u.id]
+		elif e.type == "status_skip":
+			pending[u.id] = false
+			skips[u.id] = int(skips.get(u.id, 0)) + 1
 	if acted.get("_reported", false):
 		return
 	var alive := sim.units.filter(func(u: CombatUnit) -> bool: return u.alive).size()
@@ -476,10 +486,10 @@ func _check_control(sim: CombatSim, events: Array, acted: Dictionary, encounter:
 		if not acted.has(h.id):
 			acted[h.id] = sim.turn_no
 		var idle: int = sim.turn_no - int(acted[h.id])
-		if idle > maxi(4 * alive, 16):
+		if idle > maxi(4 * alive, 16) or int(skips.get(h.id, 0)) > MAX_SKIPS:
 			acted["_reported"] = true
-			_fail("kontroll", "%s har inte fått agera på %d turer i %s (statusar %s)" % [h.id, idle, encounter,
-					", ".join(h.auras.keys())])
+			_fail("kontroll", "%s har inte fått agera på %d turer (%d egna turer tagna) i %s (statusar %s)" % [h.id, idle,
+					int(skips.get(h.id, 0)), encounter, ", ".join(h.auras.keys())])
 			return
 
 

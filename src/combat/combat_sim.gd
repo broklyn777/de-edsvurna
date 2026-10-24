@@ -1832,6 +1832,12 @@ func _add_aura(src: CombatUnit, tgt: CombatUnit, aura_id: String, duration_overr
 		a[key] = 1.0 + (float(d.get(key, 1.0)) - 1.0) * stacks
 	if d.has("freeze"):
 		a.thaw = float(d.freeze) * (2.0 if tgt.resistant else 1.0)
+	# 0.30.32: en kontroll som fylls på medan den sitter behåller chansen att tina eller slita sig loss. Förr började
+	# den om från 25 % (Benstorm frös om en frusen hjälte, och i Benfurstens sal stod hen still i 4–5 egna turer).
+	if refreshed:
+		for key in ["thaw", "break"]:
+			if tgt.auras[aura_id].has(key):
+				a[key] = maxf(float(a.get(key, 0.0)), float(tgt.auras[aura_id][key]))
 	tgt.auras[aura_id] = a
 	if d.get("snare", false):
 		_sink_snared()  # Snärjd: fast längst ned
