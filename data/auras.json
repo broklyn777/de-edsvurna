@@ -68,6 +68,16 @@
 		"text": "Värnad: tar 20 % mindre skada.",
 		"glyph": "shield"
 	},
+	"seal_strike": {
+		"name": "Vaksamt slag",
+		"duration": -1,
+		"battle": true,
+		"next_attack_mult": 1.3,
+		"buff": true,
+		"cannot_dispel": true,
+		"text": "Vaksamt slag: nästa direkta anfall gör 30 % mer skada.",
+		"glyph": "daggers"
+	},
 	"shrine_inspired": {
 		"name": "Styrka",
 		"duration": -1,

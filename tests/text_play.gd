@@ -7,7 +7,7 @@ extends RefCounted
 ##   godot --headless --path . --script res://tests/textplay_cli.gd -- --dir=/tmp/tp new     (en profil mitt i spelet)
 ##   godot --headless --path . --script res://tests/textplay_cli.gd -- --dir=/tmp/tp look
 ##   godot --headless --path . --script res://tests/textplay_cli.gd -- --dir=/tmp/tp go d5
-## Kommandon: help visar dem för läget man står i.
+## Kommandon: help visar dem för läget man står i. TEXTSPEL_QUEST=seals (miljövariabel) ger varje ny våning den questen.
 
 const RunScript := preload("res://scripts/game/run.gd")
 const COLS := "abcdefgh"
@@ -26,6 +26,7 @@ var out: Array[String] = []
 func execute(at_dir: String, cmd: String) -> String:
 	data = GameData.load_all()
 	dir = at_dir
+	RunState.dev_quest = OS.get_environment("TEXTSPEL_QUEST")  # t.ex. seals: varje ny våning får den questen
 	out = []
 	DirAccess.make_dir_recursive_absolute(dir)
 	cmd = cmd.strip_edges()
@@ -835,6 +836,10 @@ func _battle_finished(sim: CombatSim, won: bool) -> void:
 		"item":
 			done_now = state.collect_item() or done_now
 			out.append("Föremålet är ert. " + RunState.quest_text(state.quest))
+		"seal":
+			var broke_last := state.break_seal()
+			done_now = broke_last or done_now
+			out.append(_seal_text(state.current_room(), broke_last))
 		"object":
 			var w := state.object_won()
 			var p := roundi(w.silver * state.silver_mult(data))
@@ -1070,7 +1075,7 @@ func _grotto_screen() -> void:
 			row += " " + _cell_symbol(m, Grotto.idx(Vector2i(x, y)), hint_cells)
 		out.append(row)
 	if show_legend:
-		out.append("(@ ni, .. besökt, ## kan nås med ett tryck, ~~ dimma, xx spärrad, rr rykte om questens mål; G grupp, E elit, N Nemesis, B boss/väktare, > trappa, T skatt, H helgedom, L lägereld, Q quest-föremål, P fånge, O föremål; ! = en grupp vaktar, liten bokstav = använd/besegrad, * = låst)")
+		out.append("(@ ni, .. besökt, ## kan nås med ett tryck, ~~ dimma, xx spärrad, rr rykte om questens mål; G grupp, E elit, N Nemesis, B boss/väktare, > trappa, T skatt, H helgedom, L lägereld, Q quest-föremål, P fånge, O föremål, S sigill (s = brutet eller håller); ! = en grupp vaktar, liten bokstav = använd/besegrad, * = låst)")
 	var parts: Array = []
 	for hero_id in state.party:
 		var left := 0
@@ -1095,8 +1100,12 @@ func _grotto_screen() -> void:
 	var kind: String = r.get("kind", "empty")
 	var name: String = {"start": "Start", "stairs": "Trappan", "end": "Bossens sal", "battle": "Besegrad grupp", "elite": "Besegrad elit",
 			"treasure": "Skattkammare", "shrine": "Helgedom", "campfire": "Lägereld", "item": "Quest-föremål", "prisoner": "Fånge",
+			"seal": _seal_text(r, false),
 			"object": String(data.get("objects", {}).get(r.get("obj", ""), {}).get("name", "Föremål"))}.get(kind, "Tom ruta")
 	out.append("Ni står på %s: %s." % [_cell_name(state.pos), name])
+	if not state.boss_seals.is_empty():
+		out.append("Kvar åt bossen: " + "; ".join(RunState.seal_lines(data, state.boss_seals).map(func(l: Dictionary) -> String:
+				return "%s – %s" % [l.name, l.text])))
 	if state.goal_locked():
 		var what := "Trappan" if not m.last_floor else ("Väktaren" if m.cell(m.goal).get("guardian", false) else "Bossen")
 		out.append("%s (%s) syns men är låst tills questen är klar.%s" % [what, _cell_name(m.goal),
@@ -1126,21 +1135,39 @@ func _cell_symbol(m: Grotto, i: int, hint_cells: Dictionary) -> String:
 	var group := m.has_group(i)
 	var used: bool = c.get("done", false) or c.get("rescued", false) or (c.has("encounter") and c.get("beaten", false))
 	var ch: String = {"start": "s", "stairs": ">", "end": "B", "battle": "G", "elite": "E", "treasure": "T", "shrine": "H",
-			"campfire": "L", "item": "Q", "prisoner": "P", "object": "O", "empty": "."}.get(kind, ".")
+			"campfire": "L", "item": "Q", "prisoner": "P", "object": "O", "seal": "S", "empty": "."}.get(kind, ".")
 	if c.get("nemesis", false):
 		ch = "N"
 	if c.get("elite", false) and kind == "battle":
 		ch = "E"
+	if kind == "seal":
+		used = c.get("broken", false) or c.get("held", false)
 	if used and kind not in ["stairs", "end", "start"]:
 		ch = ch.to_lower() if ch != "." else "."
 	var mod := "."
-	if group and kind in ["treasure", "item", "prisoner", "object"]:
+	if group and kind in ["treasure", "item", "prisoner", "object", "seal"]:
 		mod = "!"
 	if i == m.goal and state.goal_locked():
 		mod = "*"
 	if kind == "campfire" and c.get("done", false):
 		ch = "l"
 	return ch + mod
+
+
+## Ett sigill i text: namnet och om det är brutet, håller eller väntar (efter striden: vad som hände).
+func _seal_text(r: Dictionary, broke_last: bool) -> String:
+	var sl: Dictionary = RunState.seal_lines(data, [RunState.SEAL_TRAITS.get(String(r.get("seal", "")), "")])[0]
+	if r.get("broken", false):
+		var text := "%s är brutet. %s" % [sl.name, RunState.quest_text(state.quest)]
+		if broke_last:
+			for x in state.seals():
+				if x.held:
+					var left: Dictionary = RunState.seal_lines(data, [x.trait])[0]
+					text += " Kvar står %s: %s" % [left.name, left.text]
+		return text
+	if r.get("held", false):
+		return "%s håller – %s" % [sl.name, sl.text]
+	return "%s – lämnas det: %s" % [sl.name, sl.text]
 
 
 func _group_title(r: Dictionary) -> String:
@@ -1170,6 +1197,13 @@ func _card(r: Dictionary) -> void:
 					RunState.guardian_progress(int(profile.guardian_wins.get(r.encounter, 0)))])
 	var guards: String = {"treasure": "Vaktar en skatt.", "item": "Vaktar ett av questens föremål.",
 			"prisoner": "Vaktar en fånge."}.get(r.kind, "")
+	if r.kind == "seal":
+		var sl: Dictionary = RunState.seal_lines(data, [RunState.SEAL_TRAITS.get(String(r.get("seal", "")), "")])[0]
+		guards = ("Vaktar %s. Två sigill är redan brutna; det här går inte längre att bryta." % sl.name
+				if state.quest.get("done", false) else "Vaktar %s. Lämnas det: %s" % [sl.name, sl.text])
+	if r.get("boss", false):
+		for l in RunState.seal_lines(data, state.end_fight_seals(r)):
+			lines.append("Sigill som står kvar – %s: %s" % [l.name, l.text])
 	if guards != "":
 		lines.append(guards)
 	var traits: Array = []

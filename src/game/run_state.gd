@@ -166,6 +166,8 @@ var world_boss_mult := 1.0
 var world_stat_mult := 1.0
 ## Pilgrimens rykte (WorldEvents.begin_run): den första våningens questmål syns från start.
 var world_rumour := false
+## Bryt två av tre sigill: egenskaperna slutstriden får av sigill som lämnades (traits.json "seal_*"), för hela körningen.
+var boss_seals: Array = []
 
 
 ## En ny körning från basen: Kallet och sällskapet från Kryptporten, artefakterna från Smeden.
@@ -519,6 +521,19 @@ func wearer(trophy_id: String) -> String:
 # apply_shrine(). Trappan (descend) eller bossen avslutar våningen när questen är klar.
 
 const QUEST_TYPES := ["hunt", "clear", "collect"]
+## Bryt två av tre sigill (VD, ChatGPT:s förslag i docs/provspel/chatgpt-om-textspel.md): en fjärde quest som rullas lika
+## ofta som de andra, men bara på den sista våningen (högst en fördel per körning) och aldrig på profilens första
+## nedstigning. Tre sigill, var och en bevakad av en lika stark grupp (så att valet gäller fördelen); att bryta två öppnar
+## bossen. Det sigill man lämnar ger slutstriden (bossen eller väktaren) sin fördel: en egenskap (traits.json "seal_*").
+const SEAL_QUEST := "seals"
+const SEAL_GOAL := 2
+## Utvecklare (--quest=<typ>) och tester: varje våning får den questen.
+static var dev_quest := ""
+const SEAL_TRAITS := {"ward": "seal_ward", "haste": "seal_haste", "mend": "seal_mend"}
+## Murens sigill mot en väktare (VD): barriären får inte landa på en ledare som för sin kraft vidare (Kistornas råd).
+## Väktaren och hela följet får 6 % var i stället för bossens 20 % (BALANS=sigill, djup 3: rådet 77/62 % utan sigill, 78/59 %
+## med; 20 % på ledaren gav 28/12 %, 12 % på ledaren 42/20 %).
+const GUARDIAN_WARD := "seal_ward_spread"
 ## Lägereld: Charges som fylls per förmåga (högst till max). Charges är Siralims (4–8 per förmåga), så
 ## lägerelden före våningens slut är det som gör att de räcker en hel körning.
 const CAMPFIRE_CHARGES := 3
@@ -567,6 +582,7 @@ func start_expedition(data: Dictionary, seed_value: int) -> void:
 	floor = 0
 	finished = false
 	twists_used = []
+	boss_seals = []
 	start_floor(data)
 
 
@@ -574,8 +590,9 @@ func start_expedition(data: Dictionary, seed_value: int) -> void:
 ## föremål, alltid bevakade av en grupp). Varje quest leder till strider.
 ## Rensa kräver en elitgrupp på den första våningen och två på den andra (elit-balans, vårt val: våning 1 ska inte
 ## tvinga fram två elitstrider innan sällskapet hunnit växa).
-static func roll_quest(rng: RandomNumberGenerator, floor_i := 1) -> Dictionary:
-	var type: String = QUEST_TYPES[rng.randi() % QUEST_TYPES.size()]
+static func roll_quest(rng: RandomNumberGenerator, floor_i := 1, allow_seals := false) -> Dictionary:
+	var types: Array = QUEST_TYPES + ([SEAL_QUEST] if allow_seals else [])
+	var type: String = types[rng.randi() % types.size()]
 	var q := {"type": type, "progress": 0, "done": false}
 	match type:
 		"hunt":
@@ -584,6 +601,8 @@ static func roll_quest(rng: RandomNumberGenerator, floor_i := 1) -> Dictionary:
 			q.goal = 1 if floor_i == 0 else 2
 		"collect":
 			q.goal = rng.randi_range(2, 3)
+		SEAL_QUEST:
+			q.goal = SEAL_GOAL
 	return q
 
 
@@ -598,6 +617,8 @@ static func quest_text(q: Dictionary) -> String:
 			return "%s: besegra %d %s (%d/%d)" % [title if title != "" else "Rensa", q.goal, "elitgrupp" if q.goal == 1 else "elitgrupper", q.progress, q.goal]
 		"collect":
 			return "%s: ta %d bevakade föremål (%d/%d)" % [title if title != "" else "Samla", q.goal, q.progress, q.goal]
+		SEAL_QUEST:
+			return "%s (%d/%d)" % [title if title != "" else "Bryt två av tre sigill", q.progress, q.goal]
 	return ""
 
 
@@ -605,7 +626,12 @@ static func quest_text(q: Dictionary) -> String:
 func start_floor(data: Dictionary) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = run_seed * 977 + floor * 31 + 13
-	quest = roll_quest(rng, floor)
+	quest = roll_quest(rng, floor, not first_descent and not practice and is_last_floor())
+	if dev_quest != "" and quest.type != dev_quest:  # --quest=<typ> (utvecklare, tester)
+		for n in 200:
+			quest = roll_quest(rng, floor, true)
+			if quest.type == dev_quest:
+				break
 	var titles: Dictionary = data.realms[realm].get("quests", {})
 	if titles.has(quest.type):
 		quest.title = titles[quest.type]
@@ -753,7 +779,8 @@ func quest_targets() -> Array[int]:
 	for i in map.cells.size():
 		var c: Dictionary = map.cells[i]
 		if (type == "hunt" and c.get("nemesis", false)) or (type == "clear" and c.get("elite", false) and c.has("encounter")) \
-				or (type == "collect" and c.get("kind", "") == "item"):
+				or (type == "collect" and c.get("kind", "") == "item") \
+				or (type == SEAL_QUEST and c.get("kind", "") == "seal" and not c.get("broken", false)):
 			out.append(i)
 	return out
 
@@ -948,7 +975,7 @@ func vow_kept(data: Dictionary) -> bool:
 
 ## En vanlig grupp för Raka vägen: inte elit, Nemesis, boss eller en grupp som vaktar questens föremål.
 static func is_common_group(r: Dictionary) -> bool:
-	return not (r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false) or r.get("kind", "") == "item")
+	return not (r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false) or r.get("kind", "") in ["item", "seal"])
 
 
 ## Inställningar till CombatSim för rutans strid (regler, elit, Nemesis, helgedomens gåva). "floor" är gruppens tier, som
@@ -1073,6 +1100,9 @@ func battle_opts() -> Dictionary:
 		opts.counter = true
 	if r.get("nemesis", false):
 		opts.nemesis = true
+	# Sigillet som lämnades ger slutstriden sin fördel (CombatSim "boss_traits").
+	if r.get("boss", false) and not boss_seals.is_empty():
+		opts.boss_traits = end_fight_seals(r)
 	# 0.28.2: föremålens strider (sarkofagen, klockorna) och glasfönstrets beredda grupp.
 	var mult := float(r.get("stat_mult", 1.0)) * next_stat_mult
 	if mult != 1.0:
@@ -1144,6 +1174,60 @@ func collect_item() -> bool:
 	if quest.get("type", "") == "collect":
 		_quest_step()
 	return quest.get("done", false) and not before
+
+
+## Ett sigill bryts (vakten är besegrad och sällskapet står på det). När två är brutna är questen klar och det sista
+## sigillet håller: dess fördel går till slutstriden (boss_seals). Ett sigill efter det går inte att bryta (held).
+## Sant om questen blev klar nu.
+func break_seal() -> bool:
+	var r := current_room()
+	if r.get("kind", "") != "seal" or r.get("broken", false) or is_battle(r) or quest.get("type", "") != SEAL_QUEST:
+		return false
+	if quest.get("done", false):
+		r.held = true
+		return false
+	r.broken = true
+	_quest_step()
+	if not quest.get("done", false):
+		return false
+	for i in map.indices("seal"):
+		var c := map.cell(i)
+		if not c.get("broken", false):
+			c.held = true
+			if not visited.has(i) and not revealed.has(i):
+				revealed.append(i)  # det som håller syns på kartan
+			var trait_id: String = SEAL_TRAITS.get(String(c.get("seal", "")), "")
+			if trait_id != "" and not boss_seals.has(trait_id):
+				boss_seals.append(trait_id)
+	return true
+
+
+## Egenskaperna slutstriden på rutan får av sigillen (väktare: den mildare muren).
+func end_fight_seals(r: Dictionary) -> Array:
+	return boss_seals.map(func(t: String) -> String:
+		return GUARDIAN_WARD if t == SEAL_TRAITS.ward and guardian_room(r) else t)
+
+
+## Sigillen på våningen: [{cell, seal (fördelens id), trait, broken, held}].
+func seals() -> Array:
+	var out: Array = []
+	if map == null:
+		return out
+	for i in map.indices("seal"):
+		var c := map.cell(i)
+		out.append({"cell": i, "seal": c.get("seal", ""), "trait": SEAL_TRAITS.get(String(c.get("seal", "")), ""),
+				"broken": c.get("broken", false), "held": c.get("held", false)})
+	return out
+
+
+## Fördelarna slutstriden får av sigill som lämnades (traits.json "seal_*"), med namn och text: [{trait, name, text}].
+static func seal_lines(data: Dictionary, trait_ids: Array) -> Array:
+	var out: Array = []
+	for t in trait_ids:
+		var d: Dictionary = data.traits.get(t, {})
+		var text := String(d.get("text", "")).trim_prefix("Sigillet som lämnades: ")
+		out.append({"trait": t, "name": String(d.get("name", t)), "text": text})
+	return out
 
 
 func _quest_step() -> void:
@@ -1505,7 +1589,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "party_slots", "realm_party", "quest_hints", "trail_taken", "growth", "twisted",
 		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour",
-		"twists_used", "fresh_trophies"]
+		"twists_used", "fresh_trophies", "boss_seals"]
 
 
 func to_dict() -> Dictionary:

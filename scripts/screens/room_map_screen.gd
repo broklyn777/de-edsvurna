@@ -9,7 +9,7 @@ const ZOOM_TIME := 0.8
 ## Rutornas namn (symbolerna ritas i tusch av InkArt).
 const KIND_NAMES := {"battle": "Fiendegrupp", "elite": "Elitgrupp", "treasure": "Skatt", "shrine": "Helgedom",
 		"campfire": "Lägereld", "end": "Boss", "stairs": "Trappa", "item": "Föremål", "prisoner": "Fånge",
-		"start": "Ingång", "empty": ""}
+		"start": "Ingång", "seal": "Sigill", "empty": ""}
 ## Pjäsen går så här länge per ruta.
 const STEP_TIME := 0.16
 ## Rutor med ett ögonblick (stridsrutor har inget, striden är själv 3D).
@@ -53,7 +53,7 @@ func _ready() -> void:
 	if _story:
 		await _story.finished
 		_story = null
-	HelpBox.offer(self, ["room_map", "realm_quest"])
+	HelpBox.offer(self, ["room_map", "realm_quest"] + _seal_help())
 	# 0.28.2: efter segern vid gravklockan frågar den om ni vill ringa igen.
 	var here: Dictionary = run.state.current_room()
 	if here.get("kind", "") == "object" and here.get("again", false) and _dialog.is_empty():
@@ -66,6 +66,11 @@ func _ready() -> void:
 			_dialog = _leave_dialog()  # frågan om att gå hem (skärmdumpar)
 		elif arg.begins_with("--explore="):
 			_dev_explore(int(arg.get_slice("=", 1)))
+
+
+## Hjälprutan om sigillen när våningens quest är Bryt två av tre sigill.
+func _seal_help() -> Array:
+	return ["seals"] if run.state.quest.get("type", "") == RunState.SEAL_QUEST else []
 
 
 ## --explore=<n> (0.28.3, för skärmdumpar): markerar n rutor som besökta, i bredd från start, utan att gå på grupper.
@@ -99,6 +104,10 @@ func _dev_enter(arg: String) -> void:
 	if want == "intruder":  # --enter=intruder:<realm>:<möte> (mot upprepning: en grupp från en annan Realm)
 		cell = {"kind": "battle", "intruder": parts[1] if parts.size() > 1 else "chapel",
 				"encounter": parts[2] if parts.size() > 2 else "chapel_2a", "tier": 1}
+	if want == "seal":  # --enter=seal[:elite]: en kopia av ett av våningens sigill (med --quest=seals)
+		var seals := m.indices("seal").filter(func(i: int) -> bool:
+			return m.cells[i].get("elite", false) == (parts.size() > 1 and parts[1] == "elite"))
+		cell = m.cells[seals[0]].duplicate() if not seals.is_empty() else {"kind": "battle", "encounter": state.floor_ids[0]}
 	if want == "object":
 		cell.obj = parts[1] if parts.size() > 1 else "sarcophagus"  # --enter=object:grave_bell
 	if want == "end":  # --enter=end: djupets bossruta (huvudbossen eller väktaren), --enter=end:<möte> ett annat
@@ -364,7 +373,7 @@ func _tap_dialog(p: Vector2) -> void:
 			elif action == "descend":
 				run.descend()
 				_walk_from = run.state.pos
-				HelpBox.offer(self, ["realm_quest"])
+				HelpBox.offer(self, ["realm_quest"] + _seal_help())
 			elif action == "leave":
 				run.leave_run()
 			return
@@ -507,6 +516,11 @@ func _draw() -> void:
 		if state.vow_breaks_on == "commons" and state.vow_kept(data):
 			vow_txt += " · %d av %d vanliga grupper" % [state.commons_fought, state.vow_max_commons]
 		header = vow_txt if header == "" else header + "   ·   " + vow_txt
+	if not state.boss_seals.is_empty():
+		# Bryt två av tre sigill: det som står kvar åt slutstriden (också från våning 1 till bossen på den sista).
+		var seal_txt := "KVAR ÅT BOSSEN: " + ", ".join(RunState.seal_lines(data, state.boss_seals).map(
+				func(l: Dictionary) -> String: return l.name))
+		header = seal_txt if header == "" else header + "   ·   " + seal_txt
 	if header != "":
 		UiStyle.text(self, Vector2(MARGIN, 110), UiStyle.fit(header, 15, size.x - 460), 15, Parchment.INK,
 				HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)
@@ -674,11 +688,13 @@ func _draw_cell(m: Grotto, state: RunState, i: int) -> void:
 			InkArt.room_icon(self, kind, at, cs * 0.92, alpha)
 		"object":
 			_draw_object(String(c.get("obj", "")), at, cs * 0.34, Color(InkArt.INK, alpha))
+		"seal":
+			_draw_seal(at + (Vector2(-cs * 0.07, cs * 0.07) if group else Vector2.ZERO), cs * 0.32, c)
 	if c.get("barricaded", false):
 		for k in 3:  # bänken i vägen: tre plankor
 			var y := at.y - cs * 0.18 + k * cs * 0.18
 			draw_line(Vector2(at.x - cs * 0.34, y), Vector2(at.x + cs * 0.34, y), Color(InkArt.INK, 0.8), 3.0)
-	if group and kind in ["treasure", "item", "prisoner", "object"]:
+	if group and kind in ["treasure", "item", "prisoner", "object", "seal"]:
 		InkArt.room_icon(self, "battle", at + Vector2(cs * 0.24, -cs * 0.24), cs * 0.5, 1.0)  # en grupp vaktar rutan
 	if group and state.seen.has(i) and i != state.pos:
 		InkArt.ring(self, at, cs * 0.44, Color(Parchment.SEAL, 0.7), 2.2)
@@ -752,6 +768,40 @@ func _draw_item(c: Vector2, r: float, color: Color) -> void:
 	draw_line(c + Vector2(-r * 0.8, -r * 0.2), c + Vector2(r * 0.8, -r * 0.2), Color(color, 0.7), 1.5)
 
 
+## Ett sigill (Bryt två av tre sigill): fiendens vaxsigill i tusch, en rund klump med en tagg i varje väderstreck och ett
+## tecken för fördelen (mur, öga, droppe). Brutet: kluvet och blekt. Det som håller efter questen: en ring runt.
+func _draw_seal(c: Vector2, r: float, cell: Dictionary) -> void:
+	var broken: bool = cell.get("broken", false)
+	var col := Color(Parchment.SEAL, 0.4 if broken else 1.0)
+	var pts := PackedVector2Array()
+	for k in 16:
+		var a := TAU * k / 16.0
+		var rr := r * (1.0 if k % 4 != 0 else 1.22) * (1.0 + 0.05 * InkArt.jitter(k * 1.3))
+		pts.append(c + Vector2(cos(a), sin(a)) * rr)
+	draw_colored_polygon(pts, Color(col, 0.22))
+	pts.append(pts[0])
+	draw_polyline(pts, col, 2.4, true)
+	InkArt.ring(self, c, r * 0.66, Color(col, 0.8), 1.6)
+	var s := r * 0.38
+	match String(cell.get("seal", "")):
+		"ward":  # en mur
+			draw_rect(Rect2(c - Vector2(s, s * 0.7), Vector2(s * 2, s * 1.4)), col, false, 2.0)
+			draw_line(c + Vector2(-s, 0), c + Vector2(s, 0), col, 1.6)
+			draw_line(c + Vector2(0, -s * 0.7), c + Vector2(0, 0), col, 1.6)
+		"haste":  # ett öga
+			draw_arc(c + Vector2(0, s * 0.5), s * 1.1, PI * 1.2, PI * 1.8, 8, col, 2.0)
+			draw_arc(c - Vector2(0, s * 0.5), s * 1.1, PI * 0.2, PI * 0.8, 8, col, 2.0)
+			draw_circle(c, s * 0.32, col)
+		"mend":  # en droppe
+			draw_polyline(PackedVector2Array([c + Vector2(0, -s * 1.1), c + Vector2(s * 0.7, s * 0.2), c + Vector2(0, s * 0.9),
+					c + Vector2(-s * 0.7, s * 0.2), c + Vector2(0, -s * 1.1)]), col, 2.0)
+	if broken:
+		draw_polyline(PackedVector2Array([c + Vector2(-r * 0.2, -r * 1.25), c + Vector2(r * 0.1, -r * 0.3),
+				c + Vector2(-r * 0.15, r * 0.3), c + Vector2(r * 0.2, r * 1.25)]), Color(InkArt.INK, 0.85), 2.6)
+	elif cell.get("held", false):
+		InkArt.ring(self, c, r * 1.5, Color(Parchment.SEAL, 0.55 + 0.25 * sin(_t * 2.5)), 2.2)
+
+
 ## Ett hänglås (målet är låst tills questen är klar).
 func _draw_lock(c: Vector2, s: float) -> void:
 	var body := Rect2(c - Vector2(s * 0.6, s * 0.1), Vector2(s * 1.2, s))
@@ -773,10 +823,20 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 			name = "Fånge: " + String(data.heroes[r.hero].get("short", data.heroes[r.hero].name))
 		if r.get("kind", "") == "object":
 			name = String(data.get("objects", {}).get(r.get("obj", ""), {}).get("name", "Föremål"))
+		if r.get("kind", "") == "seal":
+			name = _seal_line(data, r).name
 		UiStyle.text(self, Vector2(x, y), name.to_upper() if name != "" else "TOM RUTA", 18, InkArt.INK,
 				HORIZONTAL_ALIGNMENT_LEFT, w, 0)
 		var hint := "Tryck på en ruta bredvid för att gå dit. En besökt ruta går pjäsen till själv."
-		if state.goal_locked():
+		if r.get("kind", "") == "seal":
+			hint = ("Brutet. Bossen får inte det här sigillets fördel. " if r.get("broken", false) else
+					"Sigillet håller: %s " % _seal_line(data, r).text) + hint
+		if state.goal_locked() and state.quest.get("type", "") == RunState.SEAL_QUEST:
+			hint += " Bryt två av de tre sigillen för att öppna %s. Det ni lämnar ger slutstriden sin fördel – välj vilket." % (
+					"trappan" if not state.map.last_floor else "bossen")
+			if not state.active_hints().is_empty():
+				hint += " De röda ringarna visar ungefär var sigillen finns."
+		elif state.goal_locked():
 			hint += " %s syns men är låst tills questen är klar." % ("Trappan" if not state.map.last_floor else
 					("Väktaren" if state.map.cell(state.map.goal).get("guardian", false) else "Bossen"))
 			if not state.active_hints().is_empty():
@@ -803,6 +863,11 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	y += 12
 	var guards: String = {"treasure": "Vaktar en skatt.", "item": "Vaktar ett av questens föremål.",
 			"prisoner": "Vaktar en fånge."}.get(r.kind, "")
+	if r.kind == "seal":
+		var sl := _seal_line(data, r)
+		guards = ("Vaktar %s. Två sigill är redan brutna; det här går inte längre att bryta." % sl.name
+				if state.quest.get("done", false) else
+				"Vaktar %s. Lämnas det: %s" % [sl.name, sl.text])
 	var kinds := state.lineup(data, r.encounter)
 	var count := {}
 	for k in kinds:
@@ -823,7 +888,12 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 	elif r.get("boss", false):
 		lines.push_front(String(enc.get("name", "")))
 	lines.append_array(_variation_lines(data, state, r, enc))
-	if guards != "":
+	if r.get("boss", false):
+		for l in RunState.seal_lines(data, state.end_fight_seals(r)):
+			lines.insert(1, "Sigill som står kvar – %s: %s" % [l.name, l.text])
+	if guards != "" and r.kind == "seal":
+		lines.push_front(guards)  # sigillet och dess fördel först: det är kortets val
+	elif guards != "":
 		lines.append(guards)
 	var traits: Array = []
 	var trophies: Array = []
@@ -885,6 +955,12 @@ func _variation_lines(data: Dictionary, state: RunState, r: Dictionary, enc: Dic
 			and int(run.profile.guardian_wins.get(r.encounter, 0)) > 0:
 		out.append(String(enc.second_warning))
 	return out
+
+
+## Sigillets namn och fördel ({name, text}) för en sigillruta.
+static func _seal_line(data: Dictionary, r: Dictionary) -> Dictionary:
+	var t: String = RunState.SEAL_TRAITS.get(String(r.get("seal", "")), "")
+	return RunState.seal_lines(data, [t])[0] if t != "" else {"name": "Sigill", "text": ""}
 
 
 ## Väktarens rad på kortet: mötets namn, vem som leder och när huvudbossen kommer tillbaka.

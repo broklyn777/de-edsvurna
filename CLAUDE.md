@@ -88,7 +88,19 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   storlek, egenskaper, möjliga troféer, varning för elit): ANFALL (`Run.fight_here`) eller BACKA (`back`); en sedd grupp
   spärrar de obesökta rutorna intill sig tills den är besegrad (Dungelot, `Grotto.blocked`, `RunState.seen`).
   **Questen** (en per våning, `RunState.roll_quest`): Jakt på Nemesis, Rensa (2 elitgrupper) eller Samla (2–3 föremål,
-  alltid bevakade). Belöningen (silver, perk-poäng) ges för den sista våningens quest, en gång per körning som förut.
+  alltid bevakade) eller **Bryt två av tre sigill** (prov, ChatGPT:s förslag, `docs/provspel/chatgpt-om-textspel.md`; quest
+  `seals`, bara på den sista våningen och aldrig på den första nedstigningen, 1 av 4): tre sigill (fiendens värn, `kind`
+  seal) i olika fjärdedelar, var och en bevakad av en lika stark vanlig grupp ur den svårare poolen (VD: valet gäller
+  fördelen, inte att slippa en elit). Vakten besegrad = sigillet brutet (`RunState.break_seal`); två brutna öppnar bossen
+  och det tredje håller och syns på kartan: dess fördel går till slutstriden (`boss_seals`, sparas, högst en per körning;
+  `end_fight_seals`, CombatSim `boss_traits` ger bossen, annars ledaren, egenskapen): Murens sigill (Barriär 20 %; mot en
+  väktare 6 % på alla, `GUARDIAN_WARD`, så att Kistornas råd inte blir ogenomträngligt), Vaksamhetens sigill (först på
+  tidslinjen, Smidig två turer, första anfallet +30 %, auran `seal_strike`), Uthållighetens sigill (helas 1,5 % per tur; 2–3 %
+  var starkast i botarna), traits.json `seal_*`. Sigillkortet och bosskortet visar fördelen; rubriken "KVAR ÅT BOSSEN".
+  Botarna lämnar ett slumpat sigill (`SIGILL=nara|ward|haste|mend` ändrar), `GROTTA_QUEST=1` visar våningar per quest,
+  `BALANS=sigill` (`SIGILL_MOTE=<möte>`) bossen med varje fördel. Flaggor: `--quest=seals` före `--map`, `--reveal-seals`, `--break-seals=<n>`, `--seals-left=ward,mend`;
+  textspelet `TEXTSPEL_QUEST=seals`. Tester: `tests/test_seals.gd`.
+  Belöningen (silver, perk-poäng) ges för den sista våningens quest, en gång per körning som förut.
   Lägereld = +3 Charges per förmåga en gång, och **troféer byts bara vid en lägereld** (VAL; lägret i läget "campfire",
   `Run.open_campfire_camp`; efter en strid väljer man bara en ny trofé). Helgedom = välj en gåva eller Pandemonium.
   Gåvorna Värnad (−20 % skada) och Styrka (+15 % skada) och Pandemoniums Välsignade sköld (−30 %) varar hela nästa strid

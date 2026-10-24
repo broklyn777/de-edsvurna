@@ -476,6 +476,25 @@ func _dev_args() -> void:
 			if WorldEvents.rumour_pending(profile):
 				state.apply_rumour()  # pilgrimens rykte (--world-demo), utan att förbruka det
 			get_tree().change_scene_to_file.call_deferred(ROOM_MAP_SCENE)
+		elif arg.begins_with("--quest="):
+			# --quest=<typ> före --map: våningarnas quest blir den typen (hunt, clear, collect, seals)
+			RunState.dev_quest = arg.get_slice("=", 1)
+		elif arg == "--reveal-seals":
+			# --reveal-seals efter --map: sigillen syns genom dimman (skärmdumpar)
+			for s in state.seals():
+				state.revealed.append(s.cell)
+		elif arg.begins_with("--break-seals="):
+			# --break-seals=<n> efter --map: n sigill är redan brutna (vakten besegrad), som om sällskapet stått på dem
+			for s in state.seals().slice(0, int(arg.get_slice("=", 1))):
+				var keep := state.pos
+				state.pos = s.cell
+				state.map.cells[s.cell].beaten = true
+				state.revealed.append(s.cell)
+				state.break_seal()
+				state.pos = keep
+		elif arg.begins_with("--seals-left="):
+			# --seals-left=ward,mend: slutstriden har de sigillens fördelar (bosskortet med --enter=end)
+			state.boss_seals = Array(arg.get_slice("=", 1).split(",")).map(func(k: String) -> String: return RunState.SEAL_TRAITS.get(k, k))
 		elif arg.begins_with("--encounter="):
 			# --encounter=<möte> (0.27): en övningsstrid mot det mötet, t.ex. crypt_e5 (Klockstapeln)
 			state = RunState.new_practice(profile, data, arg.get_slice("=", 1))
@@ -1123,6 +1142,21 @@ func after_camp() -> void:
 	get_tree().change_scene_to_file(ROOM_MAP_SCENE)
 
 
+## Raden efter att ett sigills vakt är besegrad (RunState.break_seal): brutet, eller det sista som håller.
+func seal_result(done_now: bool) -> String:
+	var r := state.current_room()
+	var name := String(data.traits.get(RunState.SEAL_TRAITS.get(String(r.get("seal", "")), ""), {}).get("name", "Sigillet"))
+	if r.get("held", false) and not r.get("broken", false):
+		return "%s håller. Två sigill är redan brutna; det här står kvar åt fienden." % name
+	var text := "Ni bryter %s. %s" % [name, RunState.quest_text(state.quest)]
+	if done_now:
+		for s in state.seals():
+			if s.held:
+				var line: Dictionary = RunState.seal_lines(data, [s.trait])[0]
+				text += " Kvar står %s: %s" % [line.name, line.text]
+	return text
+
+
 ## Questen blev klar: silver och kanske en perk-poäng.
 func _after_quest_check(just_done: bool) -> void:
 	if just_done or (state.quest.get("done", false) and not state.quest.get("rewarded", false)):
@@ -1202,6 +1236,10 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		"item":
 			done_now = state.collect_item() or done_now
 			room_result = "Föremålet är ert. " + RunState.quest_text(state.quest)
+		"seal":
+			var broke_last := state.break_seal()
+			room_result = seal_result(broke_last)
+			done_now = broke_last or done_now
 		"object":
 			var w := state.object_won()  # 0.28.2: sarkofagen, klockorna
 			var paid := roundi(w.silver * state.silver_mult(data))

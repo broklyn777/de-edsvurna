@@ -1,6 +1,6 @@
 {
 	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
-	"order": ["timeline", "combo", "windup", "guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "room_map", "realm_quest", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "living_map", "forfeit"],
+	"order": ["timeline", "combo", "windup", "guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "room_map", "realm_quest", "seals", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "living_map", "forfeit"],
 	"entries": {
 		"timeline": {
 			"title": "Tidslinjen",
@@ -18,10 +18,18 @@
 				"Trappan (eller bossen) syns från början men är låst tills våningens quest är klar. Två våningar, sedan hem."
 			]
 		},
+		"seals": {
+			"title": "Tre sigill",
+			"text": [
+				"Fienden har satt tre sigill på våningen, och varje sigill vaktas av en grupp. Besegra vakten så bryts sigillet.",
+				"Två brutna sigill öppnar bossen. Det tredje står kvar och ger slutstriden sin fördel, som står på sigillets kort. Välj vilket ni lämnar.",
+				"Sigillen finns bara på den sista våningen. Rubriken KVAR ÅT BOSSEN visar vad som väntar."
+			]
+		},
 		"realm_quest": {
 			"title": "Realm Quest",
 			"text": [
-				"Varje våning har ett uppdrag, och det låser trappan eller bossen: jaga en nemesis, besegra två elitgrupper eller ta bevakade föremål.",
+				"Varje våning har ett uppdrag, och det låser trappan eller bossen: jaga en nemesis, besegra elitgrupper, ta bevakade föremål eller bryta två av tre sigill.",
 				"Klarar du den sista våningens uppdrag får du silver. Första gången du klarar det i en Realm på ett nytt djup får du också en perk-poäng till ditt kall.",
 				"Uppdraget går förlorat om du ger upp eller faller."
 			]

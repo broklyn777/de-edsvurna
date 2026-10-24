@@ -53,6 +53,10 @@ func _init() -> void:
 		_first_descent(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "sigill":
+		_seals(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "trofeplats":
 		_trophy_slot(data)
 		quit()
@@ -483,6 +487,43 @@ func _guardians(data: Dictionary) -> void:
 			print(line + mark)
 
 
+## Bryt två av tre sigill (BALANS=sigill): en strid per bossplats (huvudbossen och väktarna) med fulla Charges och
+## motdrag, fyra hjältar på väntad nivå, utan sigill och med vart och ett av dem kvar (RunState.SEAL_TRAITS). Visar hur
+## mycket varje fördel kostar; hela körningarna mäts med BALANS=grotta GROTTA_QUEST=1. NIVA_REALM, GROTTA_DJUP.
+func _seals(data: Dictionary) -> void:
+	var realms := ["crypt", "chapel"] if OS.get_environment("NIVA_REALM") == "" else [OS.get_environment("NIVA_REALM")]
+	var depths := [1, 3] if OS.get_environment("GROTTA_DJUP") == "" else [int(OS.get_environment("GROTTA_DJUP"))]
+	var variants := [["inga", []]]
+	for k in RunState.SEAL_TRAITS:
+		variants.append([k, [RunState.SEAL_TRAITS[k]]])
+	print("=== Sigillen mot slutstriden, 4 hjältar, fulla Charges, motdrag, %d strider per rad ===" % RUNS)
+	var party := ["paladin", "brokk", "alva", "eira"]
+	for realm_id in realms:
+		var r: Dictionary = data.realms[realm_id]
+		var only := OS.get_environment("SIGILL_MOTE")  # SIGILL_MOTE=crypt_g2: bara det mötet
+		for enc_id in [r.floors[r.floors.size() - 1]] + r.get("guardians", []):
+			if only != "" and enc_id != only:
+				continue
+			var vs := variants.duplicate()
+			if data.encounters[enc_id].get("guardian", false):
+				vs += [["mur-väktare", [RunState.GUARDIAN_WARD]]]
+			for depth in depths:
+				var lv := HeroStats.expected_level(depth)
+				var line := "  %-8s %-24s d%d" % [r.short, data.encounters[enc_id].name, depth]
+				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+					line += "  %s" % _skill_name(skill)
+					for v in vs:
+						var won := 0
+						for seed_value in range(1, RUNS + 1):
+							var opts := {"levels": Bot.party_levels(data, lv, party), "floor": 2, "counter": true}
+							if not v[1].is_empty():
+								opts.boss_traits = v[1]
+							var res := Bot.run_fight(data, seed_value, skill, enc_id, party, {}, {}, {}, depth, opts)
+							won += 1 if res.outcome == "victory" else 0
+						line += " %s %3d %%" % [v[0], roundi(100.0 * won / RUNS)]
+				print(line)
+
+
 ## 0.27 grottan (BALANS=grotta): vinst, strider per körning (alla och klarade) och steg, för startmakrona (MACRO) och
 ## TUNED, i kryptan och kapellet på väntad nivå, och den första nedstigningen (ensam, Imma efter strid 1).
 func _grotto(data: Dictionary) -> void:
@@ -600,6 +641,9 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 		var lost := {}
 		var xp := 0
 		var kinds := {}
+		var by_quest := {}  # GROTTA_QUEST=1: våningar per quest-typ [nådda, klarade], och körningar med/utan sigill
+		var seal_runs := [0, 0, 0, 0]
+		var boss_left := {}
 		for seed_value in range(1, RUNS + 1):
 			var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party}
 			opts.merge(extra.duplicate(true))
@@ -615,6 +659,26 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 				kinds[k] = [int(a[0]) + int(r.by_kind[k][0]), int(a[1]) + int(r.by_kind[k][1])]
 			if r.cleared:
 				fights_cleared += int(r.fights)
+			var has_seal := false
+			for fq in r.get("floor_quests", []):
+				var key: String = "%s f%d" % [fq.type, int(fq.floor) + 1]
+				var a: Array = by_quest.get(key, [0, 0])
+				by_quest[key] = [int(a[0]) + 1, int(a[1]) + (1 if fq.passed else 0)]
+				if fq.type == RunState.SEAL_QUEST:
+					has_seal = true
+					var lk: String = "lämnade " + String(fq.left)
+					var b: Array = by_quest.get(lk, [0, 0])
+					by_quest[lk] = [int(b[0]) + 1, int(b[1]) + (1 if fq.passed else 0)]
+			var idx := 0 if has_seal else 2
+			seal_runs[idx] += 1
+			seal_runs[idx + 1] += 1 if r.cleared else 0
+			# Bossens sista strid med kvarlämnade sigill: [nådda, vunna] per fördel.
+			var reached_boss: bool = r.get("floor_quests", []).size() >= RunState.FLOORS_PER_RUN
+			if reached_boss:
+				var left_key := "+".join(r.get("seals_left", []).map(func(t: String) -> String: return t.trim_prefix("seal_"))) \
+						if not r.get("seals_left", []).is_empty() else "inga"
+				var c: Array = boss_left.get(left_key, [0, 0])
+				boss_left[left_key] = [int(c[0]) + 1, int(c[1]) + (1 if r.cleared else 0)]
 		line += "  %s%s %3d %% (strider %.1f, klarade %.1f, steg %d, erf %d)" % [_skill_name(skill),
 				{"careful": "-försiktig", "direct": "-direkt"}.get(policy, ""), roundi(100.0 * cleared / RUNS),
 				float(fights) / RUNS, float(fights_cleared) / maxi(cleared, 1), roundi(float(steps) / RUNS), xp / RUNS]
@@ -625,6 +689,17 @@ func _grotto_line(data: Dictionary, realm_id: String, label: String, party: Arra
 				if kinds.has(k):
 					bits.append("%s %d/%d" % [k, int(kinds[k][1]), int(kinds[k][0])])
 			line += " [" + ", ".join(bits) + "]"
+		if OS.get_environment("GROTTA_QUEST") == "1":
+			var keys := by_quest.keys()
+			keys.sort()
+			line += "\n      våningar: " + ", ".join(keys.map(func(k: String) -> String:
+				return "%s %d/%d (%d %%)" % [k, by_quest[k][1], by_quest[k][0], roundi(100.0 * by_quest[k][1] / maxi(by_quest[k][0], 1))]))
+			line += "\n      körningar med sigill %d/%d (%d %%), utan %d/%d (%d %%)" % [seal_runs[1], seal_runs[0],
+					roundi(100.0 * seal_runs[1] / maxi(seal_runs[0], 1)), seal_runs[3], seal_runs[2], roundi(100.0 * seal_runs[3] / maxi(seal_runs[2], 1))]
+			var bk := boss_left.keys()
+			bk.sort()
+			line += "\n      bossen (vunna/nådda) efter kvarlämnade sigill: " + ", ".join(bk.map(func(k: String) -> String:
+				return "%s %d/%d" % [k, boss_left[k][1], boss_left[k][0]]))
 		# GROTTA_FORLUST=1: var körningarna förloras (våning och rumstyp, f1_end = bossen).
 		if OS.get_environment("GROTTA_FORLUST") != "":
 			var keys := lost.keys()

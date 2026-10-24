@@ -189,7 +189,9 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	# 0.27: grottan. Boten går ett steg i taget mot närmaste okända ruta (mot målet), slåss mot grupperna den kliver på
 	# (elitgrupper bara om questen kräver dem), tar skatter, helgedomar, fångar och lägereldar, och går till målet när
 	# questen är klar.
+	var floor_quests: Array = []  # sigill: [{type, passed, left}] per våning (BALANS=grotta GROTTA_QUEST=1)
 	while not state.finished and rooms < 900:
+		_bot_pick_seal(state, rng)
 		var r := state.current_room()
 		if state.at_group():
 			# Läget när boten kliver på en elitruta (BALANS=elitnotning): Charges, nivåer och sällskap just då.
@@ -227,7 +229,8 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				f0_fights += 1
 				f0_won += 1 if result.outcome == "victory" else 0
 			if result.outcome != "victory":
-				return {"cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
+				floor_quests.append(_floor_entry(state, false))
+				return {"floor_quests": floor_quests, "seals_left": state.boss_seals.duplicate(), "cleared": false, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 						"lost_at": "f%d_%s" % [state.floor, "end" if r.get("boss", false) else r.kind], "f0_fights": f0_fights,
 						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver, "by_kind": by_kind}
 			silver += state.battle_silver(depth)
@@ -259,7 +262,10 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					silver += int(state.treasure(data, rng).silver)
 				"item":
 					state.collect_item()
+				"seal":
+					state.break_seal()
 			if state.floor_cleared():
+				floor_quests.append(_floor_entry(state, true))
 				var t := _bot_trail(data, state, levels, opts)
 				xp_total += int(t.get("xp", 0))
 				silver += roundi(float(t.get("silver", 0.0)))
@@ -286,6 +292,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 								gift = g
 					state.apply_shrine(data, rng, gift)
 		if state.floor_cleared():
+			floor_quests.append(_floor_entry(state, true))
 			var t := _bot_trail(data, state, levels, opts)
 			xp_total += int(t.get("xp", 0))
 			silver += roundi(float(t.get("silver", 0.0)))
@@ -295,7 +302,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		if target < 0 or state.step(target).is_empty():
 			break
 		rooms += 1
-	return {"cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
+	return {"floor_quests": floor_quests, "seals_left": state.boss_seals.duplicate(), "cleared": state.finished, "fights": fights, "quest_done": state.quest.get("done", false), "rooms": rooms,
 			"levels": levels, "f0_fights": f0_fights, "f0_won": f0_won, "finds": finds, "silver": silver,
 			"vow_kept": state.vow_kept(data), "xp": xp_total, "by_kind": by_kind}
 
@@ -309,10 +316,43 @@ static func _bot_trail(data: Dictionary, state: RunState, levels: Dictionary, op
 	return t
 
 
+static func _floor_entry(state: RunState, passed: bool) -> Dictionary:
+	var left := ""
+	for s in state.seals():
+		if not s.broken:
+			left = s.seal if left == "" else left + "+" + s.seal
+	return {"floor": state.floor, "type": state.quest.get("type", ""), "passed": passed, "left": left}
+
+
+## Bryt två av tre sigill: vilket sigill boten lämnar, en gång per våning (bot_leave på rutan). SIGILL=slump (förval)
+## lämnar ett slumpat, SIGILL=nara det närmaste start, SIGILL=ward/haste/mend alltid den fördelen.
+static func _bot_pick_seal(state: RunState, rng: RandomNumberGenerator) -> void:
+	if state.quest.get("type", "") != RunState.SEAL_QUEST or state.map == null:
+		return
+	var seals := state.map.indices("seal")
+	if seals.is_empty() or seals.any(func(i: int) -> bool: return state.map.cell(i).get("bot_leave", false)):
+		return
+	var rule := OS.get_environment("SIGILL")
+	var pick := RandomNumberGenerator.new()
+	pick.seed = state.run_seed * 7 + state.floor  # eget frö: valet rubbar inte resten av körningen
+	var leave: int = seals[pick.randi() % seals.size()]
+	match rule:
+		"nara":
+			seals.sort_custom(func(a: int, b: int) -> bool: return Grotto.dist(a, state.map.start) < Grotto.dist(b, state.map.start))
+			leave = seals[seals.size() - 1]
+		"ward", "haste", "mend":
+			for i in seals:
+				if state.map.cell(i).get("seal", "") == rule:
+					leave = i
+	state.map.cell(leave)["bot_leave"] = true
+
+
 ## Slåss boten mot gruppen den står på? Elitgrupper bara om questen kräver dem (eller med "greedy").
 static func _bot_wants_fight(state: RunState, r: Dictionary, policy: String) -> bool:
 	if policy == "greedy" or r.get("boss", false) or r.get("bot_must", false):
 		return true
+	if r.get("kind", "") == "seal":  # sigillet boten har valt att lämna står kvar; de andra bryts
+		return not r.get("bot_leave", false) and (state.party.size() > 1 or not r.get("elite", false))
 	# 0.30.17: Raka vägen – boten håller löftet och backar från fler vanliga grupper.
 	if state.vow_breaks_on == "commons" and not state.vow_broken and RunState.is_common_group(r) \
 			and state.commons_fought >= state.vow_max_commons:
@@ -341,7 +381,7 @@ static func _bot_target(data: Dictionary, state: RunState, policy: String) -> in
 	# Kända grupper som questen behöver (och som går att nå).
 	for i in state.seen:
 		var c := m.cell(i)
-		if m.has_group(i) and (c.get("nemesis", false) or (c.kind == "item") \
+		if m.has_group(i) and (c.get("nemesis", false) or (c.kind == "item") or (c.kind == "seal" and not state.quest.get("done", false)) \
 				or (c.get("elite", false) and state.quest.get("type", "") == "clear")) and state.can_step(i) == "" \
 				and _bot_wants_fight(state, c, policy):
 			return i
