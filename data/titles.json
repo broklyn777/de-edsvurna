@@ -6,7 +6,7 @@
 		"cond": {"stat": {"alone_descents": 1}}
 	},
 	"bone_trapper": {
-		"name": "Benfurstens fälla",
+		"name": "Benfurstens fall",
 		"text": "Har fällt Benfursten tre gånger.",
 		"cond": {"boss_wins": {"bone_lich": 3}}
 	},

@@ -366,7 +366,7 @@ func test_blood_pact_grows_with_missing_health() -> void:
 	sim = CombatSim.create(_data, "chapel_1a", 3, ["paladin", "brokk", "alva", "eira"], {"eira": ["pact_blade", "bailiff_staff"]})
 	eira = sim.unit("eira")
 	eira.hp = eira.max_hp * 0.25
-	assert_near(_factor(_hit_calc(sim, eira, sim.enemies[0], "x"), "Den brutna paktkniven"), 1.3, 1e-9)
+	assert_near(_factor(_hit_calc(sim, eira, sim.enemies[0], "x"), "Blodsvurens kniv"), 1.3, 1e-9)
 	eira.hp = eira.max_hp * 0.6
 	for i in 20:
 		if eira.hp < eira.max_hp * 0.5:

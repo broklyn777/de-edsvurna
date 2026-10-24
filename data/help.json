@@ -13,8 +13,8 @@
 		"room_map": {
 			"title": "Grottan",
 			"text": [
-				"Varje våning är en grotta på 8 × 8 rutor. Tryck på en ruta bredvid för att gå ett steg; en ruta ni redan har besökt går pjäsen till själv. Ni ser bara rutorna ni har varit på.",
-				"Kliver ni på en fiendegrupp ser ni vilka den har. Anfall, eller backa – men då spärrar gruppen rutorna intill sig tills den är besegrad. Lägerelden ger Charges, och där byter ni troféer.",
+				"Varje våning är en grotta på 8 × 8 rutor. Tryck på en ruta bredvid för att gå ett steg; en ruta du redan har besökt går pjäsen till själv. Du ser bara rutorna du har varit på.",
+				"Kliver du på en fiendegrupp ser du vilka den har. Anfall, eller backa – men då spärrar gruppen rutorna intill sig tills den är besegrad. Lägerelden ger Charges, och där byter du troféer.",
 				"Trappan (eller bossen) syns från början men är låst tills våningens quest är klar. Två våningar, sedan hem."
 			]
 		},
@@ -29,7 +29,7 @@
 		"trophies": {
 			"title": "Troféer",
 			"text": [
-				"Besegrade monster lämnar ibland en trofé. Den som bär den får monstrets egenskap.",
+				"Besegrade monster lämnar ibland en trofé, ett föremål ur striden. Den som bär den har lärt sig något av monstret: dess egenskap.",
 				"Vanliga troféer är pålitliga byggdelar, elitfiendernas är specialiserade, och en bosstrofé ändrar en regel – med en kostnad.",
 				"Hjältarna behåller sina troféer tills du byter, vid en lägereld i grottan eller hemma i Förberedelser. Alla troféer du har sett finns i Biblioteket."
 			]
@@ -124,8 +124,8 @@
 		"living_map": {
 			"title": "Den levande kartan",
 			"text": [
-				"Fördärvet växer där ni inte går, i den Realm ni har lämnat i fred längst. Där bläcket ligger stilla är det lugnt; där det andas lever det.",
-				"Går ni dit trängs det tillbaka, och klarar ni questen där trängs det långt tillbaka. Tätare bläck betyder starkare fiender, men också bättre fynd.",
+				"Fördärvet växer där du inte går, i den Realm du har lämnat i fred längst. Där bläcket ligger stilla är det lugnt; där det andas lever det.",
+				"Går du dit trängs det tillbaka, och klarar du questen där trängs det långt tillbaka. Tätare bläck betyder starkare fiender, men också bättre fynd.",
 				"Får det växa sig tätt kostar det något hemma i borgen. Får det växa ända ut kan en förvriden boss vakna."
 			]
 		}

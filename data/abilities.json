@@ -115,7 +115,7 @@
 		"charges": 8
 	},
 	"fire_bolt": {
-		"name": "Eldklot",
+		"name": "Eldstöt",
 		"target": "enemy",
 		"school": "fire",
 		"travel": 0.35,
@@ -222,7 +222,7 @@
 		"icon": "skull",
 		"button_color": "#b0503a",
 		"sound": "k_shield_wall",
-		"text": "Alla fiender måste anfalla dig till din nästa tur, men du tar 30 % mer skada.",
+		"text": "Alla fiender måste anfalla dig till din nästa tur, men din Defense sjunker 35 %.",
 		"effects": [
 			{
 				"type": "aura",
@@ -414,7 +414,7 @@
 		]
 	},
 	"renew": {
-		"name": "Förnyelse",
+		"name": "Läkande hand",
 		"cue": "heal_light",
 		"target": "ally",
 		"kind": "spell",

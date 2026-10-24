@@ -79,7 +79,7 @@
 			"color": "#9a4a2a",
 			"greet": [
 				"Så det är du som är {namn}. Stå inte i ljuset.",
-				"Jaså, du igen. Rör inte städet.",
+				"Jaså, du igen. Torka fötterna.",
 				"Hm. Kom in."
 			],
 			"idle": [
@@ -154,7 +154,7 @@
 				}
 			],
 			"trophies": [
-				"Varje monster du besegrar kan lämna något efter sig – ett ben, en ring, en flisa. Den som bär det får monstrets egenskap.",
+				"Varje monster du besegrar kan lämna något efter sig – en ring, en klinga, ett radband. Den som bär det har lärt sig något av hur monstret slogs: dess egenskap.",
 				"Vanliga troféer är pålitliga. Elitfiendernas är sällsynta och märkliga, och bossens trofé ändrar en regel – men tar alltid något tillbaka.",
 				"Kryptans troféer har jag skrivit upp, efter vad folk säger. Du hittar dem i hyllorna."
 			]
@@ -205,7 +205,7 @@
 			"greet": [
 				"Sätt dig, sätt dig! Du måste vara {namn}.",
 				"Där är du ju, {namn}! Har du ätit?",
-				"Soppan står på."
+				"Kom in, det är varmt här inne."
 			],
 			"idle": [
 				{
@@ -240,7 +240,7 @@
 			"greet": [
 				"Hm? Nej, jag sov inte. Vem där? Ah, {namn}.",
 				"Porten, ja. Den är kvar.",
-				"Mm. Gå försiktigt."
+				"Mm. Porten står där den brukar."
 			],
 			"idle": [
 				{
@@ -305,7 +305,7 @@
 	"stations": {
 		"altar": {
 			"person": "",
-			"name": "Kallets kapell",
+			"name": "Kallets altare",
 			"tag": "Kall och perks",
 			"options": [
 				{
@@ -436,7 +436,7 @@
 	"barks": {
 		"imma": {
 			"hard_fight": [
-				"Puh. Det där var nära. Jag andades inte på hela striden.",
+				"Puh. Det där var nära. Jag andades inte under hela striden.",
 				"Säg att vi inte ska göra så där igen, {namn}. Ljug om det behövs.",
 				"Jag har ett blåmärke format som ett skelett. Nu.",
 				{
@@ -934,7 +934,7 @@
 				},
 				{
 					"id": "solveig_elite_2",
-					"text": "Metallrustningar. De kommer önska att någon öppnat ett fönster."
+					"text": "Metallrustningar. De kommer att önska att någon hade öppnat ett fönster."
 				}
 			],
 			"back": [
@@ -2997,7 +2997,7 @@
 				"id": "gorm_warn_1",
 				"key": "map_warn",
 				"who": "gorm",
-				"text": "{Plats} har fått vara i fred för länge. Gå dit snart, annars vaknar något som inte borde."
+				"text": "Ingen har varit i {plats} på länge, {namn}. Där nere väntar de inte lika tålmodigt som vi."
 			},
 			{
 				"id": "tor_wake_crypt_1",
@@ -3010,19 +3010,19 @@
 				"id": "imma_wake_1",
 				"key": "map_wake",
 				"who": "imma",
-				"text": "Arbetarna vägrar gå ned i {plats}. Jag skämtar inte om det här, {namn}."
+				"text": "Arbetarna står vid porten och vägrar gå ned i {plats}. Det har de aldrig gjort förut, {namn}."
 			},
 			{
 				"id": "alrik_calm_twisted_1",
 				"key": "map_calm_twisted",
 				"who": "alrik",
-				"text": "Den svärtade är slagen. Jag har strukit hans namn på krönikans sista sida och skrivit ditt där i stället."
+				"text": "Det är över. Jag har strukit den svärtades namn på krönikans sista sida och skrivit ditt där i stället."
 			},
 			{
 				"id": "gorm_calm_twisted_1",
 				"key": "map_calm_twisted",
 				"who": "gorm",
-				"text": "Det som vaknade är slaget. Skriv ned vad du såg, {namn}. Allt."
+				"text": "Det som vaknade där nere ligger stilla nu. Berätta för Broder Alrik vad du såg, {namn}, medan du minns det."
 			},
 			{
 				"id": "hedda_cost_grove_1",
@@ -3050,14 +3050,14 @@
 				"key": "cost_on",
 				"who": "tor",
 				"realm": "crypt",
-				"text": "Arbetarna sitter på gården och väntar. De går inte ned förrän någon har trängt tillbaka benfolket. Det är du, om jag får säga så."
+				"text": "Arbetarna sitter på gården och väntar. De går inte ned förrän någon har trängt tillbaka Benfolket. Det är du, om jag får säga så."
 			},
 			{
 				"id": "elin_cost_chapel_1",
 				"key": "cost_on",
 				"who": "elin",
 				"realm": "chapel",
-				"text": "Pilgrimerna har slutat komma förbi kapellet, och med dem förbanden. Nästa gång får helarna hushålla med en laddning mindre."
+				"text": "Pilgrimerna har slutat komma förbi kapellet, och med dem förbanden. Nästa gång får helarna hushålla med en Charge mindre."
 			},
 			{
 				"id": "elin_cost_chapel_2",
@@ -3184,7 +3184,7 @@
 				"key": "ev_won",
 				"who": "elin",
 				"event": "pilgrims",
-				"text": "Pilgrimerna kom fram! Förband, salvor och en hel kärra linne. Helarna får en laddning extra de två närmaste gångerna."
+				"text": "Pilgrimerna kom fram! Förband, salvor och en hel kärra linne. Helarna får en Charge extra de två närmaste gångerna."
 			},
 			{
 				"id": "gorm_ev_won_fronts",
@@ -3504,7 +3504,7 @@
 			{
 				"id": "map_quiet_chapel_1",
 				"realm": "chapel",
-				"text": "Kapellet har varit tyst länge. Det brukar inte betyda något gott."
+				"text": "Det har varit stilla kring kapellet för länge. Stilla är inte samma sak som lugnt."
 			},
 			{
 				"id": "map_quiet_chapel_2",
@@ -3519,7 +3519,7 @@
 			{
 				"id": "map_quiet_grove_1",
 				"realm": "grove",
-				"text": "Lunden har varit tyst länge. Det brukar inte betyda något gott."
+				"text": "Ingen fågel sjunger vid lunden längre, säger kuskarna. Det har varit så ett tag."
 			},
 			{
 				"id": "map_quiet_grove_2",
@@ -3570,7 +3570,7 @@
 				"id": "tor_ongoing_crypt",
 				"who": "tor",
 				"cost": "crypt",
-				"text": "Vi går inte ned. Inte förrän benfolket är tillbakatryckt. Säg till när det är gjort, {namn}."
+				"text": "Vi går inte ned. Inte förrän Benfolket är tillbakatryckt. Säg till när det är gjort, {namn}."
 			},
 			{
 				"id": "tor_ongoing_bell",
@@ -3646,7 +3646,7 @@
 		},
 		"cost_on": {
 			"grove": "Nät över handelsvägen: Hedda får inget järn, och smedjan kostar mer tills lunden trycks tillbaka.",
-			"crypt": "Arbetarna vägrar gå ned i kryptan: Tor skickar ingen bärnsten tills benfolket trycks tillbaka.",
+			"crypt": "Arbetarna vägrar gå ned i kryptan: Tor skickar ingen bärnsten tills Benfolket trycks tillbaka.",
 			"chapel": "Pilgrimerna slutar komma: Mor Elin har ont om förband, och helarna får en Charge mindre tills kapellet trycks tillbaka."
 		},
 		"cost_off": {
@@ -3664,7 +3664,7 @@
 			"name": "Handelsmannen",
 			"greet": [
 				"Bärnsten, ädla paladin! Och trick, för den som vet vad den gör. Vägen genom lunden var fri, tack vare er.",
-				"Ni räddade min karavan. Det glömmer jag inte, och inte mina priser heller: halva, för er."
+				"Ni räddade min karavan. Det glömmer jag inte. För er: halva priset."
 			],
 			"bought": "Ett gott köp. Jag stannar tills ni går ned igen, om ni vill ha mer.",
 			"sold_out": "Nu har jag inget kvar att sälja. Jag går vidare innan vägen stängs igen. Lycka till där nere.",

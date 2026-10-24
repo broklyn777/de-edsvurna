@@ -9,7 +9,7 @@
 		"amber_violet": {"name": "Violett bärnsten", "original": "Amber (Intelligence/Speed)", "stats": {"intelligence": 0.6, "speed": 0.6}, "color": "#9a64d8"},
 		"amber_teal": {"name": "Turkos bärnsten", "original": "Amber (Health/Defense)", "stats": {"health": 0.6, "defense": 0.6}, "color": "#3fb8b0"},
 		"amber_rose": {"name": "Rosa bärnsten", "original": "Amber (Intelligence/Health)", "stats": {"intelligence": 0.6, "health": 0.6}, "color": "#e07aa8"},
-		"amber_bronze": {"name": "Bronsbärnsten", "original": "Amber (Attack/Defense)", "stats": {"attack": 0.6, "defense": 0.6}, "color": "#b8864f"}
+		"amber_bronze": {"name": "Bronsfärgad bärnsten", "original": "Amber (Attack/Defense)", "stats": {"attack": 0.6, "defense": 0.6}, "color": "#b8864f"}
 	},
 	"tricks": {
 		"whetstone": {"name": "Brynsten", "original": "Whetstone", "kind": "attack_damage", "value": 0.12,

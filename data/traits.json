@@ -247,7 +247,7 @@
 	"oath_ward": {
 		"name": "Väktarens kall",
 		"original": "Siegemaster: Thorns",
-		"text": "När någon i sällskapet träffas av en attack eller spell slår hen tillbaka för 35 % av sin Defense (indirekt skada).",
+		"text": "När någon i sällskapet träffas av ett anfall eller en besvärjelse slår hen tillbaka för 35 % av sin Defense (indirekt skada).",
 		"trigger": "damage",
 		"scope": "party",
 		"when": {
@@ -682,7 +682,7 @@
 	"resistant": {
 		"name": "Resistent",
 		"enemy": true,
-		"text": "Debuffar har halv effekt (Märkt, Brinner …).",
+		"text": "Svagare effekt av Tystad, Hånad, Sover, Snärjd, Frusen, Blöder och Förstenad. Andra debuffar verkar fullt.",
 		"trigger": "passive"
 	},
 	"lich_undying_wrath": {
@@ -739,7 +739,7 @@
 	"knight_riposte": {
 		"name": "Motstöt",
 		"enemy": true,
-		"text": "Medan den Fallne riddaren försvarar sig slår den tillbaka mot varje attack för 60 %. Besvärjelser slipper.",
+		"text": "Medan Den fallne riddaren försvarar sig slår den tillbaka mot varje attack för 60 %. Besvärjelser slipper.",
 		"trigger": "damage",
 		"when": {
 			"target": "self",
@@ -868,7 +868,7 @@
 				"target": "source"
 			}
 		],
-		"lesson": "Den fallne riddaren hade glömt sin ed men inte sin fäktkonst. {bärare} lärde sig det han kunde."
+		"lesson": "Den fallne riddaren hade glömt sin ed men inte sin fäktkonst. {bärare} har lärt sig det han kunde."
 	},
 	"witch_tongue": {
 		"combo": {
@@ -1025,7 +1025,7 @@
 				"target": "allies"
 			}
 		],
-		"lesson": "Gravabboten höll sitt ljus för sig själv. {bärare} lärde sig att det lyser mer när det delas."
+		"lesson": "Gravabboten höll sitt ljus för sig själv. {bärare} har lärt sig att det lyser mer när det delas."
 	},
 	"salted_earth": {
 		"combo": {
@@ -1101,7 +1101,7 @@
 		"modify": {
 			"damage_mult_per_use": 0.2
 		},
-		"lesson": "Ockultisten upprepade samma ord tills de fick makt. {bärare} har lärt sig att det övade slaget sitter bäst."
+		"lesson": "Ockultisten upprepade samma slag tills det satt. {bärare} har lärt sig att det övade slaget sitter bäst."
 	},
 	"surprise": {
 		"combo": {
@@ -1116,7 +1116,7 @@
 		"text": "Bäraren börjar alltid striden överst på tidslinjen.",
 		"trigger": "passive",
 		"start_first": true,
-		"lesson": "Bansheens skri kom alltid före döden. {bärare} har lärt sig att höra varslet och vara först."
+		"lesson": "Klagekvinnans skri kom alltid före döden. {bärare} har lärt sig att höra faran först och vara först."
 	},
 	"heart_of_chaos": {
 		"combo": {
@@ -1163,7 +1163,7 @@
 				"ability_from_event": true
 			}
 		],
-		"lesson": "Häxmästarinnan lät varje ord klinga två gånger. {bärare} lärde sig att låta ett väl valt ord eka."
+		"lesson": "Häxmästarinnan lät varje ord klinga två gånger. {bärare} har lärt sig att låta ett väl valt ord eka."
 	},
 	"sareas_plot": {
 		"combo": {
@@ -1589,7 +1589,7 @@
 				"target": "self"
 			}
 		],
-		"lesson": "Benspringaren var borta innan svärdet lyfts. {bärare} har lärt sig hans första steg."
+		"lesson": "Benspringaren var borta innan svärdet lyfts. {bärare} har lärt sig dess första steg."
 	},
 	"wolf_leap": {
 		"combo": {
@@ -1633,7 +1633,7 @@
 				"target": "allies"
 			}
 		],
-		"lesson": "Kistbäraren bar de döda utan att släppa taget. {bärare} lärde sig att sluta leden när någon faller."
+		"lesson": "Kistbäraren bar de döda utan att släppa taget. {bärare} har lärt sig att sluta leden när någon faller."
 	},
 	"last_watch": {
 		"combo": {
@@ -1738,7 +1738,7 @@
 				"target": "self"
 			}
 		],
-		"lesson": "Skramlaren rasslade så fort den träffades. {bärare} lärde sig att varje slag är en varning."
+		"lesson": "Skramlaren rasslade så fort den träffades. {bärare} har lärt sig att varje slag är en varning."
 	},
 	"clatter_stone": {
 		"combo": {
@@ -1801,7 +1801,7 @@
 				"target": "self"
 			}
 		],
-		"lesson": "Benkolossen blev starkare för varje steg den tog. {bärare} lärde sig att låta kraften växa."
+		"lesson": "Benkolossen blev starkare för varje steg den tog. {bärare} har lärt sig att låta kraften växa."
 	},
 	"caller_lantern": {
 		"combo": {
@@ -2629,7 +2629,7 @@
 	"troll_lullaby": {
 		"name": "Trollmors vaggvisa",
 		"enemy": true,
-		"text": "Var tredje tur sjunger hon: den som senast använde en förmåga somnar en tur. Anfall eller Försvara när sången närmar sig.",
+		"text": "Var tredje tur sjunger hon: den som senast använde en förmåga somnar i 1 tur. Anfall eller Försvara när sången närmar sig.",
 		"trigger": "passive"
 	},
 	"stone_heart": {
@@ -2666,7 +2666,7 @@
 				"target": "self"
 			}
 		],
-		"lesson": "Mossryggens sår läkte långsamt men slutade aldrig. {bärare} lärde sig att vila mitt i striden."
+		"lesson": "Mossryggens sår läkte långsamt men slutade aldrig. {bärare} har lärt sig att vila mitt i striden."
 	},
 	"porridge_bowl": {
 		"combo": {
@@ -2692,7 +2692,7 @@
 				"target": "self"
 			}
 		],
-		"lesson": "Grytmodern matade de sina mitt i striden. {bärare} lärde sig att det är då man ska slå hårdare."
+		"lesson": "Grytmodern matade de sina mitt i striden. {bärare} har lärt sig att det är då man ska slå hårdare."
 	},
 	"envy_stone": {
 		"combo": {
@@ -2717,7 +2717,7 @@
 				"target": "self"
 			}
 		],
-		"lesson": "Avundsjätten ville ha allt den såg hos andra. {bärare} lärde sig att ta vara på det goda utan att avundas."
+		"lesson": "Avundsjätten ville ha allt den såg hos andra. {bärare} har lärt sig att ta vara på det goda utan att avundas."
 	},
 	"kalles_club": {
 		"combo": {
@@ -2768,7 +2768,7 @@
 		"name": "Gråluvans sjal",
 		"trophy": true,
 		"rarity": "elite",
-		"text": "Var tredje gång bäraren agerar somnar en slumpad fiende en tur.",
+		"text": "Var tredje gång bäraren agerar somnar en slumpad fiende i 1 tur.",
 		"trigger": "acted",
 		"when": {
 			"unit": "self"
@@ -2806,7 +2806,7 @@
 	"spider_snare": {
 		"name": "Fästtråd",
 		"enemy": true,
-		"text": "Bettet snärjer målet i 2 turer (25 %).",
+		"text": "Bettet har 25 % chans att snärja målet i 2 turer.",
 		"trigger": "damage",
 		"chance": 0.25,
 		"when": {
@@ -3049,7 +3049,7 @@
 		"modify": {
 			"damage_mult": 1.25
 		},
-		"lesson": "Silkesnärjaren drog åt kring den som satt fast. {bärare} har lärt sig att slå hårdast mot den som inte kan fly."
+		"lesson": "Silkessnärjaren drog åt kring den som satt fast. {bärare} har lärt sig att slå hårdast mot den som inte kan fly."
 	},
 	"venom_fang": {
 		"combo": {
@@ -3253,7 +3253,7 @@
 		"parts": [
 			"devour_maw_feed"
 		],
-		"lesson": "Slukaren åt av den som satt fast och blev stark. {bärare} har lärt sig att ta kraft ur ett säkert grepp."
+		"lesson": "Slukaren åt av den som satt fast och blev stark. {bärare} har lärt sig att ett säkert grepp ger styrka."
 	},
 	"devour_maw_feed": {
 		"name": "Den rivna slukväven",
@@ -3517,7 +3517,7 @@
 			"creates": "damage_bonus",
 			"scope": "self"
 		},
-		"name": "Den brutna paktkniven",
+		"name": "Blodsvurens kniv",
 		"trophy": true,
 		"rarity": "common",
 		"text": "Bäraren gör 6 % mer skada för varje tiondel liv hen saknar (högst +30 %).",

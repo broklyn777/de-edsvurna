@@ -160,7 +160,7 @@ func test_third_win_against_a_boss_and_the_title() -> void:
 	assert_eq(p.homecoming.remarks[0].key, "boss_trophy")
 	assert_true(p.homecoming.titles.has("bone_trapper"), "Ny titel syns i rutan")
 	assert_eq(p.title, "bone_trapper")
-	assert_true(Chronicle.entry_body(p, _data, e).contains("Ny titel: Benfurstens fälla"))
+	assert_true(Chronicle.entry_body(p, _data, e).contains("Ny titel: Benfurstens fall"))
 
 
 func test_patterns_same_realm_streak_and_comeback() -> void:

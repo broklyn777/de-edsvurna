@@ -51,19 +51,19 @@
 		"glyph": "skull"
 	},
 	"warded": {
-		"name": "Skyddad",
+		"name": "Värnad",
 		"duration": 1,
 		"damage_taken_mult": 0.75,
 		"buff": true,
-		"text": "Skyddad: tar 25 % mindre skada.",
+		"text": "Värnad: tar 25 % mindre skada.",
 		"glyph": "shield"
 	},
 	"holy_shield": {
-		"name": "Helig sköld",
+		"name": "Välsignad sköld",
 		"duration": 1,
 		"damage_taken_mult": 0.6,
 		"buff": true,
-		"text": "Helig sköld: tar 40 % mindre skada.",
+		"text": "Välsignad sköld: tar 40 % mindre skada.",
 		"glyph": "cross"
 	},
 	"renew": {
@@ -312,7 +312,7 @@
 		"name": "Förstenad",
 		"duration": 1,
 		"debuff": true,
-		"text": "Förstenad: kan inte undvika eller krita. Resistent: 50 % lägre chans.",
+		"text": "Förstenad: kan inte undvika eller göra kritiska träffar. Resistent: 50 % lägre chans.",
 		"glyph": "shield",
 		"stone": true
 	},

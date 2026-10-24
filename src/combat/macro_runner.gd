@@ -295,9 +295,9 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 		"lacks_trait":
 			return "har inte egenskapen %s" % data.traits.get(value, {}).get("name", str(value))
 		"deaths_at_least":
-			return "har stupat minst %d gång(er)" % int(value)
+			return "har stupat minst %d %s" % [int(value), "gång" if int(value) == 1 else "gånger"]
 		"revives_at_least":
-			return "har väckts minst %d gång(er)" % int(value)
+			return "har väckts minst %d %s" % [int(value), "gång" if int(value) == 1 else "gånger"]
 		"is_alive":
 			return "lever"
 		"highest_speed":
@@ -397,5 +397,5 @@ static func _reason_text(sim: CombatSim, u: CombatUnit, action: String, ability_
 		"sealed":
 			return "%s är förseglad" % name
 		"forbidden":
-			return "ingen kan %s (Inga bönder)" % name.to_lower()
+			return "ingen kan %s (Ingen gard)" % name.to_lower()
 	return reason

@@ -105,3 +105,17 @@ och grammatik. Låg: stil, upprepningar och sådant att se över i bild.
 - Följeslagarnas röster är tydligt olika (Brokks sköld, Eiras spår, Sefirs mantel, Toves klosterlärare). Jag hittade inga
   upprepningar mellan dem.
 - Fiendernas ondska (svart mässa, Blodpakt, Häxa, Ockultist) är tydligt fiendens, som minnet om tonen säger.
+
+## Rättat (samma gren, efter huvudtrådens beslut)
+
+Bara text har ändrats; inga id:n och inga siffror. Rättade nummer: 1–11, 12 (förmågan heter nu Läkande hand och auran behåller
+Förnyelse), 13 (Pandemoniums aura heter Välsignad sköld), 14, 16, 19–23, 24 (bara rutorna Grottan och Den levande kartan),
+28–34, 36–38, 40–42, 44–48, 50–52, 54–56 (krypt-raden i 56 står kvar), och 57 (portalerna togs bort ur smedjans text).
+Resistents text är kortad till högst 110 tecken (testet i `test_enemies_spiders.gd`). Två tester följer de nya namnen
+(Blodsvurens kniv, Benfurstens fall), och ordlistan följer Klagekvinnan och Silkessnärjaren.
+
+**Inte rättat:**
+- 15 och 43: daggnätet, glasfönstret och timglaset ligger i `objects.json`, som en annan agent arbetar i.
+- 17 och 18: bibelorden måste kontrolleras mot 1917 års text innan något ändras. Raderna gäller `ragnhild.rescue.2`, `cave.2`,
+  `campfire.2` och `alone.2` (Herren eller HERREN), samt `inn.ragnhild.welcome.0` och `bored.0` (citattecknen).
+- 25, 27, 35, 39, 49, 53, 58, 59 och 60: de kräver beslut, bild eller dokumentation.
