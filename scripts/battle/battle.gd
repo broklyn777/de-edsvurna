@@ -996,8 +996,10 @@ func _on_action(e: Dictionary) -> void:
 		_after(maxf(_cursor - 0.18, 0.0), sfx.play.bind(cue, -7.0, 0.06))
 		cue = ""
 	elif ab.get("travel", 0.0) > 0.0:
-		m.attack(target_pos, 0.15, ab.get("anim", ""))
+		m.attack(target_pos, 0.15, ab.get("anim", ""), ab.get("release_at", UnitModel.IMPACT_AT))
 		var release := maxf(m.last_impact_delay, 0.15)
+		if ab.has("held"):  # trollens kast: stenen i händerna tills den släpps
+			m.hold_until(ab.held, ab.get("hide_while", []), release)
 		if cue == "bow_shot":  # strängen släpps när pilen far iväg
 			_after(maxf(release - 0.05, 0.0), sfx.play.bind(cue, -6.0, 0.05))
 			cue = ""
@@ -1005,7 +1007,10 @@ func _on_action(e: Dictionary) -> void:
 		var color := UiStyle.school_color(school)
 		for id in e.targets:
 			_after(release, func() -> void:
-				fx_layer.add_child(Fx.Projectile.new(_pos(e.unit), _pos(id), travel, color, 8.0)))
+				if ab.get("projectile", "") == "stone":
+					fx_layer.add_child(Fx.Stone.new(_pos(e.unit) + Vector2(0, -40), _pos(id), travel, Color(ab.get("stone_color", "#6f6a60"))))
+				else:
+					fx_layer.add_child(Fx.Projectile.new(_pos(e.unit), _pos(id), travel, color, 8.0)))
 		_cursor = release + travel
 	elif e.ability == "defend":
 		m.set_blocking(true)

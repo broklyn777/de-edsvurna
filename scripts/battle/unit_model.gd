@@ -170,18 +170,42 @@ func face(target: Vector3) -> void:
 # --- Rörelser ---------------------------------------------------------------
 
 ## 0.31: own_anim väljer en egen animation för förmågan (abilities.json "anim", t.ex. spindelns nätskott).
-func attack(toward: Vector3, lunge := 0.25, own_anim := "") -> void:
+## impact_at: var i den egna rörelsen träffen (eller släppet) kommer, som andel av längden.
+func attack(toward: Vector3, lunge := 0.25, own_anim := "", impact_at := IMPACT_AT) -> void:
 	if _dead:
 		return
 	var list: Array = anims.get("attack", [])
+	var at := IMPACT_AT
 	if own_anim != "" and _player.has_animation(own_anim):
 		list = [own_anim]
+		at = impact_at
 	last_impact_delay = 0.0
 	if not list.is_empty():
 		var anim_name: String = list[randi() % list.size()]
 		_play_oneshot(anim_name, 0.06, ATTACK_SPEED)
-		last_impact_delay = _player.get_animation(anim_name).length * IMPACT_AT / (ATTACK_SPEED * unit.haste())
+		last_impact_delay = _player.get_animation(anim_name).length * at / (ATTACK_SPEED * unit.haste())
 	_push_delayed((toward - global_position).normalized() * lunge * model_scale, last_impact_delay * 0.6)
+
+
+## Kast (trollens sten): en del ("troll_delar/Troll_Boulder") syns i händerna tills den släpps efter release sekunder,
+## och noderna i hide (klubban) göms så länge rörelsen pågår.
+func hold_until(part: String, hide: Array, release: float) -> void:
+	if _dead:
+		return
+	var held := _attach_part({"part": part})
+	var hidden: Array[Node3D] = []
+	for node_name in hide:
+		var n := _model.find_child(node_name, true, false) as Node3D
+		if n and n.visible:
+			n.visible = false
+			hidden.append(n)
+	get_tree().create_timer(release, false).timeout.connect(func() -> void:
+		if is_instance_valid(held):
+			held.queue_free())
+	get_tree().create_timer(release + 0.7, false).timeout.connect(func() -> void:
+		for n in hidden:
+			if is_instance_valid(n):
+				n.visible = true)
 
 
 ## Spark (Rogue: Kick). Använder animationen "kick" om figuren har en, annars en vanlig attack.
