@@ -52,6 +52,14 @@ func _ask_name(i: int) -> void:
 	run.ui("ui_page", -10.0)
 
 
+## Androids bakåtknapp (Run.go_back): stänger raderingsfrågan; annars frågar Run om spelet ska avslutas.
+func go_back() -> bool:
+	if confirm_delete > 0:
+		confirm_delete = 0
+		return true
+	return false
+
+
 func _tap(p: Vector2) -> void:
 	if confirm_delete > 0:
 		if _yes_rect().has_point(p):

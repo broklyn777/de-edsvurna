@@ -6,7 +6,9 @@ extends Control
 const SHOWN := 4
 const LINE_H := 23.0
 
-## [{text, ok, skipped: [text]}]
+## [{text, ok, skipped: [text], notes: [text]}]. notes (makro-UX förslag 1) säger varför raderna ovanför inte valdes,
+## också de vars villkor inte stämde; finns de visas de i stället för skipped. När inget passade visas den rad som var
+## närmast att stämma direkt under beslutet, också i hörnet.
 var entries: Array[Dictionary] = []
 var expanded := false
 var _scroll := 0.0
@@ -58,12 +60,18 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55))
 	draw_rect(Rect2(Vector2.ZERO, size), Color(UiStyle.TRAIT_GOLD, 0.25 + 0.5 * _flash), false, 1.5)
 	UiStyle.text(self, Vector2(8, 16), "MAKROLOGG – TRYCK FÖR ALLT", 15, Color(1, 1, 1, 0.5))
-	var start := maxi(0, entries.size() - SHOWN)
-	for i in range(start, entries.size()):
+	var rows: Array = []
+	for i in range(maxi(0, entries.size() - SHOWN), entries.size()):
 		var e: Dictionary = entries[i]
-		var col := Color(1, 1, 1, 0.9) if e.ok else Color("#ff8a6a")
-		UiStyle.text(self, Vector2(8, 38 + (i - start) * LINE_H), UiStyle.fit(e.text, 17, size.x - 14), 17, col,
-				HORIZONTAL_ALIGNMENT_LEFT, size.x - 14, 3)
+		rows.append([e.text, Color(1, 1, 1, 0.9) if e.ok else Color("#ff8a6a"), 0.0])
+		if not e.ok and not e.get("notes", []).is_empty():
+			rows.append(["Närmast: " + String(e.notes[0]), Color(1, 1, 1, 0.6), 20.0])
+	var start := maxi(0, rows.size() - SHOWN)
+	for i in range(start, rows.size()):
+		var r: Array = rows[i]
+		var w: float = size.x - 14 - r[2]
+		UiStyle.text(self, Vector2(8 + r[2], 38 + (i - start) * LINE_H), UiStyle.fit(r[0], 17, w), 17, r[1],
+				HORIZONTAL_ALIGNMENT_LEFT, w, 3)
 
 
 func _draw_expanded() -> void:
@@ -82,8 +90,14 @@ func _draw_expanded() -> void:
 			UiStyle.text(self, top_left + Vector2(40, y), e.text, 18, Color.WHITE if e.ok else Color("#ff8a6a"),
 					HORIZONTAL_ALIGNMENT_LEFT, vs.x - 80, 3)
 		y += 24.0
-		for s in e.get("skipped", []):
+		for s in reasons(e):
 			if y > 80.0 and y < vs.y:
 				UiStyle.text(self, top_left + Vector2(70, y), s, 16, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, vs.x - 110, 3)
 			y += 20.0
 		y += 8.0
+
+
+## Raderna under ett beslut: notes om de finns (varför varje rad inte valdes), annars skipped.
+static func reasons(e: Dictionary) -> Array:
+	var notes: Array = e.get("notes", [])
+	return notes if not notes.is_empty() else e.get("skipped", [])

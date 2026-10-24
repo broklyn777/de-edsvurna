@@ -36,6 +36,11 @@ var _group_buttons := {}
 var _shown := {}  # kolumn → index i _options som syns
 const COND_GROUPS := [["common", "Vanliga"], ["hp", "Liv"], ["status", "Status"], ["trait", "Egenskaper"],
 		["charges", "Charges"], ["artifact", "Artefakt"], ["all", "Alla"]]
+## Makro-UX förslag 5: förslag som fyller i sökningen med ett tryck. Fältet får fokus av sig självt när villkoren är
+## många, men bara utan pekskärm: på telefonen skulle tangentbordet täcka halva skärmen varje gång.
+const SEARCH_CHIPS := ["liv", "förgiftad", "Charges", "lägst"]
+const AUTO_FOCUS_OVER := 30
+var _search_chips := {}
 
 
 func _ready() -> void:
@@ -74,6 +79,15 @@ func _done() -> void:
 	run.ui("ui_back", -12.0)
 	closed.emit()
 	queue_free()
+
+
+## Androids bakåtknapp (Run.go_back): stänger radeditorn, annars som Klar.
+func go_back() -> bool:
+	if _editor != null and _editor.visible:
+		_editor.visible = false
+	else:
+		_done()
+	return true
 
 
 # --- Bygga gränssnittet ---------------------------------------------------------
@@ -191,12 +205,42 @@ func _build_editor() -> Control:
 	col.add_child(top)
 	top.add_child(title)
 	_search = LineEdit.new()
-	_search.placeholder_text = "Sök, t.ex. liv 30, förgiftad, mossa …"
+	_search.placeholder_text = "Sök, t.ex. liv 30 eller mossa …"
 	_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_search.custom_minimum_size.y = 48
 	_search.clear_button_enabled = true
 	_search.add_theme_font_size_override("font_size", 20)
+	# Makro-UX förslag 5: en ritad lupp i fältet (plats till vänster om texten) och en tydligare ram.
+	var field := StyleBoxFlat.new()
+	field.bg_color = Color(0.12, 0.105, 0.15)
+	field.border_color = Color(UiStyle.TRAIT_GOLD, 0.8)
+	field.set_border_width_all(2)
+	field.set_corner_radius_all(6)
+	field.set_content_margin_all(8)
+	field.content_margin_left = 44
+	var field_focus := field.duplicate()
+	field_focus.border_color = UiStyle.GOLD
+	_search.add_theme_stylebox_override("normal", field)
+	_search.add_theme_stylebox_override("focus", field_focus)
+	_search.add_theme_color_override("font_placeholder_color", Color(1, 1, 1, 0.55))
+	var glass := Magnifier.new()
+	glass.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glass.position = Vector2(10, 10)
+	glass.size = Vector2(28, 28)
+	_search.add_child(glass)
 	_search.text_changed.connect(func(_t: String) -> void: _apply_filter())
 	top.add_child(_search)
+	# Förslagschips: de vanligaste sökningarna med ett tryck, utan tangentbordet (som täcker halva telefonen).
+	for word in SEARCH_CHIPS:
+		var chip := Button.new()
+		chip.text = word
+		chip.toggle_mode = true
+		chip.custom_minimum_size = Vector2(0, 48)
+		chip.add_theme_font_size_override("font_size", 17)
+		chip.pressed.connect(_chip_search.bind(word))
+		chip.pressed.connect(run.ui_tap)
+		top.add_child(chip)
+		_search_chips[word] = chip
 	var cols := HBoxContainer.new()
 	cols.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	cols.add_theme_constant_override("separation", 10)
@@ -462,6 +506,8 @@ func _fill_lists() -> void:
 		targets.append({"label": _cap(MacroRunner.target_name(t)), "target": t})
 	_options = {"subject": subjects, "cond": conds, "action": actions, "target": targets}
 	_search.text = ""
+	if conds.size() > AUTO_FOCUS_OVER and not OS.has_feature("mobile"):
+		_search.grab_focus.call_deferred()
 	var sel: Dictionary = {}
 	for o in conds:
 		if _matches_option("cond", o):
@@ -503,6 +549,8 @@ static func _norm(text: String) -> String:
 ## Med en sökning visas villkor ur alla grupper.
 func _apply_filter() -> void:
 	var words := _norm(_search.text).split(" ", false)
+	for w in _search_chips:
+		(_search_chips[w] as Button).set_pressed_no_signal(_norm(_search.text).strip_edges() == _norm(w))
 	for g in _group_buttons:
 		(_group_buttons[g] as Button).set_pressed_no_signal(g == _group and words.is_empty())
 	for key in _options:
@@ -530,6 +578,21 @@ func _apply_filter() -> void:
 				list.add_item(o.label)
 				if chosen:
 					list.select(list.item_count - 1)
+
+
+## Ett förslagschip: fyller i sökningen, eller tömmer den om samma chip redan är valt.
+func _chip_search(word: String) -> void:
+	_search.text = "" if _norm(_search.text).strip_edges() == _norm(word) else word
+	_apply_filter()
+
+
+## Luppen i sökfältet, ritad med linjer så att den inte beror på typsnittets tecken.
+class Magnifier extends Control:
+	func _draw() -> void:
+		var c := Vector2(11, 11)
+		var col := Color(UiStyle.TRAIT_GOLD, 0.95)
+		draw_arc(c, 8.0, 0.0, TAU, 24, col, 2.5, true)
+		draw_line(c + Vector2(5.8, 5.8), Vector2(26, 26), col, 3.5, true)
 
 
 static func _all_words(label: String, words: PackedStringArray) -> bool:

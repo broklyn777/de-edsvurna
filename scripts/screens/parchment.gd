@@ -1,8 +1,8 @@
 class_name Parchment
 extends ColorRect
 ## Pergamentet under kampanjkartan och rumskartan, ritat med en shader (brus, fläckar, mörka kanter)
-## i stället för en stor textur, så att APK:n inte växer. zoom och focus låter kameran glida in i
-## ett område (samma pergament på båda kartorna).
+## i stället för en stor textur, så att APK:n inte växer (shadern körs en gång, se _bake). zoom och focus låter
+## kameran glida in i ett område (samma pergament på båda kartorna).
 
 const SHADER := """
 shader_type canvas_item;
@@ -39,23 +39,60 @@ void fragment() {
 """
 
 var _mat: ShaderMaterial
+## Prestanda (docs/research/prestanda-android.md punkt 2): bruset (15 brusanrop per pixel) ritas en gång till en
+## textur i en egen SubViewport och visas sedan som en bild. Det ritas om bara när storleken eller vyn (zoomen) ändras.
+var _vp: SubViewport
+var _paper: ColorRect
 
 
 func _init() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	show_behind_parent = true
+	color = Color(0.86, 0.77, 0.58)  # syns bara innan texturen är ritad
 	var shader := Shader.new()
 	shader.code = SHADER
 	_mat = ShaderMaterial.new()
 	_mat.shader = shader
-	material = _mat
+	_vp = SubViewport.new()
+	_vp.disable_3d = true
+	_vp.transparent_bg = false
+	_vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	_paper = ColorRect.new()
+	_paper.material = _mat
+	_vp.add_child(_paper)
+	add_child(_vp)
+	resized.connect(_bake)
+
+
+func _ready() -> void:
+	_bake.call_deferred()
+
+
+## Ritar pergamentet en gång i skärmens verkliga upplösning (canvas_items-skalningen inräknad).
+func _bake() -> void:
+	if not is_inside_tree() or size.x < 1.0 or size.y < 1.0:
+		return
+	var k := Vector2(get_window().size) / get_viewport_rect().size
+	var px := Vector2i(maxi(1, ceili(size.x * k.x)), maxi(1, ceili(size.y * k.y)))
+	var limit := 2560.0 / px.x
+	if limit < 1.0:
+		px = Vector2i(2560, maxi(1, int(px.y * limit)))
+	_vp.size = px
+	_paper.size = Vector2(px)
+	_vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+	queue_redraw()
+
+
+func _draw() -> void:
+	draw_texture_rect(_vp.get_texture(), Rect2(Vector2.ZERO, size), false)
 
 
 ## Kameran på pergamentet: zoom > 1 glider in mot focus (0–1 i skärmens mått).
 func set_view(zoom: float, focus: Vector2) -> void:
 	_mat.set_shader_parameter("zoom", zoom)
 	_mat.set_shader_parameter("focus", focus)
+	_vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
 ## Bläckfärger för kartornas linjer och text.

@@ -16,6 +16,11 @@ var _t := 0.0
 var _press_at := Vector2(-1, -1)
 
 
+## Androids bakåtknapp (Run.go_back): lägret har inget bakåt (trofévalet väntar); trycket gör ingenting.
+func go_back() -> bool:
+	return true
+
+
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP

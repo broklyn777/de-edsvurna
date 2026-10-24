@@ -191,7 +191,7 @@ func _draw_log(_data: Dictionary) -> void:
 	var rows: Array = []
 	for e in log:
 		rows.append({"text": e.text, "col": Color(1, 1, 1, 0.9) if e.ok else Color("#ff8a6a"), "indent": 0.0})
-		for sk in e.get("skipped", []):
+		for sk in MacroLog.reasons(e):
 			rows.append({"text": sk, "col": Color(1, 1, 1, 0.5), "indent": 24.0})
 	var fit := int((r.size.y - 30) / LOG_LINE)
 	var start := maxi(0, rows.size() - fit)

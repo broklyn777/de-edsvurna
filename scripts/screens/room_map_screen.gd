@@ -183,6 +183,23 @@ func _tap(p: Vector2) -> void:
 	run.ui("ui_error", -16.0)
 
 
+## Androids bakåtknapp (Run.go_back): BACKA från en grupp. Under ett ögonblick, en gång, en replik eller en ruta händer
+## inget (rutorna har egna val); annars frågar Run om spelet ska avslutas (körningen är sparad).
+func go_back() -> bool:
+	if _moment != null or _walk_t >= 0.0 or not _bark.is_empty() or not _dialog.is_empty():
+		return true
+	if run.state.at_group() and run.state.came_from >= 0:
+		_back()
+		run.ui_tap()
+		return true
+	return false
+
+
+## Prestanda (Run.update_fps): 60 bilder per sekund medan kameran zoomar in och under ett rumsögonblick.
+func wants_smooth() -> bool:
+	return _zoom_t < 1.0 or _moment != null
+
+
 func _back() -> void:
 	var from: int = run.state.pos
 	run.back_off()

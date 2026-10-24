@@ -121,6 +121,21 @@ func _vignette_rect(name: String, shader: Shader) -> TextureRect:
 	return r
 
 
+## Prestanda (Run.update_fps): 60 bilder per sekund medan kameran glider in i ett område.
+func wants_smooth() -> bool:
+	return _zoom_t >= 0.0
+
+
+## Androids bakåtknapp (Run.go_back): stänger nyheterna eller löftesrutan; annars frågar Run om spelet ska avslutas.
+func go_back() -> bool:
+	if _zoom_t >= 0.0:
+		return true
+	if _news_open or _vow_open:
+		_tap(Vector2(-1000, -1000))  # ett tryck utanför stänger rutan som vanligt
+		return true
+	return false
+
+
 func _process(delta: float) -> void:
 	super(delta)
 	if _zoom_t >= 0.0:
