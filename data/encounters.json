@@ -1662,8 +1662,7 @@
 			"grumpy_troll"
 		],
 		"extra": [
-			"club_troll",
-			"moss_troll"
+			"club_troll"
 		],
 		"stat_mult": 1.44,
 		"guardian": true,

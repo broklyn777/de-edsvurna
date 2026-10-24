@@ -105,7 +105,7 @@ func test_mountain_is_balanced_for_five() -> void:
 	p.realm_depth = UNLOCKED.duplicate()
 	assert_true(not RunState.realm_too_big(p, _data, "mountain"), "ingen varning med fem platser")
 	var four := ["paladin", "brokk", "alva", "eira"]
-	var enc := "troll_g2"
+	var enc := "troll_1"
 	var old := CombatSim.create(_data, enc, 3, four, {}, {}, {}, 1, {})
 	var vs_five := CombatSim.create(_data, enc, 3, four + ["imma"], {}, {}, {}, 1, {"full_party": 5})
 	assert_eq(old.enemies.size(), 4, "fyra hjältar möter mötets fiender som förut")
@@ -118,11 +118,11 @@ func test_mountain_is_balanced_for_five() -> void:
 func test_capped_variant_keeps_five_enemies() -> void:
 	var keep := CombatSim.max_enemies
 	CombatSim.max_enemies = 5
-	var sim := CombatSim.create(_data, "troll_g2", 3, ["paladin", "brokk", "alva", "eira", "imma"], {}, {}, {}, 1,
+	var sim := CombatSim.create(_data, "troll_1", 3, ["paladin", "brokk", "alva", "eira", "imma"], {}, {}, {}, 1,
 			{"full_party": 5})
 	CombatSim.max_enemies = keep
 	assert_eq(sim.enemies.size(), 5)
-	assert_eq(sim.enemies[0].kind, "troll_mother", "ledaren står kvar")
+	assert_eq(sim.enemies[0].kind, "moss_troll", "ledaren står kvar")
 
 
 func test_five_heroes_get_their_own_places() -> void:
