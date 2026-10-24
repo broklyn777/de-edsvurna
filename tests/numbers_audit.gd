@@ -351,6 +351,14 @@ func _when(units: Dictionary, owner: String, when: Dictionary, probe: Dictionary
 			"self_family":
 				if String(units[owner].get("family", "")) != want:
 					return false
+			"ally_has_trait":
+				var found := false
+				for id in units:
+					var u: Dictionary = units[id]
+					if id != owner and u.alive and u.team == units[owner].team and Array(u.get("traits", [])).has(want):
+						found = true
+				if not found:
+					return false
 			"self_not_acted":
 				if String(units[owner].get("last_ability", "")) != "":
 					return false

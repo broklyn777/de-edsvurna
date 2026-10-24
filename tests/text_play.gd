@@ -506,7 +506,7 @@ func _descend() -> void:
 
 
 func _treasure() -> String:
-	var t := state.treasure(data, rng)
+	var t := state.treasure(data, rng, profile.collection)
 	var amount := roundi(t.silver * state.silver_mult(data))
 	profile.silver += amount
 	var text := "Skattkammaren: +%d silver" % amount
@@ -823,7 +823,6 @@ func _battle_finished(sim: CombatSim, won: bool) -> void:
 		if data.encounters[state.encounter()].get("guardian", false):
 			profile.defeat_guardian(state.encounter())
 	RunScript.mark_sneak(data, profile, state)
-	var offer := state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies(), profile.unlocked_guardians())
 	var done_now := state.battle_won()
 	match state.current_room().get("kind", ""):
 		"prisoner":
@@ -842,6 +841,9 @@ func _battle_finished(sim: CombatSim, won: bool) -> void:
 			profile.silver += p
 			out.append(("+%d silver. " % p if p > 0 else "") + String(w.text))
 	_after_quest_check(done_now)
+	# Som i spelet (mot upprepning): efter det gruppen vaktade, och det profilen inte äger först.
+	var offer := state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies(), profile.unlocked_guardians(),
+			profile.collection)
 	for t in offer:
 		profile.add_trophy(t)
 	meta.offer = Array(offer)

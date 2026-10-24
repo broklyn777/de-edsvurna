@@ -238,3 +238,6 @@ Källa: `docs/research/siralim.md`.
 | Kyrkogrimmen | church grim, `church_grim` (elit, ingen familj), modellen `helvetshund.glb` | – (svensk folktro) | Kapellets vakthund; motdraget Skrattande låga från djup 3. |
 | Grimmens vakt | grim watch, `grim_watch` | – | Biter den som skadar någon annan i gruppen, en gång per tur. |
 | Lärdom | lesson, `lesson` i traits.json, `GameData.lesson()`, `UiStyle.lesson()` | – (VD 2026-10-23) | Vad bäraren lärde sig av fienden; visas kursivt under troféns effekt. `{bärare}` blir hjältens namn. |
+| Djupets prägel | twist, `twist` i encounters.json (+ `overrides`, `base`), `RunState.pools_for`, realms.json `depth_pools` | – (VAL, mot upprepning) | En vanlig grupp från djup 3 som ändrar vem man fäller först; visas på kortet, högst en gång per nedstigning. |
+| Sorgens vrede, Livvakt, Bundna | `grief_wrath`, `bodyguard` (`guard_family`), `bound_pair` (villkoret `ally_has_trait`) | – | Prägelns egenskaper: Barriär och Bärsärk när en allierad faller; tar halva skadan mot familjen; mindre skada så länge den andra bundna står. |
+| Inkräktare | intruder, realms.json `intruders`, rutans `intruder` | Creatures from other Realms (instabilitet) | Från djup 4 ibland en vanlig grupp ur en annan Realm. |

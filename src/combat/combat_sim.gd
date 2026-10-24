@@ -2913,6 +2913,10 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 			"self_family":
 				if owner.family != want:
 					return false
+			# Djupets prägel (Bundna): en annan levande i laget bär egenskapen.
+			"ally_has_trait":
+				if not _allies(owner).any(func(x: CombatUnit) -> bool: return x != owner and traits_of(x).has(want)):
+					return false
 			"self_not_acted":
 				if owner.last_ability != "":
 					return false

@@ -44,7 +44,9 @@
 		],
 		"elite_pools": [
 			[
-				"crypt_e1"
+				"crypt_e1",
+				"crypt_e8",
+				"crypt_e9"
 			],
 			[
 				"crypt_e2",
@@ -105,6 +107,75 @@
 		"growth": {
 			"folk": "Benfolket",
 			"twisted": "crypt_twisted"
+		},
+		"depth_pools": [
+			{
+				"from": 3,
+				"pools": [
+					[
+						"crypt_1a",
+						"crypt_1d",
+						"crypt_1e",
+						"crypt_1f"
+					],
+					[
+						"crypt_2c",
+						"crypt_2d",
+						"crypt_2h",
+						"crypt_2i",
+						"crypt_2j",
+						"crypt_2k"
+					],
+					[
+						"crypt_3c",
+						"crypt_3e",
+						"crypt_3f",
+						"crypt_3g",
+						"crypt_3h",
+						"crypt_3i",
+						"crypt_3j"
+					]
+				]
+			},
+			{
+				"from": 6,
+				"pools": [
+					[
+						"crypt_1b",
+						"crypt_1c",
+						"crypt_1d",
+						"crypt_1e",
+						"crypt_1f"
+					],
+					[
+						"crypt_2a",
+						"crypt_2b",
+						"crypt_2e",
+						"crypt_2f",
+						"crypt_2g",
+						"crypt_2h",
+						"crypt_2i",
+						"crypt_2j"
+					],
+					[
+						"crypt_3a",
+						"crypt_3b",
+						"crypt_3d",
+						"crypt_3g",
+						"crypt_3h",
+						"crypt_3i",
+						"crypt_3j",
+						"crypt_2k"
+					]
+				]
+			}
+		],
+		"intruders": {
+			"from": 4,
+			"realms": [
+				"chapel"
+			],
+			"text": "Kultens folk har letat sig ned i gravvalven. Vad söker de här?"
 		}
 	},
 	"chapel": {
@@ -155,7 +226,9 @@
 		],
 		"elite_pools": [
 			[
-				"chapel_e1"
+				"chapel_e1",
+				"chapel_e8",
+				"chapel_e9"
 			],
 			[
 				"chapel_e2",
@@ -201,6 +274,76 @@
 		],
 		"growth": {
 			"folk": "Kultens folk"
+		},
+		"depth_pools": [
+			{
+				"from": 3,
+				"pools": [
+					[
+						"chapel_1a",
+						"chapel_1d",
+						"chapel_1e",
+						"chapel_1f",
+						"chapel_1g"
+					],
+					[
+						"chapel_2d",
+						"chapel_2f",
+						"chapel_2h",
+						"chapel_2i",
+						"chapel_2j",
+						"chapel_2k"
+					],
+					[
+						"chapel_3c",
+						"chapel_3e",
+						"chapel_3g",
+						"chapel_3h",
+						"chapel_3i",
+						"chapel_3j",
+						"chapel_3k"
+					]
+				]
+			},
+			{
+				"from": 6,
+				"pools": [
+					[
+						"chapel_1a",
+						"chapel_1b",
+						"chapel_1c",
+						"chapel_1e",
+						"chapel_1f",
+						"chapel_1g"
+					],
+					[
+						"chapel_2a",
+						"chapel_2b",
+						"chapel_2e",
+						"chapel_2g",
+						"chapel_2h",
+						"chapel_2i",
+						"chapel_2j"
+					],
+					[
+						"chapel_3a",
+						"chapel_3b",
+						"chapel_3d",
+						"chapel_3f",
+						"chapel_3h",
+						"chapel_3i",
+						"chapel_3k",
+						"chapel_2k"
+					]
+				]
+			}
+		],
+		"intruders": {
+			"from": 4,
+			"realms": [
+				"crypt"
+			],
+			"text": "Benfolket har stigit upp ur kryptan under kapellet. Något kallar dem uppåt."
 		}
 	},
 	"grove": {
@@ -316,7 +459,8 @@
 		],
 		"elite_pools": [
 			[
-				"troll_e1"
+				"troll_e1",
+				"troll_e4"
 			],
 			[
 				"troll_e2",
@@ -342,6 +486,67 @@
 		"disciples": [],
 		"growth": {
 			"folk": "Trollfolket"
+		},
+		"depth_pools": [
+			{
+				"from": 3,
+				"pools": [
+					[
+						"troll_1a",
+						"troll_1c",
+						"troll_1d",
+						"troll_1f",
+						"troll_1g"
+					],
+					[
+						"troll_2b",
+						"troll_2d",
+						"troll_2e",
+						"troll_2f"
+					],
+					[
+						"troll_3b",
+						"troll_3c",
+						"troll_3d",
+						"troll_3e",
+						"troll_2a"
+					]
+				]
+			},
+			{
+				"from": 6,
+				"pools": [
+					[
+						"troll_1b",
+						"troll_1c",
+						"troll_1e",
+						"troll_1f",
+						"troll_1g"
+					],
+					[
+						"troll_2a",
+						"troll_2c",
+						"troll_2e",
+						"troll_2f"
+					],
+					[
+						"troll_3a",
+						"troll_3b",
+						"troll_3c",
+						"troll_3e",
+						"troll_2f"
+					]
+				]
+			}
+		],
+		"intruders": {
+			"from": 4,
+			"realms": [
+				"crypt",
+				"chapel"
+			],
+			"stat_mult": 1.12,
+			"text": "Folk från låglandet har tagit sig upp i berget. Trollen tål dem inte heller."
 		}
 	}
 }

@@ -584,10 +584,24 @@ func _dev_args() -> void:
 			# 0.27: trofébytet vid en lägereld (lägret utan erbjudande)
 			state.take_trophy("bone_finger")
 			state.take_trophy("quick_shot")
+			for t in ["bone_finger", "quick_shot"]:
+				if not profile.collection.has(t):
+					state.fresh_trophies.append(t)  # NY i lägret
 			camp_mode = "campfire"
 			get_tree().change_scene_to_file.call_deferred(CAMP_SCENE)
 		elif arg == "--camp":
-			offer = state.trophy_offer(data, rng)
+			offer = state.trophy_offer(data, rng, [], [], [], profile.collection)
+			if OS.get_cmdline_user_args().has("--camp-mix") and offer.size() >= 2:
+				# skärmdump: en sällsynt elitvariants trofé först, och en ägd som Brokk bär (sparas inte)
+				var rare: String = data.enemies.skeleton_warrior.get("elite", {}).get("trophy", "")
+				profile.collection.append(offer[1])
+				state.take_trophy(offer[1])
+				state.equip("brokk", offer[1])
+				state.trophies.erase(offer[1])
+				if rare != "":
+					offer.push_front(rare)
+				offer.resize(3)
+			note_offer()
 			last_receipt = ["Domens kall (Paladinen): slog till 7 gånger – 31 skada"]
 			get_tree().change_scene_to_file.call_deferred(CAMP_SCENE)
 
@@ -788,6 +802,8 @@ var camp_mode := "victory"
 func open_campfire_camp() -> void:
 	camp_mode = "campfire"
 	offer = []
+	offer_new = []
+	offer_known = []
 	last_receipt = []
 	quest_reward = {}
 	get_tree().change_scene_to_file(CAMP_SCENE)
@@ -985,11 +1001,13 @@ func use_object(choice: String) -> Dictionary:
 
 
 func treasure() -> String:
-	var t := state.treasure(data, rng)
+	var t := state.treasure(data, rng, profile.collection)
 	var amount := roundi(t.silver * state.silver_mult(data))
 	profile.silver += amount
 	room_result = "Skattkammaren: +%d silver" % amount
 	if t.trophy != "":
+		if not profile.collection.has(t.trophy) and not state.fresh_trophies.has(t.trophy):
+			state.fresh_trophies.append(t.trophy)  # lägret märker den NY
 		profile.add_trophy(t.trophy)
 		state.take_trophy(t.trophy)
 		room_result += " och trofén %s!" % data.traits[t.trophy].name
@@ -1171,7 +1189,6 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 		if data.encounters[state.encounter()].get("guardian", false):
 			profile.defeat_guardian(state.encounter())  # väktarsteg 2: väktarens trofé efter två segrar
 	mark_sneak(data, profile, state)
-	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies(), profile.unlocked_guardians())
 	quest_reward = {}
 	room_result = ""
 	var done_now := state.battle_won()
@@ -1191,6 +1208,10 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 			profile.silver += paid
 			room_result = ("+%d silver. " % paid if paid > 0 else "") + String(w.text)
 	_after_quest_check(done_now)
+	# Mot upprepning: erbjudandet räknas efter det gruppen vaktade, så att skattens trofé inte erbjuds en gång till.
+	offer = state.trophy_offer(data, rng, state.last_elites, profile.unlocked_boss_trophies(), profile.unlocked_guardians(),
+			profile.collection)
+	note_offer()
 	camp_mode = "victory"
 	_trophy_sound()
 	camp_chosen = ""
@@ -1199,6 +1220,26 @@ func battle_finished(victory: bool, receipt: Array[String], log: Array[Dictionar
 	_save()
 	save_run()
 	get_tree().change_scene_to_file(CAMP_SCENE)
+
+
+## Mot upprepning (lägret): vilka troféer i erbjudandet som är nya för profilen (offer_new, märks NY). Är ingen ny
+## behövs inget val: alla följer med in i körningen (de finns redan i samlingen) och lägret visar en kort rad i stället
+## för korten (offer_known).
+var offer_new: Array[String] = []
+var offer_known: Array[String] = []
+
+
+func note_offer() -> void:
+	offer_new.assign(offer.filter(func(t: String) -> bool: return not profile.collection.has(t)))
+	offer_known = []
+	for t in offer_new:
+		if not state.fresh_trophies.has(t):
+			state.fresh_trophies.append(t)
+	if not offer.is_empty() and offer_new.is_empty():
+		offer_known = offer.duplicate()
+		for t in offer_known:
+			state.take_trophy(t)
+		offer = []
 
 
 ## Prototyp (sallskap-fem): när en ny plats i sällskapet har öppnats (Profile.SLOT_UNLOCKS) berättar borgen det en

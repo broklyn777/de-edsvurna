@@ -46,7 +46,11 @@ func test_realm_choice_follows_into_the_run() -> void:
 	s.depth = 10
 	for t in s.trophy_offer(_data, rng):
 		var from_chapel := false
-		for enc_id in _data.realms.chapel.floors:
+		# Påfyllnaden tar också Realmens vanliga fiender ur grupperna (mot upprepning).
+		var chapel_encs: Array = _data.realms.chapel.floors.duplicate()
+		for pool in RunState.pools_for(_data, "chapel", s.depth):
+			chapel_encs.append_array(pool)
+		for enc_id in chapel_encs:
 			for kind in _data.encounters[enc_id].enemies:
 				from_chapel = from_chapel or _data.enemies[kind].trophy == t
 		assert_true(from_chapel, "%s kommer från kapellet" % t)

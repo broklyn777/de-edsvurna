@@ -96,6 +96,9 @@ func _dev_enter(arg: String) -> void:
 		cell.elite = want == "elite"
 		if parts.size() > 1:
 			cell.encounter = parts[1]
+	if want == "intruder":  # --enter=intruder:<realm>:<möte> (mot upprepning: en grupp från en annan Realm)
+		cell = {"kind": "battle", "intruder": parts[1] if parts.size() > 1 else "chapel",
+				"encounter": parts[2] if parts.size() > 2 else "chapel_2a", "tier": 1}
 	if want == "object":
 		cell.obj = parts[1] if parts.size() > 1 else "sarcophagus"  # --enter=object:grave_bell
 	if want == "end":  # --enter=end: djupets bossruta (huvudbossen eller väktaren), --enter=end:<möte> ett annat
@@ -793,6 +796,8 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		title = "NEMESIS"
 	if state.guardian_room(r):
 		title = "VÄKTARE"  # roterande väktare: en befordrad fiende leder bossstriden på det här djupet
+	if r.has("intruder"):
+		title = "INKRÄKTARE"  # mot upprepning: en grupp från en annan Realm
 	UiStyle.text(self, Vector2(x, y), title, 22, Parchment.SEAL if title != "FIENDEGRUPP" else InkArt.INK,
 			HORIZONTAL_ALIGNMENT_LEFT, w, 0)
 	y += 12
@@ -817,6 +822,7 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 					", i samlingen" if run.collection.has(gt) else ""])
 	elif r.get("boss", false):
 		lines.push_front(String(enc.get("name", "")))
+	lines.append_array(_variation_lines(data, state, r, enc))
 	if guards != "":
 		lines.append(guards)
 	var traits: Array = []
@@ -863,6 +869,22 @@ func _draw_panel(data: Dictionary, state: RunState) -> void:
 		y += UiStyle.para(self, Vector2(x, y), l, 16, Parchment.INK, w, 4) + 6
 	UiStyle.big_button(self, _fight_rect(), "ANFALL", _t)
 	small_button(_back_rect(), "BACKA")
+
+
+## Mot upprepning: djupets prägel ("twist" i encounters.json: vem man ska fälla först), en inkräktare från en annan
+## Realm (realms.json "intruders") och väktarens andra möte ("second_warning", när den är besegrad förut).
+func _variation_lines(data: Dictionary, state: RunState, r: Dictionary, enc: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	if r.has("intruder"):
+		var src: Dictionary = data.realms.get(String(r.intruder), {})
+		var here: Dictionary = data.realms[state.realm].get("intruders", {})
+		out.append("Från %s. %s" % [String(src.get("name", r.intruder)), String(here.get("text", ""))])
+	if enc.has("twist"):
+		out.append("Djupets prägel – %s: %s" % [String(enc.twist.get("name", "")), String(enc.twist.get("text", ""))])
+	if state.guardian_room(r) and String(enc.get("second_warning", "")) != "" \
+			and int(run.profile.guardian_wins.get(r.encounter, 0)) > 0:
+		out.append(String(enc.second_warning))
+	return out
 
 
 ## Väktarens rad på kortet: mötets namn, vem som leder och när huvudbossen kommer tillbaka.

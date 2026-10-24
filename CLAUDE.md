@@ -354,6 +354,20 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (shaderns `breath`, `flow`) och svaga droppar vid ramen, 2 fläckar och eldar, 3 fler, 4 rött sigill. Ändrades inget på
   kartan får "Medan ni var borta" en rad om det som växer härnäst (`LivingMap.quiet_line`, `next_to_grow`, `dialog.json`
   living_map "quiet"/"lonely" med id:n, `chron_said`). `--home=quiet --home-summary`; stegen: `--growth=crypt:0,chapel:1,grove:2 --gate`.
+- **Mot upprepning** (variation-1, textspelet `docs/provspel/textspel-dagbok.md`, `docs/plan/mot-upprepning.md`): vanliga
+  grupper per djupband (`realms.json` "depth_pools" från djup 3 och 6, `RunState.pools_for`), några med **djupets prägel**
+  (`encounters.json` "twist" + "overrides", "base"; visas på kortet) som ändrar vem man fäller först: Sorgens vrede (fäll
+  prästen/häxan/grytmodern först), Livvakt (`bodyguard`, guard_family: fäll livvakten först) och Bundna (`bound_pair`,
+  villkoret `ally_has_trait`: välj vem som får stå kvar); samma prägel högst en gång per nedstigning (`twists_used`).
+  Från djup 4 är en vanlig grupp per våning ibland en **inkräktare** ur en annan Realm (`realms.json` "intruders",
+  `INTRUDER_CHANCE`, kortets rubrik INKRÄKTARE, `--enter=intruder:<realm>:<möte>`). Våning 1:s elit roterar (2–3 per
+  Realm; första nedstigningen behåller den första), Nemesis på våning 2 dras ur båda våningarnas elit (`nemesis_pool`),
+  och en väktares ledare (rank miniboss) är ingen vanlig elit på väktarens djup ±1 (`elite_pools_for`, `GUARDIAN_GAP`).
+  Väktarens andra möte: en egen rad på kortet ("second_warning"). Lägret: troféer man inte äger går först och märks NY,
+  ägda visar ÄGD och vem som bär dem, sällsynta (`is_rare_trophy`) står först och glöder; inget nytt = ingen valskärm,
+  en kort rad och troféerna följer med (`Run.note_offer`, `offer_new`, `offer_known`); erbjudandet räknas efter det
+  gruppen vaktade (ingen skattetrofé två gånger); skatten föredrar det man inte äger. `--camp --camp-mix` för
+  skärmdumpar. Mätning: `tests/variety_report.gd`; tester `tests/test_variation.gd`.
 - **Grottans utseende** (0.28.3, efter skärmgranskningen): dimman är en sammanhängande tuschlavering med skraffering
   och svagt rutnät; besökta rutor ljust pergament med stenprickar; bergssidor i tusch där det kända möter dimman; ett
   varmt sken där man står; hörnmarkeringar på hela gränsen mot dimman (varje ruta man når med ett tryck). `--explore=<n>`
