@@ -14,6 +14,73 @@ från `levande-karta.md` (världshändelserna) och `objects.json` (Realmens för
 
 ---
 
+## Steg 1 – byggt (2026-10-24, grenen `trollberget` från test-0.30)
+
+VD sade "kör". Projektledaren tog besluten nedan; alla är **VAL** tills VD säger annat.
+
+- **VAL 1 Namn:** Trollberget, kort "Berget", id `mountain`.
+- **VAL 2 Öppnas** när kapellet är klarat på djup 1 (⚙ `"requires": {"realm": "chapel", "depth": 1}` i realms.json,
+  `RunState.realm_open()`, `realm_lock_text()`). På kampanjkartan är området täckt av fördärvet och blekt, med raden
+  "Öppnas när kapellet är klarat på djup 1"; ett tryck väljer det inte. Lunden har ingen sådan spärr i koden (den är
+  öppen från början); samma rad i realms.json räcker om den ska få en. Utvecklarflaggan `--cleared=chapel:1`.
+- **VAL 3 Inga nya troll:** bara de sju som finns. Pooler (alla `stat_mult` satta med botarna, se nedan):
+  - Tier 0: `troll_1a` Mossiga backen, `troll_1b` Grytans eld, `troll_1c` Avundens snår, *ny* `troll_1d` Klubban vid grytan
+    (Stenkrossaren, Grytmodern).
+  - Tier 1: `troll_2a`, `troll_2b`, *nya* `troll_2c` Avund vid grytan (Avundsjätten, Grytmodern, Mossrygg), `troll_2d`
+    Stenraset (Stenkrossaren ×2, Avundsjätten).
+  - Tier 2: *nya* `troll_3a` Hela byn i berget (fyra), `troll_3b` Vanornas straff, `troll_3d` Mossa och sten, och `troll_2a`.
+  - Våningsmöten (vakten vid den bevakade skatten, Nemesis): *nya* `troll_1` Trollstigen och `troll_2` Bergets port
+    (Mossrygg, Grytmodern, Stenkrossaren, Avundsjätten); bossen `troll_3` Bergakungens sal.
+  - Elit: våning 1 `troll_e1` Gråluvans stuga; våning 2 `troll_e2` Bron (Brom) och *ny* `troll_e3` Vaggan (Gråluva,
+    Grytmodern, Mossrygg). Bergsrået, Byggaren och Bortbytingen väntar på nya troll.
+- **VAL 4 Motdrag:** inga. Inget befintligt motdrag passar trollen (de nämner Likbäraren, dimman, kultens ordensregel
+  eller spindlar); §4.3 kräver ny kod.
+- **VAL 5 Berättelsen** som §2. Berättarrutan efter den första segern mot Bergakungen (`dialog.json` narrator
+  `boss_mountain_king`, `Run.narrate("boss_" + kind)`): kronan, den tomma infattningen, stämpeln och löftet om klockorna.
+- **VAL 6 Fångar:** inga (`"disciples": []` som Lunden). Inga bybor, ingen `captives`-kod.
+- **VAL 7 Ingen följd och ingen gåva** (tull, klocka) i det här steget; `growth.folk` är "Trollfolket" så att den levande
+  kartan fungerar som för de andra.
+- **VAL 8 Kartan:** `rect` [40, 96, 240, 160] i nordväst. Väktarens vinjett låg under området och visas inte längre när
+  berget finns; häxan står kvar mellan berget och kapellet. Kompassen flyttade ned till vänster under bergets kartusch, och
+  kartuschen hålls innanför vänsterkanten. Kontrollerat i 1280×720 och 1560×720.
+- **VAL 9/10 Föremål utan ny kod:** de lånar andra föremåls val med egen text (`results`, som Lunden):
+  - **Trollbägaren** (`troll_cup`): TA BÄGAREN = sarkofagens "knock" (en trollgrupp +15 % följer efter, dubbel skatt).
+    Planens enklaste version; trollen jagar inte till trappan (det kräver `spawn_group_at_goal` ⚙).
+  - **Nedsänkt kyrkklocka** (`sunken_bell`): SLÅ PÅ KLOCKAN = glasfönstrets "pull" (raden syns, nästa grupp +15 %).
+    Svedd hud på alla vid `battle_start` och räknaren `bells` väntar (⚙).
+  - **Ljusspricka** (`light_crack`): registrets val, MOT GLIMTEN (2 skatter) eller MOT SPÅREN (2 grupper). Planens
+    Förstenade-version kräver ⚙.
+  - Väktarens timglas. **Sång genom berget** väntar (kräver `named`/`knows_name` ⚙).
+- **Questens namn** (§7, ⚙ litet: `"quests"` i realms.json, `quest.title`, `RunState.quest_text`): Tullen vid ravinen,
+  Stäng berget, Klockans delar. Föremålens namn i Samla (Kläppen, Oket, Klockrepet) är inte gjorda.
+- **Vinjett och zoombild:** `vagen.webp` ur Drakvalvet. **Stämning:** kryptans. **Stil** `"mountain"`: striden (`CryptWorld`)
+  i kallt blått ljus, grå granit, grova sjukantiga stenpelare och flyttblock; rumsögonblicken (`RoomWorld`) i kryptans
+  form med kallare palett.
+- **Tester:** `tests/test_realm_mountain.gd` (bara troll, spärren, kartans ruta, 40 frön × 2 våningar utan
+  `Grotto.problems()`, questens namn, föremålens texter).
+
+**Botarna** (`BALANS=grotta NIVA_REALM=mountain`, djup 1, 100 körningar per rad, MACRO / TUNED / försiktig / direkt):
+
+| Läge | 4 hjältar, nivå 3 | Paladinen + Imma |
+|---|---|---|
+| Trollens möten utan `stat_mult` (tier 0,72 / 0,76 / 0,78, elit och boss 1,0) | 80 / 83 / 69 / 70 % | – |
+| Tier 0,82 / 0,88 / 0,90, elit 1,1, våningar 1,1 / 1,14, boss 1,1 | 38 / 52 / 28 / 32 % | 3 / 3 / 2 / 6 % |
+| Samma, boss 1,0 | 58 / 69 / 51 / 57 % | 23 / 31 / 5 / 11 % |
+| **Samma, boss 1,05 (valt)** | **46 / 64 / 34 / 38 %** | 8 / 8 / 2 / 7 % |
+| Kapellet som jämförelse (samma gren) | 44 / 45 / 10 / 22 % | 94 / 74 / 91 / 91 % |
+
+- Nästan alla förluster sker hos Bergakungen (`f1_end`), resten vid elitgruppen på våning 2.
+- **Små sällskap är en vägg:** med två hjältar gör sällskapet nästan alltid samma sorts handling två gånger i rad, så
+  Stenhjärta (−60 % skada) gäller nästan hela tiden. `PARTY_SCALE` räcker inte. Berget öppnas efter kapellet, då de
+  flesta har fler hjältar, men **VD** bör avgöra om Stenhjärta ska räkna per hjälte eller vara mildare för små sällskap.
+
+**Kvar ur planen:** de fyra nya trollen och deras troféer och elitvarianter (§4.2), motdragen (§4.3), elitgrupperna e3–e6
+med nya troll, Sång genom berget och de andra föremålens fulla versioner (§6), föremålsnamnen i Samla, fångarna (§8),
+tull och klockgåva (§9), den kronade Bergakungen (steg 4), världshändelsen (§10), tuschvägen och bron på kartan (§11),
+egen stämning, musik och ljud (§12), egna modeller och en egen vinjett (§13).
+
+---
+
 ## 0. Kort
 
 - **Trollberget** (`mountain`, kort "Berget"): ett fjäll ovanför Stenby. Där har trollen bott sedan före kyrkorna, och

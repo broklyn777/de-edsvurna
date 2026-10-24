@@ -236,7 +236,7 @@ func _arrive() -> void:
 
 ## Spelar rutans 3D-ögonblick i Realmens stil och väntar tills det är slut eller hoppas över.
 func _play_moment(kind: String) -> void:
-	var style := run.state.realm if run.state.realm in RoomWorld.STYLES else "crypt"
+	var style: String = run.state.realm if run.state.realm in RoomWorld.STYLES else "crypt"
 	_moment = RoomMoment.create(kind, style, Array(run.state.party), run.data)
 	add_child(_moment)
 	await _moment.finished
