@@ -41,6 +41,9 @@ var arrived := false  # pjäsen kom just fram till rutan (rumskartans _arrive)
 var silver_floor := 0  # silvret får inte bli lägre än så här (boten spenderar inget)
 var collection_floor: Array = []
 var run_fights := 0  # strider i körningen (karriärläget)
+var run_ups := 0  # nivåer (alla hjältar) i körningen (prototyp NIVAER)
+var run_upfights := 0  # vunna strider där minst en hjälte steg i nivå
+var run_pal_ups := 0  # Paladinens nivåer i körningen
 var lost_at := ""  # var körningen förlorades (karriärläget)
 ## Den levande världen (WorldEvents): hur ofta händelserna startar och hur de slutar, följder och gåvor. VARLD=av stänger av.
 var world_stats := {"started": {}, "results": {}, "costs_on": {}, "gifts": {}, "tor": 0}
@@ -77,6 +80,9 @@ func _init() -> void:
 		elif arg == "--verbose":
 			verbose = true
 	OS.add_logger(catcher)
+	if OS.get_environment("NIVAER") != "":
+		HeroStats.set_variant(OS.get_environment("NIVAER"))
+		print("Nivåvariant: %s" % HeroStats.variant)
 	if OS.get_environment("DJUPSTEG") != "":
 		CombatSim.depth_step = float(OS.get_environment("DJUPSTEG"))
 		print("Djupsteg: +%.1f %% per djup" % (CombatSim.depth_step * 100.0))
@@ -579,7 +585,11 @@ func _award(sim: CombatSim, won: bool) -> void:
 		var r := state.current_room()
 		state.vow_after_battle(data, sim)
 		_roll_finds("boss" if r.get("boss", false) else RunState.fight_kind(r))
-		profile.grant_xp(data, state.party, HeroStats.battle_xp(RunState.fight_kind(r), state.depth, r.get("boss", false)))
+		var ups := profile.grant_xp(data, state.party, HeroStats.battle_xp(RunState.fight_kind(r), state.depth, r.get("boss", false)))
+		for id in ups:
+			run_ups += ups[id].size()
+		run_upfights += 1 if not ups.is_empty() else 0
+		run_pal_ups += ups.get("paladin", []).size()
 
 
 func _roll_finds(kind: String) -> void:
@@ -1045,6 +1055,9 @@ func _career_report(from: int, runs: int, descents: int) -> void:
 				lv += float(profile.hero(data, h).level)
 			lv /= maxf(party.size(), 1)
 			run_fights = 0
+			run_ups = 0
+			run_upfights = 0
+			run_pal_ups = 0
 			lost_at = ""
 			cfg.first = d == 0
 			_run_quiet()
@@ -1053,6 +1066,8 @@ func _career_report(from: int, runs: int, descents: int) -> void:
 			rows[d].append({"level": lv, "depth": profile.depth, "won": won, "fights": run_fights,
 					"silver": profile.silver - before, "heroes": party.size(), "lost_at": lost_at if not won else "",
 					"realm": realm, "best": best_before, "recruited": profile.recruited.size(),
+					"ups": run_ups, "upfights": run_upfights, "pal_ups": run_pal_ups,
+					"pal_level": int(profile.hero(data, "paladin").level),
 					"growth": growth_before if d > 0 else -1, "twisted": state.twisted != "",
 					"map": data.realms.keys().map(func(r: String) -> int: return LivingMap.growth(profile, r))})
 			if OS.get_environment("LEVANDE") == "av":
@@ -1182,7 +1197,37 @@ func _career_print(rows: Array, runs: int, descents: int) -> void:
 		print("    %-12s %4d körningar  vinst %3d %%  nivå %.1f" % [k, by[k].n, roundi(100.0 * by[k].won / by[k].n),
 				by[k].lv / by[k].n])
 	print("  På ett djup som redan är klarat (slipar): %d av %d nedstigningar" % [grind, total])
+	_pace_print(rows, descents)
 	_living_print(rows, runs, descents)
+
+
+## Nivåtakten (prototyp, docs/plan/nivaer-och-charges.md): Paladinens nivå efter nedstigningen, nivåer per nedstigning
+## (Paladinen och alla hjältar), andelen vunna strider där någon steg i nivå, och strider per Paladinens nivå.
+func _pace_print(rows: Array, descents: int) -> void:
+	print("")
+	print("  Nivåtakten (variant: %s):" % (HeroStats.variant if HeroStats.variant != "" else "i dag"))
+	print("  ned  pal.nivå efter  pal.nivåer  alla nivåer  strider m. nivå  strider/pal.nivå")
+	var tot_f := 0.0
+	var tot_p := 0.0
+	for d in descents:
+		var list: Array = rows[d]
+		var n := maxi(list.size(), 1)
+		var pl := 0.0
+		var pu := 0.0
+		var au := 0.0
+		var uf := 0.0
+		var f := 0.0
+		for r in list:
+			pl += r.pal_level
+			pu += r.pal_ups
+			au += r.ups
+			uf += r.upfights
+			f += r.fights
+		tot_f += f
+		tot_p += pu
+		print("  %3d  %13.1f  %10.2f  %11.2f  %13d %%  %15s" % [d + 1, pl / n, pu / n, au / n,
+				roundi(100.0 * uf / maxf(f, 1.0)), ("%.1f" % (f / pu)) if pu > 0 else "–"])
+	print("  Totalt: %.1f strider per Paladinens nivå" % (tot_f / maxf(tot_p, 1.0)))
 
 
 ## Den levande kartan: vinst per steg i den Realm man gick till, den förvridna bossen och kartans läge per nedstigning.

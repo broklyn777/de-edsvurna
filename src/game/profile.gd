@@ -429,6 +429,9 @@ func grant_xp(data: Dictionary, party: Array, xp: int) -> Dictionary:
 
 
 static func catch_up(level: float, party_avg: float) -> float:
+	if HeroStats.variant != "":  # prototyp: avståndet räknat i dagens nivåer
+		return minf(1.0 + CATCH_UP_PER_LEVEL * maxf(HeroStats.old_level(party_avg) - HeroStats.old_level(level), 0.0),
+				CATCH_UP_MAX)
 	return minf(1.0 + CATCH_UP_PER_LEVEL * maxf(party_avg - level, 0.0), CATCH_UP_MAX)
 
 
@@ -440,7 +443,7 @@ func recruit(data: Dictionary, hero_id: String, party_avg := 1.0) -> bool:
 	recruited.append(hero_id)
 	var h := hero(data, hero_id)
 	if int(h.level) <= 1:
-		h.level = 2 if party_avg >= 4.0 else 1
+		h.level = 2 if HeroStats.old_level(party_avg) >= 4.0 else 1
 		h.xp = 0
 	return true
 

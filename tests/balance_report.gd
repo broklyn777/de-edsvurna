@@ -32,6 +32,10 @@ func _init() -> void:
 	if OS.get_environment("KORNINGAR") != "":
 		RUNS = int(OS.get_environment("KORNINGAR"))
 	var data := GameData.load_all()
+	# NIVAER=k2|k3|kurva|k2seg: prototyp av andra nivåtakter (HeroStats.set_variant, docs/plan/nivaer-och-charges.md).
+	if OS.get_environment("NIVAER") != "":
+		HeroStats.set_variant(OS.get_environment("NIVAER"))
+		print("Nivåvariant: %s" % HeroStats.variant)
 	# DJUPSTEG=0.03: fiendernas stats per djup för mätningen (spelets värde är CombatSim.DEPTH_STEP).
 	if OS.get_environment("DJUPSTEG") != "":
 		CombatSim.depth_step = float(OS.get_environment("DJUPSTEG"))
