@@ -220,3 +220,25 @@ func test_level_jump_shows_damage_and_heal() -> void:
 	assert_eq(heal.size(), 1, "Alva helar")
 	assert_true(int(heal[0].after) > int(heal[0].before), "starkare helning")
 	assert_true(LevelJump.text(jump).contains("→"), LevelJump.text(jump))
+
+
+## Edsgrader (VD 2026-10-25): var tredje nivå en titel för Paladinen, inga siffror.
+func test_oath_rank_every_third_level() -> void:
+	for lv in range(1, 31):
+		assert_eq(HeroStats.oath_rank(lv), lv / 3, "nivå %d" % lv)
+		var title := Dialog.oath_rank_title(_data, HeroStats.oath_rank(lv))
+		assert_eq(title != "", lv >= 3, "titel från nivå 3 (nivå %d)" % lv)
+	assert_eq(Dialog.oath_rank_title(_data, 2), "Edsvuren av andra graden")
+	assert_eq(Dialog.oath_rank_title(_data, 4), "Edsvuren av fjärde graden")
+	assert_true(Dialog.oath_rank_title(_data, 11) != "", "också högt upp")
+	var titles := {}
+	for r in range(1, 11):
+		titles[Dialog.oath_rank_title(_data, r)] = true
+	assert_eq(titles.size(), 10, "en egen titel per grad")
+	var p := Profile.new()
+	p.hero_name = "Tran"
+	for r in range(1, 13):
+		var alone := Dialog.oath_rank_line(_data, p, r, ["paladin"])
+		assert_eq(alone.who, "gorm", "Gorm säger det när ingen kamrat har en rad (grad %d)" % r)
+		assert_true(not String(alone.text).contains("{"), "ifylld: " + String(alone.text))
+	assert_eq(Dialog.oath_rank_line(_data, p, 2, ["paladin", "brokk"]).who, "brokk", "en kamrat i sällskapet först")

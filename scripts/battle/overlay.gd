@@ -106,28 +106,52 @@ func _draw_calc(w: float) -> void:
 ## "Brokk nådde nivå 5!" med statsen som steg, uppräknade, under kvittot.
 func _draw_level_ups(w: float, h: float, a: float) -> void:
 	var y := h * 0.45 + 100 + lines.size() * 26
+	# Mittfältet mellan "Det här avgjorde striden" och fynden.
+	var cw := minf(w - 2 * 380.0, 600.0) if w > 1100.0 else w - 32.0
+	var cx := (w - cw) / 2.0
 	for i in level_ups.size():
 		var u: Dictionary = level_ups[i]
 		var start := 1.0 + i * 0.35
 		var t := clampf((_big_t - start) / 0.8, 0.0, 1.0)
 		if t <= 0.0:
 			continue
-		var parts: Array = []
+		var rows: Array = []
 		if not Array(u.get("jump", [])).is_empty():
 			# Nivåskalan (VD 2026-10-25): hoppet i det striden gör, mot en typisk fiende på djupet (som hjältebladet).
-			parts.append(LevelJump.text(u.jump))
+			var jump: Array = u.jump
+			rows.append(LevelJump.text(jump.slice(0, 2)))
+			if jump.size() > 2:
+				rows.append(LevelJump.text(jump.slice(2)))
 		else:
+			var parts: Array = []
 			for stat in HeroStats.STATS:
 				var g := float(u.gains.get(stat, 0))
 				if g > 0.0:
 					parts.append("+%s %s" % [HeroStats.shown(g * t), HeroStats.STAT_NAMES[stat]])
+			rows.append("  ".join(parts))
 		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - t * 4.0)
-		draw_set_transform(Vector2(w / 2, y + i * 40), 0, Vector2.ONE * pop)
+		draw_set_transform(Vector2(w / 2, y), 0, Vector2.ONE * pop)
 		UiStyle.text(self, Vector2(-w / 2, 0), "%s nådde nivå %d!" % [u.name, u.level], 20, Color(UiStyle.GOLD, a * minf(1.0, t * 3.0)),
 				HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 		draw_set_transform(Vector2.ZERO)
-		UiStyle.text(self, Vector2(0, y + i * 40 + 18), "  ".join(parts), 16, Color(1, 1, 1, 0.85 * a * t),
-				HORIZONTAL_ALIGNMENT_CENTER, w, 4)
+		y += 20
+		for row in rows:
+			UiStyle.text(self, Vector2(cx, y), UiStyle.fit(String(row), 16, cw), 16, Color(1, 1, 1, 0.85 * a * t),
+					HORIZONTAL_ALIGNMENT_CENTER, cw, 4)
+			y += 20
+		if u.has("rank"):
+			# Edsgraden (VD 2026-10-25): titeln och en replik, inga siffror.
+			var rt := clampf((_big_t - start - 0.6) / 0.8, 0.0, 1.0)
+			y += 8
+			UiStyle.text(self, Vector2(cx, y), "EDSGRAD: %s" % String(u.rank.title).to_upper(), 19,
+					Color(UiStyle.TRAIT_GOLD, a * rt), HORIZONTAL_ALIGNMENT_CENTER, cw, 5)
+			y += 4
+			var line: Dictionary = u.rank.get("line", {})
+			if not line.is_empty():
+				y += UiStyle.para(self, Vector2(cx, y + 18), "%s: ”%s”" % [line.name, line.text], 16,
+						Color(1, 1, 1, 0.8 * a * rt), cw, 4)
+			y += 4
+		y += 14
 
 
 ## Det här avgjorde striden: till vänster om resultatet, spegelvänt mot fynden. Taggen säger vilken del av bygget

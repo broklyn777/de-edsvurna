@@ -14,6 +14,15 @@ const GROWTH := 0.3
 const GROWTH_UP := 0.4
 const GROWTH_DOWN := 0.2
 const LEVELS_PER_DEPTH := 5
+## Edsgrader (VD 2026-10-25, VAL): var tredje nivå ger Paladinen en titel (Dialog.oath_rank_title), inga siffror.
+const OATH_RANK_EVERY := 3
+
+
+## Edsgraden på nivån: 0 på nivå 1–2, 1 på nivå 3–5, 2 på 6–8 …
+static func oath_rank(level: int) -> int:
+	return maxi(level, 0) / OATH_RANK_EVERY
+
+
 ## Erfarenhet per vunnen strid: bas × rumstyp × djup² – i kvadrat som kurvan till nästa nivå, så att en
 ## nivå tar ungefär lika många strider på varje djup (static var: balansrapporten prövar andra värden). Alla i sällskapet får den, även de stupade.
 static var XP_BASE := 17

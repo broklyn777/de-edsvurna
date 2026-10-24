@@ -433,6 +433,11 @@ func _dev_args() -> void:
 		elif arg.begins_with("--xp="):
 			# --xp=<n> ger sällskapet n erfarenhet direkt (för att se nivåuppgångar på segerskärmen)
 			profile.grant_xp(data, state.party, int(arg.get_slice("=", 1)))
+		elif arg.begins_with("--level="):
+			# --level=<n> sätter sällskapets nivå (före --xp-bar; med --xp-bar nära nästa nivå syns hoppet och edsgraden)
+			for hero_id in state.party:
+				profile.hero(data, hero_id).level = maxi(int(arg.get_slice("=", 1)), 1)
+				profile.hero(data, hero_id).xp = 0
 		elif arg.begins_with("--xp-bar="):
 			# --xp-bar=<n> fyller mätaren till n utan att höja nivån (nästa seger ger en nivå)
 			for hero_id in state.party:
@@ -1088,9 +1093,15 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 		for hero_id in state.party:
 			for lv in ups.get(hero_id, []):
 				var p: String = profile.hero(data, hero_id).personality
-				out.append({"hero": hero_id, "name": data.heroes[hero_id].name, "level": lv,
+				var entry := {"hero": hero_id, "name": data.heroes[hero_id].name, "level": lv,
 						"gains": HeroStats.gains(data, hero_id, lv, p),
-						"jump": LevelJump.compute(data, profile, hero_id, lv, state.realm, state.depth, state.party)})
+						"jump": LevelJump.compute(data, profile, hero_id, lv, state.realm, state.depth, state.party)}
+				if hero_id == "paladin" and lv % HeroStats.OATH_RANK_EVERY == 0:
+					# Edsgraden (VD 2026-10-25): titel och en replik från Gorm eller en kamrat, inga siffror.
+					var rank := HeroStats.oath_rank(lv)
+					entry.rank = {"title": Dialog.oath_rank_title(data, rank),
+							"line": Dialog.oath_rank_line(data, profile, rank, state.party)}
+				out.append(entry)
 	_save()
 	return out
 

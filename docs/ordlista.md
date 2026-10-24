@@ -100,8 +100,10 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Realm | realm, `data/realms.json`, `RunState.set_realm()`, `Profile.realm` | Realm | Väljs på kampanjkartan: Kryptan, Det fördärvade kapellet, Sidenlunden (0.31) eller Trollberget (`mountain`). |
 | Stängd Realm, "Öppnas när …" | realms.json `requires` {realm, depth}, `RunState.realm_open()`, `realm_lock_text()` | – (Siralims Realms öppnas med Realm Depth) | Trollberget öppnas när kapellet är klarat på djup 1. Vårt val. |
 | Questens namn (Tullen vid ravinen …) | realms.json `quests`, `quest.title` | Realm Quest | En Realm kan ge Jakt, Rensa och Samla egna namn. |
-| Nivå | level, `Profile.heroes[id].level`, `HeroStats` | Level | +30 % av basvärdet per nivå, inget tak. Fiendernas nivå följer djup och våning. |
-| Erfarenhet | xp, `HeroStats.battle_xp()`, `add_xp()` | Experience | Per vunnen strid efter rumstyp och djup²; hela sällskapet får den. 5 · L² + 10 till nästa nivå. |
+| Nivå | level, `Profile.heroes[id].level`, `HeroStats` | Level | Kurvan (VD 2026-10-25): nivå 1–5 som förut (+30 % av basen per nivå), sedan glesare och större steg (tillväxtnivån g(L), `old_level`). Inget tak. Fiendernas nivå följer djup och våning. |
+| Tillväxtnivå | `HeroStats.old_level()`, `new_level()` | – (vårt) | Nivån i 0.19:s skala som stats och fiender växer med; g(L) = L till 5, sedan 5 + 2,34 · (L − 5)^1,4. |
+| Erfarenhet | xp, `HeroStats.battle_xp()`, `add_xp()` | Experience | Per vunnen strid efter rumstyp och djup²; hela sällskapet får den. 15, 30, 55, 90 till nivå 2–5, sedan efter kurvan (`xp_to_next`). |
+| Edsgrad | oath rank, `HeroStats.oath_rank()`, `Dialog.oath_rank_title()`, `dialog.json` "oath_rank" | – (vårt, inte Siralim) | Var tredje nivå får Paladinen en titel ("Edsvuren av andra graden") och en replik från en kamrat eller Gorm; inga siffror. |
 | Personlighet | personality, `data/personalities.json` | Personality | 20 sorter: en stat växer 40 %, en annan 20 %. Byts i Biblioteket (Personality Tome) mot silver. |
 | Hjältebladet | `hero_screen` | varelsens skärm | Nivå, erfarenhet, fiendernas nivå på valt djup, stats per källa, vad de betyder, egenskaper, förmågor, artefakt och historik. |
 | Instabilitet | `Profile.instability`, `RunState.instability`, `roll_rules()` | Realm Instability | 0–3 på kampanjkartan: n synliga och n dolda våningsregler, mer silver och troféchans. |

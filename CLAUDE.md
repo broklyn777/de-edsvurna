@@ -137,6 +137,22 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`HeroStats.SOURCES`; 0.20 lägger till material och Nether Stone), vad de
   betyder i skada och helning mot en typisk fiende, egenskaper med körningens statistik, förmågor,
   artefakt och historik. Nivåuppgångar syns och hörs på segerskärmen.
+  **Nivåkurvan** (VD 2026-10-25, variant C "kurva" i `docs/plan/nivaer-och-charges.md`, VAL): en nivå L växer som
+  tillväxtnivån g(L) = L upp till nivå 5 (de fyra första nivåerna lika tätt som förut), sedan 5 + 2,34 · (L − 5)^1,4
+  (`HeroStats.old_level`/`new_level`, `KNEE`, `CURVE_A`, `CURVE_P`). Stats, fiendernas multiplikator (`enemy_level_mult`,
+  räknad direkt i den gamla skalan) och den samlade erfarenheten följer 0.19:s kurva i g(L), så striderna är lika
+  starka; bara antalet nivåer och hoppet per nivå ändras (+32–40 % på djup 2–3, +15 % på djup 10). Väntad nivå per
+  djup 3, 6, 7, 8, 9, 10, 11, 12, 12, 13 (förr 3, 8, 13 … 48). Trösklarna nås mitt emellan (`_threshold_xp`).
+  Ikapphämtningen och lärjungarnas startnivå räknar i den gamla skalan. Gamla profiler (`level_scale` saknas, nu
+  `Profile.LEVEL_SCALE` = 2) räknas om en gång när de läses till den nivå vars styrka ligger närmast
+  (`HeroStats.convert_legacy`, `Profile.convert_levels`; 0.19:s nivå 7 → 6, 12 → 7, 24 → 9) och Broder Alrik
+  förklarar det en gång (`levels_rescaled`, `alrik_levels_rescaled`). Segerskärmen visar hoppet i det striden gör:
+  "Liv 120 → 158 · Rättfärdigt slag 14 → 19 skada" och helningen (`LevelJump`, samma som hjältebladet).
+  Botarna jämför med den gamla skalan med `NIVAER=idag` (`HeroStats.legacy`). `--level=<n>` sätter sällskapets nivå.
+  **Edsgrader** (VD 2026-10-25, VAL, inte Siralim): var tredje nivå (`HeroStats.OATH_RANK_EVERY`, `oath_rank`) får
+  Paladinen en titel, "Edsvuren av första/andra … graden" (`Dialog.oath_rank_title`, `dialog.json` "oath_rank"), och en
+  replik från en kamrat i sällskapet eller Gorm (`oath_rank_line`); inga siffror. Syns på segerskärmen och i hjältebladet.
+  `--level=5 --xp-bar=268 --floor=0 --demo` visar en.
 - **Borgen** (0.12 som basen, 0.24 "Hemmet", `docs/plan/0.24-hemmet.md`, `base_screen.gd` + `scripts/keep/keep_art.gd`):
   en planritning i tusch på pergament sedd uppifrån, som rumskartan; fördärvet flyter som bläck utanför murarna
   (shader), innanför kvällsljus, rök, gnistor och en härd som sprakar (`ambience_home`, `tools/gen_home_ambience.py`).
@@ -351,8 +367,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`next_slot_lock()`); när den öppnas visar borgen berättaren och Gorm en gång (`Run.check_slot_unlock`, `slots_seen`,
   `dialog.json` "party_slot"). Trollberget (`realms.json` "party": 5) är **alltid** balanserat mot fem
   (`RunState.full_party_size()`, `CombatSim.party_scale_size`, `PARTY_SCALE[5]`; mötenas `"extra"` i encounters.json kommer
-  med mot fem, upp till sex fiender, `CombatSim.max_enemies`); kampanjkartan varnar med färre platser
-  (`RunState.realm_too_big`). Kryptan och kapellet är oförändrade (fyra). Striden: lägre ramar för fem (`PartyFrame.compact`).
+  med mot fem, men aldrig fler än fem fiender, VD 2026-10-25, `CombatSim.max_enemies` = 5; `FIVE_CAPPED_SCALE` 1,0);
+  kampanjkartan varnar med färre platser (`RunState.realm_too_big`). Kryptan och kapellet är byggda för fyra: fem
+  hjältar där möter fiender som mot fyra, utan "extra" (VD: låga djup ska vara lätta; `party_scale_size` tar
+  "full_party" åt båda hållen). Botarna (berget djup 1, 100 körningar, MACRO/TUNED): fyra förr 38/60 %, fyra mot fem
+  2/7 % (vanliga 99 %, boss 2–7 %), fem med Imma 41/47 %, med Solveig 23/37 %. Striden: lägre ramar för fem (`PartyFrame.compact`).
   Flaggor: `--party5` (före `--all-companions`), `--slot-unlock --keep`, `--fps` (eller FPS PÅ i inställningarna,
   `FpsMeter`). Botarna: `BALANS=grotta GROTTA_FEM=1` (GROTTA_TYPER=1 vinst per sorts strid, GROTTA_TAK=5 högst fem
   fiender, GROTTA_FEMTE), `BALANS=fem` (en strid per möte med fulla Charges).

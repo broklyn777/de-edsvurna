@@ -393,3 +393,30 @@ static func _freshest(cands: Array, rng: RandomNumberGenerator) -> Dictionary:
 		elif c.rest == best_rest:
 			best.append(c)
 	return best[rng.randi() % best.size()] if not best.is_empty() else {}
+
+
+## Edsgrader (VD 2026-10-25): var tredje nivå (HeroStats.OATH_RANK_EVERY) får Paladinen en titel, ingen siffra.
+## Titeln för graden ("Edsvuren av andra graden"), "" för grad 0.
+static func oath_rank_title(data: Dictionary, rank: int) -> String:
+	var d: Dictionary = data.get("dialog", {}).get("oath_rank", {})
+	if rank <= 0 or d.is_empty():
+		return ""
+	var ordinals: Array = d.get("ordinals", [])
+	if rank > ordinals.size():
+		return String(d.get("beyond", ""))
+	return String(d.title).replace("{grad}", String(ordinals[rank - 1]))
+
+
+## Repliken när graden nås: den första i gradens lista som är med i sällskapet (Gorm alltid), annars "default".
+## Ger {who, name, id, text} med {namn} och {Titel} ifyllda, eller {}.
+static func oath_rank_line(data: Dictionary, profile: Profile, rank: int, party: Array) -> Dictionary:
+	var d: Dictionary = data.get("dialog", {}).get("oath_rank", {})
+	if rank <= 0 or d.is_empty():
+		return {}
+	var lines: Array = d.get("lines", {}).get(str(rank), d.get("default", []))
+	for l in lines:
+		var who := String(l.get("who", ""))
+		if who == "gorm" or party.has(who):
+			var text := fill(String(l.text), profile.hero_name).replace("{Titel}", oath_rank_title(data, rank))
+			return {"who": who, "name": display_name(data, who), "id": String(l.get("id", "")), "text": text}
+	return {}

@@ -3761,5 +3761,86 @@
 				"text": "I {plats} har {boss} tagit allt nu. Det spelar ingen roll vilket djup du väljer."
 			}
 		]
+	},
+	"oath_rank": {
+		"_comment": "Edsgrader (VD 2026-10-25, docs/plan/nivaer-och-charges.md §3.3): var tredje nivå får Paladinen en titel och en replik, inga siffror. Den första i listan som är med i sällskapet säger raden (gorm alltid). VAL, inte Siralim.",
+		"title": "Edsvuren av {grad} graden",
+		"ordinals": [
+			"första",
+			"andra",
+			"tredje",
+			"fjärde",
+			"femte",
+			"sjätte",
+			"sjunde",
+			"åttonde",
+			"nionde",
+			"tionde"
+		],
+		"beyond": "Edsvuren av högsta graden",
+		"lines": {
+			"1": [
+				{
+					"who": "imma",
+					"id": "rank1_imma",
+					"text": "Första graden? Då syr jag ett märke på din mantel. Snett, men det syns."
+				},
+				{
+					"who": "gorm",
+					"id": "rank1_gorm",
+					"text": "Första graden, {namn}. Det betyder inte att du kan allt. Det betyder att du inte gav upp."
+				}
+			],
+			"2": [
+				{
+					"who": "brokk",
+					"id": "rank2_brokk",
+					"text": "Andra graden. Jag har sett folk få den med färre ärr. Inte många, men några."
+				},
+				{
+					"who": "gorm",
+					"id": "rank2_gorm",
+					"text": "Andra graden. Nu bär eden dig lika mycket som du bär den."
+				}
+			],
+			"3": [
+				{
+					"who": "alva",
+					"id": "rank3_alva",
+					"text": "Tredje graden. Jag ber för dig ändå, {namn}. Grader stoppar inga pilar."
+				},
+				{
+					"who": "gorm",
+					"id": "rank3_gorm",
+					"text": "Tredje graden. Jag fick min när jag var fyrtio. Du är inte fyrtio."
+				}
+			],
+			"4": [
+				{
+					"who": "eira",
+					"id": "rank4_eira",
+					"text": "Fjärde graden. Jag har spårat vargar som gick tyngre än du gör nu. Det är beröm."
+				},
+				{
+					"who": "gorm",
+					"id": "rank4_gorm",
+					"text": "Fjärde graden. Färre än tio i borgens krönika har burit den. Bär den som om ingen såg på."
+				}
+			],
+			"5": [
+				{
+					"who": "gorm",
+					"id": "rank5_gorm",
+					"text": "Femte graden. Nu är det du som ska lära de unga, {namn}. Det är den svåra delen."
+				}
+			]
+		},
+		"default": [
+			{
+				"who": "gorm",
+				"id": "rank_more_gorm",
+				"text": "{Titel}. Jag har slutat räkna åt dig, {namn}. Krönikan gör det nu."
+			}
+		]
 	}
 }
