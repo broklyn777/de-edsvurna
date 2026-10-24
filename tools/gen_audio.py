@@ -703,9 +703,236 @@ def room_lock():
                          (kenney("impactMetal_light_001"), 0.36, 0.5)))
 
 
+# ---------------------------------------------------------------- Trollberget (docs/plan/trollens-realm.md §12)
+
+def rubble(dur, sr, count=12, amp=1.0, spread=None):
+    """Grus och småsten som rasar: korta, mörka knäppar med glesare mellanrum mot slutet."""
+    n = int(dur * sr)
+    buf = np.zeros(n)
+    spread = spread or dur * 0.8
+    for k in range(count):
+        at = spread * (k / count) ** 1.6 + rng.uniform(0, 0.03)
+        m = int(rng.uniform(0.02, 0.06) * sr)
+        tt = np.arange(m) / sr
+        click = bandpass(noise(m), rng.uniform(300, 900), rng.uniform(1800, 3500), sr) * np.exp(-tt * 70)
+        place(buf, click, at, sr, rng.uniform(0.3, 1.0) * (1 - 0.6 * k / count))
+    return amp * buf
+
+
+def ambience_mountain():
+    """Berget: vind över sten, ett schakt som droppar, berget som andas långsamt och sten som gnids långt bort.
+    Ingen melodi (inte Grieg) och ingen kulning här: stämningen loopar, och en kulning i loopen skulle höras
+    var 24:e sekund. Kulningen är ett eget engångsljud (mountain_call)."""
+    sr = ASR
+    loop = 24.0
+    n = int((loop + 6) * sr)
+    buf = np.zeros(n)
+    t = np.arange(n) / sr
+    # vind: två lager brus genom glidande band, byar som sväller och lägger sig
+    gust = 0.55 + 0.45 * np.sin(2 * np.pi * t / loop * 2 + 0.7) * np.sin(2 * np.pi * t / loop * 3 + 2.1)
+    wind = sweep_noise(loop + 6, sr, 260, 520, 0.35) * gust
+    whistle = sweep_noise(loop + 6, sr, 900, 1300, 0.08) * np.clip(gust - 0.6, 0, None) ** 2
+    place(buf, fade(lowpass(wind, 1400, sr), sr, 3, 3), 0, sr, 0.22)
+    place(buf, fade(whistle, sr, 3, 3), 0, sr, 0.05)
+    # berget som andas: mycket lågt mullrande som stiger och sjunker två gånger per loop
+    breath = 0.5 + 0.5 * np.sin(2 * np.pi * t / (loop / 2) - np.pi / 2)
+    rumble = lowpass(lowpass(noise(n), 70, sr), 70, sr) * breath ** 2
+    place(buf, fade(normalize(rumble), sr, 3, 3), 0, sr, 0.30)
+    place(buf, fade(additive(41.2, loop + 6, sr, [(1, 1), (1.5, 0.3)]) * breath ** 2, sr, 3, 3), 0, sr, 0.05)
+    # droppar i ett schakt: ojämna, med långt eko nedåt
+    for at in rng.uniform(0.5, loop - 0.5, 9):
+        f = rng.uniform(700, 1300)
+        m = int(0.12 * sr)
+        tt = np.arange(m) / sr
+        drip = np.sin(2 * np.pi * np.cumsum(f * (1 - 0.4 * tt / 0.12)) / sr) * np.exp(-tt * 45)
+        for delay, g in ((0, 0.12), (0.21, 0.05), (0.45, 0.025)):
+            place(buf, drip, at + delay, sr, g)
+    # sten mot sten långt bort: lågt skrap, och en gång ett litet ras
+    for at in (5.5, 16.8):
+        d = rng.uniform(1.4, 2.2)
+        m = int(d * sr)
+        grind = bandpass(noise(m), 120, 600, sr) * (np.sin(np.linspace(0, np.pi, m)) ** 2)
+        grind *= 0.6 + 0.4 * np.abs(np.sin(2 * np.pi * rng.uniform(7, 11) * np.arange(m) / sr))
+        place(buf, lowpass(normalize(grind), 500, sr), at, sr, 0.07)
+    place(buf, lowpass(rubble(2.5, sr, 16), 1600, sr), 11.2, sr, 0.10)
+    place(buf, thump(0.8, sr, 70, 34), 11.2, sr, 0.10)
+    # avlägsna, tunga steg: tre dova dunsar långt inne i berget
+    for k in range(3):
+        place(buf, lowpass(thump(0.6, sr, 55, 30), 200, sr), 19.0 + k * 1.15, sr, 0.10 - k * 0.015)
+    buf = reverb(buf, sr, 4.5, 0.55, damp=1800, predelay=0.06)
+    return fold_loop(buf, int(loop * sr)), sr
+
+
+def mountain_call(v, sr=ASR):
+    """Kulning långt bort i dalen: en vallkulla kallar hem korna. Höga, långa toner med ett slag uppåt och
+    fall nedåt i slutet (kulningens fraser), ingen känd melodi. Långt bort: lågpass, mycket efterklang."""
+    phrases = [[("D6", 1.6), ("A5", 0.5), ("D6", 1.2), ("C6", 0.4), ("A5", 1.8)],
+               [("E6", 1.2), ("D6", 0.4), ("E6", 1.5), ("B5", 0.5), ("A5", 0.4), ("E5", 1.6)]][v]
+    total = sum(d for _, d in phrases) + 4.0
+    buf = np.zeros(int(total * sr))
+    at = 0.3
+    for i, (note, d) in enumerate(phrases):
+        f0 = hz(note)
+        m = int(d * sr)
+        tt = np.arange(m) / sr
+        # slag in i tonen underifrån och fall i slutet av den sista
+        bend = 1 - 0.06 * np.exp(-tt * 18)
+        if i == len(phrases) - 1:
+            bend *= 1 - 0.18 * np.clip((tt - d * 0.6) / (d * 0.4), 0, 1) ** 2
+        f = f0 * bend * (1 + 0.006 * np.sin(2 * np.pi * 5.2 * tt))
+        ph = 2 * np.pi * np.cumsum(f) / sr
+        voice = sum(a * np.sin(ph * k) for k, a in ((1, 1.0), (2, 0.35), (3, 0.12), (4, 0.05)))
+        voice *= env_adsr(m, sr, 0.06, 0.2, 0.85, min(0.25, d * 0.3))
+        place(buf, voice, at, sr, 1.0)
+        at += d * 0.97
+    buf = lowpass(buf, 2200, sr)
+    buf = reverb(buf, sr, 3.5, 0.85, damp=1500, predelay=0.12)
+    return normalize(fade(buf[: int(total * sr)], sr, 0.05, 1.5), 0.6)
+
+
+def troll_smash(v):
+    """Ett troll slår med klubban: tung luft, en duns som går genom marken och sten som spricker."""
+    sr = XSR
+    return normalize(mix(1.4, sr, (swish(0.35, 160 + 40 * v, 700), 0.0, 0.6),
+                         (thump(0.9, sr, 75 - 6 * v, 28), 0.28, 1.0),
+                         (lowpass(noise(int(0.5 * sr)) * np.exp(-np.arange(int(0.5 * sr)) / sr * 9), 700, sr), 0.28, 0.8),
+                         (bandpass(noise(int(0.12 * sr)), 800, 4000, sr) * np.exp(-np.arange(int(0.12 * sr)) / sr * 35),
+                          0.29, 0.5),
+                         (lowpass(rubble(1.0, sr, 10 + 3 * v), 2500, sr), 0.33, 0.5)))
+
+
+def troll_growl(v):
+    """Morrande andning: en låg, skrovlig ton genom en mörk vokal, ett tungt utandat andetag och ett inandat."""
+    sr = XSR
+    dur = 1.6 + 0.3 * v
+    n = int(dur * sr)
+    tt = np.arange(n) / sr
+    f0 = (58 + 9 * v) * (1 + 0.04 * np.sin(2 * np.pi * 0.9 * tt))
+    rough = 1 + 0.5 * np.sin(2 * np.pi * (23 + 4 * v) * tt)          # skrovlighet
+    ph = 2 * np.pi * np.cumsum(f0) / sr
+    tone_ = sum((1 / k) * np.sin(ph * k) for k in range(1, 14)) * rough
+    vowel = bandpass(tone_, 180, 900, sr) + 0.4 * bandpass(tone_, 900, 1400, sr)
+    breath = bandpass(noise(n), 250, 1800, sr)
+    shape = np.sin(np.linspace(0, np.pi, n)) ** 0.7
+    x = (normalize(vowel) * 0.8 + normalize(breath) * 0.35) * shape
+    inhale = bandpass(noise(int(0.7 * sr)), 400, 2400, sr) * np.sin(np.linspace(0, np.pi, int(0.7 * sr))) ** 2
+    return normalize(reverb(mix(dur + 1.0, sr, (x, 0, 1.0), (normalize(inhale), dur + 0.1, 0.25)), sr, 0.8, 0.2))
+
+
+def stone_throw(v):
+    """Kyrkkastaren lyfter och slungar en sten: ett stönande tag, skrap när stenen lossnar och ett tungt sus."""
+    sr = XSR
+    grunt = troll_growl(v)[: int(0.5 * sr)] * np.hanning(int(0.5 * sr))
+    scrape = bandpass(noise(int(0.3 * sr)), 200, 1200, sr) * np.hanning(int(0.3 * sr))
+    return normalize(mix(1.3, sr, (grunt, 0.0, 0.6), (normalize(scrape), 0.15, 0.4),
+                         (swish(0.6, 120 + 30 * v, 420), 0.45, 0.9), (thump(0.3, sr, 90, 50), 0.45, 0.3)))
+
+
+def stone_land(v):
+    """Stenen slår ned: en hård krasch, en djup duns och grus som rullar ut."""
+    sr = XSR
+    crack = bandpass(noise(int(0.15 * sr)), 600, 5000, sr) * np.exp(-np.arange(int(0.15 * sr)) / sr * 30)
+    return normalize(mix(1.5, sr, (normalize(crack), 0.0, 0.8), (thump(0.9, sr, 85 - 8 * v, 30), 0.0, 1.0),
+                         (lowpass(noise(int(0.4 * sr)), 500, sr) * np.exp(-np.arange(int(0.4 * sr)) / sr * 8), 0.0, 0.6),
+                         (lowpass(rubble(1.2, sr, 14 + 4 * v), 3000, sr), 0.05, 0.7)) * np.linspace(1, 0, int(1.5 * sr)) ** 0.5)
+
+
+def bowed(freq, dur, sr, bright=0.85, accent=0.0):
+    """Stråke på en nyckelharpa: ljusa deltoner, stråkbrus och ett svagt eko från resonanssträngarna (A och E)."""
+    n = int(dur * sr)
+    x = additive(freq, dur, sr, string_partials(16, bright), vib=0.004, vib_rate=5.5)
+    x += 0.08 * bandpass(noise(n), 1500, 5000, sr)
+    x *= env_adsr(n, sr, 0.06, 0.3 + accent, 0.75, min(0.3, dur * 0.4))
+    if accent:
+        x *= 1 + accent * np.exp(-np.arange(n) / sr * 6)
+    ring = sum(additive(hz(s), dur + 1.5, sr, [(1, 1)]) for s in ("A4", "E5", "A5"))
+    ring *= np.exp(-np.arange(len(ring)) / sr * 1.5) * np.minimum(1, np.arange(len(ring)) / sr / 0.2)
+    out = np.zeros(len(ring))
+    out[:n] += x
+    return out + 0.015 * ring
+
+
+def music_mountain():
+    """Trollberget: tungt, kallt och gammalt. A-dorisk polska i långsam 3/4 (tung etta, dragen tvåa, tom trea),
+    bordun i kvint som från en nyckelharpa, låga stråkar, en djup trumma på ettan och en kulning långt bort.
+    Egen melodi; inget ur Grieg (ingen stegvis stigande staccatofigur) och inga körer."""
+    bpm, bars = 84, 16
+    beat = 60 / bpm
+    bar = 3 * beat
+    loop = bars * bar
+    sr = MSR
+    buf = np.zeros(int((loop + 6) * sr))
+    t = np.arange(len(buf)) / sr
+    # bordun A–E: stråkdrag som sväller på varje etta
+    drone = (additive(hz("A1"), loop + 6, sr, string_partials(12, 0.7), vib=0.002, vib_rate=0.4)
+             + 0.7 * additive(hz("E2"), loop + 6, sr, string_partials(10, 0.7), vib=0.002, vib_rate=0.5))
+    pulse = 0.7 + 0.3 * np.exp(-((t % bar) / bar) * 3)
+    place(buf, fade(lowpass(drone * pulse, 900, sr), sr, 5, 5), 0, sr, 0.10)
+    # låga stråkar: dorisk följd (D-dur som fyran ger folktonen), ett tungt drag på tvåan
+    prog = [["A2", "C3", "E3"], ["A2", "C3", "E3"], ["D3", "F#3", "A3"], ["A2", "C3", "E3"],
+            ["G2", "B2", "D3"], ["A2", "C3", "E3"], ["F2", "A2", "C3"], ["E2", "G2", "B2"],
+            ["A2", "C3", "E3"], ["D3", "F#3", "A3"], ["A2", "C3", "E3"], ["G2", "B2", "D3"],
+            ["F2", "A2", "C3"], ["G2", "B2", "D3"], ["E2", "G#2", "B2"], ["A2", "C3", "E3"]]
+    roots = ["A1", "A1", "D2", "A1", "G1", "A1", "F1", "E1", "A1", "D2", "A1", "G1", "F1", "G1", "E1", "A1"]
+    low = string_partials(12, 0.6)
+    for b, ch in enumerate(prog):
+        t0 = b * bar
+        x = additive(hz(roots[b]), bar + 0.8, sr, low)
+        place(buf, lowpass(x, 700, sr) * env_adsr(len(x), sr, 0.08, 0.6, 0.7, 0.6), t0, sr, 0.20)
+        for note in ch:
+            x = additive(hz(note), 1.6 * beat, sr, low, vib=0.003, vib_rate=4.8)
+            x = lowpass(x, 1400, sr) * env_adsr(len(x), sr, 0.12, 0.4, 0.6, 0.35)
+            place(buf, x, t0 + beat, sr, 0.07)
+        # trumman på ettan, och ett dovt slag in i nästa takt var fjärde
+        place(buf, timpani(hz("A1"), 2.0, sr), t0, sr, 0.30)
+        place(buf, thump(0.8, sr, 60, 30), t0, sr, 0.25)
+        if b % 4 == 3:
+            place(buf, timpani(hz("A1"), 1.5, sr), t0 + 2.5 * beat, sr, 0.12)
+    # nyckelharpans melodi i takt 5–12 (egen polskefras i A-dorisk, låg och sträv): (ton, takt, slag, längd)
+    mel = [("E4", 4, 0, 1.5), ("D4", 4, 1.5, 0.5), ("C4", 4, 2, 1),
+           ("B3", 5, 0, 1), ("A3", 5, 1, 2),
+           ("C4", 6, 0, 0.5), ("D4", 6, 0.5, 0.5), ("E4", 6, 1, 1), ("F#4", 6, 2, 1),
+           ("E4", 7, 0, 3),
+           ("A4", 8, 0, 1.5), ("G4", 8, 1.5, 0.5), ("E4", 8, 2, 1),
+           ("F#4", 9, 0, 1), ("D4", 9, 1, 1), ("E4", 9, 2, 1),
+           ("C4", 10, 0, 1.5), ("B3", 10, 1.5, 0.5), ("G3", 10, 2, 1),
+           ("A3", 11, 0, 3)]
+    for note, b, at, length in mel:
+        d = length * beat
+        x = bowed(hz(note), d + 0.25, sr, 0.85, accent=0.4 if at == 0 else 0.0)
+        place(buf, lowpass(x, 3200, sr), b * bar + at * beat, sr, 0.10)
+        if length >= 1.5:  # förslag: ett kort grepp ovanifrån före långa toner, som i spelmansmusik
+            g = bowed(hz(note) * 2 ** (2 / 12), 0.09, sr, 0.85)
+            place(buf, lowpass(g, 3200, sr), b * bar + at * beat - 0.07, sr, 0.05)
+    # kulning långt bort, en gång per loop, efter att melodin tystnat
+    place(buf, lowpass(mountain_call(0, sr), 1800, sr), 12 * bar + 0.5 * beat, sr, 0.10)
+    buf = reverb(buf, sr, 4.0, 0.5, damp=1800, predelay=0.04)
+    return fold_loop(buf, int(loop * sr)), sr
+
+
+def mountain():
+    """Bara Trollbergets ljud (behöver inte Kenney): python tools/gen_audio.py --berget"""
+    x, sr = ambience_mountain()
+    x = np.tanh(2.2 * normalize(x))  # mjuk kompression: byarna och dunsarna ska inte göra resten tyst
+    write("ambience_mountain/ambience_mountain.ogg", normalize(x, 0.7), sr, MQ)
+    for v in range(2):
+        write(f"mountain_call/mountain_call_{v}.ogg", mountain_call(v), ASR, MQ)
+    for v in range(3):
+        write(f"troll_smash/troll_smash_{v}.ogg", troll_smash(v), XSR, SQ)
+    for v in range(2):
+        write(f"troll_growl/troll_growl_{v}.ogg", troll_growl(v), XSR, SQ)
+        write(f"stone_throw/stone_throw_{v}.ogg", stone_throw(v), XSR, SQ)
+        write(f"stone_land/stone_land_{v}.ogg", stone_land(v), XSR, SQ)
+    x, sr = music_mountain()  # sist, så att ljuden ovan blir desamma som förut
+    write("music/music_mountain.ogg", normalize(x, 0.8), sr, MQ)
+
+
 # ---------------------------------------------------------------- huvudprogram
 
 def main():
+    if "--berget" in sys.argv:
+        mountain()
+        return
     os.makedirs(OUT, exist_ok=True)
     for name, fn in [("music_base", music_base), ("music_crypt", music_crypt),
                      ("music_chapel", music_chapel), ("music_boss", music_boss)]:
@@ -761,6 +988,8 @@ def main():
     for folder, names in ui.items():  # menyljuden
         for nm in names:
             write(f"{folder}/{nm}.ogg", kenney(nm), XSR, q)
+
+    mountain()  # sist, så att slumpföljden för ljuden ovan inte ändras
 
 
 if __name__ == "__main__":
