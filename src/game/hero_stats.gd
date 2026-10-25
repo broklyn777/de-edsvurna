@@ -2,8 +2,8 @@ class_name HeroStats
 extends RefCounted
 ## Nivåer, erfarenhet och personlighet (0.19, Siralim). Ren logik.
 ##
-## Varje nivå höjer varje stat med 30 % av basvärdet (nivå 1). Personligheten låter en stat växa 40 %
-## och en annan 20 % per nivå; den ändrar tillväxten, inte startvärdet, och ett byte räknas om bakåt.
+## Varje nivå höjer varje stat med ungefär 20 % mot nivån innan (strength, balans v1). Personligheten låter en stat växa
+## en tredjedel snabbare (40 i stället för 30) och en annan en tredjedel långsammare (20); den ändrar tillväxten, inte startvärdet, och ett byte räknas om bakåt.
 ## Inget nivåtak, som i Siralim: den som kör fast kan gå tillbaka till ett lägre djup, träna upp sig, hitta
 ## bättre troféer och komma tillbaka rustad. Fiendernas nivå följer bara djup och våning (enemy_level).
 
@@ -170,10 +170,9 @@ static func enemy_growth_level(depth: int, floor_index: int) -> float:
 	return LEVELS_PER_DEPTH * (maxi(depth, 1) - 1) + FLOOR_START + FLOOR_STEP * clampi(floor_index, 0, 2)
 
 
-## Fiendernas multiplikator på djupet och våningen, räknad direkt i 0.19:s skala (ingen avrundning fram och tillbaka
-## genom kurvan, så att striderna blir exakt lika starka som förut).
+## Fiendernas multiplikator på djupet och våningen: samma styrkekurva som hjältarna (strength) på fiendernas nivå.
 static func enemy_level_mult(depth: int, floor_index: int) -> float:
-	return 1.0 + GROWTH * (enemy_growth_level(depth, floor_index) - 1.0)
+	return strength(enemy_level(depth, floor_index))
 
 
 ## Sällskapets snittnivå ur opts.levels.
@@ -188,7 +187,7 @@ static func party_level(levels: Dictionary) -> float:
 
 ## Hur mycket en nivå höjer en stat med vanlig tillväxt (fiender som möter hjältar på väntad nivå).
 static func level_mult(level: float) -> float:
-	return 1.0 + GROWTH * (old_level(level) - 1.0)
+	return strength(level)
 
 
 static func battle_xp(kind: String, depth: int, boss := false) -> int:
@@ -234,9 +233,55 @@ static func old_level(level: float) -> float:
 	return KNEE + CURVE_A * pow(l - KNEE, CURVE_P)
 
 
-## Tillväxtnivån med omräkningens rest (Profile.heroes "carry", convert_legacy): old_level(nivå) + carry.
+## Tillväxtnivån som stat_at räknar med (1 + 0,3 · (g − 1) = strength): nivåns styrka, med omräkningens rest (Profile.heroes
+## "carry", convert_legacy, i 0.19:s skala) som en del av en nivå på takten (old_level).
 static func growth_level(level: float, carry := 0.0) -> float:
-	return old_level(level) + maxf(carry, 0.0)
+	var l := maxf(level, 1.0)
+	if carry > 0.0:
+		l = new_level(old_level(l) + carry)
+	return 1.0 + (strength(l) - 1.0) / GROWTH
+
+
+# --- Styrkan per nivå (balans v1, VD 2026-10-25) -----------------------------------------------------------------------
+# Takten (nivåer mot erfarenhet, fiendernas nivå per djup och våning, väntad nivå) är kurvan ovan (variant C). Styrkan
+# per nivå är en egen kurva som hjältar och fiender delar: +20 % per nivå (mot förra nivån) för nivå 2–10, sedan ett steg
+# som krymper långsamt mot +13 % (+19 % nivå 11, +16 % nivå 20, +14 % nivå 30). Förr gav kurvan 1 + 0,3 · (g(L) − 1)
+# +30 / 23 / 19 / 16 % för nivå 2–5 och +32–40 % för nivå 6–9. VAL: Siralim ger +30 % av basen per nivå.
+const STEP_LOW := 0.20
+const STEP_LOW_UNTIL := 10
+const STEP_FAR := 0.13
+const STEP_FADE := 10.0
+## Botarnas jämförelse: true = styrkan som förut (1 + 0,3 · (old_level − 1), balans v0).
+static var strength_v0 := false
+static var _strength_cache: PackedFloat64Array = PackedFloat64Array()
+
+
+## Steget till nivå n (n ≥ 2): andelen nivån lägger på nivån innan.
+static func strength_step(n: int) -> float:
+	if n <= STEP_LOW_UNTIL:
+		return STEP_LOW
+	return STEP_FAR + (STEP_LOW - STEP_FAR) * exp(-float(n - STEP_LOW_UNTIL) / STEP_FADE)
+
+
+## Styrkan på nivån (multiplikatorn på basen med vanlig tillväxt, nivå 1 = 1). Kontinuerlig: mellan två nivåer
+## geometriskt (fiendernas nivåer är inte heltal).
+static func strength(level: float) -> float:
+	var l := maxf(level, 1.0)
+	if legacy:
+		return 1.0 + GROWTH * (l - 1.0)
+	if strength_v0:
+		return 1.0 + GROWTH * (old_level(l) - 1.0)
+	var lo := int(floor(l))
+	if _strength_cache.size() < lo + 2:
+		var n := maxi(lo + 2, 64)
+		_strength_cache.resize(n + 1)
+		_strength_cache[0] = 1.0
+		_strength_cache[1] = 1.0
+		for k in range(2, n + 1):
+			_strength_cache[k] = _strength_cache[k - 1] * (1.0 + strength_step(k))
+	var a := _strength_cache[lo]
+	var b := _strength_cache[lo + 1]
+	return a * pow(b / a, l - lo)
 
 
 ## En tillväxtnivå i 0.19:s skala som nivå (omvändningen av old_level, kontinuerlig).

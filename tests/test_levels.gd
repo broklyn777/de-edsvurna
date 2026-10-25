@@ -20,16 +20,17 @@ func test_twenty_personalities_cover_every_pair() -> void:
 		assert_true(_data.personalities.has(_data.heroes[hero_id].personality), "%s har en förvald personlighet" % hero_id)
 
 
-func test_each_level_adds_thirty_percent_of_base() -> void:
+## Balans v1: varje nivå +20 % mot nivån innan (nivå 3 = 1,2² = 1,44); personligheten 40/30 respektive 20/30 av tillväxten.
+func test_each_level_adds_twenty_percent() -> void:
 	var base: Dictionary = _data.heroes.brokk.stats
 	var neutral := HeroStats.level_stats(_data, "brokk", 3, "")
-	assert_eq(neutral.attack, CombatSim.snap_stat(base.attack * 1.6))
-	assert_eq(neutral.speed, roundf(base.speed * 1.6), "Speed växer också")
-	# Envis: Health 40 %, Speed 20 %.
+	assert_eq(neutral.attack, CombatSim.snap_stat(base.attack * 1.44))
+	assert_eq(neutral.speed, roundf(base.speed * 1.44), "Speed växer också")
+	# Envis: Health 40 %, Speed 20 % (av 30).
 	var envis := HeroStats.level_stats(_data, "brokk", 3, "envis")
-	assert_eq(envis.health, CombatSim.snap_stat(base.health * 1.8))
-	assert_eq(envis.speed, roundf(base.speed * 1.4))
-	assert_eq(envis.attack, CombatSim.snap_stat(base.attack * 1.6))
+	assert_eq(envis.health, CombatSim.snap_stat(base.health * (1.0 + 0.44 * 4.0 / 3.0)))
+	assert_eq(envis.speed, roundf(base.speed * (1.0 + 0.44 * 2.0 / 3.0)))
+	assert_eq(envis.attack, CombatSim.snap_stat(base.attack * 1.44))
 	assert_eq(HeroStats.level_stats(_data, "brokk", 1, "envis").health, float(base.health), "personligheten ändrar inte nivå 1")
 
 
@@ -105,9 +106,10 @@ func test_personality_change_recomputes_backwards() -> void:
 	var a := HeroStats.level_stats(_data, "eira", 5, "rastlos")
 	var b := HeroStats.level_stats(_data, "eira", 5, "stadig")
 	var base: Dictionary = _data.heroes.eira.stats
-	assert_eq(a.speed, roundf(base.speed * 2.6), "Rastlös: Speed 40 % × 4 nivåer")
-	assert_eq(b.speed, roundf(base.speed * 1.8), "Stadig: Speed 20 %")
-	assert_eq(b.defense, CombatSim.snap_stat(base.defense * 2.6))
+	var m := pow(1.2, 4) - 1.0
+	assert_eq(a.speed, roundf(base.speed * (1.0 + m * 4.0 / 3.0)), "Rastlös: Speed 40 % i stället för 30")
+	assert_eq(b.speed, roundf(base.speed * (1.0 + m * 2.0 / 3.0)), "Stadig: Speed 20 %")
+	assert_eq(b.defense, CombatSim.snap_stat(base.defense * (1.0 + m * 4.0 / 3.0)))
 
 
 func test_enemy_level_follows_depth_and_floor_not_the_party() -> void:
@@ -154,13 +156,25 @@ func test_level_curve_first_levels_as_before_then_sparser() -> void:
 	assert_eq(HeroStats.expected_level(10), 13, "djup 10 är ungefär nivå 13")
 
 
-## Fienderna är lika starka som förut på varje djup och våning (bara talet på deras nivå ändras).
-func test_enemy_strength_unchanged_by_the_curve() -> void:
+## Balans v1 (VD 2026-10-25): varje nivå +20 % mot nivån innan för nivå 2–10, aldrig mer än +25 %; sedan krymper steget
+## långsamt mot 12–15 %. Fienderna följer samma kurva på sin nivå (takten och nivån per djup är som förut).
+func test_strength_steps() -> void:
+	for l in range(2, 11):
+		var step := HeroStats.strength(l) / HeroStats.strength(l - 1) - 1.0
+		assert_near(step, 0.20, 1e-9, "nivå %d" % l)
+	var last := 0.2
+	for l in range(11, 80):
+		var step := HeroStats.strength(l) / HeroStats.strength(l - 1) - 1.0
+		assert_true(step < last and step > 0.12, "nivå %d: %.3f" % [l, step])
+		last = step
+	assert_true(last < 0.15, "långt upp 12–15 %")
+	assert_near(HeroStats.strength(2.5), sqrt(1.2 * 1.44), 1e-9, "geometriskt mellan nivåer")
 	for depth in range(1, 11):
 		for f in 3:
-			var old := HeroStats.LEVELS_PER_DEPTH * (depth - 1) + HeroStats.FLOOR_START + HeroStats.FLOOR_STEP * f
-			assert_near(HeroStats.level_mult(HeroStats.enemy_level(depth, f)), 1.0 + HeroStats.GROWTH * (old - 1.0), 1e-4,
+			assert_near(HeroStats.enemy_level_mult(depth, f), HeroStats.strength(HeroStats.enemy_level(depth, f)), 1e-9,
 					"djup %d våning %d" % [depth, f + 1])
+	assert_eq([HeroStats.expected_level(1), HeroStats.expected_level(2), HeroStats.expected_level(3)], [3, 6, 7],
+			"väntad nivå per djup som förut")
 
 
 ## Omräkningen av en gammal nivå (VD 2026-10-25): exakt lika stark som förut. Den högsta nya nivån som inte är starkare,
@@ -176,18 +190,10 @@ func test_convert_legacy_levels_keeps_strength() -> void:
 		var lv := int(c.level)
 		assert_true(HeroStats.old_level(lv) <= old + 1e-6, "nivå %d → %d: aldrig starkare" % [old, lv])
 		assert_true(HeroStats.old_level(lv + 1) > old, "nivå %d → %d: den högsta som inte är starkare" % [old, lv])
-		assert_near(HeroStats.growth_level(lv, float(c.carry)), float(old), 1e-6, "tillväxten är densamma")
+		# Balans v1: resten är en del av en nivå på takten; styrkan är kurvans på den nivån (lika långt från fienderna).
+		assert_near(HeroStats.growth_level(lv, float(c.carry)),
+				1.0 + (HeroStats.strength(HeroStats.new_level(float(old))) - 1.0) / HeroStats.GROWTH, 1e-6, "nivå %d" % old)
 		assert_true(int(c.xp) >= 0 and int(c.xp) < HeroStats.xp_to_next(lv))
-	for old in [7, 12, 16, 24]:
-		var c := HeroStats.convert_legacy(old, 0)
-		for hero_id in ["paladin", "brokk", "eira"]:
-			for pers in ["", "envis", "modig"]:
-				var now := HeroStats.level_stats(_data, hero_id, int(c.level), pers, float(c.carry))
-				HeroStats.legacy = true
-				var before := HeroStats.level_stats(_data, hero_id, old, pers)
-				HeroStats.legacy = false
-				for stat in HeroStats.STATS:
-					assert_near(float(now[stat]), float(before[stat]), 0.051, "%s %s %s nivå %d" % [hero_id, pers, stat, old])
 	assert_eq(int(HeroStats.convert_legacy(7, 0).level), 5)
 	assert_eq(int(HeroStats.convert_legacy(12, 0).level), 7)
 	assert_eq(int(HeroStats.convert_legacy(16, 0).level), 8)
@@ -217,10 +223,10 @@ func test_old_save_is_converted_once() -> void:
 	assert_eq(log.map(func(e: Dictionary) -> int: return int(e.level)), [2, 5, 6, 7], "historiken i den nya skalan")
 	var line := Dialog.idle_line(_data, p, "alrik", 0)
 	assert_true(line.contains("Nivåerna"), "Broder Alrik förklarar: " + line)
-	# Striden och hjältebladet räknar med resten: samma Health som i 0.19:s skala på nivå 12.
-	HeroStats.legacy = true
-	var old_hp: float = HeroStats.level_stats(_data, "paladin", 12, "modig").health
-	HeroStats.legacy = false
+	# Striden och hjältebladet räknar med resten: styrkan på den del av en nivå som 0.19:s nivå 12 motsvarar.
+	var gh := HeroStats.growth(_data, "modig", "health")
+	var old_hp := CombatSim.snap_stat(float(_data.heroes.paladin.stats.health) * (1.0 + gh / HeroStats.GROWTH
+			* (HeroStats.strength(HeroStats.new_level(12.0)) - 1.0)))
 	var lv := p.levels_for(_data, ["paladin"])
 	assert_near(float(lv.paladin.carry), carry, 1e-6)
 	var sim := CombatSim.create(_data, "crypt_1", 1, ["paladin"], {}, {}, {}, 1, {"levels": lv})

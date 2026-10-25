@@ -167,7 +167,7 @@ func check_units(sim: CombatSim, encounter: String, depth: int, floor_i: int, pa
 				str(want_kinds), str(enc.enemies)])
 	for e in sim.enemies:
 		var want := Ref.enemy_stats(data.enemies[e.kind].stats, float(enc.get("stat_mult", 1.0)), depth, party.size(),
-				Ref.enemy_growth_level(depth, floor_i), e.elite, opts.has("levels"), float(opts.get("stat_bonus", 1.0)))
+				Ref.enemy_level(depth, floor_i), e.elite, opts.has("levels"), float(opts.get("stat_bonus", 1.0)))
 		var got := {"health": e.max_hp, "attack": e.attack, "intelligence": e.intelligence, "defense": e.defense,
 				"speed": e.speed}
 		for s in want:

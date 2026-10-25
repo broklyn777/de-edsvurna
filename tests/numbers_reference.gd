@@ -110,15 +110,31 @@ static func stat_round(v: float, stat := "") -> float:
 	return roundf(v) if stat == "speed" else roundf(v * 10.0) / 10.0
 
 
-## Nivåskalan (VD 2026-10-25): nivå L växer som tillväxtnivån g(L) = L upp till 5, sedan 5 + 2,34 · (L − 5)^1,4.
+## Nivåns takt (VD 2026-10-25, variant C): nivå L är tillväxtnivån g(L) = L upp till 5, sedan 5 + 2,34 · (L − 5)^1,4.
+## Den styr erfarenheten och fiendernas nivå, inte längre styrkan.
 static func growth_level(level: float) -> float:
 	var l := maxf(level, 1.0)
 	return l if l <= 5.0 else 5.0 + 2.34 * pow(l - 5.0, 1.4)
 
 
-## En stat på en nivå: bas × (1 + tillväxt × (g(nivå) − 1)), tillväxt 30 % (personlighet 40/20 %), avrundat.
+## Styrkan per nivå (balans v1): +20 % mot nivån innan för nivå 2–10, sedan 13 % + 7 % · e^(−(n − 10)/10); mellan två
+## nivåer geometriskt.
+static func level_step(n: int) -> float:
+	return 0.20 if n <= 10 else 0.13 + 0.07 * exp(-(n - 10) / 10.0)
+
+
+static func strength(level: float) -> float:
+	var l := maxf(level, 1.0)
+	var lo := int(floor(l))
+	var m := 1.0
+	for k in range(2, lo + 1):
+		m *= 1.0 + level_step(k)
+	return m * pow(1.0 + level_step(lo + 1), l - lo)
+
+
+## En stat på en nivå: bas × (1 + tillväxt / 30 % × (styrkan − 1)), tillväxt 30 % (personlighet 40/20 %), avrundat.
 static func level_stat(base: float, level: int, growth: float, stat := "") -> float:
-	return stat_round(base * (1.0 + growth * (growth_level(level) - 1.0)), stat)
+	return stat_round(base * (1.0 + growth / 0.3 * (strength(level) - 1.0)), stat)
 
 
 ## Artefaktnivåns styrka: +10 % per nivå över 1 (nivå 1–10).
@@ -205,7 +221,7 @@ static func enemy_stats(base: Dictionary, stat_mult: float, depth: int, party: i
 		for k in ["health", "attack", "intelligence"]:
 			s[k] = stat_round(s[k] * p)
 	if with_level:
-		var lm := 1.0 + 0.3 * (maxf(level, 1.0) - 1.0)
+		var lm := strength(level)
 		if absf(lm - 1.0) > 1e-9:
 			for k in ["health", "attack", "intelligence", "defense"]:
 				s[k] = stat_round(s[k] * lm)
