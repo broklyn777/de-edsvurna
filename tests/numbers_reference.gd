@@ -144,9 +144,9 @@ static func art_level_mult(level: int) -> float:
 
 # --- §9 Fiender ---------------------------------------------------------------
 
-## Djupet: +3 % per djup över 1 (Health, Attack, Intelligence, Defense; inte Speed).
+## Djupet: +15 % per djup över 1 (Health, Attack, Intelligence, Defense; inte Speed; balans v1).
 static func depth_mult(depth: int) -> float:
-	return 1.0 + 0.03 * (maxi(depth, 1) - 1)
+	return 1.0 + 0.15 * (maxi(depth, 1) - 1)
 
 
 ## Fiendernas tillväxtnivå: 5 × (djup − 1) + 2,25 + 1,5 per våning (stats växer med den, som förut).

@@ -29,6 +29,10 @@ func _init() -> void:
 		print("Djupsteg: +%.1f %% per djup" % (CombatSim.depth_step * 100.0))
 	if OS.get_environment("BERGSTEG") != "":
 		data.realms.mountain.depth_step = float(OS.get_environment("BERGSTEG"))  # prov: Trollbergets eget djupsteg
+	if OS.get_environment("MOTE_MULT") != "":
+		for pair in OS.get_environment("MOTE_MULT").split(","):  # prov: mötets stat_mult, "crypt_3=1.2,troll_g1=1.5"
+			data.encounters[pair.get_slice("=", 0)].stat_mult = float(pair.get_slice("=", 1))
+			print("Prov: %s stat_mult %s" % [pair.get_slice("=", 0), pair.get_slice("=", 1)])
 	if OS.get_environment("FEM_I_FYRA") != "":
 		CombatSim.five_in_four = float(OS.get_environment("FEM_I_FYRA"))
 	var out := String(args.get("out", "user://balans.csv"))

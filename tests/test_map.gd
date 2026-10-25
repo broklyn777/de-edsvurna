@@ -248,7 +248,7 @@ func test_bot_walks_a_whole_run() -> void:
 	var fights := 0
 	for seed_value in range(1, 9):
 		var r: Dictionary = Bot.run_expedition(_data, seed_value, Bot.Skill.TUNED, {}, {}, 1, "crypt",
-				{"levels": Bot.party_levels(_data, 3), "grow": true})
+				{"levels": Bot.party_levels(_data, 4), "grow": true})  # balans v1: utan utrustning en nivå över väntad
 		fights += int(r.fights)
 		cleared += 1 if r.cleared else 0
 		if r.cleared:

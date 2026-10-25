@@ -44,7 +44,7 @@
 			"skeleton_warrior",
 			"grave_priest"
 		],
-		"stat_mult": 1.02
+		"stat_mult": 1.14
 	},
 	"chapel_1": {
 		"name": "Kapellets förgård",
@@ -92,7 +92,7 @@
 			"cultist",
 			"witch"
 		],
-		"stat_mult": 1.06
+		"stat_mult": 1.33
 	},
 	"crypt_1a": {
 		"name": "Benkryptans gång",
@@ -883,7 +883,7 @@
 			"changeling_troll",
 			"grumpy_troll"
 		],
-		"stat_mult": 1.05
+		"stat_mult": 1.12
 	},
 	"grove_1": {
 		"name": "Lundens bryn",
@@ -1536,7 +1536,7 @@
 			"bone_runner",
 			"grave_priest"
 		],
-		"stat_mult": 1.025,
+		"stat_mult": 1.24,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "midnight_clapper",
@@ -1621,7 +1621,7 @@
 			"corrupted_deacon",
 			"witch"
 		],
-		"stat_mult": 0.96,
+		"stat_mult": 1.32,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "wandering_crown",
@@ -1737,7 +1737,7 @@
 		"extra": [
 			"porridge_troll"
 		],
-		"stat_mult": 1.17,
+		"stat_mult": 1.45,
 		"guardian": true,
 		"template": "Väktare",
 		"second_warning": "Andra mötet: Brom minns er. Tullen är densamma – han slår den som skadade honom senast."

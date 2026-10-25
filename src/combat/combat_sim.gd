@@ -61,10 +61,10 @@ const DODGE_MAX := 0.3
 ## Med egenskaper ("dodge_add") kan undvikandet bli högst så här stort.
 const DODGE_TRAIT_MAX := 0.75
 ## Realm Depth (Siralim): fiendernas Health, Attack, Intelligence och Defense växer med en andel per
-## djup över 1 (3 %, 0.30.33; förr 8 %, som lades ovanpå fiendernivåerna och gav väggen vid djup 5–6,
-## docs/provspel/djupsteg-matning.md). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
+## djup över 1 (15 %, balans v1 2026-10-25, när en nivå blev +20 % i stället för +30–40 %; 3 % i 0.30.33, 8 % före det,
+## som lades ovanpå fiendernivåerna och gav väggen vid djup 5–6, docs/provspel/djupsteg-matning.md; docs/balans/balanslogg.md). Speed skalar inte (tidslinjen ska vara densamma). Mötet kan ha en egen "stat_mult"
 ## (våning 2 och 3 är starkare än 1, som i Siralim där fienderna skalar snabbare än laget).
-const DEPTH_STEP := 0.03
+const DEPTH_STEP := 0.15
 ## Botarnas mätning (DJUPSTEG=0.03 i soak/balance): ändrar steget utan att ändra spelets värde.
 static var depth_step := DEPTH_STEP
 const SCALED_STATS := ["health", "attack", "intelligence", "defense"]
@@ -100,7 +100,7 @@ const PARTY_SCALE := {1: 0.45, 2: 0.54, 3: 0.64, 4: 1.0, 5: 1.0}
 ## Balans v1 (VD 2026-10-25): fem hjältar i en Realm byggd för fyra (kryptan, kapellet, lunden) på det djupaste djupet
 ## (RunState.full_party_size, opts "five_in_four"): fiendernas Health, Attack och Intelligence gånger så här mycket, eftersom
 ## de mötena saknar Trollbergets "extra". Mätt med balanssimuleringen.
-const FIVE_IN_FOUR := 1.25
+const FIVE_IN_FOUR := 1.4
 static var five_in_four := FIVE_IN_FOUR  # balanssimuleringens prov (FEM_I_FYRA)
 ## Största sällskapet striden har platser och skalning för.
 const MAX_HEROES := 5
