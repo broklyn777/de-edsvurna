@@ -1138,7 +1138,7 @@ func _bark_after_battle(sim: CombatSim) -> void:
 	elif last_finds.any(func(f: Dictionary) -> bool: return Forge.is_rare_find(f)):
 		bark("rare_find")
 	elif standing.size() < sim.heroes.size():
-		bark("fallen")  # 0.28.1: någon stupade (sägs varmt efter striden)
+		bark("fallen", standing.map(func(h: CombatUnit) -> String: return h.id))  # 0.28.1: någon stupade (sägs varmt efter striden, av någon som står kvar)
 		bark("hard_fight")  # om ingen har en replik för det
 	elif standing.any(func(h: CombatUnit) -> bool: return h.hp < h.max_hp * 0.3):
 		bark("hard_fight")
@@ -1149,10 +1149,11 @@ func _bark_after_battle(sim: CombatSim) -> void:
 var pending_bark := {}
 
 
-func bark(kind: String) -> void:
+## speakers: vilka som får säga repliken (förval hela sällskapet; "fallen" bara de som står kvar).
+func bark(kind: String, speakers: Array = []) -> void:
 	if not pending_bark.is_empty() or state.practice or not state.bark_allowed(kind, rng):
 		return
-	pending_bark = Dialog.bark(data, kind, state.party, state.barks_used, rng, profile, RunState.STRONG_BARKS.has(kind))
+	pending_bark = Dialog.bark(data, kind, speakers if not speakers.is_empty() else state.party, state.barks_used, rng, profile, RunState.STRONG_BARKS.has(kind))
 	if not pending_bark.is_empty():
 		state.note_bark()
 

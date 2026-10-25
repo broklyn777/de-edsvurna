@@ -598,10 +598,10 @@ func _after_quest_check(just_done: bool) -> void:
 		out.append("Questen är klar: +%d silver%s" % [q.silver, " och en perk-poäng!" if q.point else "!"])
 
 
-func _bark(kind: String) -> void:
+func _bark(kind: String, speakers: Array = []) -> void:
 	if not state.bark_allowed(kind, rng):
 		return
-	var b := Dialog.bark(data, kind, state.party, state.barks_used, rng, profile, RunState.STRONG_BARKS.has(kind))
+	var b := Dialog.bark(data, kind, speakers if not speakers.is_empty() else state.party, state.barks_used, rng, profile, RunState.STRONG_BARKS.has(kind))
 	if b.is_empty():
 		return
 	state.note_bark()
@@ -817,7 +817,7 @@ func _award(sim: CombatSim, won: bool) -> void:
 				return Forge.find_text(data, f) + " (" + Forge.find_effect(data, f) + ")")))
 	var standing := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive)
 	if standing.size() < sim.heroes.size():
-		_bark("fallen")
+		_bark("fallen", standing.map(func(h: CombatUnit) -> String: return h.id))
 	elif standing.any(func(h: CombatUnit) -> bool: return h.hp < h.max_hp * 0.3):
 		_bark("hard_fight")
 
@@ -1172,7 +1172,7 @@ func _grotto_screen() -> void:
 	else:
 		var route := m.path(state.pos, m.goal, state.visited)
 		out.append("Questen är klar: %s (%s) är öppen. %s" % ["bossen" if m.last_floor else "trappan", _cell_name(m.goal),
-				("Väg: " + " ".join(Array(route).map(func(i: int) -> String: return _cell_name(i)))) if not route.is_empty() else "Ingen känd väg dit än."])
+				("Väg: " + " ".join(Array(route).map(func(i: int) -> String: return _cell_name(i)))) if not route.is_empty() else ("Ni står redan där." if state.pos == m.goal else "Ingen känd väg dit än.")])
 	var seen_groups: Array = state.seen.filter(func(i: int) -> bool: return m.has_group(i))
 	for i in seen_groups:
 		var c := m.cell(i)
