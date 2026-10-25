@@ -1204,8 +1204,10 @@ const SIM_COLUMNS := ["rike", "djup", "mote", "typ", "lag", "niva", "n", "vinst_
 ## trofé (TROPHY_PAIRS[h][0]). Paladinen har alltid introts svärd, minst på nivå 3. Djup över tabellen tar den sista raden.
 ## Karriären 0.30.42 (40 profiler × 18 nedstigningar): artefaktnivå i snitt per hjälte i sällskapet 1,7 / 2,4–4,5 / 4,2–5,4 /
 ## 5,8–6,7 och trofé hos 22 % / 80–86 % / 79–87 % / 83–90 % på djup 1 / 2 / 3 / 4. Djupet är fiendernas (med depth_offset).
-const SIM_GEAR := {1: {"art": 0, "trophy": false}, 2: {"art": 3, "trophy": true}, 3: {"art": 5, "trophy": true},
-		4: {"art": 6, "trophy": true}}
+## Djup 1 efter karriärbotarna (40 profiler): artefaktnivå 1,7 i snitt och en trofé hos 22 % av hjältarna, alltså nivå 2
+## och en trofé (den första i sällskapet efter Paladinen som har ett par i TROPHY_PAIRS).
+const SIM_GEAR := {1: {"art": 2, "trophies": 1}, 2: {"art": 3, "trophies": 9}, 3: {"art": 5, "trophies": 9},
+		4: {"art": 6, "trophies": 9}}
 const SIM_FIFTH := "imma"
 
 
@@ -1268,10 +1270,12 @@ static func sim_gear(data: Dictionary, party: Array, depth: int) -> Dictionary:
 	var g: Dictionary = SIM_GEAR[depth] if SIM_GEAR.has(depth) else SIM_GEAR[SIM_GEAR.keys().max()]
 	var traits := {}
 	var arts := {}
+	var trophies := int(g.trophies)
 	for hero_id in party:
 		var own: Array = data.heroes[hero_id].get("traits", []).duplicate()
-		if g.trophy and TROPHY_PAIRS.has(hero_id):
+		if trophies > 0 and (int(g.trophies) >= party.size() or hero_id != "paladin") and TROPHY_PAIRS.has(hero_id):
 			own.append(TROPHY_PAIRS[hero_id][0])
+			trophies -= 1
 		traits[hero_id] = own
 		var lv := int(g.art)
 		if hero_id == "paladin":
