@@ -157,7 +157,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   **Edsgrader** (VD 2026-10-25, VAL, inte Siralim): var tredje nivå (`HeroStats.OATH_RANK_EVERY`, `oath_rank`) får
   Paladinen en titel, "Edsvuren av första/andra … graden" (`Dialog.oath_rank_title`, `dialog.json` "oath_rank"), och en
   replik från en kamrat i sällskapet eller Gorm (`oath_rank_line`); inga siffror. Syns på segerskärmen och i hjältebladet.
-  `--level=5 --xp-bar=268 --floor=0 --demo` visar en.
+  `--all-companions --level=5 --xp-bar=160 --floor=0 --demo --turns=300` visar en.
 - **Borgen** (0.12 som basen, 0.24 "Hemmet", `docs/plan/0.24-hemmet.md`, `base_screen.gd` + `scripts/keep/keep_art.gd`):
   en planritning i tusch på pergament sedd uppifrån, som rumskartan; fördärvet flyter som bläck utanför murarna
   (shader), innanför kvällsljus, rök, gnistor och en härd som sprakar (`ambience_home`, `tools/gen_home_ambience.py`).
