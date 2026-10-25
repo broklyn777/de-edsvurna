@@ -414,7 +414,7 @@ const LEVEL_SCALE := 2
 var levels_rescaled := false
 
 
-## Räknar om hjältarnas nivåer från 0.19:s skala (HeroStats.convert_legacy: styrkan så lik som hela nivåer tillåter).
+## Räknar om hjältarnas nivåer från 0.19:s skala (HeroStats.convert_legacy: aldrig svagare).
 ## Historiken behåller de nivåer som finns i den nya skalan, med striden där de nåddes första gången.
 func convert_levels() -> void:
 	var changed := false

@@ -266,18 +266,14 @@ static func total_xp(level: int, xp: int) -> int:
 	return sum
 
 
-## Omräkningen av en profil från 0.19:s skala (sparad före 0.31, Profile.LEVEL_SCALE): den nya nivån vars tillväxt ligger
-## närmast den gamla (styrkan så lik som hela nivåer tillåter), och erfarenheten mot nästa nivå så att den samlade
+## Omräkningen av en profil från 0.19:s skala (sparad före 0.31, Profile.LEVEL_SCALE): den första nya nivån vars tillväxt
+## är minst den gamla (VD: ingen blir svagare av omräkningen), och erfarenheten mot nästa nivå så att den samlade
 ## erfarenheten blir densamma när det går (aldrig en hel nivå eller mer). Ger {level, xp}.
 static func convert_legacy(old_level_value: int, old_xp: int) -> Dictionary:
 	var old_lv := maxi(old_level_value, 1)
 	var best := 1
-	var l := 1
-	while old_level(l) <= old_lv + 0.001:
-		best = l
-		l += 1
-	if best < l and absf(old_level(l) - old_lv) < absf(old_level(best) - old_lv):
-		best = l
+	while old_level(best) < old_lv - 0.001:
+		best += 1
 	var legacy_total := 0.0
 	for k in range(1, old_lv):
 		legacy_total += XP_NEED_SQ * k * k + XP_NEED_LIN * k + XP_NEED_FLAT

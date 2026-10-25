@@ -163,7 +163,7 @@ func test_enemy_strength_unchanged_by_the_curve() -> void:
 					"djup %d våning %d" % [depth, f + 1])
 
 
-## Omräkningen av en gammal nivå: den nya nivån med närmast samma styrka.
+## Omräkningen av en gammal nivå: den första nya nivån som är minst lika stark (VD: ingen blir svagare).
 func test_convert_legacy_levels_keeps_strength() -> void:
 	for old in range(1, 6):
 		assert_eq(int(HeroStats.convert_legacy(old, 3).level), old, "nivå 1–5 är desamma")
@@ -171,12 +171,21 @@ func test_convert_legacy_levels_keeps_strength() -> void:
 	for old in range(6, 60):
 		var c := HeroStats.convert_legacy(old, 0)
 		var lv := int(c.level)
-		var dist := absf(HeroStats.old_level(lv) - old)
-		assert_true(dist <= absf(HeroStats.old_level(lv + 1) - old) and dist <= absf(HeroStats.old_level(lv - 1) - old),
-				"nivå %d → %d: närmast i styrka" % [old, lv])
+		assert_true(HeroStats.old_level(lv) >= old - 1e-6, "nivå %d → %d: aldrig svagare" % [old, lv])
+		assert_true(HeroStats.old_level(lv - 1) < old, "nivå %d → %d: den första som räcker" % [old, lv])
+		for hero_id in ["paladin", "brokk"]:
+			var before := HeroStats.level_stats(_data, hero_id, 1, "")
+			var now := HeroStats.level_stats(_data, hero_id, lv, "envis")
+			var legacy_stats := {}
+			HeroStats.legacy = true
+			legacy_stats = HeroStats.level_stats(_data, hero_id, old, "envis")
+			HeroStats.legacy = false
+			for stat in HeroStats.STATS:
+				assert_true(now[stat] >= legacy_stats[stat] and now[stat] >= before[stat], "%s %s nivå %d" % [hero_id, stat, old])
 		assert_true(int(c.xp) >= 0 and int(c.xp) < HeroStats.xp_to_next(lv))
-	assert_eq(int(HeroStats.convert_legacy(12, 0).level), 7)
-	assert_eq(int(HeroStats.convert_legacy(24, 0).level), 9)
+	assert_eq(int(HeroStats.convert_legacy(7, 0).level), 6)
+	assert_eq(int(HeroStats.convert_legacy(12, 0).level), 8)
+	assert_eq(int(HeroStats.convert_legacy(24, 0).level), 10)
 
 
 ## En profil sparad i 0.19:s skala räknas om en gång när den läses, och Broder Alrik förklarar det.
@@ -190,17 +199,17 @@ func test_old_save_is_converted_once() -> void:
 			"brokk": {"level": 4, "xp": 12, "personality": "envis", "battles": 3, "wins": 3, "deaths": 0, "revives": 0, "log": []}})
 	cfg.save(path)
 	var p := Profile.load_from(path)
-	assert_eq(int(p.hero(_data, "paladin").level), 7)
+	assert_eq(int(p.hero(_data, "paladin").level), 8)
 	assert_eq(int(p.hero(_data, "brokk").level), 4, "låga nivåer är desamma")
 	assert_eq(int(p.hero(_data, "brokk").xp), 12)
 	assert_true(p.levels_rescaled)
 	var log: Array = p.hero(_data, "paladin").log
-	assert_eq(log.map(func(e: Dictionary) -> int: return int(e.level)), [2, 5, 6, 7], "historiken i den nya skalan")
+	assert_eq(log.map(func(e: Dictionary) -> int: return int(e.level)), [2, 6, 7, 8], "historiken i den nya skalan")
 	var line := Dialog.idle_line(_data, p, "alrik", 0)
 	assert_true(line.contains("Nivåerna"), "Broder Alrik förklarar: " + line)
 	p.save(path)
 	var q := Profile.load_from(path)
-	assert_eq(int(q.hero(_data, "paladin").level), 7, "räknas inte om två gånger")
+	assert_eq(int(q.hero(_data, "paladin").level), 8, "räknas inte om två gånger")
 	assert_true(not Dialog.idle_line(_data, q, "alrik", 1).contains("Nivåerna"), "en gång")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	var fresh := Profile.new()

@@ -149,8 +149,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   33 → 10,9, vunna strider med en nivåhöjning (2–18) ~28 → ~6 %. `BALANS=forsta`: oförändrad (kryptan "ensam, Imma
   efter strid 1" MACRO/TUNED 91/68 % i båda skalorna; karriärens första nedstigning 98 %).
   Ikapphämtningen och lärjungarnas startnivå räknar i den gamla skalan. Gamla profiler (`level_scale` saknas, nu
-  `Profile.LEVEL_SCALE` = 2) räknas om en gång när de läses till den nivå vars styrka ligger närmast
-  (`HeroStats.convert_legacy`, `Profile.convert_levels`; 0.19:s nivå 7 → 6, 12 → 7, 24 → 9) och Broder Alrik
+  `Profile.LEVEL_SCALE` = 2) räknas om en gång när de läses till den första nivå som är minst lika stark (VD: aldrig svagare;
+  `HeroStats.convert_legacy`, `Profile.convert_levels`; 0.19:s nivå 7 → 6, 12 → 8, 24 → 10) och Broder Alrik
   förklarar det en gång (`levels_rescaled`, `alrik_levels_rescaled`). Segerskärmen visar hoppet i det striden gör:
   "Liv 120 → 158 · Rättfärdigt slag 14 → 19 skada" och helningen (`LevelJump`, samma som hjältebladet).
   Botarna jämför med den gamla skalan med `NIVAER=idag` (`HeroStats.legacy`). `--level=<n>` sätter sällskapets nivå.
