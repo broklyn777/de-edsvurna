@@ -101,3 +101,10 @@ nedstigningar, fyra hjältar, väntad nivå, efter varv 1–3.
   90,5 %; huvudbossen är inte svårare än väktaren på samma djup.
 - Djupsteget (+3 % per djup) är litet mot utrustningens hopp. Prov: 0,10 → kryptan d2 81 → 65 %, d3 94 → 48 %; kapellet d2
   88 → 75 %, d3 68 → 20 %. 0,12 → kryptan d2 60 %. 0,15 → kryptan d2 59 %, d3 7 %. Djup 3 svarar mycket brantare än djup 2.
+
+## Djup 1 med karriärbotarnas utrustning (2026-10-25)
+
+`SIM_GEAR` djup 1: artefaktnivå 2 för alla (Paladinen 3) och en trofé, i stället för bara Paladinens svärd.
+Nedstigningar med fyra, 100 per nivå, väntad nivå: kryptan 40 → 74 %, kapellet 73 → 91 %, Trollberget 4 % (oförändrat).
+Med ärlig utrustning är djup 1 ungefär lika svårt som djup 2 (kryptan 81 %, kapellet 88 %) och allt ligger över mål B
+(26–48 %). Stöder förslaget om ett större djupsteg; inget balansvärde ändrat.
