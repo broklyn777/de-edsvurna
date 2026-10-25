@@ -1655,7 +1655,7 @@
 			"cult_overseer",
 			"witch"
 		],
-		"stat_mult": 1.6,
+		"stat_mult": 1.55,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "tribunal_gavel",
