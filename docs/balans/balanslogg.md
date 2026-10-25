@@ -84,3 +84,20 @@ Inom väktarbandet. BRANT NIVÅ står kvar (−72/+28): en nivå är för stor f
 Kapellets nedstigningar på djup 3 (100 per nivå, efter varv 1 → efter varv 3): fyra 62 → 68 % (väktaren i nedstigningen
 68 → 75 %), fem 98 → 99 %. Kapellet djup 3 med fyra var redan över bandet B (33–59 %) och hamnar längre över; det är
 väktarstriden som nu ligger rätt, resten av nedstigningen (elit 99 %, Nemesis 86 %) bär inte någon svårighet.
+
+## Utredning: varför djup 2–3 är lättare än djup 1 (inget ändrat)
+
+Diagnostik med `Report.sim_descents` och valfri utrustning eller `CombatSim.depth_step` (samma som DJUPSTEG), 100
+nedstigningar, fyra hjältar, väntad nivå, efter varv 1–3.
+
+- **Nivån gör djup 2–3 svårare, inte lättare.** Väntad nivå 3 / 6 / 7 är i tillväxtskalan 3 / 7,3 / 11,2 mot fiendernas
+  3 / 8 / 13 mellan våning 1 och 2 (avrundningen ligger 0 / 0,7 / 1,8 tillväxtnivåer under). Fiende/hjälte i stats på
+  våning 1: 1,14 / 1,18 / 1,26. Och sällskapet växer bara på djup 1 under nedstigningen (3 → 4,8 vid bossen, +34 % stats);
+  på djup 2 6 → 6,2, på djup 3 7 → 7,0.
+- **Utrustningen bär hela skillnaden.** SIM_GEAR ger djup 1 bara Paladinens svärd nivå 3, djup 2 alla ett svärd nivå 3 och
+  en trofé, djup 3 nivå 5 och trofé. Kryptan djup 1 med djup 2:s utrustning: 40 → **99 %** (bossen 47 → 99 %); kapellet
+  djup 1: 73 → **98 %**. Kryptan djup 2 med djup 1:s utrustning: 81 → **4 %** (väktaren 85 → 7 %).
+- **Inte bossen mot väktaren:** med fulla Charges vinner Benfursten (crypt_3) på djup 2 99 % och Midnattsklockan (crypt_g1)
+  90,5 %; huvudbossen är inte svårare än väktaren på samma djup.
+- Djupsteget (+3 % per djup) är litet mot utrustningens hopp. Prov: 0,10 → kryptan d2 81 → 65 %, d3 94 → 48 %; kapellet d2
+  88 → 75 %, d3 68 → 20 %. 0,12 → kryptan d2 60 %. 0,15 → kryptan d2 59 %, d3 7 %. Djup 3 svarar mycket brantare än djup 2.
