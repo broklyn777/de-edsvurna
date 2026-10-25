@@ -807,7 +807,7 @@ func _award(sim: CombatSim, won: bool) -> void:
 	var r := state.current_room()
 	state.vow_after_battle(data, sim)
 	var finds := _roll_finds("boss" if r.get("boss", false) else RunState.fight_kind(r))
-	var xp := HeroStats.battle_xp(RunState.fight_kind(r), state.depth, r.get("boss", false))
+	var xp := HeroStats.battle_xp(RunState.fight_kind(r), state.enemy_depth(), r.get("boss", false))
 	var ups := profile.grant_xp(data, state.party, xp)
 	out.append("Erfarenhet: +%d var." % xp)
 	for id in ups:
