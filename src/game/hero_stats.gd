@@ -240,16 +240,16 @@ static func new_level(old: float) -> float:
 	return KNEE + pow((x - KNEE) / CURVE_A, 1.0 / CURVE_P)
 
 
-## Erfarenheten (räknad från nivå 1) där nivå L nås: mitt emellan när 0.19:s kurva skulle ha nått den första
-## mellanliggande nivån, g(L − 1) + 1, och g(L) själv. Då ligger hjälten ungefär lika mycket före som efter 0.19:s kurva
-## (räknat i strider); med tröskeln vid g(L) låg hen efter och första nedstigningen föll (prototypen k2: 98 → 60 %).
-## Upp till KNEE är det precis 0.19:s kurva.
+## Erfarenheten (räknad från nivå 1) där nivå L nås: när 0.19:s kurva når tillväxtnivån mitt emellan g(L − 1) och g(L).
+## Då ligger hjälten (räknat i strider, viktat med erfarenheten) lika mycket före som efter 0.19:s kurva. Prototypens
+## tröskel (mitt emellan g(L − 1) + 1 och g(L) i erfarenhet) låg 0,6 gamla nivåer för sent, och karriärbotarna kom ett djup
+## kortare efter 18 nedstigningar (6,8 → 5,8). Upp till KNEE är det precis 0.19:s kurva.
 static func _threshold_xp(level: int) -> float:
 	if level <= 1:
 		return 0.0
-	var top := old_level(level)
-	var first := minf(old_level(level - 1) + 1.0, top)
-	return (_cum_xp(first) + _cum_xp(top)) / 2.0
+	if legacy or level <= KNEE:
+		return _cum_xp(float(level))
+	return _cum_xp((old_level(level - 1) + old_level(level)) / 2.0)
 
 
 ## 0.19:s samlade erfarenhet från nivå 1 till nivå x (summan av 5 · l² + 10 för l = 1 … x − 1, kontinuerlig).

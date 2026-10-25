@@ -142,7 +142,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (`HeroStats.old_level`/`new_level`, `KNEE`, `CURVE_A`, `CURVE_P`). Stats, fiendernas multiplikator (`enemy_level_mult`,
   räknad direkt i den gamla skalan) och den samlade erfarenheten följer 0.19:s kurva i g(L), så striderna är lika
   starka; bara antalet nivåer och hoppet per nivå ändras (+32–40 % på djup 2–3, +15 % på djup 10). Väntad nivå per
-  djup 3, 6, 7, 8, 9, 10, 11, 12, 12, 13 (förr 3, 8, 13 … 48). Trösklarna nås mitt emellan (`_threshold_xp`).
+  djup 3, 6, 7, 8, 9, 10, 11, 12, 12, 13 (förr 3, 8, 13 … 48). En nivå nås när 0.19:s kurva når tillväxtnivån mitt
+  emellan g(L − 1) och g(L) (`_threshold_xp`; prototypens senare tröskel kostade karriärbotarna ett djup).
+  Karriärbotarna (`SOAK=karriar`, 40 × 18, samma frön, före → efter): djup efter 18 nedstigningar 6,8 → 6,5, vinst
+  nedstigning 2–6 44 → 46 %, 7–12 45 → 45 %, 13–18 57 → 55 %, slipar 149 → 159 av 720; Paladinens nivå efter 18
+  33 → 10,9, vunna strider med en nivåhöjning (2–18) ~28 → ~6 %. `BALANS=forsta`: oförändrad (kryptan "ensam, Imma
+  efter strid 1" MACRO/TUNED 91/68 % i båda skalorna; karriärens första nedstigning 98 %).
   Ikapphämtningen och lärjungarnas startnivå räknar i den gamla skalan. Gamla profiler (`level_scale` saknas, nu
   `Profile.LEVEL_SCALE` = 2) räknas om en gång när de läses till den nivå vars styrka ligger närmast
   (`HeroStats.convert_legacy`, `Profile.convert_levels`; 0.19:s nivå 7 → 6, 12 → 7, 24 → 9) och Broder Alrik
