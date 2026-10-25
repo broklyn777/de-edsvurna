@@ -1220,7 +1220,7 @@
 	},
 	"lirien_chorus": {
 		"name": "Allsång",
-		"text": "När Lirien ger en allierad en buff får alla andra i sällskapet samma buff i 1 tur.",
+		"text": "När Lirien ger en allierad en buff med en förmåga får alla andra i sällskapet samma buff i 1 tur. Buffar från en egenskap (en trofé, kallet eller artefaktens egna kast) sprids inte.",
 		"trigger": "aura_applied",
 		"when": {
 			"source": "self",

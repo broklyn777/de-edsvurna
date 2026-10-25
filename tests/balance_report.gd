@@ -122,6 +122,14 @@ func _init() -> void:
 		_guardians(data)
 		quit()
 		return
+	# BALANS=sim: balanssimuleringen med förvalen (flaggorna finns i tests/balance_sim.gd).
+	if OS.get_environment("BALANS") == "sim":
+		var cfg := sim_default_cfg(data)
+		var rows := sim_run(data, cfg)
+		sim_write_csv(rows, "user://balans.csv")
+		print(sim_summary(rows))
+		quit()
+		return
 	if OS.get_environment("BALANS") == "artefakter":
 		_artifacts(data)
 		quit()
@@ -1168,3 +1176,551 @@ func _living(data: Dictionary) -> void:
 						"stat_bonus": LivingMap.stat_mult(g), "counter": true})
 				won += 1 if r.outcome == "victory" else 0
 			print("    %-14s steg %d: %3d %%" % [enc, g, roundi(100.0 * won / RUNS)])
+
+
+
+# --- BALANS=sim: balanssimuleringen (docs/plan/balanssimulering.md) ------------------------------------------------
+# Ingången är tests/balance_sim.gd (flaggor) eller BALANS=sim här (förvalen). Huvudmålen gäller HELA nedstigningar på
+# väntad nivå (grottan, Charges som räcker körningen, livet fullt i varje strid); varje möte för sig är diagnostik, med
+# fulla Charges och "tömd" (de Charges sällskapet i snitt har kvar när det når den sortens strid i nedstigningarna).
+# Inga mål för antalet turer (en tur är en figurs handling); turer och rundor redovisas som information.
+
+## Vinstmål per sorts strid (specen, VD 2026-10-25): [lägst, högst] i procent. Gäller den tömda diagnostiken på väntad nivå.
+const SIM_WIN := {"vanlig": [93, 98], "elit": [70, 85], "nemesis": [60, 75], "väktare": [65, 80], "boss": [50, 65]}
+## Minst en hjälte stupar, [lägst, högst] i procent (specen; bara redovisat och använt i härledningen av nedstigningsmålen).
+const SIM_DEATH := {"vanlig": [0, 10], "elit": [20, 40], "nemesis": [30, 50], "väktare": [25, 45], "boss": [40, 60]}
+## Nivåkänslighet mot boss och väktare (och hela nedstigningar): en nivå ned ska kosta, en upp ge, 10–20 procentenheter.
+const SIM_LEVEL_BAND := [10, 20]
+## Makrona föll tillbaka (ingen rad passade) i mer än så här stor andel av hjältarnas turer: MAKRO.
+const SIM_MACRO_MAX := 15.0
+## Trollberget (och andra Realms byggda för fler än fyra): fyra på väntad nivå får vinna bossen i högst så många procent.
+const SIM_WARN_MAX := 35.0
+const SIM_TYPES := ["vanlig", "elit", "nemesis", "väktare", "boss"]
+const SIM_COLUMNS := ["rike", "djup", "mote", "typ", "lag", "niva", "n", "vinst_pct", "turer_median", "turer_p90",
+		"rundor_median", "dod_minst_en_pct", "lagwipe_pct", "reservanfall_pct", "mal_vinst", "flagga", "matning", "vaning",
+		"strider", "laddningar_kvar_pct", "standardanfall_pct", "niva_delta", "avstand"]
+## Antagen utrustning per djup (docs/plan/balanssimulering.md, ur karriärbotarna SOAK=karriar): artefaktnivå för varje
+## hjälte (ett svärd med hjältens första förmåga, som karriärboten smider; 0 = ingen) och om varje hjälte bär en vanlig
+## trofé (TROPHY_PAIRS[h][0]). Paladinen har alltid introts svärd, minst på nivå 3. Djup över tabellen tar den sista raden.
+## Karriären 0.30.42 (40 profiler × 18 nedstigningar): artefaktnivå i snitt per hjälte i sällskapet 1,7 / 2,4–4,5 / 4,2–5,4 /
+## 5,8–6,7 och trofé hos 22 % / 80–86 % / 79–87 % / 83–90 % på djup 1 / 2 / 3 / 4. Djupet är fiendernas (med depth_offset).
+const SIM_GEAR := {1: {"art": 0, "trophy": false}, 2: {"art": 3, "trophy": true}, 3: {"art": 5, "trophy": true},
+		4: {"art": 6, "trophy": true}}
+const SIM_FIFTH := "imma"
+
+
+## Förvalen: alla Realms, djup 1–3, 200 strider per möte på nivån där striden brukar mötas (100 på ±1; boss och väktare 200), 100 nedstigningar per nivå och lag.
+static func sim_default_cfg(data: Dictionary) -> Dictionary:
+	return {"realms": data.realms.keys(), "depths": [1, 2, 3], "n": 200, "n_side": 100, "runs": 100, "enc": "",
+			"party": ["paladin", "brokk", "alva", "eira"], "fifth": SIM_FIFTH, "side_full": false, "no_descents": false,
+			"fifth_fights": false, "log": true}
+
+
+## Väntad nivå för Realmen och djupet: HeroStats.expected_level på fiendernas djup (djup + Realmens depth_offset).
+static func sim_expected_level(data: Dictionary, realm_id: String, depth: int) -> int:
+	return HeroStats.expected_level(depth + RunState.realm_depth_offset(data, realm_id))
+
+
+## Alla möten en nedstigning på djupet kan bjuda, ur datan: [{enc, type, floor, tier}]. Vanliga grupper ur
+## RunState.pools_for (tier 0–2; våning 1 drar tier 0–1, våning 2 tier 1–2), elitgrupper ur elite_pools_for (tier =
+## våning + 1), Nemesis ur nemesis_pool per våning och bossplatsen (väktaren på djupet eller huvudbossen, tier 2).
+static func sim_cases(data: Dictionary, realm_id: String, depth: int) -> Array:
+	var st := RunState.new()
+	st.set_realm(data, realm_id)
+	st.depth = depth
+	var out := []
+	var pools: Array = RunState.pools_for(data, realm_id, depth)
+	for tier in pools.size():
+		for enc_id in pools[tier]:
+			out.append({"enc": enc_id, "type": "vanlig", "floor": mini(tier, RunState.FLOORS_PER_RUN - 1), "tier": tier})
+	var elite_pools := st.elite_pools_for(data)
+	for f in mini(elite_pools.size(), RunState.FLOORS_PER_RUN):
+		for enc_id in elite_pools[f]:
+			out.append({"enc": enc_id, "type": "elit", "floor": f, "tier": mini(f + 1, 2)})
+	for f in RunState.FLOORS_PER_RUN:
+		for enc_id in RunState.nemesis_pool(elite_pools, f):
+			out.append({"enc": enc_id, "type": "nemesis", "floor": f, "tier": mini(f + 1, 2)})
+	var boss := st.boss_encounter(data)
+	out.append({"enc": boss, "type": "väktare" if boss != st.floor_ids[st.floor_ids.size() - 1] else "boss",
+			"floor": RunState.FLOORS_PER_RUN - 1, "tier": 2})
+	return out
+
+
+## En ny profils makron (Run.starter_lines) med makroförslagen för sällskapet (som när de ansluter och spelaren lägger
+## till raden, som karriärboten).
+static func sim_macros(data: Dictionary, party: Array) -> Dictionary:
+	var out := Bot.new_profile_macros(data)
+	for hero_id in party:
+		var hint: Dictionary = data.heroes.get(hero_id, {}).get("macro_hint", {})
+		if hint.is_empty():
+			continue
+		if not out.has(hero_id):
+			out[hero_id] = {"name": data.heroes[hero_id].name, "lines": []}
+		var has := (out[hero_id].lines as Array).any(func(l: Dictionary) -> bool: return l.get("cond", "") == hint.line.cond \
+				and l.get("action", "") == hint.line.action and l.get("ability", "") == hint.line.get("ability", ""))
+		if not has:
+			out[hero_id].lines.insert(0, hint.line.duplicate(true))
+	return out
+
+
+## Utrustningen enligt SIM_GEAR: {traits, artifacts} för run_fight/run_expedition.
+static func sim_gear(data: Dictionary, party: Array, depth: int) -> Dictionary:
+	var g: Dictionary = SIM_GEAR[depth] if SIM_GEAR.has(depth) else SIM_GEAR[SIM_GEAR.keys().max()]
+	var traits := {}
+	var arts := {}
+	for hero_id in party:
+		var own: Array = data.heroes[hero_id].get("traits", []).duplicate()
+		if g.trophy and TROPHY_PAIRS.has(hero_id):
+			own.append(TROPHY_PAIRS[hero_id][0])
+		traits[hero_id] = own
+		var lv := int(g.art)
+		if hero_id == "paladin":
+			lv = maxi(lv, 3)
+		if lv > 0:
+			var abilities: Array = data.heroes[hero_id].get("abilities", [])
+			arts[hero_id] = Forge.normalize({"type": "sword", "ability": abilities[0] if not abilities.is_empty() else "",
+					"level": lv})
+	return {"traits": traits, "artifacts": arts}
+
+
+## Stridens inställningar som RunState.battle_opts() för rutan (utan våningsregler, fördärv och sigill).
+static func sim_fight_opts(data: Dictionary, realm_id: String, c: Dictionary, levels: Dictionary, owned: int,
+		macros: Dictionary) -> Dictionary:
+	var st := RunState.new()
+	st.set_realm(data, realm_id)
+	st.owned_heroes = owned
+	var opts := {"levels": levels, "floor": int(c.tier), "instability": 0, "rules": [], "bot_macros": macros}
+	if st.depth_offset > 0:
+		opts.depth_offset = st.depth_offset
+	if c.type != "vanlig":
+		opts.counter = true
+	if c.type in ["elit", "nemesis"]:
+		opts.force_elites = 1
+	if c.type == "nemesis":
+		opts.nemesis = true
+	if st.full_party_size() > 0:
+		opts.full_party = st.full_party_size()
+	return opts
+
+
+## Medianen och p-percentilen (0–1) av en lista tal.
+static func sim_pct(list: Array, p: float) -> float:
+	if list.is_empty():
+		return 0.0
+	var a := list.duplicate()
+	a.sort()
+	return float(a[clampi(int(floor(p * (a.size() - 1) + 0.5)), 0, a.size() - 1)])
+
+
+## Andelen reservanfall i procent: turer där inget makro passade av alla turer makrot avgjorde.
+static func sim_reserve_pct(no_match: int, decisions: int) -> float:
+	return 100.0 * no_match / decisions if decisions > 0 else 0.0
+
+
+## Hur långt ett värde ligger utanför [lo, hi] (0 innanför).
+static func sim_outside(value: float, band: Array) -> float:
+	if value < float(band[0]):
+		return float(band[0]) - value
+	if value > float(band[1]):
+		return value - float(band[1])
+	return 0.0
+
+
+## Vinstflaggan mot ett band: "FÖR SVÅR", "FÖR LÄTT" eller "".
+static func sim_win_flag(win: float, band: Array) -> String:
+	if band.is_empty():
+		return ""
+	if win < float(band[0]):
+		return "FÖR SVÅR"
+	if win > float(band[1]):
+		return "FÖR LÄTT"
+	return ""
+
+
+## Nivåflaggorna ur vinsten en nivå under, på och över väntad nivå: [flaggor, avstånd]. Tappet (på − under) och vinsten
+## (över − på) ska båda ligga i SIM_LEVEL_BAND. Mindre: PLATT NIVÅ, större: BRANT NIVÅ. En sida som redan står vid 0
+## eller 100 % kan inte röra sig åt det hållet och räknas inte (mättad).
+static func sim_level_flags(minus: float, at: float, plus: float) -> Array:
+	var flags := []
+	var dist := 0.0
+	var parts := []
+	if at > 0.0:
+		parts.append(at - minus)
+	if at < 100.0:
+		parts.append(plus - at)
+	for d in parts:
+		if d < float(SIM_LEVEL_BAND[0]):
+			if not flags.has("PLATT NIVÅ"):
+				flags.append("PLATT NIVÅ")
+			dist = maxf(dist, float(SIM_LEVEL_BAND[0]) - d)
+		elif d > float(SIM_LEVEL_BAND[1]):
+			if not flags.has("BRANT NIVÅ"):
+				flags.append("BRANT NIVÅ")
+			dist = maxf(dist, d - float(SIM_LEVEL_BAND[1]))
+	return [flags, dist]
+
+
+## Nedstigningens vinstmål ur specens mål per strid, kedjade över nedstigningens strider: P = Π p_typ ^ n_typ, med
+## n_typ = snittantalet strider av den sorten i en nedstigning som når bossplatsen (mix). Ger [lägst, högst] i procent.
+static func sim_chain_band(mix: Dictionary, per_type: Dictionary = SIM_WIN) -> Array:
+	var lo := 1.0
+	var hi := 1.0
+	for t in mix:
+		if not per_type.has(t):
+			continue
+		lo *= pow(float(per_type[t][0]) / 100.0, float(mix[t]))
+		hi *= pow(float(per_type[t][1]) / 100.0, float(mix[t]))
+	return [roundi(100.0 * lo), roundi(100.0 * hi)]
+
+
+## Andelen nedstigningar där minst en hjälte stupar, ur specens dödsmål per strid: 1 − Π (1 − d_typ) ^ n_typ.
+static func sim_chain_death_band(mix: Dictionary) -> Array:
+	var lo := 1.0
+	var hi := 1.0
+	for t in mix:
+		if not SIM_DEATH.has(t):
+			continue
+		lo *= pow(1.0 - float(SIM_DEATH[t][0]) / 100.0, float(mix[t]))
+		hi *= pow(1.0 - float(SIM_DEATH[t][1]) / 100.0, float(mix[t]))
+	return [roundi(100.0 * (1.0 - lo)), roundi(100.0 * (1.0 - hi))]
+
+
+## Sammanställer en lista stridsresultat ({outcome, turns, units, deaths, alive, no_match, decisions}) till en rad.
+static func sim_fight_row(results: Array) -> Dictionary:
+	var n := results.size()
+	var won := 0
+	var died := 0
+	var wiped := 0
+	var nm := 0
+	var dec := 0
+	var gen := 0
+	var turns := []
+	var rounds := []
+	for r in results:
+		won += 1 if r.outcome == "victory" else 0
+		died += 1 if int(r.deaths) > 0 else 0
+		wiped += 1 if int(r.alive) == 0 else 0
+		nm += int(r.no_match)
+		dec += int(r.decisions)
+		gen += int(r.get("generic", 0))
+		turns.append(int(r.turns))
+		rounds.append(float(r.turns) / maxf(float(r.units), 1.0))
+	return {"n": n, "standardanfall_pct": sim_reserve_pct(gen, dec), "vinst_pct": 100.0 * won / maxi(n, 1), "turer_median": sim_pct(turns, 0.5),
+			"turer_p90": sim_pct(turns, 0.9), "rundor_median": sim_pct(rounds, 0.5),
+			"dod_minst_en_pct": 100.0 * died / maxi(n, 1), "lagwipe_pct": 100.0 * wiped / maxi(n, 1),
+			"reservanfall_pct": sim_reserve_pct(nm, dec)}
+
+
+## Snittet Charges per hjälte och förmåga i en lista lägen ({hjälte: {förmåga: n}}), avrundat.
+static func sim_avg_charges(list: Array) -> Dictionary:
+	var sum := {}
+	for ch in list:
+		for h in ch:
+			if not sum.has(h):
+				sum[h] = {}
+			for a in ch[h]:
+				sum[h][a] = float(sum[h].get(a, 0.0)) + float(ch[h][a])
+	var out := {}
+	for h in sum:
+		out[h] = {}
+		for a in sum[h]:
+			out[h][a] = roundi(sum[h][a] / list.size())
+	return out
+
+
+## Charges för en tömd strid: snittet när nedstigningarna nådde samma sort på samma våning (annars samma sort).
+static func sim_drained(by_kind: Dictionary, c: Dictionary) -> Dictionary:
+	var key := "%s f%d" % [c.type, int(c.floor)]
+	if by_kind.has(key):
+		return by_kind[key]
+	return by_kind.get(c.type, {})
+
+
+## Kör simuleringen för cfg: {realms, depths, n, n_side, runs, enc, party, fifth, side_full, no_descents, log}.
+## Returnerar raderna (Dictionary med SIM_COLUMNS) med flaggorna satta.
+static func sim_run(data: Dictionary, cfg: Dictionary) -> Array:
+	var rows := []
+	var t0 := Time.get_ticks_msec()
+	for realm_id in cfg.realms:
+		var realm_size := int(data.realms[realm_id].get("party", Profile.BASE_SLOTS))
+		for depth in cfg.depths:
+			var variants := [cfg.party.duplicate()]
+			# Fem där platsen finns: den femte platsen öppnas när kapellet är klarat på djup 1, alltså från djup 2 och i
+			# Realms som kräver det (Trollberget); en Realm byggd för fem testas alltid med fyra och fem.
+			if cfg.fifth != "" and (realm_size > Profile.BASE_SLOTS or depth >= 2 or data.realms[realm_id].has("requires")):
+				variants.append(cfg.party + [cfg.fifth])
+			var exp_lv := sim_expected_level(data, realm_id, depth)
+			for party in variants:
+				var owned: int = party.size()
+				var macros := sim_macros(data, party)
+				var gear := sim_gear(data, party, depth + RunState.realm_depth_offset(data, realm_id))  # fiendernas djup
+				var per_level := {}  # nivå: {charges per sort}
+				for lv in [exp_lv - 1, exp_lv, exp_lv + 1]:
+					per_level[lv] = sim_descents(data, realm_id, depth, party, lv, owned, macros, gear, cfg, rows)
+				# Varje möte för sig (diagnostik): fem bara i en Realm byggd för fler än fyra (cfg.fifth_fights för alla).
+				if party.size() > Profile.BASE_SLOTS and realm_size <= Profile.BASE_SLOTS and not cfg.fifth_fights:
+					continue
+				var drained: Dictionary = per_level[exp_lv]
+				var full_done := {}  # "möte|tier": Nemesis är samma strid som elitgruppen (flaggan ändrar inget i striden)
+				var cases := sim_cases(data, realm_id, depth)
+				if cfg.enc != "":
+					cases = cases.filter(func(c: Dictionary) -> bool: return c.enc == cfg.enc)
+				for c in cases:
+					# Nivån: den sällskapet i snitt har när nedstigningarna (från väntad nivå) når sorten på våningen.
+					var base := exp_lv
+					var lkey := "%s f%d" % [c.type, int(c.floor)]
+					if drained.levels.has(lkey):
+						base = roundi(drained.levels[lkey])
+					elif drained.levels.has(c.type):
+						base = roundi(drained.levels[c.type])
+					var big: bool = c.type in ["boss", "väktare"]
+					for lv in [base - 1, base, base + 1]:
+						var side: bool = lv != base
+						for state in ["full", "tömd"]:
+							if state == "full" and side and not big and not cfg.side_full:
+								continue
+							if state == "full" and not side:
+								var fk := "%s|%d" % [c.enc, int(c.tier)]
+								if full_done.has(fk):
+									continue
+								full_done[fk] = true
+							var charges := {}
+							if state == "tömd":
+								charges = sim_drained(drained.charges, c)
+								if charges.is_empty():
+									continue
+							var n: int = cfg.n if not side or big else cfg.n_side
+							var res := []
+							for seed_value in range(1, n + 1):
+								var opts := sim_fight_opts(data, realm_id, c, Bot.party_levels(data, lv, party), owned, macros)
+								res.append(Bot.run_fight(data, seed_value, Bot.Skill.MACRO, c.enc, party, gear.traits,
+										charges.duplicate(true), gear.artifacts, depth, opts))
+							var row := sim_fight_row(res)
+							row.merge({"rike": realm_id, "djup": depth, "mote": c.enc, "typ": c.type, "lag": party.size(),
+									"niva": lv, "matning": "strid_" + ("full" if state == "full" else "tomd"),
+									"vaning": int(c.floor) + 1, "strider": "",
+									"laddningar_kvar_pct": roundi(100.0 * Bot.charges_share_of(data, charges)) if state == "tömd" else 100,
+									"_exp": lv == base, "_realm_size": realm_size})
+							rows.append(row)
+				if cfg.log:
+					print("  %s djup %d lag %d klart (%.0f s)" % [realm_id, depth, party.size(), (Time.get_ticks_msec() - t0) / 1000.0])
+	sim_flag(rows)
+	return rows
+
+
+## Hela nedstigningar (Bot.run_expedition, "simple": slåss mot allt den kliver på och elit när questen kräver det) på
+## nivån lv. Lägger en rad för nedstigningen och en per sorts strid i nedstigningarna ("i_nedstigning"). Returnerar
+## {charges: {"<sort> f<våning>" eller "<sort>": snitt-Charges}} för de tömda stridsraderna.
+static func sim_descents(data: Dictionary, realm_id: String, depth: int, party: Array, lv: int, owned: int,
+		macros: Dictionary, gear: Dictionary, cfg: Dictionary, rows: Array) -> Dictionary:
+	if cfg.no_descents:
+		return {"charges": {}, "levels": {}}
+	var realm_size := int(data.realms[realm_id].get("party", Profile.BASE_SLOTS))
+	var exp_lv := sim_expected_level(data, realm_id, depth)
+	var cleared := 0
+	var died := 0
+	var wiped := 0
+	var nm := 0
+	var dec := 0
+	var turns := []
+	var rounds := []
+	var fights := 0
+	var by_type := {}
+	var charges_at := {}
+	var level_at := {}  # "<sort> f<våning>": [summa nivå, antal] när striden började
+	var gen := 0
+	var mix := {}
+	var all_mix := {}
+	var reached := 0
+	var share := 0.0
+	var share_n := 0
+	for seed_value in range(1, cfg.runs + 1):
+		var log := []
+		var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party.duplicate(),
+				"bot_macros": macros, "owned": owned, "slots": maxi(party.size(), Profile.BASE_SLOTS), "fight_log": log}
+		var r := Bot.run_expedition(data, seed_value, Bot.Skill.MACRO, gear.traits, gear.artifacts, depth, realm_id, opts,
+				"simple")
+		cleared += 1 if r.cleared else 0
+		var t := 0
+		var rd := 0.0
+		var any_death := false
+		for f in log:
+			t += int(f.turns)
+			rd += float(f.turns) / maxf(float(f.units), 1.0)
+			any_death = any_death or int(f.deaths) > 0
+			nm += int(f.no_match)
+			dec += int(f.decisions)
+			gen += int(f.generic)
+			var res: Array = by_type.get(f.type, [])
+			res.append(f)
+			by_type[f.type] = res
+			for key in ["%s f%d" % [f.type, int(f.floor)], f.type]:
+				var cl: Array = charges_at.get(key, [])
+				cl.append(f.charges)
+				charges_at[key] = cl
+				var ll: Array = level_at.get(key, [0.0, 0])
+				level_at[key] = [float(ll[0]) + float(f.level), int(ll[1]) + 1]
+			share += Bot.charges_share_of(data, f.charges)
+			share_n += 1
+			all_mix[f.type] = float(all_mix.get(f.type, 0.0)) + 1.0
+		# Mixen för det kedjade målet: strider per sort i nedstigningar som nådde bossplatsen (klarade eller inte).
+		if log.any(func(f: Dictionary) -> bool: return f.type in ["boss", "väktare"]):
+			reached += 1
+			for f in log:
+				mix[f.type] = float(mix.get(f.type, 0.0)) + 1.0
+		died += 1 if any_death else 0
+		wiped += 1 if not log.is_empty() and log[log.size() - 1].outcome != "victory" else 0
+		fights += log.size()
+		turns.append(t)
+		rounds.append(rd)
+	for t in mix:
+		mix[t] = float(mix[t]) / maxi(reached, 1)
+	if reached == 0:  # ingen nådde bossen: snittet av alla nedstigningar och en bosstrid
+		for t in all_mix:
+			mix[t] = float(all_mix[t]) / cfg.runs
+		var boss_t := "väktare" if RunState.guardian_for(data, realm_id, depth) != "" else "boss"
+		mix[boss_t] = 1.0
+	rows.append({"rike": realm_id, "djup": depth, "mote": "nedstigning", "typ": "nedstigning", "lag": party.size(),
+			"niva": lv, "n": cfg.runs, "vinst_pct": 100.0 * cleared / cfg.runs, "turer_median": sim_pct(turns, 0.5),
+			"turer_p90": sim_pct(turns, 0.9), "rundor_median": sim_pct(rounds, 0.5),
+			"dod_minst_en_pct": 100.0 * died / cfg.runs, "lagwipe_pct": 100.0 * wiped / cfg.runs,
+			"reservanfall_pct": sim_reserve_pct(nm, dec), "standardanfall_pct": sim_reserve_pct(gen, dec),
+			"matning": "nedstigning", "vaning": "",
+			"strider": snappedf(float(fights) / cfg.runs, 0.1), "laddningar_kvar_pct": roundi(100.0 * share / maxi(share_n, 1)),
+			"_exp": lv == exp_lv, "_realm_size": realm_size, "_mix": mix})
+	for t in SIM_TYPES:
+		if not by_type.has(t):
+			continue
+		var row := sim_fight_row(by_type[t])
+		var sh := 0.0
+		for f in by_type[t]:
+			sh += Bot.charges_share_of(data, f.charges)
+		row.merge({"rike": realm_id, "djup": depth, "mote": "(alla i nedstigningen)", "typ": t, "lag": party.size(),
+				"niva": lv, "matning": "i_nedstigning", "vaning": "", "strider": "",
+				"laddningar_kvar_pct": roundi(100.0 * sh / maxi(by_type[t].size(), 1)), "_exp": lv == exp_lv,
+				"_realm_size": realm_size})
+		rows.append(row)
+	var out := {}
+	var lv_out := {}
+	for key in charges_at:
+		out[key] = sim_avg_charges(charges_at[key])
+		lv_out[key] = float(level_at[key][0]) / maxi(int(level_at[key][1]), 1)
+	return {"charges": out, "levels": lv_out, "mix": mix}
+
+
+## Sätter mål och flaggor på raderna (alla nivåer av ett fall måste finnas i listan för nivåflaggorna).
+static func sim_flag(rows: Array) -> void:
+	# Nedstigningens kedjade mål: mixen från väntad nivå för samma Realm, djup och lag.
+	var bands := {}
+	for r in rows:
+		if r.matning == "nedstigning" and r._exp:
+			bands["%s|%d|%d" % [r.rike, r.djup, r.lag]] = sim_chain_band(r._mix)
+	var by_case := {}
+	for r in rows:
+		by_case[_sim_case_key(r) + "|" + str(r.niva)] = r
+	for r in rows:
+		var flags := []
+		var dist := 0.0
+		var band := []
+		if r._exp:
+			if r.matning == "nedstigning":
+				band = bands.get("%s|%d|%d" % [r.rike, r.djup, r.lag], [])
+			elif r.matning == "strid_tomd" and SIM_WIN.has(r.typ):
+				band = SIM_WIN[r.typ]
+		r.mal_vinst = "%d-%d" % band if not band.is_empty() else ""
+		var wf := sim_win_flag(float(r.vinst_pct), band)
+		if wf != "":
+			flags.append(wf)
+			dist = maxf(dist, sim_outside(float(r.vinst_pct), band))
+		# Nivåkänsligheten: boss och väktare (båda Charges-lägena) och hela nedstigningar, på raden för väntad nivå.
+		if r._exp and ((r.typ in ["boss", "väktare"] and String(r.matning).begins_with("strid_")) or r.matning == "nedstigning"):
+			var lo: Variant = by_case.get(_sim_case_key(r) + "|" + str(int(r.niva) - 1))
+			var hi: Variant = by_case.get(_sim_case_key(r) + "|" + str(int(r.niva) + 1))
+			if lo != null and hi != null:
+				var lf := sim_level_flags(float(lo.vinst_pct), float(r.vinst_pct), float(hi.vinst_pct))
+				flags.append_array(lf[0])
+				dist = maxf(dist, float(lf[1]))
+				r.niva_delta = "%+.0f/%+.0f" % [float(lo.vinst_pct) - float(r.vinst_pct), float(hi.vinst_pct) - float(r.vinst_pct)]
+		if float(r.reservanfall_pct) > SIM_MACRO_MAX:
+			flags.append("MAKRO")
+			dist = maxf(dist, float(r.reservanfall_pct) - SIM_MACRO_MAX)
+		# Fel varning: en Realm byggd för fler än fyra, fyra hjältar på väntad nivå, bossplatsen.
+		if sim_wrong_warning(r):
+			flags.append("FEL VARNING")
+			dist = maxf(dist, float(r.vinst_pct) - SIM_WARN_MAX)
+		r.flagga = ";".join(flags)
+		r.avstand = snappedf(dist, 0.1)
+
+
+## FEL VARNING: en Realm byggd för fler än fyra, fyra hjältar på väntad nivå, bossplatsen vinns i mer än SIM_WARN_MAX %.
+static func sim_wrong_warning(r: Dictionary) -> bool:
+	return r._exp and int(r._realm_size) > Profile.BASE_SLOTS and int(r.lag) == Profile.BASE_SLOTS \
+			and r.typ in ["boss", "väktare"] and String(r.matning).begins_with("strid_") and float(r.vinst_pct) > SIM_WARN_MAX
+
+
+static func _sim_case_key(r: Dictionary) -> String:
+	return "%s|%s|%s|%s|%s|%s|%s" % [r.rike, r.djup, r.mote, r.typ, r.lag, r.matning, str(r.vaning)]
+
+
+## En CSV-rad (fält med komma eller citattecken citeras).
+static func sim_csv_line(r: Dictionary) -> String:
+	var bits := []
+	for c in SIM_COLUMNS:
+		var v: Variant = r.get(c, "")
+		var s := ("%.1f" % v) if v is float else str(v)
+		if s.contains(",") or s.contains("\""):
+			s = "\"" + s.replace("\"", "\"\"") + "\""
+		bits.append(s)
+	return ",".join(bits)
+
+
+static func sim_write_csv(rows: Array, path: String) -> void:
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	f.store_line(",".join(SIM_COLUMNS))
+	for r in rows:
+		f.store_line(sim_csv_line(r))
+	f.close()
+
+
+## Läser en CSV skriven av sim_write_csv (för att slå ihop delkörningar).
+static func sim_read_csv(path: String) -> Array:
+	var out := []
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return out
+	var head := f.get_csv_line()
+	while not f.eof_reached():
+		var line := f.get_csv_line()
+		if line.size() < head.size():
+			continue
+		var r := {}
+		for i in head.size():
+			r[head[i]] = line[i]
+		out.append(r)
+	return out
+
+
+## Sammanfattningen: bara raderna utanför målen, sorterade efter avståndet. Nedstigningarna först (huvudmålen), sedan
+## de tömda stridsraderna, sist MAKRO, nivå och fel varning från andra rader.
+static func sim_summary(rows: Array, top := 40) -> String:
+	var flagged := rows.filter(func(r: Dictionary) -> bool: return String(r.flagga) != "")
+	flagged.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a.avstand) > float(b.avstand))
+	var lines := []
+	for part in [["Hela nedstigningar (huvudmålen)", ["nedstigning"]], ["Varje möte, tömda Charges (diagnostik)", ["strid_tomd"]],
+			["Varje möte, fulla Charges (bara MAKRO, nivå och fel varning)", ["strid_full"]],
+			["Strider inne i nedstigningarna (bara MAKRO)", ["i_nedstigning"]]]:
+		var sel := flagged.filter(func(r: Dictionary) -> bool: return (part[1] as Array).has(String(r.matning)))
+		lines.append("")
+		lines.append("%s: %d utanför" % [part[0], sel.size()])
+		for r in sel.slice(0, top):
+			lines.append("  %-9s d%s v%-1s %-22s %-8s lag %s nivå %-2s vinst %3s %% (mål %s) stupar %3s %% wipe %3s %% reserv %2s %%  %s [%s]" % [
+					r.rike, r.djup, r.vaning, r.mote, r.typ, r.lag, r.niva, _sim_num(r.vinst_pct),
+					r.mal_vinst if String(r.mal_vinst) != "" else "–", _sim_num(r.dod_minst_en_pct), _sim_num(r.lagwipe_pct),
+					_sim_num(r.reservanfall_pct), r.flagga, r.avstand])
+		if sel.size() > top:
+			lines.append("  … %d till i CSV:n" % (sel.size() - top))
+	return "\n".join(lines)
+
+
+static func _sim_num(v: Variant) -> String:
+	return "%.0f" % float(v)

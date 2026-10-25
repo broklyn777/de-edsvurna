@@ -959,6 +959,12 @@ func _macro_cmd(w: PackedStringArray) -> void:
 				if w[5].contains("="):
 					var v := w[5].get_slice("=", 1)
 					line.value = int(v) if v.is_valid_int() else v
+				# Spelets radeditor väljer ur listor; här skrivs id:n för hand, så ett felstavat id (bleed i stället för
+				# bleeding) skulle ge en rad som aldrig stämmer. Raden läggs inte till.
+				var problem := validate_line(data, line, id)
+				if problem != "":
+					out.append("Raden lades inte till: " + problem)
+					return
 				var at := clampi(int(w[3]) - 1, 0, lines.size())
 				lines.insert(at, line)
 				out.append("La till rad %d: %s" % [at + 1, MacroRunner.describe_line(data, line)])
@@ -967,6 +973,46 @@ func _macro_cmd(w: PackedStringArray) -> void:
 		out.append("  %d. %s" % [i + 1, MacroRunner.describe_line(data, lines[i])])
 	out.append("  Förmågor: " + ", ".join((data.heroes[id].abilities as Array).map(func(a: String) -> String:
 			return "%s (%s)" % [a, data.abilities[a].name])))
+
+
+## Kontrollerar en makrorad som skrivits för hand mot datan: subjekt, villkor, handling och mål ur MacroRunners listor, och
+## id:n för statusar (auror), egenskaper, förmågor och artefakttyper. Förmågan i en handling ska vara hjältens egen.
+## Returnerar "" om raden är giltig, annars en förklaring.
+static func validate_line(game_data: Dictionary, line: Dictionary, hero_id := "") -> String:
+	var subject := String(line.get("subject", ""))
+	var cond := String(line.get("cond", ""))
+	var action := String(line.get("action", ""))
+	var target := String(line.get("target", "that"))
+	if not MacroRunner.SUBJECTS.has(subject):
+		return "okänt subjekt \"%s\" (finns: %s)" % [subject, ", ".join(MacroRunner.SUBJECTS)]
+	if not MacroRunner.CONDITIONS.has(cond):
+		return "okänt villkor \"%s\"" % cond
+	if not MacroRunner.ACTIONS.has(action):
+		return "okänd handling \"%s\" (finns: %s)" % [action, ", ".join(MacroRunner.ACTIONS)]
+	if target != "" and not MacroRunner.TARGETS.has(target):
+		return "okänt mål \"%s\"" % target
+	var v := str(line.get("value", ""))
+	match cond:
+		"has_status", "lacks_status":
+			if not game_data.auras.has(v):
+				return "okänd status \"%s\" (villkoret %s väntar ett id ur auras.json)" % [v, cond]
+		"has_trait", "lacks_trait":
+			if not game_data.traits.has(v):
+				return "okänd egenskap \"%s\" (villkoret %s väntar ett id ur traits.json)" % [v, cond]
+		"has_charges":
+			if not game_data.abilities.has(v):
+				return "okänd förmåga \"%s\" (villkoret has_charges väntar ett id ur abilities.json)" % v
+		"has_artifact", "lacks_artifact":
+			if not game_data.get("artifacts", {}).has(v):
+				return "okänd artefakttyp \"%s\"" % v
+	if action == "ability":
+		var ability := String(line.get("ability", ""))
+		if not game_data.abilities.has(ability):
+			return "okänd förmåga \"%s\"" % ability
+		if hero_id != "" and game_data.heroes.has(hero_id) and not (game_data.heroes[hero_id].get("abilities", []) as Array).has(ability):
+			return "%s har inte förmågan %s (har: %s)" % [game_data.heroes[hero_id].name, ability,
+					", ".join(game_data.heroes[hero_id].get("abilities", []))]
+	return ""
 
 
 func _list_trophies() -> void:

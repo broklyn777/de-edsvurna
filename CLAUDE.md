@@ -702,6 +702,11 @@ godot --path .
 # Balansrapport per våning och för hela kryptan (BASIC/MACRO/TUNED, 100 strider var), och per kall
 godot --headless --path . --script res://tests/balance_report.gd
 
+# Balanssimuleringen (docs/plan/balanssimulering.md): hela nedstigningar (huvudmålen) och varje möte ur datan (fulla och
+# tömda Charges) på väntad nivå ±1, med fyra och fem; CSV och sammanfattning av det som ligger utanför målen. Hela
+# tabellen tar ~3,6 h processortid (kör två delar åt gången och slå ihop med --merge); urval med --realm/--depth/--enc.
+godot --headless --path . --script res://tests/balance_sim.gd -- --realm=crypt --depth=1 --out=/tmp/balans.csv
+
 # Buggjakt med botar (0.30.16, tests/soak.gd): tusentals hela körningar med slumpade val och kontroller efter varje drag
 # (körfel, fastlåsning, eviga strider, sparning och inläsning, silver, samling, Charges). --seed=N --verbose återskapar ett fel.
 godot --headless --path . --script res://tests/soak.gd -- --runs=1000

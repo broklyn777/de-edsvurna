@@ -79,6 +79,9 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 	sim.begin()
 	var guard := 0
 	var no_match := 0
+	var decisions := 0  # balanssim: hjältens turer som makrot avgjorde (nämnaren för reservanfallen)
+	var act_fail := 0  # makrot gav en handling som striden inte tog (borde aldrig hända)
+	var generic := 0  # turer där raden som valdes var ett allmänt anfall (Run.FIRST_LINE och liknande)
 	while sim.outcome == "" and guard < 500:
 		guard += 1
 		if not sim.needs_input():
@@ -109,8 +112,12 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 			lines.insert(at, hero_line if not hero_line.is_empty() else opts.focus_line)
 			macro = {"lines": lines}
 		var decision := MacroRunner.decide(sim, sim.current, macro)
+		decisions += 1
+		if decision.ok and _is_generic_attack(macro, decision):
+			generic += 1
 		if decision.ok:
-			sim.act(decision.action, decision.target, decision.ability)
+			if sim.act(decision.action, decision.target, decision.ability) != "":
+				act_fail += 1
 		else:
 			no_match += 1
 			if sim.act("defend") != "":
@@ -119,7 +126,23 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 		if opts.has("event_log"):
 			opts.event_log.append_array(events)
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()
-	return {"outcome": sim.outcome, "turns": sim.turn_no, "alive": alive, "no_match": no_match, "sim": sim}
+	var deaths := 0
+	for h in sim.heroes:
+		deaths += h.deaths
+	return {"outcome": sim.outcome, "turns": sim.turn_no, "alive": alive, "no_match": no_match, "sim": sim,
+			"decisions": decisions, "act_fail": act_fail, "generic": generic, "deaths": deaths, "units": sim.units.size()}
+
+
+## Sant om makroraden som valdes är ett allmänt anfall utan villkor att tala om (anfall fienden med lägst liv, som lever
+## eller som kan skadas): makrots sista utväg när inget smartare passade.
+static func _is_generic_attack(macro: Dictionary, decision: Dictionary) -> bool:
+	var lines: Array = macro.get("lines", [])
+	var i := int(decision.get("line", 0)) - 1
+	if i < 0 or i >= lines.size():
+		return false
+	var l: Dictionary = lines[i]
+	return l.get("action", "") == "attack" and l.get("subject", "") == "any_enemy" \
+			and l.get("cond", "") in ["lowest_hp", "is_alive", "not_immune"]
 
 
 ## En hel Realm (standard kryptan) i följd med Charges som räcker alla våningarna. Sant om sällskapet klarar den.
@@ -208,10 +231,11 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth", "owned", "slots", "realm_party"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth", "owned", "slots", "realm_party", "fight_log"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
+			var charges_before: Dictionary = state.charges.duplicate(true) if opts.has("fight_log") else {}
 			var fight_traits := traits
 			if state.vow_trait(data) != "":
 				fight_traits = traits.duplicate(true)
@@ -235,6 +259,14 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				var el: Array = turns_log.get(ek, [])
 				el.append(int(result.turns))
 				turns_log[ek] = el
+			# Balanssimuleringen (BALANS=sim): varje strid i körningen med sort, våning, Charges före och utfall.
+			if opts.has("fight_log"):
+				var sort := "nemesis" if r.get("nemesis", false) else ("elit" if fk == "elit" else fk)
+				opts.fight_log.append({"type": sort, "floor": state.floor, "tier": int(r.get("tier", state.floor)),
+						"encounter": state.encounter(), "charges": charges_before, "outcome": result.outcome,
+						"turns": int(result.turns), "units": int(result.units), "deaths": int(result.deaths),
+						"alive": int(result.alive), "no_match": int(result.no_match), "decisions": int(result.decisions),
+						"generic": int(result.generic), "seed": seed_value, "level": HeroStats.party_level(levels)})
 			if state.floor == 0:
 				f0_fights += 1
 				f0_won += 1 if result.outcome == "victory" else 0

@@ -1082,9 +1082,15 @@ func _career_report(from: int, runs: int, descents: int) -> void:
 			var best_before := profile.best_depth
 			var party := Array(profile.party)
 			var lv := 0.0
+			var art := 0.0  # balanssim: artefaktnivå (0 utan) och burna troféer per hjälte i sällskapet
+			var worn_n := 0.0
 			for h in party:
 				lv += float(profile.hero(data, h).level)
+				art += float(profile.artifact(h).get("level", 0))
+				worn_n += 1.0 if String(profile.worn.get(h, "")) != "" else 0.0
 			lv /= maxf(party.size(), 1)
+			art /= maxf(party.size(), 1)
+			worn_n /= maxf(party.size(), 1)
 			run_fights = 0
 			run_ups = 0
 			run_upfights = 0
@@ -1094,7 +1100,7 @@ func _career_report(from: int, runs: int, descents: int) -> void:
 			_run_quiet()
 			_home()
 			var won := ended == "cleared"
-			rows[d].append({"level": lv, "depth": profile.depth, "won": won, "fights": run_fights,
+			rows[d].append({"level": lv, "art": art, "worn": worn_n, "depth": profile.depth, "won": won, "fights": run_fights,
 					"silver": profile.silver - before, "heroes": party.size(), "lost_at": lost_at if not won else "",
 					"realm": realm, "best": best_before, "recruited": profile.recruited.size(),
 					"ups": run_ups, "upfights": run_upfights, "pal_ups": run_pal_ups,
@@ -1214,10 +1220,12 @@ func _career_print(rows: Array, runs: int, descents: int) -> void:
 	for d in descents:
 		for r in rows[d]:
 			var key := "%s d%d" % [r.realm, r.depth]
-			var b: Dictionary = by.get(key, {"n": 0, "won": 0, "lv": 0.0})
+			var b: Dictionary = by.get(key, {"n": 0, "won": 0, "lv": 0.0, "art": 0.0, "worn": 0.0})
 			b.n += 1
 			b.won += 1 if r.won else 0
 			b.lv += r.level
+			b.art += r.art
+			b.worn += r.worn
 			by[key] = b
 			total += 1
 			if r.depth <= r.best and d > 0:
@@ -1225,8 +1233,8 @@ func _career_print(rows: Array, runs: int, descents: int) -> void:
 	var ks := by.keys()
 	ks.sort()
 	for k in ks:
-		print("    %-12s %4d körningar  vinst %3d %%  nivå %.1f" % [k, by[k].n, roundi(100.0 * by[k].won / by[k].n),
-				by[k].lv / by[k].n])
+		print("    %-12s %4d körningar  vinst %3d %%  nivå %.1f  artefakt %.1f  trofé %.2f" % [k, by[k].n,
+				roundi(100.0 * by[k].won / by[k].n), by[k].lv / by[k].n, by[k].art / by[k].n, by[k].worn / by[k].n])
 	print("  På ett djup som redan är klarat (slipar): %d av %d nedstigningar" % [grind, total])
 	_pace_print(rows, descents)
 	_living_print(rows, runs, descents)
