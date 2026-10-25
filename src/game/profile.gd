@@ -414,7 +414,7 @@ const LEVEL_SCALE := 2
 var levels_rescaled := false
 
 
-## Räknar om hjältarnas nivåer från 0.19:s skala (HeroStats.convert_legacy: aldrig svagare).
+## Räknar om hjältarnas nivåer från 0.19:s skala (HeroStats.convert_legacy: exakt lika starka, resten i "carry").
 ## Historiken behåller de nivåer som finns i den nya skalan, med striden där de nåddes första gången.
 func convert_levels() -> void:
 	var changed := false
@@ -426,6 +426,10 @@ func convert_levels() -> void:
 			changed = true
 		h.level = int(c.level)
 		h.xp = int(c.xp)
+		if float(c.carry) > 0.0:
+			h.carry = float(c.carry)
+		else:
+			h.erase("carry")
 		var log: Array = []
 		var seen := {}
 		for entry in h.get("log", []):
@@ -447,13 +451,18 @@ func hero(data: Dictionary, hero_id: String) -> Dictionary:
 	return heroes[hero_id]
 
 
-## Nivå och personlighet per hjälte, till CombatSim (opts.levels).
+## Nivå, personlighet och omräkningens rest (carry, HeroStats.growth_level) per hjälte, till CombatSim (opts.levels).
 func levels_for(data: Dictionary, party: Array) -> Dictionary:
 	var out := {}
 	for hero_id in party:
 		var h := hero(data, hero_id)
-		out[hero_id] = {"level": int(h.level), "personality": h.personality}
+		out[hero_id] = {"level": int(h.level), "personality": h.personality, "carry": float(h.get("carry", 0.0))}
 	return out
+
+
+## Omräkningens rest i 0.19:s skala (0 för alla som inte räknades om, och efter nästa nivå).
+func carry(data: Dictionary, hero_id: String) -> float:
+	return float(hero(data, hero_id).get("carry", 0.0))
 
 
 ## Erfarenhet till hela sällskapet efter en vunnen strid. Returnerar hero_id -> [nya nivåer].
@@ -467,6 +476,12 @@ func grant_xp(data: Dictionary, party: Array, xp: int) -> Dictionary:
 	for hero_id in party:
 		var h := hero(data, hero_id)
 		var ups := HeroStats.add_xp(h, roundi(xp * catch_up(float(h.level), avg)))
+		if not ups.is_empty() and h.has("carry"):
+			# Nästa nivå är minst lika stark som den gamla tillväxten: resten behövs inte längre.
+			h.carry_before = float(h.carry)
+			h.erase("carry")
+		else:
+			h.erase("carry_before")
 		for lv in ups:
 			h.log.append({"level": lv, "battle": int(h.battles)})
 		if not ups.is_empty():
@@ -493,6 +508,7 @@ func recruit(data: Dictionary, hero_id: String, party_avg := 1.0, party_min := -
 	if int(h.level) <= 1:
 		h.level = join_level(party_avg, party_min)
 		h.xp = 0
+		h.erase("carry")
 	return true
 
 

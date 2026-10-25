@@ -45,24 +45,25 @@ static func growth(data: Dictionary, personality: String, stat: String) -> float
 
 
 ## 0.26: Health, Attack, Intelligence och Defense med en decimal (CombatSim.STAT_STEP), Speed i heltal.
-static func stat_at(base: float, level: int, g: float, stat := "") -> float:
-	var v := base * (1.0 + g * (old_level(level) - 1.0))
+## carry: tillväxt kvar från omräkningen av en gammal profil (convert_legacy), i 0.19:s skala.
+static func stat_at(base: float, level: int, g: float, stat := "", carry := 0.0) -> float:
+	var v := base * (1.0 + g * (growth_level(level, carry) - 1.0))
 	return roundf(v) if stat == "speed" else CombatSim.snap_stat(v)
 
 
 ## Hjältens fem stats på nivån med personligheten (utan artefakt).
-static func level_stats(data: Dictionary, hero_id: String, level: int, personality: String) -> Dictionary:
+static func level_stats(data: Dictionary, hero_id: String, level: int, personality: String, carry := 0.0) -> Dictionary:
 	var base: Dictionary = data.heroes[hero_id].stats
 	var out := {}
 	for stat in STATS:
-		out[stat] = stat_at(float(base[stat]), level, growth(data, personality, stat), stat)
+		out[stat] = stat_at(float(base[stat]), level, growth(data, personality, stat), stat, carry)
 	return out
 
 
-## Vad nivån gav jämfört med nivån innan: stat -> ökning.
-static func gains(data: Dictionary, hero_id: String, level: int, personality: String) -> Dictionary:
+## Vad nivån gav jämfört med nivån innan: stat -> ökning. before_carry: omräkningens tillväxt på nivån innan.
+static func gains(data: Dictionary, hero_id: String, level: int, personality: String, before_carry := 0.0) -> Dictionary:
 	var now := level_stats(data, hero_id, level, personality)
-	var before := level_stats(data, hero_id, level - 1, personality)
+	var before := level_stats(data, hero_id, level - 1, personality, before_carry)
 	var out := {}
 	for stat in STATS:
 		out[stat] = now[stat] - before[stat]
@@ -70,13 +71,14 @@ static func gains(data: Dictionary, hero_id: String, level: int, personality: St
 
 
 ## Uppdelning per källa: {stat: {<SOURCES>…, total}}. Summan av källorna är total.
-static func breakdown(data: Dictionary, hero_id: String, level: int, personality: String, artifact := {}) -> Dictionary:
+static func breakdown(data: Dictionary, hero_id: String, level: int, personality: String, artifact := {},
+		carry := 0.0) -> Dictionary:
 	var base: Dictionary = data.heroes[hero_id].stats
 	var out := {}
 	for stat in STATS:
 		var b := float(base[stat])
-		var neutral := stat_at(b, level, GROWTH, stat)
-		var with_p := stat_at(b, level, growth(data, personality, stat), stat)
+		var neutral := stat_at(b, level, GROWTH, stat, carry)
+		var with_p := stat_at(b, level, growth(data, personality, stat), stat, carry)
 		out[stat] = {"base": b, "levels": neutral - b, "personality": with_p - neutral, "artifact": 0.0}
 	var values := {}
 	for stat in STATS:
@@ -232,6 +234,11 @@ static func old_level(level: float) -> float:
 	return KNEE + CURVE_A * pow(l - KNEE, CURVE_P)
 
 
+## Tillväxtnivån med omräkningens rest (Profile.heroes "carry", convert_legacy): old_level(nivå) + carry.
+static func growth_level(level: float, carry := 0.0) -> float:
+	return old_level(level) + maxf(carry, 0.0)
+
+
 ## En tillväxtnivå i 0.19:s skala som nivå (omvändningen av old_level, kontinuerlig).
 static func new_level(old: float) -> float:
 	var x := maxf(old, 1.0)
@@ -266,17 +273,22 @@ static func total_xp(level: int, xp: int) -> int:
 	return sum
 
 
-## Omräkningen av en profil från 0.19:s skala (sparad före 0.31, Profile.LEVEL_SCALE): den första nya nivån vars tillväxt
-## är minst den gamla (VD: ingen blir svagare av omräkningen), och erfarenheten mot nästa nivå så att den samlade
-## erfarenheten blir densamma när det går (aldrig en hel nivå eller mer). Ger {level, xp}.
+## Omräkningen av en profil från 0.19:s skala (sparad före 0.31, Profile.LEVEL_SCALE): VD 2026-10-25, exakt lika stark
+## som förut. Den högsta nya nivån vars tillväxt är högst den gamla, och resten (carry, gammal tillväxt − old_level(nivån),
+## i 0.19:s skala) bärs tills nästa nivå nås (den nivåns tillväxt är minst den gamla). Förr avrundades uppåt, och gamla
+## profiler blev 24–30 % starkare. Erfarenheten mot nästa nivå så att den samlade erfarenheten blir densamma när det går
+## (aldrig en hel nivå eller mer). Ger {level, xp, carry}.
 static func convert_legacy(old_level_value: int, old_xp: int) -> Dictionary:
 	var old_lv := maxi(old_level_value, 1)
 	var best := 1
-	while old_level(best) < old_lv - 0.001:
+	while old_level(best + 1) <= old_lv + 0.000001:
 		best += 1
+	var carry := maxf(float(old_lv) - old_level(best), 0.0)
+	if carry < 0.000001:
+		carry = 0.0
 	var legacy_total := 0.0
 	for k in range(1, old_lv):
 		legacy_total += XP_NEED_SQ * k * k + XP_NEED_LIN * k + XP_NEED_FLAT
 	legacy_total += old_xp
 	var xp := clampi(roundi(legacy_total - total_xp(best, 0)), 0, maxi(xp_to_next(best) - 1, 0))
-	return {"level": best, "xp": xp}
+	return {"level": best, "xp": xp, "carry": carry}

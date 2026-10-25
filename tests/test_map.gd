@@ -326,3 +326,33 @@ func test_hourglass_scouts_an_elite() -> void:
 			after += int(s.charges[h][a])
 	assert_eq(after, before - 1, "en Charge")
 	assert_true(s.revealed.has(t) and String(res.text).contains("elitgrupp"))
+
+
+## Ett föremål man har låtit vara (LÅT DEN HÄNGA, LÅT DEN VARA …) öppnas inte av sig självt när man går över rutan igen;
+## ett tryck på rutan man står på öppnar valet (RunState.object_opens, object_reopenable). Gäller alla föremål.
+func test_declined_object_does_not_reopen_on_arrival() -> void:
+	var data := GameData.load_all()
+	var s := RunState.new_run(Profile.new(), data)
+	s.start_expedition(data, 77)
+	var rng := RandomNumberGenerator.new()
+	s.pos = s.map.indices("object")[0]
+	for obj in data.objects:
+		if typeof(data.objects[obj]) != TYPE_DICTIONARY or not data.objects[obj].get("options", []).any(func(o: Dictionary) -> bool: return o.id == "leave"):
+			continue
+		s.map.cells[s.pos] = {"kind": "object", "obj": obj}
+		assert_true(RunState.object_opens(s.current_room()), "%s öppnas första gången" % obj)
+		s.use_object(data, "leave", rng)
+		assert_true(not RunState.object_opens(s.current_room()), "%s öppnas inte av sig självt igen" % obj)
+		assert_true(RunState.object_reopenable(s.current_room()), "%s går att öppna med ett tryck" % obj)
+		assert_true(not s.object_options(data).is_empty(), "%s har kvar sina val" % obj)
+	# Avböjt och sedan använt ändå: sarkofagen ger sin strid.
+	s.map.cells[s.pos] = {"kind": "object", "obj": "sarcophagus", "declined": true}
+	assert_true(s.use_object(data, "knock", rng).fight)
+	# Gravklockans "igen" efter en seger öppnas alltid, och ett avgjort föremål aldrig.
+	assert_true(RunState.object_opens({"kind": "object", "obj": "grave_bell", "again": true, "declined": true}))
+	assert_true(not RunState.object_opens({"kind": "object", "obj": "pew", "done": true}))
+	assert_true(not RunState.object_reopenable({"kind": "object", "obj": "pew", "done": true}))
+	# Sparas med körningen.
+	s.map.cells[s.pos] = {"kind": "object", "obj": "stained_window", "declined": true}
+	var back := Grotto.from_dict(s.map.to_dict())
+	assert_true(back.cells[s.pos].get("declined", false), "avböjt står kvar efter sparning")

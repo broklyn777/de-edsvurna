@@ -1416,6 +1416,19 @@ func treasure_value() -> int:
 	return roundi(Profile.reward(floor, depth) * TREASURE_SILVER)
 
 
+## Öppnas föremålet av sig självt när man kommer fram? Inte när det är avgjort, och inte efter "låt det vara" (declined):
+## då öppnas valet bara med ett tryck på rutan man står på (VD 2026-10-25, alla föremål). Gravklockans "igen" öppnas alltid.
+static func object_opens(r: Dictionary) -> bool:
+	if r.get("kind", "") != "object" or r.get("done", false):
+		return false
+	return r.get("again", false) or not r.get("declined", false)
+
+
+## Kan man öppna föremålets val igen genom att trycka på rutan man står på?
+static func object_reopenable(r: Dictionary) -> bool:
+	return r.get("kind", "") == "object" and not r.get("done", false)
+
+
 ## Valen för föremålet man står på: [{id, label, disabled?, disabled_text?}] (disabled_text: varför valet inte går).
 func object_options(data: Dictionary) -> Array:
 	var r := current_room()
@@ -1484,6 +1497,8 @@ func use_object(data: Dictionary, choice: String, rng: RandomNumberGenerator) ->
 			if choice == "stop":
 				r.done = true
 				r.again = false
+			else:
+				r.declined = true  # öppnas inte av sig själv igen; ett tryck på rutan man står på öppnar valet (object_opens)
 			return out
 		"knock", "ring", "ring_again":
 			r.encounter = pool[rng.randi() % pool.size()]

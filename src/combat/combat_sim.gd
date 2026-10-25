@@ -194,7 +194,8 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 			var lv: Dictionary = opts.levels.get(hero.id, {})
 			hero.level = float(lv.get("level", 1))
 			hero.personality = lv.get("personality", game_data.heroes[hero.id].get("personality", ""))
-			var st := HeroStats.level_stats(game_data, hero.id, int(hero.level), hero.personality)
+			var st := HeroStats.level_stats(game_data, hero.id, int(hero.level), hero.personality,
+					float(lv.get("carry", 0.0)))
 			hero.max_hp = st.health
 			hero.hp = st.health
 			hero.attack = st.attack

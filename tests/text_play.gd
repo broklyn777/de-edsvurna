@@ -102,12 +102,15 @@ func _new_profile(seed_value: int) -> void:
 	for h in ["imma", "alva", "brokk", "eira", "solveig", "tove"]:
 		profile.recruit(data, h, HeroStats.new_level(10.0))
 	profile.set_party(["brokk", "alva", "eira"])
-	# Nivåerna i 0.19:s skala, räknade om till kurvan (HeroStats.convert_legacy): aldrig svagare än förut.
+	# Nivåerna i 0.19:s skala, räknade om till kurvan (HeroStats.convert_legacy): exakt lika starka som förut.
 	var levels := {"paladin": 12, "brokk": 11, "alva": 11, "eira": 10, "imma": 9, "solveig": 8, "tove": 7}
 	for h in levels:
 		var hero := profile.hero(data, h)
-		hero.level = int(HeroStats.convert_legacy(levels[h], 0).level)
+		var c := HeroStats.convert_legacy(levels[h], 0)
+		hero.level = int(c.level)
 		hero.xp = 0
+		if float(c.carry) > 0.0:
+			hero.carry = float(c.carry)
 	var arts := {"paladin": ["sword", "holy_smite", 5], "brokk": ["shield", "", 4], "alva": ["staff", "", 4],
 			"eira": ["boots", "", 3]}
 	for h in arts:
@@ -183,7 +186,7 @@ func _help() -> void:
 		"home":
 			out.append("Hemma: realm <crypt|chapel>, depth <n>, party <id,id,id>, smith <id> (höj artefakten), socket <id> <plats> <bärnsten>, arttrophy <id> <trofé>, perk <id>, perkreset, wear <hjälte> <trofé|none>, start")
 		"grotto":
-			out.append("Grottan: go <ruta> (t.ex. go d5) eller go n|s|e|w, fight, back, swap <hjälte> <trofé|none> (vid lägereld), camp (lägereldens val igen), leave (gå hem)")
+			out.append("Grottan: go <ruta> (t.ex. go d5) eller go n|s|e|w, fight, back, swap <hjälte> <trofé|none> (vid lägereld), camp (lägereldens val igen), use (föremålets val igen), leave (gå hem)")
 		"dialog":
 			out.append("Ruta: choose <n>")
 		"camp":
@@ -380,6 +383,12 @@ func _grotto_cmd(w: PackedStringArray) -> void:
 		"camp":
 			if state.current_room().get("kind", "") == "campfire":
 				_campfire_dialog(state.current_room())
+		"use":
+			# Ett tryck på rutan man står på (room_map_screen._tap): föremålets val igen.
+			if RunState.object_reopenable(state.current_room()):
+				_object_dialog(state.current_room())
+			else:
+				out.append("Här finns inget föremål att använda.")
 		"stairs":
 			if state.current_room().get("kind", "") == "stairs" and state.floor_cleared():
 				_arrive(false)
@@ -409,6 +418,9 @@ func _arrive(was_new: bool) -> void:
 		_object_dialog(r)
 		return
 	if not kind in ["treasure", "shrine", "campfire", "prisoner", "object"] or (kind != "campfire" and not fresh):
+		return
+	if kind == "object" and not RunState.object_opens(r):
+		out.append("%s står kvar. Skriv use för att öppna valet igen." % _cell_name(state.pos))
 		return
 	match kind:
 		"campfire":
@@ -1180,6 +1192,22 @@ func _group_title(r: Dictionary) -> String:
 	return title
 
 
+## Kortets rader om gruppens variation, som room_map_screen._variation_lines: inkräktarens ursprung, djupets prägel
+## och väktarens andra varning.
+func _variation_lines(r: Dictionary, enc: Dictionary) -> Array[String]:
+	var res: Array[String] = []
+	if r.has("intruder"):
+		var src: Dictionary = data.realms.get(String(r.intruder), {})
+		var here: Dictionary = data.realms[state.realm].get("intruders", {})
+		res.append("Från %s. %s" % [String(src.get("name", r.intruder)), String(here.get("text", ""))])
+	if enc.has("twist"):
+		res.append("Djupets prägel – %s: %s" % [String(enc.twist.get("name", "")), String(enc.twist.get("text", ""))])
+	if state.guardian_room(r) and String(enc.get("second_warning", "")) != "" \
+			and int(profile.guardian_wins.get(r.encounter, 0)) > 0:
+		res.append(String(enc.second_warning))
+	return res
+
+
 ## Gruppens kort (room_map_screen._draw_panel).
 func _card(r: Dictionary) -> void:
 	var enc: Dictionary = data.encounters[r.encounter]
@@ -1196,6 +1224,7 @@ func _card(r: Dictionary) -> void:
 		if gt != "" and data.traits.has(gt):
 			lines.append("Väktarens trofé: %s (%s)" % [data.traits[gt].name,
 					RunState.guardian_progress(int(profile.guardian_wins.get(r.encounter, 0)))])
+	lines.append_array(_variation_lines(r, enc))
 	var guards: String = {"treasure": "Vaktar en skatt.", "item": "Vaktar ett av questens föremål.",
 			"prisoner": "Vaktar en fånge."}.get(r.kind, "")
 	if r.kind == "seal":

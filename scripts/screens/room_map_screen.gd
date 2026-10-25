@@ -184,6 +184,9 @@ func _tap(p: Vector2) -> void:
 	if i == state.came_from and state.at_group():
 		_back()
 		return
+	if i == state.pos and RunState.object_reopenable(state.current_room()):
+		_show_room(state.current_room())  # ett avböjt föremål öppnas bara med ett tryck på rutan man står på
+		return
 	var why := state.can_step(i)
 	if why == "":
 		_go(i)
@@ -261,6 +264,8 @@ func _arrive() -> void:
 		return
 	if not kind in ["treasure", "shrine", "campfire", "prisoner", "object"] or (kind != "campfire" and not fresh):
 		return
+	if kind == "object" and not RunState.object_opens(r):
+		return  # avböjt: tryck på rutan igen för att öppna valet (_tap)
 	if run.profile.room_moments and MOMENT_KINDS.has(kind) and fresh and not r.get("seen", false):
 		await _play_moment(kind)
 	r.seen = true  # 0.27.0: en lägereld man sparar spelar inte ögonblicket igen

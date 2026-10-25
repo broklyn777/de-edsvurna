@@ -40,7 +40,7 @@ func test_an_old_save_moves_to_slot_one_untouched() -> void:
 	assert_eq(p.silver, 777)
 	assert_true(p.intro_done, "en gammal profil hoppar över introt")
 	assert_eq(p.party, ["paladin", "brokk", "alva", "eira"])
-	assert_eq(int(p.hero(_data, "brokk").level), 6, "nivåerna finns kvar (räknade om till kurvan: 0.19:s nivå 7 är nivå 6)")
+	assert_eq(int(p.hero(_data, "brokk").level), 5, "nivåerna finns kvar (räknade om till kurvan: 0.19:s nivå 7 är nivå 5 och en rest)")
 	assert_true(p.recruited.has("imma") and p.recruited.has("solveig"))
 	assert_eq(FileAccess.get_file_as_string(SaveSlots.macros_path(1, root)), macros, "makrona är orörda")
 	assert_eq(SaveSlots.last(root), 1)

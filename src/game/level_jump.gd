@@ -7,7 +7,7 @@ extends RefCounted
 ## Anfall) och en helning, före och efter nivån, mot den första fienden på våning 1 i Realmen på djupet (som hjältebladet,
 ## CombatSim.expected_damage och expected_heal). Ger [{label, before, after, unit}], tom om något saknas.
 static func compute(game_data: Dictionary, prof: Profile, hero_id: String, lv: int, realm_id: String, at_depth: int,
-		party: Array) -> Array:
+		party: Array, before_carry := 0.0) -> Array:
 	var realm: Dictionary = game_data.get("realms", {}).get(realm_id, {})
 	if realm.is_empty() or lv < 2 or not game_data.heroes.has(hero_id):
 		return []
@@ -18,7 +18,8 @@ static func compute(game_data: Dictionary, prof: Profile, hero_id: String, lv: i
 	var at := []
 	for level in [lv - 1, lv]:
 		var levels := prof.levels_for(game_data, who)
-		levels[hero_id] = {"level": level, "personality": prof.hero(game_data, hero_id).personality}
+		levels[hero_id] = {"level": level, "personality": prof.hero(game_data, hero_id).personality,
+				"carry": before_carry if level < lv else 0.0}
 		at.append(CombatSim.create(game_data, String(realm.floors[0]), 1, who, traits, {}, arts, maxi(at_depth, 1),
 				{"levels": levels, "elite_chance": 0.0, "floor": 0}))
 	var out := []

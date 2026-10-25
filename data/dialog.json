@@ -130,7 +130,7 @@
 			"idle": [
 				{
 					"id": "alrik_levels_rescaled",
-					"text": "Jag har skrivit om krönikan, {namn}. Nivåerna räknas nu glesare: färre steg, men vart och ett väger mer. Ingen av er har blivit svagare, det lovar jag. Jag räknade två gånger.",
+					"text": "Jag har skrivit om krönikan, {namn}. Nivåerna räknas nu glesare: färre steg, men vart och ett väger mer. Ingen av er har blivit starkare eller svagare – det som fattas till nästa steg står i marginalen tills ni når det. Jag räknade två gånger.",
 					"when": {
 						"levels_rescaled": true
 					},

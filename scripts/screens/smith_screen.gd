@@ -694,7 +694,7 @@ func _short(name: String) -> String:
 ## Hjältens stats med artefakten (för jämförelsen).
 func _totals(data: Dictionary, art: Dictionary) -> Dictionary:
 	var h: Dictionary = run.profile.hero(data, hero)
-	var b := HeroStats.breakdown(data, hero, int(h.level), h.personality, art)
+	var b := HeroStats.breakdown(data, hero, int(h.level), h.personality, art, float(h.get("carry", 0.0)))
 	var out := {}
 	for s in HeroStats.STATS:
 		out[s] = b[s].total

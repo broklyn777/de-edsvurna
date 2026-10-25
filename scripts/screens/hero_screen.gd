@@ -149,8 +149,9 @@ func _draw() -> void:
 func _draw_stats(data: Dictionary, prof: Profile, prog: Dictionary) -> void:
 	var level := int(prog.level)
 	var art: Dictionary = prof.artifacts.get(hero_id, {})
-	var b := HeroStats.breakdown(data, hero_id, level, prog.personality, art)
-	var nxt := HeroStats.gains(data, hero_id, level + 1, prog.personality)
+	var carry := float(prog.get("carry", 0.0))
+	var b := HeroStats.breakdown(data, hero_id, level, prog.personality, art, carry)
+	var nxt := HeroStats.gains(data, hero_id, level + 1, prog.personality, carry)
 	var pers: Dictionary = data.personalities.get(prog.personality, {})
 	var lw := _left_w()
 	var y := 266.0
@@ -246,7 +247,8 @@ func _build_meaning(data: Dictionary, prof: Profile, level: int, personality: St
 	var enc_id: String = realm.floors[0]
 	var arts := {} if art.is_empty() else {hero_id: art}
 	var sim := CombatSim.create(data, enc_id, 1, sheet_party(prof, hero_id), sheet_traits(data, prof), {}, arts,
-			prof.depth, {"levels": {hero_id: {"level": level, "personality": personality}}, "elite_chance": 0.0, "floor": 0})
+			prof.depth, {"levels": {hero_id: {"level": level, "personality": personality, "carry": prof.carry(data, hero_id)}},
+			"elite_chance": 0.0, "floor": 0})
 	var hero := sim.unit(hero_id)
 	var foe: CombatUnit = sim.enemies[0]
 	_meaning_sub = "mot %s (nivå %d) i %s, djup %d, våning 1" % [foe.name, roundi(foe.level), realm.short, prof.depth]
