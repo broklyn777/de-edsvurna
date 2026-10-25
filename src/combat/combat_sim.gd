@@ -97,6 +97,11 @@ const TURN_LIMIT := 5
 ## (opts "full_party", även antalet fiender).
 ## Prototyp (sallskap-fem): fem hjältar (Trollberget och senare, eller fem i en lägre Realm) mot ×PARTY_SCALE[5].
 const PARTY_SCALE := {1: 0.45, 2: 0.54, 3: 0.64, 4: 1.0, 5: 1.0}
+## Balans v1 (VD 2026-10-25): fem hjältar i en Realm byggd för fyra (kryptan, kapellet, lunden) på det djupaste djupet
+## (RunState.full_party_size, opts "five_in_four"): fiendernas Health, Attack och Intelligence gånger så här mycket, eftersom
+## de mötena saknar Trollbergets "extra". Mätt med balanssimuleringen.
+const FIVE_IN_FOUR := 1.25
+static var five_in_four := FIVE_IN_FOUR  # balanssimuleringens prov (FEM_I_FYRA)
 ## Största sällskapet striden har platser och skalning för.
 const MAX_HEROES := 5
 const TURN_PROC_LIMIT := 60
@@ -226,6 +231,8 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	# 0.23: ett mindre sällskap möter svagare fiender (Health, Attack och Intelligence; vårt val).
 	var scale_size := party_scale_size(opts, sim.heroes.size())
 	var party_mult := float(PARTY_SCALE[scale_size]) * (FIVE_CAPPED_SCALE if scale_size >= 5 and max_enemies <= 5 else 1.0)
+	if scale_size >= 5 and opts.get("five_in_four", false):
+		party_mult *= five_in_four
 	var counts := {}
 	var lineup := enemy_lineup(game_data, encounter_kinds(enc, scale_size), scale_size)
 	var elites := elite_rolls(game_data, encounter_id, lineup, seed_value, opts, sim.depth)
@@ -251,7 +258,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		if opts.has("first_descent_elite") and enc.has("first_descent_stat_mult"):
 			bonus /= float(opts.first_descent_elite)
 			mult = float(enc.first_descent_stat_mult) * depth_mult(sim.enemy_depth)
-		scale_unit(e, mult * bonus)
+		scale_unit(e, mult * bonus * realm_depth_mult(opts, sim.enemy_depth))
 		if party_mult != 1.0:
 			e.max_hp = snap_stat(e.max_hp * party_mult)
 			e.hp = e.max_hp
@@ -471,6 +478,13 @@ static func make_elite(e: CombatUnit, def: Dictionary) -> void:
 ## Hur mycket fiendernas stats växer på djupet: 1 + 8 % per djup över 1.
 static func depth_mult(depth: int) -> float:
 	return 1.0 + depth_step * (maxi(depth, 1) - 1)
+
+
+## Balans v1: Realmens eget djupsteg (opts "realm_depth_step", realms.json "depth_step") per fiendedjup över 1 (med
+## depth_offset, så att också Trollbergets djup 1 räknas), gånger depth_mult. Trollberget är brantare per djup än Realms
+## byggda för fyra.
+static func realm_depth_mult(opts: Dictionary, depth: int) -> float:
+	return 1.0 + float(opts.get("realm_depth_step", 0.0)) * (maxi(depth, 1) - 1)
 
 
 ## Mötets skalning (våningen) gånger djupets.

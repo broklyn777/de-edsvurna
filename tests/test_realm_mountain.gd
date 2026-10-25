@@ -127,7 +127,8 @@ func test_mountain_enemies_count_a_deeper_depth() -> void:
 	opts.levels = {"paladin": {"level": 7}}
 	var sim := CombatSim.create(_data, "troll_1a", 1, ["paladin"], {}, {}, {}, s.depth, opts)
 	var plain := CombatSim.create(_data, "troll_1a", 1, ["paladin"], {}, {}, {}, 1 + off,
-			{"levels": opts.levels, "floor": opts.floor, "full_party": opts.get("full_party", false)})
+			{"levels": opts.levels, "floor": opts.floor, "full_party": opts.get("full_party", false),
+			"realm_depth_step": opts.get("realm_depth_step", 0.0)})
 	assert_eq(sim.depth, 1, "det visade djupet")
 	assert_eq(sim.enemy_depth, 1 + off)
 	assert_near(sim.enemies[0].level, HeroStats.enemy_level(1 + off, int(opts.floor)), 0.001, "fiendens nivå")

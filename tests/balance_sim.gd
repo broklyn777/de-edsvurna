@@ -11,6 +11,7 @@ extends SceneTree
 ##   --n-side=100           strider per möte på ±1 nivå    --runs=100       nedstigningar per nivå och lag
 ##   --side-full            också fulla Charges på ±1      --no-descents    bara möten med fulla Charges
 ##   --fifth-fights         varje möte också med fem i Realms byggda för fyra (förval: bara nedstigningarna)
+##   --levels=0             nedstigningarnas nivåer kring väntad nivå (förval -1,0,1; möten kräver 0)
 ##   --out=<csv>            CSV:n (förval user://balans.csv)
 ##   --summary=<md>         sammanfattningen till en fil   --merge=a.csv,b.csv  slå ihop delkörningar (ingen simulering)
 
@@ -23,6 +24,13 @@ func _init() -> void:
 		var s := String(a).trim_prefix("--")
 		args[s.get_slice("=", 0)] = s.get_slice("=", 1) if s.contains("=") else "1"
 	var data := GameData.load_all()
+	if OS.get_environment("DJUPSTEG") != "":
+		CombatSim.depth_step = float(OS.get_environment("DJUPSTEG"))  # prov: djupsteget utan att ändra spelets värde
+		print("Djupsteg: +%.1f %% per djup" % (CombatSim.depth_step * 100.0))
+	if OS.get_environment("BERGSTEG") != "":
+		data.realms.mountain.depth_step = float(OS.get_environment("BERGSTEG"))  # prov: Trollbergets eget djupsteg
+	if OS.get_environment("FEM_I_FYRA") != "":
+		CombatSim.five_in_four = float(OS.get_environment("FEM_I_FYRA"))
 	var out := String(args.get("out", "user://balans.csv"))
 	var rows: Array
 	var t0 := Time.get_ticks_msec()
@@ -47,6 +55,8 @@ func _init() -> void:
 			cfg.party = Array(String(args.party).split(","))
 		if args.has("fifth"):
 			cfg.fifth = "" if args.fifth == "1" else String(args.fifth)
+		if args.has("levels"):
+			cfg.level_offsets = Array(String(args.levels).split(",")).map(func(d: String) -> int: return int(d))
 		cfg.side_full = args.has("side-full")
 		cfg.no_descents = args.has("no-descents")
 		cfg.fifth_fights = args.has("fifth-fights")

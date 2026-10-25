@@ -430,6 +430,7 @@
 		},
 		"party": 5,
 		"depth_offset": 1,
+		"depth_step": 0.1,
 		"objects": [
 			"troll_cup",
 			"sunken_bell",

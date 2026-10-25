@@ -1293,9 +1293,12 @@ static func sim_fight_opts(data: Dictionary, realm_id: String, c: Dictionary, le
 	var st := RunState.new()
 	st.set_realm(data, realm_id)
 	st.owned_heroes = owned
+	st.party.assign(levels.keys())  # balans v1: fem på det djupaste djupet (RunState.full_party_size)
 	var opts := {"levels": levels, "floor": int(c.tier), "instability": 0, "rules": [], "bot_macros": macros}
 	if st.depth_offset > 0:
 		opts.depth_offset = st.depth_offset
+	if st.realm_depth_step > 0.0:
+		opts.realm_depth_step = st.realm_depth_step
 	if c.type != "vanlig":
 		opts.counter = true
 	if c.type in ["elit", "nemesis"]:
@@ -1304,6 +1307,8 @@ static func sim_fight_opts(data: Dictionary, realm_id: String, c: Dictionary, le
 		opts.nemesis = true
 	if st.full_party_size() > 0:
 		opts.full_party = st.full_party_size()
+		if st.full_party_size() > st.realm_party:
+			opts.five_in_four = true
 	return opts
 
 
@@ -1459,7 +1464,8 @@ static func sim_run(data: Dictionary, cfg: Dictionary) -> Array:
 				var macros := sim_macros(data, party)
 				var gear := sim_gear(data, party, depth + RunState.realm_depth_offset(data, realm_id))  # fiendernas djup
 				var per_level := {}  # nivå: {charges per sort}
-				for lv in [exp_lv - 1, exp_lv, exp_lv + 1]:
+				for off in cfg.get("level_offsets", [-1, 0, 1]):
+					var lv: int = exp_lv + int(off)
 					per_level[lv] = sim_descents(data, realm_id, depth, party, lv, owned, macros, gear, cfg, rows)
 				# Varje möte för sig (diagnostik): fem bara i en Realm byggd för fler än fyra (cfg.fifth_fights för alla).
 				if party.size() > Profile.BASE_SLOTS and realm_size <= Profile.BASE_SLOTS and not cfg.fifth_fights:

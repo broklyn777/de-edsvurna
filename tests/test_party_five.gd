@@ -144,6 +144,7 @@ func test_five_in_crypt_and_chapel_meet_enemies_as_for_four() -> void:
 		s.owned_heroes = 6
 		s.party_slots = 5
 		s.party.assign(four + ["imma"])
+		s.depth_cleared = true  # balans v1: på det djupaste djupet möter fem fiender som mot fem
 		assert_eq(s.lineup_size(), 4, "%s: uppställningen som mot fyra" % realm_id)
 		for enc_id in _data.realms[realm_id].floors:
 			var vs_four := CombatSim.create(_data, enc_id, 3, four, {}, {}, {}, 1, {"full_party": s.full_party_size()})
@@ -162,3 +163,60 @@ func test_five_heroes_get_their_own_places() -> void:
 	for u in sim.units:
 		spots[u.position] = true
 	assert_eq(spots.size(), sim.units.size(), "ingen står på en annans plats")
+
+
+## Balans v1 (VD 2026-10-25): fem i en Realm byggd för fyra möter fiender som mot fyra på djup profilen redan har klarat
+## där, och som mot fem (CombatSim.FIVE_IN_FOUR) på det djupaste djupet.
+func test_five_in_a_realm_for_four_scales_on_the_deepest_depth() -> void:
+	var five := ["paladin", "brokk", "alva", "eira", "imma"]
+	for realm_id in ["crypt", "chapel"]:
+		var p := _profile(6)
+		p.realm_depth = {realm_id: 2}
+		assert_true(RunState.depth_cleared_for(p, realm_id, 2), "djup 2 klarat")
+		assert_true(not RunState.depth_cleared_for(p, realm_id, 3), "djup 3 är det djupaste")
+		var s := RunState.new()
+		s.set_realm(_data, realm_id)
+		s.owned_heroes = 6
+		s.party_slots = 5
+		s.party.assign(five)
+		s.fill_charges(_data)
+		s.start_expedition(_data, 3)
+		s.depth_cleared = true
+		assert_eq(s.full_party_size(), 4, "%s: klarat djup, som mot fyra" % realm_id)
+		assert_true(not s.battle_opts().has("five_in_four"))
+		s.depth_cleared = false
+		assert_eq(s.full_party_size(), 5, "%s: det djupaste djupet, som mot fem" % realm_id)
+		assert_true(s.battle_opts().get("five_in_four", false))
+		s.party.assign(five.slice(0, 4))
+		assert_eq(s.full_party_size(), 4, "%s: fyra är alltid som mot fyra" % realm_id)
+		var enc: String = _data.realms[realm_id].floors[0]
+		var vs_four := CombatSim.create(_data, enc, 3, five, {}, {}, {}, 1, {"full_party": 4})
+		var vs_five := CombatSim.create(_data, enc, 3, five, {}, {}, {}, 1, {"full_party": 5, "five_in_four": true})
+		assert_eq(vs_five.enemies.size(), vs_four.enemies.size(), "%s: inga extra fiender (mötena saknar extra)" % realm_id)
+		for i in vs_five.enemies.size():
+			assert_near(vs_five.enemies[i].max_hp, CombatSim.snap_stat(vs_four.enemies[i].max_hp * CombatSim.FIVE_IN_FOUR),
+					0.11, "%s: Health × FIVE_IN_FOUR" % realm_id)
+			assert_near(vs_five.enemies[i].defense, vs_four.enemies[i].defense, 1e-6, "Defense orörd")
+
+
+## Balans v1 (VD): Trollberget har ett eget djupsteg (realms.json "depth_step") ovanpå det allmänna, per fiendedjup
+## (djup 1 är fiendedjup 2).
+func test_mountain_has_its_own_depth_step() -> void:
+	var step := float(_data.realms.mountain.get("depth_step", 0.0))
+	assert_true(step > 0.0, "Trollberget är brantare per djup")
+	assert_eq(float(_data.realms.crypt.get("depth_step", 0.0)), 0.0, "kryptan har inget eget steg")
+	var s := RunState.new()
+	s.set_realm(_data, "mountain")
+	assert_near(s.realm_depth_step, step, 1e-9)
+	s.party.assign(["paladin", "brokk", "alva", "eira", "imma"])
+	s.fill_charges(_data)
+	s.start_expedition(_data, 3)
+	assert_near(float(s.battle_opts().get("realm_depth_step", 0.0)), step, 1e-9, "striden får steget")
+	var five := ["paladin", "brokk", "alva", "eira", "imma"]
+	for depth in [1, 3]:
+		var plain := CombatSim.create(_data, "troll_3", 1, five, {}, {}, {}, depth, {"full_party": 5, "depth_offset": 1})
+		var steep := CombatSim.create(_data, "troll_3", 1, five, {}, {}, {}, depth, {"full_party": 5, "depth_offset": 1,
+				"realm_depth_step": step})
+		for i in plain.enemies.size():
+			assert_near(steep.enemies[i].max_hp, plain.enemies[i].max_hp * (1.0 + step * depth), plain.enemies[i].max_hp * 0.01 + 0.2,
+					"djup %d" % depth)

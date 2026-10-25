@@ -748,6 +748,7 @@ func _resume_run() -> void:
 	state.party_slots = profile.party_slots()
 	state.realm_party = int(data.realms.get(state.realm, {}).get("party", Profile.BASE_SLOTS))
 	state.depth_offset = RunState.realm_depth_offset(data, state.realm)
+	state.depth_cleared = RunState.depth_cleared_for(profile, state.realm, state.depth)
 	playtime.resume_run(slot, state.floor)  # löptiden fortsätter där den slutade
 	if state.battle_pending:
 		# Appen stängdes under en strid: striden börjar om, som om man just gått in i rummet.

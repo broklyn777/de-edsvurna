@@ -185,6 +185,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 	# Prototyp (sallskap-fem): opts.owned = hjältar profilen äger, opts.slots = platser (5 = den femte öppen).
 	state.owned_heroes = int(opts.get("owned", 0))
 	state.party_slots = int(opts.get("slots", Profile.BASE_SLOTS))
+	state.depth_cleared = opts.get("depth_cleared", false)  # balans v1: fem som mot fyra på ett klarat djup
 	if opts.has("realm_party"):
 		state.realm_party = int(opts.realm_party)  # BALANS=fem: Trollberget som förr, balanserat mot fyra
 	if opts.has("vow"):
@@ -231,7 +232,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth", "owned", "slots", "realm_party", "fight_log"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth", "owned", "slots", "realm_party", "fight_log", "depth_cleared"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
