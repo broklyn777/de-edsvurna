@@ -2349,7 +2349,7 @@
 			"wraith",
 			"cultist"
 		],
-		"stat_mult": 1.1,
+		"stat_mult": 0.95,
 		"first_descent_stat_mult": 0.72,
 		"elite_group": true,
 		"template": "Fokusera"
