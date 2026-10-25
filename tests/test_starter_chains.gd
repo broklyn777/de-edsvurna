@@ -65,3 +65,16 @@ func test_alva_heals_the_wounded_not_the_first_without_mending() -> void:
 	assert_eq(str(d.get("target")), "imma", "på den skadade Imma")
 	assert_true(String(d.get("text", "")).contains("Kedjan prövade bara"), "förklaringen säger att kedjan håller fast vid figuren")
 	assert_true(MacroRunner.describe_line(_data, macro.lines[0]).ends_with("pröva nästa rad med den"), "radens text")
+
+
+## Huldas mall: "alla fiender lever → pröva nästa rad" band den första fienden, så Svampring prövades bara mot den.
+## Nu söker raden själv bland alla fiender efter någon som saknar Förgiftad.
+func test_hulda_spores_any_enemy_without_poison() -> void:
+	for l in _data.macros.hulda.lines:
+		assert_true(l.action != "test_next" or l.subject != "all_enemies", "ingen kedja som binder den första fienden")
+	var lines: Array = _run.starter_lines(_data, "hulda", _data.macros.hulda.lines)
+	var sim := CombatSim.create(_data, "crypt_1", 3, ["paladin", "hulda"])
+	var first: CombatUnit = sim.enemies[0]
+	sim._add_aura(first, first, "poisoned")
+	var d := MacroRunner.decide(sim, sim.unit("hulda"), {"lines": lines})
+	assert_eq(d.get("ability", ""), "spore_ring", "Svampring fast den första fienden redan är Förgiftad")

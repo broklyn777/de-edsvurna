@@ -296,11 +296,6 @@
 				"target": "that"
 			},
 			{
-				"subject": "all_enemies",
-				"cond": "is_alive",
-				"action": "test_next"
-			},
-			{
 				"subject": "any_enemy",
 				"cond": "lacks_status",
 				"value": "poisoned",
