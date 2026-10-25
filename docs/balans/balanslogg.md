@@ -42,3 +42,45 @@ Kapellets nedstigningar (100 per nivå, väntad nivå; före → efter):
 
 Flytten (+6–8 enheter) kommer helt från elit- och Nemesisstriderna; boss och väktare är oförändrade. Kapellet var redan
 FÖR LÄTT på alla djup och blev lite lättare.
+
+## Varv 2: Skrivarens avskrifter (crypt_e8)
+
+`data/encounters.json` crypt_e8 `stat_mult` **1.3 → 1.24** (`first_descent_stat_mult` 0.72 orörd).
+
+Prövade värden: 1.24 / 1.22 / 1.15. 1.15 gav 93 % på djup 1 och 84,5 % för Nemesis på djup 2–3; 1.22 lade Nemesis på
+djup 2 på 78 %. Benskrivarens Antecknat (mindre skada för varje upprepad handling) straffar djup 1 hårdast, där sällskapet
+saknar artefakter och har färst olika handlingar; därför var mötet svårt på djup 1 och lätt på djup 2–3 v1.
+
+| Rad | Nivå | Före (1.3) | Efter (1.24) | Mål | Turer före → efter | Minst en stupar |
+|---|---|---|---|---|---|---|
+| d1 elit v1 | 2 / **3** / 4 | 0 / **54** / 100 | 0 / **78** / 100 | 70–85 | 65 → 62 | 81 → 61,5 % |
+| d1 Nemesis v1 | **3** | **49** | **78** | 60–75 | 61 → 62 | 85 → 61,5 % |
+| d1 Nemesis v2 | 4 / **5** / 6 | 0 / **53,5** / 100 | 1 / **68** / 100 | 60–75 | 60 → 55 | 93 → 93 % |
+| d2 elit v1 | **6** | **100** | **99,5** | 70–85 | 47 → 41 | 5 → 5,5 % |
+| d2 Nemesis v2 | 5 / **6** / 7 | 0 / **63** / 100 | 0 / **74** / 100 | 60–75 | 76 → 67 | 62,5 → 53 % |
+| d3 elit v1 | **7** | **96** | **99** | 70–85 | 55 → 46 | 8 → 7 % |
+| d3 Nemesis v2 | 6 / **7** / 8 | 1 / **60,5** / 100 | 0 / **72,5** / 100 | 60–75 | 67 → 66 | 63,5 → 53,5 % |
+
+Djup 1 inom elitbandet och alla Nemesisrader på våning 2 inom 60–75 %. Nemesis på djup 1 v1 (samma strid som elitgruppen)
+ligger 3 enheter över sitt band. Djup 2–3 v1 är fortfarande för lätta (99–100 %), som alla elitgrupper där.
+
+Kryptans nedstigningar (100 per nivå, väntad nivå; före → efter): djup 1 fyra 38 → 40 %, djup 2 fyra 81 → 81 %, fem 97 →
+98 %, djup 3 fyra 93 → 94 %, fem 98 → 99 %. Elit i nedstigningarna djup 1 89 → 95 %, Nemesis 80 → 81 %, bossen 47 → 47 %.
+Inget annat flyttade sig utanför bruset.
+
+## Varv 3: Inkvisitorns domstol (chapel_g2, väktaren på kapellets djup 3)
+
+`data/encounters.json` chapel_g2 `stat_mult` **1.6 → 1.55**.
+
+Prövade värden: 1.55 / 1.5 (1.5 gav 85,5 % tömd).
+
+| Rad | Nivå | Före (1.6) | Efter (1.55) | Mål | Turer före → efter | Minst en stupar |
+|---|---|---|---|---|---|---|
+| tömd (47 % Charges) | 6 / **7** / 8 | 0 / **61** / 100 | 0 / **72** / 100 | 65–80 | 74 → 73 | 86 → 74,5 % |
+| fulla Charges | 6 / **7** / 8 | 0 / **88,5** / 100 | 0 / **98** / 100 | – | 74 → 67 | 63,5 → 42 % |
+
+Inom väktarbandet. BRANT NIVÅ står kvar (−72/+28): en nivå är för stor för nivåmålet, se sammanfattningen v0 punkt 1.
+
+Kapellets nedstigningar på djup 3 (100 per nivå, efter varv 1 → efter varv 3): fyra 62 → 68 % (väktaren i nedstigningen
+68 → 75 %), fem 98 → 99 %. Kapellet djup 3 med fyra var redan över bandet B (33–59 %) och hamnar längre över; det är
+väktarstriden som nu ligger rätt, resten av nedstigningen (elit 99 %, Nemesis 86 %) bär inte någon svårighet.
