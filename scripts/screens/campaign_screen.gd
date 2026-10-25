@@ -602,7 +602,7 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	small_button(_depth_rect(-1), "−", prof.depth > 1)
 	small_button(_depth_rect(1), "+", prof.depth < prof.max_depth())
 	UiStyle.text(self, Vector2(x + 44, p.position.y + 138), str(prof.depth), 30, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, 106, 4)
-	UiStyle.text(self, Vector2(x + 210, p.position.y + 122), "Fiender +%d %%" % roundi((CombatSim.depth_mult(prof.depth) - 1.0) * 100.0),
+	UiStyle.text(self, Vector2(x + 210, p.position.y + 122), "Fiender +%d %%" % roundi((CombatSim.depth_mult(prof.depth + RunState.realm_depth_offset(data, prof.realm)) - 1.0) * 100.0),
 			13, Color(1, 1, 1, 0.75))
 	UiStyle.text(self, Vector2(x + 210, p.position.y + 140), "Silver +%d %%" % roundi(Profile.SILVER_PER_DEPTH * (prof.depth - 1) * 100.0),
 			13, Color(1, 1, 1, 0.75))

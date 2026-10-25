@@ -237,7 +237,7 @@ func test_starter_lines_end_with_a_fallback() -> void:
 	var run_script: Script = load("res://scripts/game/run.gd")
 	for id in _data.macros:
 		var lines: Array = run_script.starter_lines(_data, id, _data.macros[id].lines)
-		assert_true(lines.size() <= 3, "%s: få rader i början (%d)" % [id, lines.size()])
+		assert_true(run_script.macro_units(lines).size() <= 3, "%s: få rader (kedjor räknas som en) i början (%d)" % [id, lines.size()])
 		assert_true(lines.any(func(l: Dictionary) -> bool: return l.action == "attack" and l.subject == "any_enemy"),
 				"%s har en anfallsrad" % id)
 	var brokk: Array = run_script.starter_lines(_data, "brokk", _data.macros.brokk.lines)

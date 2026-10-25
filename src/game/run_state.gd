@@ -277,6 +277,17 @@ func set_realm(data: Dictionary, realm_id: String) -> void:
 		realm = realm_id
 		floor_ids = data.realms[realm_id].floors
 		realm_party = int(data.realms[realm_id].get("party", Profile.BASE_SLOTS))
+		depth_offset = realm_depth_offset(data, realm_id)
+
+
+## Realmens "depth_offset" (0 utan): fiendernas djup är det visade djupet + detta.
+static func realm_depth_offset(data: Dictionary, realm_id: String) -> int:
+	return maxi(int(data.get("realms", {}).get(realm_id, {}).get("depth_offset", 0)), 0)
+
+
+## Djupet fienderna (nivå, stats) och erfarenheten räknas på: depth + depth_offset.
+func enemy_depth() -> int:
+	return maxi(depth, 1) + depth_offset
 
 
 ## Den levande kartan: Realmens fördärv för körningen. På steg 4 tar den förvridna bossen den vanligas plats.
@@ -564,6 +575,10 @@ var party_slots := Profile.BASE_SLOTS
 ## Hur stort sällskap Realmen är balanserad mot (realms.json "party", annars fyra): kryptan och kapellet fyra,
 ## Trollberget fem. Den som äger så många och har platserna möter fiender som mot så många, även med färre.
 var realm_party := Profile.BASE_SLOTS
+## 0.30.25 (VD): hur många djup över det visade Realmen räknar fiendernas nivå och stats (realms.json "depth_offset";
+## Trollberget 3: djup 1 möter fiender som på djup 4, eftersom man kommer dit efter kapellet på nivå 6–7). Erfarenheten
+## följer fiendernas djup (enemy_depth()), silver och troféchans det visade djupet (vårt val).
+var depth_offset := 0
 ## 0.25: den första striden gör paladinen ensam (Imma smiter efter först efteråt). Den ska vara lika lätt som övningen:
 ## fienderna ×0,80 till (vårt val, mätt med botarna: tests/test_story.gd och BALANS=forsta).
 const FIRST_FIGHT_ALONE := 0.80
@@ -837,7 +852,7 @@ func take_trail(data: Dictionary) -> Dictionary:
 			silver += Profile.reward(int(c.get("tier", floor)), depth) * BATTLE_SILVER
 	if groups == 0:
 		return {}
-	return {"groups": groups, "xp": roundi(HeroStats.battle_xp("battle", depth) * TRAIL_SHARE * groups),
+	return {"groups": groups, "xp": roundi(HeroStats.battle_xp("battle", enemy_depth()) * TRAIL_SHARE * groups),
 			"silver": silver * TRAIL_SHARE}
 
 
@@ -1097,6 +1112,8 @@ func battle_opts() -> Dictionary:
 	var tier := int(r.get("tier", floor))
 	var opts := {"rules": active_rules() + next_rules, "instability": instability, "start_auras": next_auras.duplicate(),
 			"floor": tier}
+	if depth_offset > 0:
+		opts.depth_offset = depth_offset
 	opts.merge(variant_opts(r, pos))
 	# 0.27: motdrag bara i elitgrupper och bossmöten (CombatSim.counter_for).
 	if r.get("elite", false) or r.get("nemesis", false) or r.get("boss", false):
@@ -1605,7 +1622,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
 		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
-		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "party_slots", "realm_party", "quest_hints", "trail_taken", "growth", "twisted",
+		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "party_slots", "realm_party", "depth_offset", "quest_hints", "trail_taken", "growth", "twisted",
 		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour",
 		"twists_used", "fresh_trophies", "boss_seals"]
 

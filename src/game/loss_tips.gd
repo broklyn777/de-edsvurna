@@ -23,7 +23,7 @@ static func context(state: RunState) -> Dictionary:
 		for i in state.map.indices("campfire"):
 			if not state.map.cell(i).get("done", false):
 				left = true
-	return {"party": Array(state.party), "depth": state.depth, "floor": state.floor,
+	return {"party": Array(state.party), "depth": state.depth, "depth_offset": state.depth_offset, "floor": state.floor,
 			"charges": state.charges.duplicate(true), "lost_to": String(state.chron.get("lost_to", "")),
 			"campfire_left": left}
 
@@ -87,10 +87,11 @@ static func _depth_tip(profile: Profile, data: Dictionary, ctx: Dictionary) -> D
 	var depth := int(ctx.get("depth", 1))
 	var fl := int(ctx.get("floor", 0))
 	var avg := HeroStats.party_level(profile.levels_for(data, ctx.get("party", [])))
-	var foe := HeroStats.enemy_level(depth, fl)
+	var off := int(ctx.get("depth_offset", 0))
+	var foe := HeroStats.enemy_level(depth + off, fl)
 	if depth <= 1 or foe - avg < LEVEL_GAP:
 		return {}
-	var lower := HeroStats.enemy_level(depth - 1, fl)
+	var lower := HeroStats.enemy_level(depth - 1 + off, fl)
 	return {"kind": "depth", "text": "Gå tillbaka till djup %d och träna. Fiendernas nivå var %s här och är %s där; ert snitt är %s." % [
 			depth - 1, HeroStats.shown(foe), HeroStats.shown(lower), HeroStats.shown(avg)]}
 

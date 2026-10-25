@@ -64,6 +64,9 @@ static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary, explain := 
 				plan.notes = _note_texts(notes, false)
 				plan.text = "%s %s – rad %d matchade: %s." % [u.name, _describe_plan(sim, plan),
 						j + 1, " och ".join(why)]
+				# 0.30.25: en kedja håller fast vid figuren som den första raden valde (VAL, se match_line).
+				if j > i and bound != null and lines[i].subject in ["any_ally", "any_enemy"]:
+					plan.text += " Kedjan prövade bara %s, som rad %d valde." % [bound.name, i + 1]
 				return plan
 			skipped.append("Rad %d hoppades över: %s." % [j + 1, plan.reason])
 			if explain:
@@ -322,7 +325,8 @@ static func describe_line(sim_or_data: Variant, line: Dictionary) -> String:
 	var data: Dictionary = sim_or_data.data if sim_or_data is CombatSim else sim_or_data
 	var head := "Om %s %s" % [subject_name(line.subject), condition_name(data, line.cond, line.get("value", 0))]
 	if line.action == "test_next":
-		return head + " → pröva nästa rad"
+		# 0.30.25: kedjan håller fast vid den figur raden valde ("med den"), nästa rad söker inte efter någon annan.
+		return head + (" → pröva nästa rad med den" if line.subject in ["any_ally", "any_enemy"] else " → pröva nästa rad")
 	var act := action_label(data, line.action, line.get("ability", ""))
 	if line.action in ["attack", "ability"]:
 		var ab: Dictionary = data.abilities.get(line.get("ability", ""), {}) if line.action == "ability" else {}

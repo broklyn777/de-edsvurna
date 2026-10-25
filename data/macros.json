@@ -89,14 +89,14 @@
 			},
 			{
 				"subject": "any_ally",
-				"cond": "lacks_status",
-				"value": "mending",
+				"cond": "hp_below",
+				"value": 80,
 				"action": "test_next"
 			},
 			{
 				"subject": "any_ally",
-				"cond": "hp_below",
-				"value": 80,
+				"cond": "lacks_status",
+				"value": "mending",
 				"action": "ability",
 				"ability": "renew",
 				"target": "that"

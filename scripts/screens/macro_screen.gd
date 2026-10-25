@@ -675,6 +675,12 @@ func _on_pick(index: int, key: String) -> void:
 
 func _update_preview() -> void:
 	_preview.text = MacroRunner.describe_line(data, _edit_line)
+	# 0.30.25: kedjans regel syns där den väljs (MacroRunner.match_line: nästa rad prövas bara mot samma figur).
+	if _edit_line.get("action", "") == "test_next":
+		_preview.text += "\n" + CHAIN_NOTE
+
+
+const CHAIN_NOTE := "Kedjan håller fast vid den som den här raden väljer: nästa rad prövas bara mot samma figur och söker inte vidare efter någon annan."
 
 
 func _save_line() -> void:

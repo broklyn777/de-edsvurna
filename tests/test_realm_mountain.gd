@@ -108,3 +108,30 @@ func test_mountain_objects_use_their_own_text() -> void:
 	out = s.use_object(_data, "knock", RandomNumberGenerator.new())
 	assert_true(out.fight, "bägaren väcker en trollgrupp")
 	assert_true(_data.encounters[r.encounter].enemies.all(func(k: String) -> bool: return TROLLS.has(k)))
+
+
+## 0.30.25 (VD): Trollbergets djup räknas högre för fienderna (realms.json "depth_offset"): nivå och stats som på djup
+## 1 + förskjutningen, medan silver och troféchans följer det visade djupet och kartan fortfarande säger djup 1.
+func test_mountain_enemies_count_a_deeper_depth() -> void:
+	var off := RunState.realm_depth_offset(_data, "mountain")
+	assert_true(off >= 1, "berget har en förskjutning")
+	assert_eq(RunState.realm_depth_offset(_data, "crypt"), 0, "kryptan har ingen")
+	var s := RunState.new()
+	s.set_realm(_data, "mountain")
+	s.depth = 1
+	s.fill_charges(_data)
+	s.start_expedition(_data, 3)
+	assert_eq(s.enemy_depth(), 1 + off)
+	var opts := s.battle_opts()
+	assert_eq(int(opts.get("depth_offset", 0)), off, "striden får förskjutningen")
+	opts.levels = {"paladin": {"level": 7}}
+	var sim := CombatSim.create(_data, "troll_1a", 1, ["paladin"], {}, {}, {}, s.depth, opts)
+	var plain := CombatSim.create(_data, "troll_1a", 1, ["paladin"], {}, {}, {}, 1 + off,
+			{"levels": opts.levels, "floor": opts.floor, "full_party": opts.get("full_party", false)})
+	assert_eq(sim.depth, 1, "det visade djupet")
+	assert_eq(sim.enemy_depth, 1 + off)
+	assert_near(sim.enemies[0].level, HeroStats.enemy_level(1 + off, int(opts.floor)), 0.001, "fiendens nivå")
+	assert_near(sim.enemies[0].max_hp, plain.enemies[0].max_hp, 0.001, "samma liv som på det djupare djupet")
+	var crypt := RunState.new()
+	crypt.set_realm(_data, "crypt")
+	assert_eq(crypt.enemy_depth(), 1)

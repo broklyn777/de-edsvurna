@@ -30,8 +30,8 @@ const TUNED_MACROS := {
 	"alva": {"name": "Syster Alva+", "lines": [
 		{"subject": "any_ally", "cond": "has_status", "value": "blighted", "action": "ability", "ability": "healing_light", "target": "that"},
 		{"subject": "any_ally", "cond": "hp_below", "value": 35, "action": "ability", "ability": "healing_light", "target": "that"},
-		{"subject": "any_ally", "cond": "lacks_status", "value": "mending", "action": "test_next"},
-		{"subject": "any_ally", "cond": "hp_below", "value": 60, "action": "ability", "ability": "renew", "target": "that"},
+		{"subject": "any_ally", "cond": "hp_below", "value": 60, "action": "test_next"},
+		{"subject": "any_ally", "cond": "lacks_status", "value": "mending", "action": "ability", "ability": "renew", "target": "that"},
 		{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "ability", "ability": "judgement", "target": "that"},
 		{"subject": "any_enemy", "cond": "has_trait", "value": "bone_armor", "action": "ability", "ability": "judgement", "target": "that"},
 		{"subject": "any_enemy", "cond": "has_trait", "value": "wraith_ethereal", "action": "ability", "ability": "judgement", "target": "that"},

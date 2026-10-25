@@ -21,7 +21,8 @@ static func compute(game_data: Dictionary, prof: Profile, hero_id: String, lv: i
 		levels[hero_id] = {"level": level, "personality": prof.hero(game_data, hero_id).personality,
 				"carry": before_carry if level < lv else 0.0}
 		at.append(CombatSim.create(game_data, String(realm.floors[0]), 1, who, traits, {}, arts, maxi(at_depth, 1),
-				{"levels": levels, "elite_chance": 0.0, "floor": 0}))
+				{"levels": levels, "elite_chance": 0.0, "floor": 0,
+				"depth_offset": RunState.realm_depth_offset(game_data, realm_id)}))
 	var out := []
 	var h0: CombatUnit = at[0].unit(hero_id)
 	var h1: CombatUnit = at[1].unit(hero_id)

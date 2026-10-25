@@ -343,6 +343,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   och Ljusspricka lånar sarkofagens, glasfönstrets och registrets val med egen text. Inga lärjungar, inga motdrag, ingen följd
   eller gåva än. Vinjett `vagen.webp` (Drakvalvet), kryptans stämning, kallare ljus i strid och rumsögonblick. Berättarrutan
   efter första segern mot Bergakungen (`narrator` "boss_mountain_king"). Tester: `tests/test_realm_mountain.gd`.
+  **Djupförskjutning** (0.30.25, VD): `realms.json` "depth_offset" (berget 1) lägger till djup för fiendernas nivå och stats
+  (`RunState.depth_offset`, `enemy_depth()`, opts "depth_offset", `CombatSim.enemy_depth`; hjältebladet, nivåhoppet, förlusttipsen
+  och kampanjkartans "Fiender +%" räknar med den). Erfarenheten följer fiendernas djup, silver, troféchans, motdrag och
+  elitvarianter det visade djupet; kartan säger fortfarande "Djup 1". VD bad om 3 (djup 4); botarna (`TROLL_MODE=djup` i
+  `tests/troll_balance.gd`, nivå 6–7, MACRO, 100 körningar) gav med 1: fyra 0 % klarat (vanliga 100 %, elit 93 %, boss 0 %),
+  fem 38 % (boss 38 %); med 2 klarar ingen av dem bossen, med 3 inte ens vanliga grupper (48–63 %).
 - **Instabilitet och våningsregler** (0.17, Siralims Realm Instability och Realm Properties): på kampanjkartan
   väljs instabilitet 0–3. Nivå n ger n synliga och n dolda regler för hela körningen (`data/floor_rules.json`,
   t.ex. De döda vaknar, Förseglade ord, Vaksamma vakter, Speglande ben, Kaosvind), mer silver och bättre
@@ -513,6 +519,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   visar dem när den öppnas, och när inget passade står den närmaste raden först och syns i hörnet ("Närmast: …").
   **Startraderna** (förslag 2, varianten nära Siralim): `Run.starter_lines` lägger `FIRST_LINE` sist, så att en ny profils
   följeslagare inte står stilla; ingen fast standardrad utanför listan (det vore en avvikelse att ta upp med VD).
+  0.30.25: en kedja (rader med "pröva nästa rad" och raden de leder till, `Run.macro_units`) tas med hel eller inte alls.
+  **Kedjor** håller fast vid figuren som den första raden valde (VAL, Siralim okänt, `docs/research/siralim.md` §9b):
+  radtexten säger "pröva nästa rad med den", radeditorn och hjälpen förklarar det, förklaringsloggen skriver "Kedjan prövade
+  bara X". Alvas startmakro prövar den skadade först (liv < 80 % → pröva nästa rad; saknar Läkning → Läkande hand).
+  Tester: `tests/test_starter_chains.gd` (skriver ut varje startmakro).
   **Spara som order** (0.30, prototyp): väljer spelaren själv något som makrot inte hade valt (en helning på en skadad,
   eller en förmåga mot en status den slår hårdare mot) visar striden en guldknapp i 9 sekunder som lägger en sådan rad
   överst i hjältens makro (`battle.gd` `_offer_order`, `_save_order`; `--offer-order`).

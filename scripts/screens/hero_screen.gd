@@ -179,7 +179,7 @@ func _draw_stats(data: Dictionary, prof: Profile, prog: Dictionary) -> void:
 func _draw_enemy_levels(data: Dictionary, prof: Profile, level: int, at: Vector2) -> void:
 	var lv: Array[int] = []
 	for f in 3:
-		lv.append(roundi(HeroStats.enemy_level(prof.depth, f)))
+		lv.append(roundi(HeroStats.enemy_level(prof.depth + RunState.realm_depth_offset(data, prof.realm), f)))
 	var w := _personality_rect().position.x - at.x - 16
 	UiStyle.text(self, at, "FIENDERNA I %s, DJUP %d" % [String(data.realms[prof.realm].short).to_upper(), prof.depth], 16,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
@@ -248,7 +248,7 @@ func _build_meaning(data: Dictionary, prof: Profile, level: int, personality: St
 	var arts := {} if art.is_empty() else {hero_id: art}
 	var sim := CombatSim.create(data, enc_id, 1, sheet_party(prof, hero_id), sheet_traits(data, prof), {}, arts,
 			prof.depth, {"levels": {hero_id: {"level": level, "personality": personality, "carry": prof.carry(data, hero_id)}},
-			"elite_chance": 0.0, "floor": 0})
+			"elite_chance": 0.0, "floor": 0, "depth_offset": RunState.realm_depth_offset(data, prof.realm)})
 	var hero := sim.unit(hero_id)
 	var foe: CombatUnit = sim.enemies[0]
 	_meaning_sub = "mot %s (nivå %d) i %s, djup %d, våning 1" % [foe.name, roundi(foe.level), realm.short, prof.depth]

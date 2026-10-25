@@ -123,6 +123,9 @@ var rng := RandomNumberGenerator.new()
 var auto := false
 ## Realm Depth (1 och uppåt).
 var depth := 1
+## Djupet fiendernas nivå och stats räknas på: depth + opts "depth_offset" (realms.json "depth_offset", 0.30.25; Trollbergets
+## djup 1 är djup 4). Motdrag och elitvarianter följer depth.
+var enemy_depth := 1
 ## Våningsregler (data/floor_rules.json) som gäller i striden, och de som har slagit till.
 var rules: Array = []
 var rules_triggered: Array = []
@@ -168,6 +171,7 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	var sim := CombatSim.new()
 	sim.data = game_data
 	sim.depth = maxi(depth, 1)
+	sim.enemy_depth = sim.depth + maxi(int(opts.get("depth_offset", 0)), 0)
 	sim.rules = opts.get("rules", []).duplicate()
 	if opts.get("counter", false) and big_fight_exhaustion > 0:
 		sim.exhaustion_turn = big_fight_exhaustion
@@ -241,12 +245,12 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 		e.position = ENEMY_SLOTS[i]
 		apply_override(e, unit_override(enc, kind, counts[kind]))
 		var bonus := float(opts.get("stat_bonus", 1.0))
-		var mult := enemy_mult(enc, sim.depth)
+		var mult := enemy_mult(enc, sim.enemy_depth)
 		# Elitgruppen på den första nedstigningen (RunState.FIRST_DESCENT_ELITE): mötets egen styrka ersätter stat_mult
 		# och den allmänna faktorn.
 		if opts.has("first_descent_elite") and enc.has("first_descent_stat_mult"):
 			bonus /= float(opts.first_descent_elite)
-			mult = float(enc.first_descent_stat_mult) * depth_mult(sim.depth)
+			mult = float(enc.first_descent_stat_mult) * depth_mult(sim.enemy_depth)
 		scale_unit(e, mult * bonus)
 		if party_mult != 1.0:
 			e.max_hp = snap_stat(e.max_hp * party_mult)
@@ -257,8 +261,8 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 			e.base_stats.attack = e.attack
 			e.base_stats.intelligence = e.intelligence
 		if opts.has("levels"):
-			e.level = HeroStats.enemy_level(sim.depth, int(opts.get("floor", 0)))
-			var lm := HeroStats.enemy_level_mult(sim.depth, int(opts.get("floor", 0)))
+			e.level = HeroStats.enemy_level(sim.enemy_depth, int(opts.get("floor", 0)))
+			var lm := HeroStats.enemy_level_mult(sim.enemy_depth, int(opts.get("floor", 0)))
 			scale_unit(e, lm)
 			e.speed = roundf(e.speed * lm)
 			e.base_stats.speed = e.speed

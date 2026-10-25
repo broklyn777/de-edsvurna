@@ -388,7 +388,7 @@ func _process(delta: float) -> void:
 				for h in sim.heroes:
 					lv_sum += h.level
 				run.playtime.start_battle(Playtime.battle_kind(run.state.current_room(), run.state.is_last_floor()),
-						lv_sum / maxi(sim.heroes.size(), 1), HeroStats.enemy_level(sim.depth, run.state.floor))
+						lv_sum / maxi(sim.heroes.size(), 1), HeroStats.enemy_level(sim.enemy_depth, run.state.floor))
 			if _dev_combo_first and pal_unit != null:
 				pal_unit.speed = pal_speed
 			if _dev_exhaust > 0:

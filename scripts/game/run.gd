@@ -747,6 +747,7 @@ func _resume_run() -> void:
 	state.owned_heroes = profile.recruited.size() + 1  # 0.30.21: körningar sparade före fältet
 	state.party_slots = profile.party_slots()
 	state.realm_party = int(data.realms.get(state.realm, {}).get("party", Profile.BASE_SLOTS))
+	state.depth_offset = RunState.realm_depth_offset(data, state.realm)
 	playtime.resume_run(slot, state.floor)  # löptiden fortsätter där den slutade
 	if state.battle_pending:
 		# Appen stängdes under en strid: striden börjar om, som om man just gått in i rummet.
@@ -941,14 +942,32 @@ func macro_hint(hero_id: String) -> Dictionary:
 ## Makro-UX förslag 2, varianten nära Siralim: sist står alltid FIRST_LINE (anfall fienden med lägst liv), så att en ny
 ## profils följeslagare aldrig står stilla för att ingen rad passade. Ingen fast standardrad utanför listan: raden är
 ## en vanlig rad som går att ändra och ta bort, och ett makro där inget passar väntar fortfarande som i Siralim.
+## 0.30.25: en kedja ("pröva nästa rad" och raden den leder till) räknas som en enhet och tas med hel eller inte alls;
+## förut kunde Liriens "liv < 50 % → pröva nästa rad" bli kvar utan sin Vaggvisa och kopplas på reservanfallet.
 static func starter_lines(game_data: Dictionary, hero_id: String, lines: Array) -> Array:
 	var hint: Dictionary = game_data.heroes.get(hero_id, {}).get("macro_hint", {}).get("line", {})
-	var rest := lines.filter(func(l: Dictionary) -> bool: return hint.is_empty() or l.get("cond", "") != hint.cond \
-			or l.get("action", "") != hint.action or l.get("ability", "") != hint.get("ability", ""))
-	var out := rest.slice(0, 2)
+	var units := macro_units(lines).filter(func(unit: Array) -> bool: return hint.is_empty() or not unit.any(
+			func(l: Dictionary) -> bool: return l.get("cond", "") == hint.cond and l.get("action", "") == hint.action \
+			and l.get("ability", "") == hint.get("ability", "")))
+	var out := []
+	for unit in units.slice(0, 2):
+		out.append_array(unit)
 	if not out.any(func(l: Dictionary) -> bool: return _is_fallback(l)):
 		out.append(FIRST_LINE.duplicate(true))
 	return out
+
+
+## Raderna i enheter: en vanlig rad för sig, en kedja (rader med "pröva nästa rad" och raden de leder till) tillsammans.
+## En kedja som inte leder till någon rad (sist i makrot) tas bort.
+static func macro_units(lines: Array) -> Array:
+	var units := []
+	var cur := []
+	for l in lines:
+		cur.append(l)
+		if l.get("action", "") != "test_next":
+			units.append(cur)
+			cur = []
+	return units
 
 
 ## En rad som nästan alltid passar: anfall någon fiende (lägst liv eller som kan skadas).
@@ -1085,7 +1104,7 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 	if victory and not state.practice:
 		var r := state.current_room()
 		last_finds = roll_finds("boss" if r.get("boss", false) else RunState.fight_kind(r))
-		var xp := HeroStats.battle_xp(RunState.fight_kind(r), state.depth, r.get("boss", false))
+		var xp := HeroStats.battle_xp(RunState.fight_kind(r), state.enemy_depth(), r.get("boss", false))
 		last_xp = xp
 		var ups := profile.grant_xp(data, state.party, xp)
 		if state.vow_after_battle(data, sim) == "broke":
