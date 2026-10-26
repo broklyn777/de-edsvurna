@@ -73,3 +73,9 @@ och iPhone.
 1. Borgen: hjältebladet går inte att nå härifrån. Man vill kunna se allt om sina karaktärer när som helst
    (Siralim: skapelserna nås från slottets meny). Förslag: tryck på paladinpjäsen, eller en knapp SÄLLSKAPET under
    INSTÄLLNINGAR, som öppnar `hero_screen` för alla som har anslutit. (Område 4, men syns redan i första timmen.)
+2. Kampanjkartan, första nedstigningen: Kapellet och Sidenlunden går att välja (bara Trollberget har `requires` i
+   `realms.json`). Förslag: Kapellet öppnas när Kryptan är klarad på djup 1, Sidenlunden efter Kapellet (som Siralim, där
+   Realms öppnas efter hand); under introts nedstigning bara Kryptan.
+   Samma skärm har för mycket för en ny spelare (jfr BG3): instabilitet, perk-poäng, "Fiender +0 % / Silver +0 %",
+   0/3-märkena och hela listan "Sägs sitta fången här" (sex namn, och Alva står som djup 1 fast hon kommer på andra
+   nedstigningen). Förslag: visa instabilitet och perk-poäng först när de går att använda, visa bara nästa fånge som rykte.
