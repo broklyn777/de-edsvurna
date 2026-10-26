@@ -729,12 +729,62 @@ func act(action: String, target_id := "", ability_id := "") -> String:
 func ai_act() -> void:
 	if outcome != "" or current == null:
 		return
-	if current.team == 1 and is_charging(current) and _windup_turn(current):
+	var released := current.team == 1 and is_charging(current)
+	if released and _windup_turn(current):
 		_end_turn()
 		return
 	var choice := _hero_choice(current) if current.team == 0 else _enemy_choice(current)
+	if current.team == 1 and _interrupted(current, choice.ability, released):
+		_end_turn()
+		return
 	_perform(current, choice.ability, choice.action, choice.get("target", ""))
 	_end_turn()
+
+
+## Toruns "Inte färdigt än" (docs/ideer/chat-femte-foljeslagaren.md): en motståndare som står beredd (en status med
+## "interrupt", Stå beredd) och bär en egenskap med "interrupt" avbryter en fiendes helning eller en varslad attack som
+## släpps nu. Fiendens tur går åt och förmågan får sin nedkylning; beredskapen förbrukas. Kostnaden är Toruns egen tur
+## (hon står beredd i stället för att slå) och förmågans nedkylning. Gränser, så att Tystad behövs: hon avbryter inte
+## när hon själv är Tystad, sover eller är frusen; inte laddningar som bara bryts på annat sätt (Midnatt, "broken_by"
+## tom); och en boss eller en Resistent fiende tappar inte laddningen, den skjuts bara upp en tur. Tystad hindrar
+## dessutom laddningen innan den börjar, gäller flera förmågor och ger Vacklande när den bryter en laddning.
+## Sant om handlingen avbröts.
+func _interrupted(e: CombatUnit, ability_id: String, released: bool) -> bool:
+	var windup := released and not windup_of(ability_id).is_empty()
+	if windup and (windup_of(ability_id).get("broken_by", []) as Array).is_empty():
+		return false
+	if not windup and not is_heal_ability(ability_id):
+		return false
+	if is_silenced(e) and ability_id != e.attack_ability:
+		return false  # _perform spärrar den ändå
+	for h in _enemies(e):
+		var ready := flag_aura(h, "interrupt")
+		if ready == "" or cannot_act(h) != "" or is_silenced(h) or not has_interrupt_trait(h):
+			continue
+		_remove_aura(h, ready, "used")
+		var delayed: bool = windup and (e.resistant or bool(data.enemies.get(e.kind, {}).get("boss", false)))
+		if delayed:
+			e.charging = {"ability": ability_id, "left": 1, "max": 1, "taken": 0.0}
+		else:
+			var cooldown: float = ability(ability_id).get("cooldown", 0.0)
+			if cooldown > 0.0:
+				e.cooldowns[ability_id] = cooldown + 1.0
+			if windup:
+				_reset_windup_stack(e, ability_id)
+		_emit({"type": "interrupt", "unit": h.id, "target": e.id, "ability": ability_id,
+				"kind": "windup" if windup else "heal", "delayed": delayed})
+		return true
+	return false
+
+
+func has_interrupt_trait(u: CombatUnit) -> bool:
+	return traits_of(u).any(func(t: String) -> bool: return data.traits.get(t, {}).get("interrupt", false))
+
+
+## Sant om fiendens avsikt är en helning (makrovillkoret "tänker hela", för Torun).
+func intends_heal(u: CombatUnit) -> bool:
+	return u != null and u.alive and u.team == 1 and not u.intent.is_empty() \
+			and is_heal_ability(String(u.intent.get("ability", "")))
 
 
 ## Egenskapsstaplar som förmågan förbrukar när den används: {stack, value, max}, eller tom.

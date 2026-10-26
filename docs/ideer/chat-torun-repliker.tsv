@@ -1,0 +1,38 @@
+torun_cave_1	Tre gångar, två gamla ras. Vi börjar med den som fortfarande har tak.
+torun_cave_2	{namn}, vi håller ihop här. Jag vill kunna räkna oss utan att vända mig om.
+torun_cave_3	Stöttorna är nyare än fotspåren. Någon tänker fortsätta använda den här gången.
+torun_cave_4	Vi går tyst. Jag vill höra om bjälkarna börjar klaga.
+torun_elite_1	De står stadigt. Vi får ge dem anledning att flytta fötterna.
+torun_elite_2	Vänta, {namn}. Den där samlar kraft. Vi låter den börja, sedan slår jag.
+torun_elite_3	Jag räknar tre tunga vapen. Vi håller oss där de inte kan svinga alla samtidigt.
+torun_back_1	Jag ser en öppning, {namn}. Men du har sagt tillbaka, så vi backar.
+torun_back_2	Vi lämnar dem här. Jag behöver bara sluta titta åt deras håll.
+torun_treasure_1	Fint lås. Synd att gångjärnen sitter på vår sida.
+torun_treasure_2	Vi delar lika. Ja, även om jag bar kistan.
+torun_stairs_1	Sjutton steg. Det artonde ligger redan där nere.
+torun_stairs_2	Jag går först, {namn}. Vi behöver veta om trappan håller för Brokk.
+torun_boss_1	Vi kontrollerar remmarna först. Sedan går vi in, allihop.
+torun_boss_2	Gott om märken efter tunga slag. Vi stannar inte på samma ställe för länge.
+torun_boss_3	{namn}, ge mig ett tecken när den börjar samla kraft. Jag ska hålla ögonen på hammaren.
+torun_fallen_1	Där är du. Ligg kvar en stund, vi sitter här.
+torun_fallen_2	Du behöver inte förklara något. {namn} och vi andra är bara glada att du är med oss.
+torun_fallen_3	Jag har lagat remmen som brast. Nästa gång hjälps vi åt lite tidigare.
+torun_campfire_1	Vi har ved för sex timmar. Sju om ingen försöker värma hela grottan.
+torun_campfire_2	Min gamla arbetsledare kunde sova stående. Jag förstod honom först när jag fick hans jobb.
+torun_campfire_3	Lägg hit stöveln, {namn}. Jag får ändå ingen ro medan sulan sitter löst.
+torun_interrupt_1	Nej. Vi var inte klara.
+torun_interrupt_2	Där satt den.
+torun_interrupt_3	Det räcker.
+torun_inn_1	Jag har sett över reservskaften. Nu återstår tydligen att sitta still.
+torun_inn_2	Värden bad mig sluta laga stolarna. Han säger att gästerna sitter på dem.
+torun_inn_3	Vi behöver fler järnkilar nästa gång. Jag har skrivit en lista på baksidan av menyn.
+torun_bored_1	Jag har räknat takbjälkarna två gånger. De blir inte fler.
+torun_bored_2	Snart är alla gångjärn i borgen smorda. Sedan måste vi faktiskt ge oss av.
+torun_welcome_1	Där är ni, {namn}. Kom in, vi räknar bucklorna över maten.
+torun_mountain_1	Det där märket högg jag själv. Vi använde det för att hitta hem i dammet.
+torun_mountain_2	Här brukade malmvagnarna stå. Trollen har dragit rälsen ur berget.
+torun_mountain_3	Min bror blev kvar bakom porten längre in. Vi tar oss dit, en gång i taget.
+torun_mountain_4	Vänstra väggen är torr än. Vi brukade hänga jackorna här.
+pair_torun_imma_1	Torun: Hur många pilar har vi kvar? | Imma: Vi har tjugotre, men jag tänkte skjuta dem själv.
+pair_torun_brokk_1	Torun: Vi måste räta ut den där sköldkanten. | Brokk: Efter nästa troll.
+pair_torun_alva_1	Torun: Vi har andra som behöver dina lindor. | Alva: Och en som gömmer handen bakom ryggen.

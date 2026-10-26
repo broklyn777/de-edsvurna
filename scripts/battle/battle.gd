@@ -39,7 +39,7 @@ var macro_log: MacroLog
 var speed_chip: ChipButton
 ## Ge upp (0.20.1, Siralims Forfeit), med en bekräftelse.
 var forfeit_chip: ChipButton
-## Skadeloggen och uträkningen bakom siffrorna (0.21).
+## Stridsloggen och uträkningen bakom siffrorna (0.21).
 var log_chip: ChipButton
 var settings_chip: ChipButton
 var order_chip: ChipButton  # 0.30: "Spara som order" efter ett eget val som makrot inte hade gjort
@@ -130,7 +130,7 @@ func _ready() -> void:
 		elif arg == "--show-calc":
 			_dev_calc = true  # visar uträkningen för en av hjältarnas träffar (skärmdumpar)
 		elif arg == "--damage-log":
-			_dev_log = true  # öppnar skadeloggen efter några turer (skärmdumpar)
+			_dev_log = true  # öppnar stridsloggen efter några turer (skärmdumpar)
 		elif arg == "--ask-forfeit":
 			_dev_ask_forfeit = true  # visar frågan om att ge upp när striden har börjat (skärmdumpar)
 		elif arg == "--windup-first":
@@ -293,7 +293,7 @@ func _build_ui() -> void:
 	forfeit_chip.pressed.connect(_ask_forfeit)
 	ui.add_child(forfeit_chip)
 	log_chip = ChipButton.new()
-	log_chip.setup("SKADELOGG", 140)
+	log_chip.setup("STRIDSLOGG", 140)
 	log_chip.pressed.connect(_open_damage_log)
 	ui.add_child(log_chip)
 	order_chip = ChipButton.new()
@@ -518,7 +518,6 @@ func _remember_number(e: Dictionary) -> void:
 	_recent_numbers.append({"pos": p, "at_ms": Time.get_ticks_msec(), "e": e})
 	if _recent_numbers.size() > 16:
 		_recent_numbers.pop_front()
-	damage_log.add(e)
 	if _dev_calc and e.type == "damage" and sim.unit(e.source).team == 0 and e.calc.get("scaled", false) \
 			and (e.calc.has("shelter") or (e.calc.get("kind", "") == "attack" and sim.turn_no >= 4)):  # Moderns famn först
 		_dev_calc = false
@@ -950,6 +949,7 @@ func _play_events() -> void:
 
 
 func _handle(e: Dictionary) -> void:
+	damage_log.log_event(sim, e)  # stridsloggen: varje handling, i den ordning den hände
 	match e.type:
 		"turn_start":
 			if sim.unit(e.unit).team == 0:
@@ -1009,6 +1009,8 @@ func _handle(e: Dictionary) -> void:
 				_after(_effect_delay(e), _float.bind(e.unit, "KAN INTE VÄCKAS", Color("#a8c070"), 18, false))
 		"windup_start", "windup_tick", "windup_delayed", "windup_broken":
 			_after(_effect_delay(e) + 0.05, _on_windup.bind(e))
+		"interrupt":
+			_after(_effect_delay(e), _on_interrupt.bind(e))
 		# Väktarsteg 2: klockans slag, rådets arv och kronan som flyttar.
 		"stack_said":
 			_after(_effect_delay(e) + 0.2, _float.bind(e.unit, String(e.text), Color("#ffb347"), 26, true))
@@ -1163,7 +1165,7 @@ func _decider_alternatives(rows: Array) -> Dictionary:
 	return out
 
 
-## 0.31 Varslade attacker: ord över fienden, en rad i makrologgen och skadeloggen, och hjälprutan första gången.
+## 0.31 Varslade attacker: ord över fienden, en rad i makrologgen och stridsloggen, och hjälprutan första gången.
 func _on_windup(e: Dictionary) -> void:
 	var u := sim.unit(e.unit)
 	var ab_name: String = sim.ability(e.ability).get("name", e.ability)
@@ -1194,6 +1196,18 @@ func _on_windup(e: Dictionary) -> void:
 	if note != "":
 		macro_log.add({"text": note, "ok": true, "skipped": [], "notes": []})
 		damage_log.add_note(note, warn)
+
+
+## Torun (Inte färdigt än): ordet över fienden, ett slag i marken och en rad i makrologgen (stridsloggen har sin egen).
+func _on_interrupt(e: Dictionary) -> void:
+	var delayed: bool = e.get("delayed", false)
+	_float(e.target, "FÖRDRÖJD" if delayed else "AVBRUTEN!", UiStyle.GOLD, 26, true)
+	sfx.play("bone_crush", -6.0, 0.0)
+	_hitstop(70)
+	world.add_shake(2.0)
+	var ab_name: String = sim.ability(e.ability).get("name", e.ability)
+	macro_log.add({"text": "%s avbryter %s: %s %s." % [sim.unit(e.unit).name, sim.unit(e.target).name, ab_name,
+			"skjuts upp en tur" if delayed else "blir inte av"], "ok": true, "skipped": [], "notes": []})
 
 
 const WINDUP_REASONS := {"silenced": "Tystad", "stagger": "skakad loss av skadan", "channel": "kanalen föll",
@@ -1345,7 +1359,7 @@ func _on_outcome(result: String) -> void:
 	forfeit_chip.visible = false
 	macro_chip.visible = false
 	settings_chip.visible = false
-	# 0.29.5: skadeloggen går att öppna på resultatskärmen (det är då man vill läsa den): knappen och loggen ovanpå rutan.
+	# 0.29.5: stridsloggen går att öppna på resultatskärmen (det är då man vill läsa den): knappen och loggen ovanpå rutan.
 	log_chip.get_parent().move_child(log_chip, -1)
 	damage_log.get_parent().move_child(damage_log, -1)
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()

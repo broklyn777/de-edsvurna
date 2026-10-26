@@ -1,7 +1,9 @@
 class_name DamageLog
 extends Control
-## Skadeloggen (0.21): varje skada, helning och undvikande i striden, nyast överst. Tryck på en rad så
-## visas hela uträkningen (DamageExplain) under den; dra för att bläddra. Striden står still medan den är öppen.
+## Stridsloggen (0.21 som skadeloggen; Siralims stridslogg): varje handling i striden, nyast överst. Skador, helningar
+## och undvikanden har sin uträkning (tryck på raden, DamageExplain); allt annat – förmågor som inte skadar, buffar,
+## debuffar, Barriär, statusar som tar en tur, tidslinjen, avbrott – får en rad ur BattleLog. Dra för att bläddra.
+## Striden står still medan den är öppen.
 
 ## [{e: händelsen, title, color}]
 var entries: Array[Dictionary] = []
@@ -30,6 +32,31 @@ func add(e: Dictionary) -> void:
 		_:
 			color = Color("#ffb38a") if hero_ids.has(e.target) else Color.WHITE
 	entries.append({"e": e, "title": DamageExplain.title(data, e), "color": color})
+
+
+## Varje händelse ur simulatorn: med uträkning som förut, annars BattleLog-raden (om händelsen loggas).
+func log_event(sim: CombatSim, e: Dictionary) -> void:
+	if e.type in ["damage", "heal", "dodge"]:
+		if e.has("calc"):
+			add(e)
+		return
+	var text := BattleLog.line(sim, e)
+	if text != "":
+		add_note(text, note_color(sim, e))
+
+
+static func note_color(sim: CombatSim, e: Dictionary) -> Color:
+	match e.type:
+		"death":
+			return Color("#ff7a6a")
+		"interrupt":
+			return UiStyle.GOLD
+		"aura_applied":
+			return Color("#9fe0a0") if e.get("aura_kind", "") == "buff" else (Color("#d7a6ff") if e.get("aura_kind", "") == "debuff" else Color("#cfd8e6"))
+		"action":
+			var u := sim.unit(e.get("unit", ""))
+			return Color("#ffd9b0") if u != null and u.team == 1 else Color("#e8e2cf")
+	return Color(1, 1, 1, 0.72)
 
 
 ## 0.31: en rad utan uträkning (en varslad attack som laddas eller bryts).
@@ -82,8 +109,8 @@ func _draw() -> void:
 	if not open:
 		return
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.02, 0.05, 0.95))
-	UiStyle.text(self, Vector2(0, 50), "SKADELOGG", 30, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 6)
-	UiStyle.text(self, Vector2(0, 80), "Nyast överst. Tryck på en rad för uträkningen, dra för att bläddra.", 17,
+	UiStyle.text(self, Vector2(0, 50), "STRIDSLOGG", 30, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, size.x, 6)
+	UiStyle.text(self, Vector2(0, 80), "Nyast överst. Tryck på en rad med ▸ för uträkningen, dra för att bläddra.", 17,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 	var c := _close_rect()
 	draw_rect(c, Color(0, 0, 0, 0.7))
@@ -94,7 +121,7 @@ func _draw() -> void:
 	var w := size.x - 80.0
 	var y := 120.0 - _scroll
 	if entries.is_empty():
-		UiStyle.text(self, Vector2(0, 160), "Ingen skada än.", 19, Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_CENTER, size.x)
+		UiStyle.text(self, Vector2(0, 160), "Inget har hänt än.", 19, Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_CENTER, size.x)
 	for i in range(entries.size() - 1, -1, -1):
 		if y > size.y:
 			break
@@ -103,8 +130,9 @@ func _draw() -> void:
 		var row := Rect2(x - 10, y - 24, w + 20, 34)
 		if y > 96.0:
 			draw_rect(row, Color(1, 1, 1, 0.07 if opened else 0.03))
-			UiStyle.text(self, Vector2(x, y), ("▾ " if opened else "▸ ") + String(en.title), 19, en.color,
-					HORIZONTAL_ALIGNMENT_LEFT, w, 3)
+			var note: bool = en.e.get("type", "") == "note"
+			UiStyle.text(self, Vector2(x, y), ("    " if note else ("▾ " if opened else "▸ ")) + String(en.title),
+					17 if note else 19, en.color, HORIZONTAL_ALIGNMENT_LEFT, w, 3)
 			_rows.append({"rect": row, "index": i})
 		y += 36.0
 		if opened:

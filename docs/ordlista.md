@@ -83,7 +83,7 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Introduktionen | intro (`data/intro.json`, `Intro`) | Tutorial | Småuppdrag i borgen för en ny profil. |
 | Imma, Mäster Gorm | imma, gorm | – | Paladinens barndomsvän (första följeslagaren) och borgens präst. |
 | Uträkning | `calc`, `DamageExplain` | – (vårt tillägg) | Hela vägen till en siffra: stat, variation, Defense, modifierare, krit, barriär. Tryck på en siffra i striden. |
-| Skadelogg | `DamageLog` | – (vårt tillägg) | Alla skador och helningar i striden, nyast överst; en rad öppnar uträkningen. |
+| Stridslogg (förr Skadelogg) | `DamageLog`, `BattleLog` | Combat log | Varje handling i striden, nyast överst; skador och helningar öppnar uträkningen, allt annat (buffar, debuffar, Barriär, tidslinjen, avbrott) är en rad. |
 | Ge upp | forfeit (`CombatSim.forfeit()`) | Forfeit | Avslutar striden som förlust; körningen är förlorad och Realmen börjar om från våning 1. Det som redan är vunnet behålls. |
 | Fynd | finds (`Forge.roll_finds`) | Loot | Material och stenar från rummen; trick och stenar bara på det djupaste djupet man nått. |
 | Svärd / Stav / Sköld / Hjälm / Stövlar | sword / staff / shield / helm / boots | Sword / Staff / Shield / Helmet / Boots | Stat: +5 % Attack / +5 % Intelligence / +10 Defense / +5 % Health / +1 Speed (som Siralim). |
@@ -131,6 +131,8 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Tystad | silenced (aura med `silence`), `is_silenced`, makrovillkoret "är tystad" | Silenced | Inga förmågor; fiender bara anfaller; artefakter kastar inte. |
 | Sårbar | vulnerable | Vulnerable | +50 % skada i 2 turer. |
 | Laddning, varslad attack ("samlar kraft – slår om N turer") | windup (förmågans `windup`: turns, broken_by, stagger, channeled_by, vulnerable_after), `CombatUnit.charging`, `CombatSim.is_charging`/`charge_left`, händelserna `windup_start/tick/delayed/release/broken`, makrovillkoren `is_charging` ("laddar en varslad attack") och `charge_left_at_most` ("laddar, slår om högst N turer") | – (finns inte i Siralim; vårt val, som WoW:s cast bar) | 0.31. Laddningen syns minst en hjälterunda i förväg (fler turer kostar fiendens turer); Tystad (även på Resistenta), skada ≥ stagger × max-liv eller en dödad kanal bryter den; Försvara dämpar. Benfurstens Dödsdom är den första. |
+| Avbrott (Toruns Inte färdigt än), Beredd, Stå beredd | interrupt (`CombatSim._interrupted`, händelsen `interrupt`, egenskapen `torun_not_done` med `"interrupt"`, statusen `torun_ready`, förmågan `torun_ready`), makrovillkoret `intends_heal` ("tänker hela") | – (vårt val; Siralim har ingen) | Den som står Beredd avbryter en fiendes helning eller en varslad attack som släpps; fiendens tur går åt. En boss eller Resistent fiende får laddningen uppskjuten en tur. |
+| Bergsbrytare (Torun) | `torun` | – | Den femte följeslagaren, kommer med den femte platsen. |
 | Vacklande, AVBRUTEN! | staggered (aura), `vulnerable_after` | – | 0.31. En fiende vars laddning bröts tar 25 % mer skada fram till sin nästa tur och kan inte börja en ny laddning förrän efter den. |
 | Försvagad | weak (aura `damage_mult` 0,5) | Weak | −50 % skada i 2 turer. |
 | Immun | `immune`-händelse, `is_immune`, makrovillkoren "är immun"/"kan skadas" | (Myrtle, Nether Boss) | Den fallne biskopen så länge en Kultist lever; Biskopens mitra. |

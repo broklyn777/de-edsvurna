@@ -1,4 +1,12 @@
 {
+	"torun_ready": {
+		"name": "Beredd",
+		"duration": 1,
+		"buff": true,
+		"interrupt": true,
+		"glyph": "diamond",
+		"text": "Beredd: avbryter den första fiende som släpper en varslad attack eller helar, fram till sin nästa tur (Toruns Inte färdigt än)."
+	},
 	"defend": {
 		"name": "Försvarar",
 		"duration": 1,

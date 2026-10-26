@@ -526,7 +526,7 @@ static func _cond_group(cond: String) -> String:
 		return "status"
 	if cond in ["has_trait", "lacks_trait"]:
 		return "trait"
-	if cond in ["is_charging", "charge_left_at_most", "is_channeling", "is_charge_target"]:
+	if cond in ["is_charging", "charge_left_at_most", "is_channeling", "is_charge_target", "intends_heal"]:
 		return "windup"
 	if cond == "has_charges":
 		return "charges"

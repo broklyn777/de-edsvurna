@@ -47,6 +47,22 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `CombatSim.PARTY_SCALE` (×0,54 för två, ×0,64 för tre). `BALANS=forsta` mäter första nedstigningen med en ny profils makron.
   När en ny sorts hjälte ansluter föreslår spelet en makrorad (`heroes.json` "macro_hint"). Äldre profiler
   behåller sina fyra och får Imma i Värdshuset.
+  **Torun Bergsbrytare** (den femte, `docs/ideer/chat-femte-foljeslagaren.md`, `chat-torun-repliker.tsv`): 46, bröt malm i
+  Trollbergets järngruva, brodern blev kvar bakom en nedrasad port; torr humor, räknar allt. Hon kommer när den femte platsen
+  öppnas (`Run.check_slot_unlock` → `Run.fifth_arrives`: ankomstscenen `dialog.json` "party_slot" "torun" med Gorm, paladinen
+  och Imma, sedan `Profile.recruit`); Broder Alriks tre rykten före det (`alrik_torun_rumour_*`, `not_recruited`). Andra
+  tank och avbrytare: **Inte färdigt än** (`torun_not_done`, `"interrupt"`) – står hon **Beredd** (förmågan Stå beredd: Försvara
+  + statusen `torun_ready`, nedkylning 3) när en fiende helar eller släpper en varslad attack avbryter hon det
+  (`CombatSim._interrupted`, händelsen `interrupt`): fiendens tur går åt, beredskapen förbrukas. Kostnaden är hennes tur och
+  nedkylningen. Tystad behövs ändå: inte när hon själv är Tystad/sover/frusen, inte laddningar som bara bryts på annat sätt
+  (Midnatt), en boss eller Resistent fiende får laddningen uppskjuten en tur i stället, och bara Tystad hindrar en laddning
+  innan den börjar och ger Vacklande – som hennes Kilslag slår 50 % hårdare mot. Makrovillkoret `intends_heal` ("tänker
+  hela"). Repliker under nedstigningen (Trollbergets rader med `"realm": "mountain"`, `Dialog.realm_ok`), avbrottets rader
+  efter striden (läget `interrupt`). Figuren är druidens kvinnokropp med Torvalds tvåhandsslag (`borrow_skip` utan fingrarna),
+  en slägga (`placeholder_figure`). `--party=torun,imma` väljer sällskapet för en påhittad profil.
+  Balans (`tests/balance_sim.gd --fifth=torun` mot `--fifth=imma`, n 40, nedstigningar 40): hon är svagare än Imma som femte –
+  Trollberget djup 1–3 5/0/20 % mot 35/40/62 % (fyra utan femte 0/0/7,5 %), kryptan djup 2–3 68/60 % mot 65/88 %, kapellet
+  58/60 % mot 88/75 % (krypta/kapell före attack 8,0 → 8,8 och Kilslag i makrot). Inget måste-val; behöver mer kraft.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
   egenskap. Vanlig = pålitlig byggdel, elit = specialiserad, boss = ändrar en regel (med kostnad).
   Hjältarna behåller sina troféer (0.26.3, som i Siralim, `Profile.worn`, `wear()`, `keep_worn()`): de följer med i varje
@@ -474,7 +490,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   är snabb och skör och river den svagaste förbi Provocera; bergets vanliga grupper blandar 2–4 roller.
   **Moderns famn** (strid-justering, `mothers_embrace`, `shelter_family`, `shelter_kind`, `CombatSim._shelter_for`): så länge
   ett större troll lever (mest maximalt liv i familjen) tar det hälften av varje anfall mot Bortbytingen (förmågor och
-  indirekt skada träffar honom fullt); händelsen `guarded` med `shelter`, siffran FAMN över trollet, raden i skadeloggen,
+  indirekt skada träffar honom fullt); händelsen `guarded` med `shelter`, siffran FAMN över trollet, raden i stridsloggen,
   Inspect säger vem som tar emot. Han fick 22 Health och 13,5 Attack (förr 30 / 15) så att berget håller sin svårighet. Kapellets Häxa: Tystnadens förbannelse går förbi Provocera.
 - **Drakvalvets fiender** (0.31, `docs/plan/drakvalvet-fiender.md`, `tests/test_enemies_crypt.gd`/`_chapel.gd`): **Likätaren**
   (`ghoul`, Benfolket) äter lik ur familjen (Likmåltid, `consume_corpse`, `CombatUnit.consumed`: kan aldrig väckas) och växer
@@ -491,7 +507,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (vårt val, formeln är inte publicerad). Barriär tar skada före livet. Se `docs/research/siralim.md` §12.
   **Små tal** (0.26, som Siralim): grundvärdena för Health, Attack, Intelligence och Defense delades med 10 (Paladinen 90
   Health, Brokk 115, en vanlig träff 10–15). Stats har en decimal (`CombatSim.snap_stat`, Speed i heltal); skada och
-  helning avrundas till heltal en gång på slutet (inget golv på 1 längre; en mycket svag träff kan göra 0 men räknas som en träff för egenskaperna), och skadeloggen visar mellanleden med en decimal och
+  helning avrundas till heltal en gång på slutet (inget golv på 1 längre; en mycket svag träff kan göra 0 men räknas som en träff för egenskaperna), och stridsloggen visar mellanleden med en decimal och
   avrundningen. Balansen är densamma (botarna före och efter, `docs/formler.md`).
 - **Statusar** (0.22, Siralims buffar och debuffar, `docs/formler.md` §5, `docs/research/siralim.md` §17): 12 buffar
   (Smidig, Arkan, Bärsärk, Defensiv, Immun, Livstörst, Läkning, Beskyddad, Pånyttfödd, Vildsint, Skyddsskal,
@@ -508,7 +524,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `-- --statuses` ger några statusar i en strid. Tester: `tests/test_status.gd`, `tests/test_numbers.gd`.
 - **Siffrorna** (0.21): alla formler med svensk förklaring i `docs/formler.md`. Varje skada, helning och
   undvikande bär sin uträkning (`calc` i händelsen); `DamageExplain` (`src/combat/damage_explain.gd`) skriver den
-  i klartext. I striden: tryck på en siffra, eller SKADELOGG. Hjältebladet räknar med `CombatSim.expected_damage()`
+  i klartext. I striden: tryck på en siffra, eller STRIDSLOGG (förr SKADELOGG; Siralims stridslogg: varje handling, också
+  förmågor utan skada, buffar, debuffar, Barriär, missar, tidslinjen, statusar som tar en tur och avbrott, en svensk rad
+  var ur `BattleLog`, `src/combat/battle_log.gd`; skador och helningar behåller uträkningen). Hjältebladet räknar med `CombatSim.expected_damage()`
   (samma formler och modifierare som striden). `tests/test_numbers.gd` prövar formlernas egenskaper.
   `-- --show-calc` och `-- --damage-log` visar dem direkt i en strid. **Granskningen** (0.23.3, `docs/formler.md` §11–12):
   `tests/numbers_reference.gd` är formlerna skrivna en gång till utan spelets kod; `tests/audit_sim.gd` + `numbers_audit.gd`

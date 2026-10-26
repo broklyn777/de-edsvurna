@@ -3,6 +3,7 @@ extends CanvasLayer
 ## Prototyp (sallskap-fem): bildtakten i ett hörn, för att mäta på telefonen. Visas med --fps eller med FPS PÅ i
 ## inställningarna (GameSettings.show_fps). Visar också animerade figurer (AnimationPlayer i scenen), ritanrop och
 ## objekt i bilden. Ändrar inte bildtaktsgränsen (Run.update_fps).
+## Raden syns bara i striden (den står under tidslinjen och mäter 3D-scenen); i borgens skärmar (Smeden m.fl.) döljs den.
 
 var _label: Label
 var _wait := 0.0
@@ -27,6 +28,9 @@ func _process(delta: float) -> void:
 		return
 	_wait = 0.5
 	var scene := get_tree().current_scene
+	_label.visible = shown_in(scene)
+	if not _label.visible:
+		return
 	var anims := 0 if scene == null else scene.find_children("*", "AnimationPlayer", true, false).size()
 	_label.text = "%d FPS · %d figurer · %d ritanrop · %d objekt" % [Engine.get_frames_per_second(), anims,
 			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
@@ -42,3 +46,11 @@ static func set_shown(host: Node, on: bool) -> void:
 		host.add_child(m)
 	elif not on and old != null:
 		old.queue_free()
+
+
+## Sant om mätaren ska synas i scenen: bara i striden (scenes/main.tscn).
+static func shown_in(scene: Node) -> bool:
+	return scene != null and scene.scene_file_path == BATTLE_SCENE
+
+
+const BATTLE_SCENE := "res://scenes/main.tscn"
