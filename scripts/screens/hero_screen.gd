@@ -172,6 +172,12 @@ func _draw_stats(data: Dictionary, prof: Profile, prog: Dictionary) -> void:
 				text += (" + %s %s" if v > 0.0 else " − %s %s") % [HeroStats.shown(absf(v)), HeroStats.SOURCE_NAMES[source]]
 		UiStyle.text(self, Vector2(MARGIN + 18, y + 25), text, 18, Color(1, 1, 1, 0.72), HORIZONTAL_ALIGNMENT_LEFT, lw - 18, 2)
 		y += 62
+	# Nästa steg (ChatGPT:s provspel 6): vad som väntar i artefakten och vad det kostar.
+	var steps := Forge.next_steps(prof.artifact(hero_id))
+	UiStyle.text(self, Vector2(MARGIN, y + 6), "NÄSTA STEG", 16, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, lw, 2)
+	for line in steps:
+		y += 26
+		UiStyle.text(self, Vector2(MARGIN, y + 6), line, 17, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, lw, 2)
 	_draw_meaning(data, prof, b, level, Vector2(_right_x(), 266))
 
 

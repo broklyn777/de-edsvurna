@@ -176,3 +176,21 @@ func test_changing_type_keeps_level_and_slots() -> void:
 	assert_eq(p.artifact("brokk").type, "helm")
 	assert_eq(p.artifact("brokk").level, 2)
 	assert_eq(p.artifact("brokk").stat_slots[0], "amber_grey")
+
+
+func test_next_steps_name_empty_slots_and_the_next_opening() -> void:
+	assert_true(Forge.next_steps({})[0].begins_with("Ingen artefakt"), "utan artefakt: smid en")
+	var art := Forge.normalize({"type": "sword", "ability": "x", "level": 4})
+	var steps := Forge.next_steps(art)
+	assert_true(steps[0].contains("stat-plats 1") and steps[0].contains("trick-plats 1"), "tomma öppna platser: " + str(steps))
+	assert_true(steps[1] == "Nästa: Stat-plats 2 på artefaktnivå 5 – %d silver (en nivå)." % Forge.LEVEL_COST[4], steps[1])
+	art.level = 6
+	art.stat_slots = ["amber_red", "amber_red", ""]
+	art.trick_slots = ["whetstone", ""]
+	art.trophy = "t"
+	assert_true(Forge.next_steps(art) == ["Nästa: Trick-plats 2 på artefaktnivå 7 – %d silver (en nivå)." % Forge.LEVEL_COST[6]],
+			str(Forge.next_steps(art)))
+	art.level = 4
+	art.trick_slots = ["whetstone", ""]
+	art.stat_slots = ["amber_red", "", ""]
+	assert_true(Forge.next_steps(art)[0].contains("%d silver" % Forge.LEVEL_COST[4]), "summan av nivåerna")

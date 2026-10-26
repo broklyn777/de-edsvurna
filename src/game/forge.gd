@@ -99,6 +99,41 @@ static func next_unlock(level: int) -> int:
 	return 0
 
 
+## Hjältebladets "nästa steg" (ChatGPT:s provspel 6): tomma öppna platser och vad nästa öppning kostar, i klartext.
+## art är Forge.normalize:d ({} = ingen artefakt).
+static func next_steps(art: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	if art.is_empty():
+		out.append("Ingen artefakt än – Smeden smider en för silver.")
+		return out
+	var level := int(art.level)
+	var empty: Array[String] = []
+	for i in STAT_SLOT_LEVELS.size():
+		if stat_slot_open(level, i) and String(art.stat_slots[i]) == "":
+			empty.append("stat-plats %d" % (i + 1))
+	for i in TRICK_SLOT_LEVELS.size():
+		if trick_slot_open(level, i) and String(art.trick_slots[i]) == "":
+			empty.append("trick-plats %d" % (i + 1))
+	if trophy_open(level) and String(art.trophy) == "":
+		empty.append("troféplatsen")
+	if nether_open(level) and art.nether.is_empty():
+		empty.append("Nether-platsen")
+	if not empty.is_empty():
+		out.append("Tom: %s – fyll hos Smeden." % ", ".join(empty))
+	var nxt := next_unlock(level)
+	if nxt > 0:
+		var cost := 0
+		for l in range(level, nxt):
+			cost += level_cost(l)
+		out.append("Nästa: %s på artefaktnivå %d – %d silver (%s)." % [unlock_text(nxt), nxt, cost,
+				"en nivå" if nxt - level == 1 else "%d nivåer" % (nxt - level)])
+	elif level < LEVEL_MAX:
+		out.append("Nästa: nivå %d – %d silver (stärker typens stat och chansen)." % [level + 1, level_cost(level)])
+	if out.is_empty():
+		out.append("Artefakten är fullt smidd.")
+	return out
+
+
 static func level_cost(level: int) -> int:
 	return LEVEL_COST[level] if level >= 1 and level < LEVEL_MAX else 0
 

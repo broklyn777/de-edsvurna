@@ -1276,6 +1276,8 @@ func _hero_sheet(s: String) -> void:
 			out.append("  Nether Stone: " + "; ".join(Forge.stone_lines(data, a.nether)))
 		else:
 			out.append("  Nether-plats: tom")
+	for line in Forge.next_steps(art if art.is_empty() else Forge.normalize(art)):
+		out.append("Nästa steg: " + line)
 	out.append("Förmågor:")
 	for ab in data.heroes[id].abilities:
 		var ad: Dictionary = data.abilities[ab]
