@@ -133,6 +133,9 @@ var next_rules: Array = []
 var finished := false
 ## Egenskapernas statistik för hela körningen: trait_id -> {procs, damage, heal, unit} (hjältebladet).
 var trait_totals := {}
+## Vad varje hjälte har bidragit med under nedstigningen (CombatSim.contrib summerat, hjältebladet): hjälte -> {damage,
+## heal, overheal, shield, interrupts, deaths}. Flyttas till Profile.last_contrib när nedstigningen slutar.
+var contrib := {}
 ## Fynden i körningen (0.20), visas på rumskartan: bärnsten, trick och Nether Stones.
 var found := {"amber": 0, "trick": 0, "nether": 0}
 ## 0.24: replikerna som redan har sagts den här körningen (Dialog.bark upprepar dem inte). Replikminnet: nycklar
@@ -256,6 +259,62 @@ func fill_charges(data: Dictionary) -> void:
 
 
 ## Sparar hur många Charges hjältarna har kvar efter en strid.
+## Lägger en strids bidrag (CombatSim.contrib) till nedstigningens.
+func add_contrib(battle: Dictionary) -> void:
+	for id in battle:
+		var c: Dictionary = contrib.get(id, {})
+		for key in battle[id]:
+			c[key] = float(c.get(key, 0.0)) + float(battle[id][key])
+		contrib[id] = c
+
+
+## När nedstigningen slutar (Run.end_descent): bidraget blir profilens "Förra nedstigningen" och körningens töms.
+func finish_contrib(profile: Profile) -> void:
+	profile.last_contrib = contrib.duplicate(true)
+	contrib = {}
+
+
+## En rad om en hjältes bidrag, bara det som inte är noll: "skada 1 240 · helat 340 (överhelning 60) · …". Tom om inget.
+static func contrib_line(c: Dictionary) -> String:
+	var parts: Array[String] = []
+	if roundi(float(c.get("damage", 0.0))) > 0:
+		parts.append("skada " + _thousands(roundi(float(c.damage))))
+	if roundi(float(c.get("heal", 0.0))) > 0:
+		var over := roundi(float(c.get("overheal", 0.0)))
+		parts.append("helat " + _thousands(roundi(float(c.heal))) + (" (överhelning %s)" % _thousands(over) if over > 0 else ""))
+	if roundi(float(c.get("shield", 0.0))) > 0:
+		parts.append("skyddat %s (Barriär)" % _thousands(roundi(float(c.shield))))
+	var n := int(c.get("interrupts", 0))
+	if n > 0:
+		parts.append("avbröt %d %s" % [n, "gång" if n == 1 else "gånger"])
+	n = int(c.get("deaths", 0))
+	if n > 0:
+		parts.append("stupat %d" % n)
+	return " · ".join(parts)
+
+
+## Hjältebladets rader: [["Denna nedstigning", rad], ["Förra nedstigningen", rad]], bara de som har något.
+static func contrib_rows(state: RunState, profile: Profile, hero_id: String) -> Array:
+	var out: Array = []
+	if state != null and not state.practice:
+		var now := contrib_line(state.contrib.get(hero_id, {}))
+		if now != "":
+			out.append(["Denna nedstigning", now])
+	var last := contrib_line(profile.last_contrib.get(hero_id, {}))
+	if last != "":
+		out.append(["Förra nedstigningen", last])
+	return out
+
+
+static func _thousands(n: int) -> String:
+	var t := str(absi(n))
+	var out := ""
+	while t.length() > 3:
+		out = char(160) + t.right(3) + out  # hårt mellanslag: talet bryts inte
+		t = t.left(t.length() - 3)
+	return ("-" if n < 0 else "") + t + out
+
+
 func store_charges(sim: CombatSim) -> void:
 	for h in sim.heroes:
 		charges[h.id] = h.charges.duplicate()
@@ -1672,7 +1731,7 @@ const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instabil
 		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "omen", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "depth_cleared", "party_slots", "realm_party", "depth_offset", "quest_hints", "trail_taken", "growth", "twisted",
 		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour",
-		"twists_used", "fresh_trophies", "boss_seals"]
+		"twists_used", "fresh_trophies", "boss_seals", "contrib"]
 
 
 func to_dict() -> Dictionary:

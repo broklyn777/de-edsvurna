@@ -24,6 +24,8 @@ var base_stats := {}
 var crit_chance := 0.1
 ## Barrier tar skadan före livet. Den starkaste gäller, de staplas inte (Siralim).
 var barrier := 0.0
+## Den som gav Barriären (hjältebladets "skyddat").
+var barrier_from := ""
 var damage_taken_mult := 1.0
 ## Resistant (Siralims bossar): statusarna med en Resistant-version verkar svagare (docs/formler.md §5).
 var resistant := false

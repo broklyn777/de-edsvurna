@@ -23,6 +23,10 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--tab="):
 			tab = int(arg.get_slice("=", 1))
+		elif arg == "--contrib-demo":  # påhittade bidrag för skärmdumpar (sparas inte)
+			run.state.contrib[hero_id] = {"damage": 1240.0, "heal": 340.0, "overheal": 60.0, "shield": 210.0,
+					"interrupts": 3.0, "deaths": 1.0}
+			run.profile.last_contrib[hero_id] = {"damage": 2310.0, "heal": 95.0, "shield": 40.0}
 		elif arg == "--pick" and run.sheet_can_change_personality:
 			picking = true  # personlighetsväljaren direkt (för skärmdumpar)
 
@@ -179,6 +183,20 @@ func _draw_stats(data: Dictionary, prof: Profile, prog: Dictionary) -> void:
 		y += 26
 		UiStyle.text(self, Vector2(MARGIN, y + 6), line, 17, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, lw, 2)
 	_draw_meaning(data, prof, b, level, Vector2(_right_x(), 266))
+	# Vad hjälten har gjort, denna och förra nedstigningen (RunState.contrib, Profile.last_contrib): högra spalten
+	# under "Vad det betyder", högst två rader var.
+	var rows := RunState.contrib_rows(run.state, prof, hero_id)
+	if not rows.is_empty():
+		var rx := _right_x()
+		var rw := size.x - MARGIN - rx
+		var ry := 582.0
+		UiStyle.text(self, Vector2(rx, ry), "DET HÄR HAR %s GJORT" % String(data.heroes[hero_id].name).to_upper(), 16,
+				Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT, rw, 2)
+		ry += 8
+		for row in rows:
+			var now: bool = row[0] == "Denna nedstigning"
+			ry += UiStyle.para(self, Vector2(rx, ry + 18), "%s: %s" % row, 17,
+					Color.WHITE if now else Color(1, 1, 1, 0.68), rw, 2) + 4
 
 
 ## Fiendernas nivå på valt djup, våning för våning, och om hjälten är rustad för dem.

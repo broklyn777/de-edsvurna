@@ -68,6 +68,8 @@ var talks := {}
 ## 0.29.3 (Värdshuset): hur många nedstigningar i rad varje följeslagare har stannat hemma, och hur många nedstigningar
 ## som var gjorda senast man pratade med den i värdshuset (välkomstrepliken sägs en gång efter varje hemkomst).
 var home_runs := {}
+## Hjältebladets "Förra nedstigningen": RunState.contrib från den senast avslutade nedstigningen.
+var last_contrib := {}
 var inn_heard := {}
 ## 0.25: hjälprutorna som redan har visats (Help), och berättarens rutor som har lästs (första porten, första bossen).
 var help_seen: Array = []
@@ -756,6 +758,7 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "descents", descents)
 	cfg.set_value("progress", "talks", talks)
 	cfg.set_value("progress", "home_runs", home_runs)
+	cfg.set_value("progress", "last_contrib", last_contrib)
 	cfg.set_value("progress", "inn_heard", inn_heard)
 	cfg.set_value("progress", "help_seen", help_seen)
 	cfg.set_value("progress", "narrated", narrated)
@@ -837,6 +840,7 @@ static func load_from(path: String) -> Profile:
 	p.set_hero_name(String(cfg.get_value("progress", "hero_name", DEFAULT_NAME)))
 	p.talks = cfg.get_value("progress", "talks", {})
 	p.home_runs = cfg.get_value("progress", "home_runs", {})
+	p.last_contrib = cfg.get_value("progress", "last_contrib", {})
 	p.inn_heard = cfg.get_value("progress", "inn_heard", {})
 	p.help_seen = cfg.get_value("progress", "help_seen", [])
 	p.narrated = cfg.get_value("progress", "narrated", [])

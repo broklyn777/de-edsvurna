@@ -933,6 +933,7 @@ func _award(sim: CombatSim, won: bool) -> void:
 		h.battles = int(h.battles) + 1
 		h.wins = int(h.wins) + (1 if won else 0)
 		h.deaths = int(h.deaths) + u.deaths
+	state.add_contrib(sim.contrib)
 	if not won:
 		return
 	var r := state.current_room()
@@ -1035,6 +1036,7 @@ func _after_camp() -> void:
 
 
 func _end_descent(outcome: String) -> void:
+	state.finish_contrib(profile)  # hjältebladets "Förra nedstigningen"
 	var before := {}
 	for r in data.realms:
 		before[r] = LivingMap.growth(profile, r)
@@ -1278,6 +1280,8 @@ func _hero_sheet(s: String) -> void:
 			out.append("  Nether-plats: tom")
 	for line in Forge.next_steps(art if art.is_empty() else Forge.normalize(art)):
 		out.append("Nästa steg: " + line)
+	for row in RunState.contrib_rows(state, profile, id):
+		out.append("%s: %s" % row)
 	out.append("Förmågor:")
 	for ab in data.heroes[id].abilities:
 		var ad: Dictionary = data.abilities[ab]

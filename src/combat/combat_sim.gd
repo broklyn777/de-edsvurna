@@ -152,6 +152,9 @@ var _turn_procs := 0
 var trait_stats := {}
 ## 0.30: förmåga → {unit, aura, count, extra} för träffar som fick en kombinationsbonus.
 var combo_stats := {}
+## Vad varje hjälte bidrog med i striden (hjältebladets "Denna nedstigning"): hjälte -> {damage, heal, overheal,
+## shield (det en Barriär hjälten gav tog), interrupts, deaths}. Bara det som inte är noll finns med.
+var contrib := {}
 ## 0.27: senaste figuren per lag som kastade en besvärjelse (pick "caster"), och väckningar per lag (Sista klangen).
 var _last_caster := {}
 var _team_revives := {}
@@ -2752,6 +2755,7 @@ func _emit(e: Dictionary) -> void:
 
 
 func _count_stats(e: Dictionary) -> void:
+	_count_contrib(e)
 	# 0.30: kombinationer (förmågans bonus mot en status) räknas för segerskärmens "Det här avgjorde striden".
 	if e.type == "damage" and e.get("calc", {}).has("combo"):
 		var c: Dictionary = e.calc.combo
@@ -2772,6 +2776,39 @@ func _count_stats(e: Dictionary) -> void:
 		"heal":
 			st.heal += e.effective
 	trait_stats[trait_id] = st
+
+
+func _count_contrib(e: Dictionary) -> void:
+	match e.type:
+		"damage", "guarded":
+			var src := unit(String(e.get("source", "")))
+			var tgt := unit(String(e.get("target" if e.type == "damage" else "unit", "")))
+			if src != null and tgt != null and src.team == 0 and tgt.team != 0:
+				_add_contrib(src.id, "damage", float(e.amount))
+			var absorbed := float(e.get("absorbed", 0.0))
+			if absorbed > 0.0 and tgt != null and tgt.team == 0:
+				var giver := unit(tgt.barrier_from)
+				if giver != null and giver.team == 0:
+					_add_contrib(giver.id, "shield", absorbed)
+		"heal":
+			var src := unit(String(e.get("source", "")))
+			if src != null and src.team == 0:
+				_add_contrib(src.id, "heal", float(e.effective))
+				_add_contrib(src.id, "overheal", float(e.get("overheal", 0.0)))
+		"interrupt":
+			_add_contrib(String(e.unit), "interrupts", 1.0)
+		"death":
+			var u := unit(String(e.unit))
+			if u != null and u.team == 0:
+				_add_contrib(u.id, "deaths", 1.0)
+
+
+func _add_contrib(unit_id: String, key: String, amount: float) -> void:
+	if amount <= 0.0 or unit_id == "":
+		return
+	var c: Dictionary = contrib.get(unit_id, {})
+	c[key] = float(c.get(key, 0.0)) + amount
+	contrib[unit_id] = c
 
 
 ## Siralims gräns: räknar egenskapsutlösta attacker/besvärjelser per figur och mottagna helningar.
@@ -2998,6 +3035,7 @@ func _add_barrier(src: CombatUnit, tgt: CombatUnit, amount: float) -> void:
 	if not tgt.alive or amount <= tgt.barrier:
 		return
 	tgt.barrier = amount
+	tgt.barrier_from = src.id
 	_add_aura(src, tgt, "barrier")
 
 

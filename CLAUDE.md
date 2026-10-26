@@ -155,7 +155,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   lägret, Förberedelser och Biblioteket): nivå, erfarenhet, fiendernas nivå på valt djup, personlighet, stats per källa
   (`HeroStats.SOURCES`; 0.20 lägger till material och Nether Stone), vad de
   betyder i skada och helning mot en typisk fiende, egenskaper med körningens statistik, förmågor,
-  artefakt och historik. Nivåuppgångar syns och hörs på segerskärmen.
+  artefakt och historik. **Bidraget** (STATS, högra spalten, "DET HÄR HAR <NAMN> GJORT"): Denna nedstigning och Förra
+  nedstigningen, bara det som inte är noll: skada, helat (överhelning), skyddat (Barriär hjälten gav), avbröt, stupat
+  (`CombatSim.contrib` → `RunState.contrib` via `Run.award_battle`, `finish_contrib` → `Profile.last_contrib` i
+  `Run.end_descent`; `RunState.contrib_rows`, även i textspelets hjälteblad; `--contrib-demo` för skärmdumpar).
+  Nivåuppgångar syns och hörs på segerskärmen.
   **Nivåkurvan** (VD 2026-10-25, variant C "kurva" i `docs/plan/nivaer-och-charges.md`, VAL): en nivå L växer som
   tillväxtnivån g(L) = L upp till nivå 5 (de fyra första nivåerna lika tätt som förut), sedan 5 + 2,34 · (L − 5)^1,4
   (`HeroStats.old_level`/`new_level`, `KNEE`, `CURVE_A`, `CURVE_P`). Stats, fiendernas multiplikator (`enemy_level_mult`,

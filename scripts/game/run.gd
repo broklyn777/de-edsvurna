@@ -751,6 +751,7 @@ func start_run(party: Array[String]) -> void:
 func end_descent(outcome := "loss") -> void:
 	if state.practice or state.finished:
 		return
+	state.finish_contrib(profile)  # hjältebladets "Förra nedstigningen"
 	var before := {}
 	for r in data.realms:
 		before[r] = LivingMap.growth(profile, r)
@@ -1149,6 +1150,7 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 		h.revives = int(h.revives) + u.revives
 	if not state.practice:
 		Chronicle.note_battle(state.chron, sim.heroes)
+		state.add_contrib(sim.contrib)
 	for trait_id in sim.trait_stats:
 		var st: Dictionary = sim.trait_stats[trait_id]
 		var tot: Dictionary = state.trait_totals.get(trait_id, {"procs": 0, "damage": 0.0, "heal": 0.0, "unit": st.unit})
