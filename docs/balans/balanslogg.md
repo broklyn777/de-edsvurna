@@ -297,3 +297,6 @@ Lågan ligger 8–45 enheter **under** Diakonens stola som den är i spelet, och
 över stolan med `not_hot`. Värdena behölls (1 tur, en gång per tur). **Fynd:** Diakonens stola håller sig själv vid liv:
 Läkningens tick är en helning från bäraren, så stolan fyller på Läkningen varje tur (266 Läkningar mot 72 med `not_hot`
 på 20 strider i crypt_2). Det ger +28–58 enheter. En rättelse (`"not_hot": true` i stolans `when`) är VD:s beslut.
+
+Diakonens stola rättad (VD 2026-10-26, fråga 81): Läkningens tick räknas inte längre som en ny helning (`not_hot`), så stolan förnyar
+inte sin egen Läkning i all oändlighet. TUNED kryptan 65/65/58 → 37/32/30, kapellet 80/57/38 → 22/17/30 (tabellen ovan).

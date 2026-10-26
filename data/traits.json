@@ -2186,7 +2186,8 @@
 		"trigger": "heal",
 		"when": {
 			"source": "self",
-			"not_from_trait": true
+			"not_from_trait": true,
+			"not_hot": true
 		},
 		"effects": [
 			{
