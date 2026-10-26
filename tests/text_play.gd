@@ -39,6 +39,8 @@ func execute(at_dir: String, cmd: String) -> String:
 		return "Inget sparat läge i %s. Börja med kommandot new." % dir
 	else:
 		_command(cmd)
+	if String(meta.get("mode", "home")) == "home":
+		_check_slot_unlock()
 	_screen()
 	_save()
 	var text := "\n".join(out)
@@ -74,6 +76,8 @@ func _load() -> bool:
 			state.party_slots = profile.party_slots()
 	if profile != null:
 		data.heroes.paladin.name = profile.hero_name  # Run.apply_name
+		if meta.get("party5", false):
+			profile.force_slots = 5  # provspelets genväg (party5), som spelets --party5
 	return profile != null
 
 
@@ -160,7 +164,7 @@ func _command(cmd: String) -> void:
 	if c == "help":
 		_help()
 		return
-	if c == "hero":
+	if c in ["hero", "sheet"]:
 		_hero_sheet(w[1] if w.size() > 1 else "paladin")
 		return
 	if c == "macro":
@@ -181,10 +185,10 @@ func _command(cmd: String) -> void:
 
 
 func _help() -> void:
-	out.append("Alltid: look, hero <id>, macro <id> [add <rad> <subjekt> <villkor>[=värde] <handling>[:förmåga] [mål] | del <rad> | move <från> <till>], trophies")
+	out.append("Alltid: look, hero <id> (hjältebladet), macro <id> [add <rad> <subjekt> <villkor>[=värde] <handling>[:förmåga] [mål] | del <rad> | move <från> <till>], trophies")
 	match String(meta.get("mode", "home")):
 		"home":
-			out.append("Hemma: realm <crypt|chapel>, depth <n>, party <id,id,id>, smith <id> (höj artefakten), socket <id> <plats> <bärnsten>, arttrophy <id> <trofé>, perk <id>, perkreset, wear <hjälte> <trofé|none>, start")
+			out.append("Hemma: realm <crypt|chapel|mountain>, depth <n>, party <id,id,id[,id]>, smith <id> (höj artefakten), socket <id> <plats> <bärnsten>, trick <id> <plats> <trick>, arttrophy <id> <trofé>, perk <id>, perkreset, wear <hjälte> <trofé|none>, omen (djupets tecken) | omen swap (byt en gång, %d silver), party5 (provspelets genväg: femte platsen och Torun), start" % RunState.OMEN_REROLL_COST)
 		"grotto":
 			out.append("Grottan: go <ruta> (t.ex. go d5) eller go n|s|e|w, fight, back, swap <hjälte> <trofé|none> (vid lägereld), camp (lägereldens val igen), use (föremålets val igen), leave (gå hem)")
 		"dialog":
@@ -285,6 +289,10 @@ func _home_cmd(w: PackedStringArray) -> void:
 			else:
 				profile.wear(id, t)
 				out.append("%s bär nu %s." % [data.heroes[id].name, data.traits[t].name if t != "" else "ingen trofé"])
+		"omen":
+			_omen_cmd(w)
+		"party5":
+			_party5()
 		"start":
 			_start_run()
 		_:
@@ -296,22 +304,122 @@ func _omen_line() -> String:
 	return "Djupets tecken: %s (%s) – %s" % [om.get("name", state.omen), state.omen, om.get("text", "")]
 
 
+## Run.ensure_omen: ett tecken dras efter introt och sparas i profilen tills nedstigningen börjar.
+func _ensure_omen(except := "") -> void:
+	if profile.intro_done and profile.omen == "":
+		profile.omen = RunState.roll_omen(data, rng, except)
+		profile.omen_rerolled = false
+
+
+## omen: visa tecknet för nästa nedstigning; omen swap: byt det en gång för silver (Run.reroll_omen, kampanjkartans BYT).
+func _omen_cmd(w: PackedStringArray) -> void:
+	_ensure_omen()
+	if profile.omen == "":
+		out.append("Inget tecken (introt är inte klart).")
+		return
+	if w.size() > 1 and w[1] == "swap":
+		if profile.omen_rerolled:
+			out.append("Tecknet är redan bytt en gång före den här nedstigningen.")
+			return
+		if profile.silver < RunState.OMEN_REROLL_COST:
+			out.append("Silvret räcker inte (%d behövs)." % RunState.OMEN_REROLL_COST)
+			return
+		var old := profile.omen
+		profile.silver -= RunState.OMEN_REROLL_COST
+		profile.omen = RunState.roll_omen(data, rng, old)
+		profile.omen_rerolled = true
+		out.append("Ni byter tecken (−%d silver): %s → %s." % [RunState.OMEN_REROLL_COST,
+				data.floor_rules.get(old, {}).get("name", old), data.floor_rules.get(profile.omen, {}).get("name", profile.omen)])
+	var sven: Variant = data.dialog.get("omens", {}).get(profile.omen, {}).get("sven", "")
+	if sven is Dictionary or (sven is String and sven != ""):
+		out.append("Portvakten Sven: ”%s”" % Dialog.line_text(sven).replace("{namn}", profile.hero_name))
+
+
+## Bossrutans möte i klartext: väktare, förvriden boss (fördärv 4) eller huvudbossen.
+func _boss_name(enc_id: String, twisted: bool) -> String:
+	var enc: Dictionary = data.encounters.get(enc_id, {})
+	var name := String(enc.get("name", enc_id))
+	if twisted:
+		return "%s (förvriden: fördärvet står på %d)" % [name, LivingMap.GROWTH_MAX]
+	if enc.get("guardian", false):
+		return "%s (väktare i bossens ställe)" % name
+	return "%s (huvudbossen)" % name
+
+
+## Djupets slut för vald Realm och valt djup, som körningen själv räknar det (RunState.boss_encounter: förvriden boss
+## vid fördärv 4 går före väktaren och huvudbossen).
+func _forecast_boss() -> String:
+	var s := RunState.new()
+	s.depth = profile.depth
+	s.set_realm(data, profile.realm)
+	s.set_growth(data, LivingMap.growth(profile, profile.realm))
+	return _boss_name(s.boss_encounter(data), s.twisted != "")
+
+
+func _speech(lines: Array) -> void:
+	for l in Intro.speech(lines):
+		var who := String(l.who)
+		var name: String = "Berättaren" if who == "narrator" else String(data.heroes.get(who, {}).get("name", who.capitalize()))
+		out.append("  %s: %s" % [name, String(l.text).replace("{namn}", profile.hero_name)])
+
+
+## Run.check_slot_unlock: när en ny plats i sällskapet har öppnats berättar borgen det en gång, och Torun kommer
+## (Run.fifth_arrives) och ansluter direkt om det finns plats.
+func _check_slot_unlock() -> void:
+	var n := profile.earned_slots()
+	if n <= profile.slots_seen:
+		return
+	profile.slots_seen = n
+	out.append("=== FEMTE PLATSEN ÖPPEN ===")
+	_speech(data.dialog.get("party_slot", {}).get("lines", []))
+	if RunScript.fifth_arrives(data, profile):
+		_torun_joins()
+
+
+func _torun_joins() -> void:
+	_speech(data.dialog.party_slot.get("torun", []))
+	if profile.party.size() < profile.party_slots():
+		profile.set_party(profile.party.slice(1) + ["torun"])
+	out.append("Torun Bergsbrytare ansluter (nivå %d)%s." % [int(profile.hero(data, "torun").level),
+			" och går med i sällskapet" if profile.party.has("torun") else "; hon väntar i Värdshuset (party …)"])
+
+
+## party5: provspelets genväg (som spelets --party5). Den femte platsen öppnas egentligen när Benfursten och biskopen
+## är besegrade på djup 4; här öppnas den direkt och Torun kommer på samma sätt och samma nivå som i spelet.
+func _party5() -> void:
+	meta.party5 = true
+	profile.force_slots = 5
+	out.append("Provspelets genväg: den femte platsen är öppen (i spelet: %s)." % Profile.SLOT_UNLOCKS[0].lock)
+	if data.heroes.has("torun") and not profile.recruited.has("torun"):
+		var avg := 0.0
+		var lowest := INF
+		for id in profile.party:
+			var lv := float(profile.hero(data, id).level)
+			avg += lv
+			lowest = minf(lowest, lv)
+		profile.recruit(data, "torun", avg / maxi(profile.party.size(), 1), lowest)
+		out.append("(Samtalet är spelets eget och förutsätter den riktiga upplåsningen.)")
+		_torun_joins()
+
+
 func _start_run() -> void:
 	state = RunState.new_run(profile, data)
 	state.instability = profile.instability
 	var rules := RunState.roll_rules(data, profile.instability, rng)
 	state.rules_visible = rules.visible.duplicate()
 	state.rules_hidden = rules.hidden.duplicate()
-	# 0.30.45 Djupets tecken: efter introt drar varje nedstigning ett (OMEN=<id> tvingar ett, OMEN=none inget).
+	# 0.30.45 Djupets tecken, som Run.start_run: tecknet som syntes hemma gäller den här nedstigningen och nästa dras
+	# direkt (förra kommer inte direkt igen). OMEN=<id> tvingar ett, OMEN=none inget (för tester).
 	if profile.intro_done:
 		var forced := OS.get_environment("OMEN")
-		if profile.omen == "":
-			profile.omen = RunState.roll_omen(data, rng)
+		_ensure_omen()
 		state.omen = profile.omen if forced == "" else ("" if forced == "none" else forced)
-		profile.omen = RunState.roll_omen(data, rng, state.omen)
+		profile.omen = ""
+		_ensure_omen(state.omen)
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
 	WorldEvents.begin_run(profile, state)
-	state.first_descent = false
+	# Run.start_run: introts nedstigning är den första tills Imma har följt med.
+	state.first_descent = profile.total_descents() == 0 or Intro.current(data, profile).get("id", "") == "descent"
 	var seen := int(profile.descents.get(state.realm, 0))
 	profile.descents[state.realm] = seen + 1
 	profile.count_home_runs()
@@ -321,9 +429,10 @@ func _start_run() -> void:
 	out.append("=== Nedstigning %d: %s, djup %d ===" % [meta.descent, data.realms[state.realm].name, state.depth])
 	if state.omen != "":
 		out.append(_omen_line())
-	var g := RunState.guardian_for(data, state.realm, state.depth)
-	if g != "":
-		out.append("(Djupets väktare: %s)" % data.encounters[g].get("name", g))
+		var said: Variant = data.dialog.get("omens", {}).get(state.omen, {}).get("narrator", "")
+		if said is Dictionary or (said is String and said != ""):
+			out.append("  " + Dialog.line_text(said))
+	out.append("(Djupets slut: %s)" % _boss_name(state.boss_encounter(data), state.twisted != ""))
 	_bark("new_realm" if seen == 0 else "cave")
 
 
@@ -797,6 +906,10 @@ func _event_text(sim: CombatSim, e: Dictionary, labels: Dictionary, trait_counts
 			return "!! Kaosvinden lägger sig kring %s" % L.call(e.unit)
 		"omen":
 			return "!! %s: %s" % [sim.omen_name(), "ekot svarar %s" % L.call(e.unit) if e.what == "echo" else "%s kastar gratis" % L.call(e.unit)]
+		"interrupt":
+			return "!! " + BattleLog.line(sim, e)
+		"exhaustion":
+			return "%s −%d (utmattning)" % [L.call(e.unit), int(e.get("amount", 0.0))]
 		"exhaustion_start":
 			return "!! Facklorna falnar (utmattning)"
 		"corpse_consumed":
@@ -834,7 +947,10 @@ func _award(sim: CombatSim, won: bool) -> void:
 		out.append("Fynd: " + ", ".join(finds.map(func(f: Dictionary) -> String:
 				return Forge.find_text(data, f) + " (" + Forge.find_effect(data, f) + ")")))
 	var standing := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive)
-	if standing.size() < sim.heroes.size():
+	if int(sim.trait_stats.get("torun_not_done", {}).get("procs", 0)) > 0 \
+			and standing.any(func(h: CombatUnit) -> bool: return h.id == "torun"):
+		_bark("interrupt", ["torun"])  # Run._bark_after_battle: Torun avbröt något
+	elif standing.size() < sim.heroes.size():
 		_bark("fallen", standing.map(func(h: CombatUnit) -> String: return h.id))
 	elif standing.any(func(h: CombatUnit) -> bool: return h.hp < h.max_hp * 0.3):
 		_bark("hard_fight")
@@ -922,18 +1038,22 @@ func _end_descent(outcome: String) -> void:
 	var before := {}
 	for r in data.realms:
 		before[r] = LivingMap.growth(profile, r)
-	var changes := LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
-	var world := WorldEvents.after_descent(profile, data, state.realm, outcome, state.wins, state.realm_quest_done, before)
+	var changes: Array = []
+	if not state.first_descent:  # Run.end_descent: inte på profilens första nedstigning
+		changes = LivingMap.after_descent(profile, data, state.realm, state.wins, state.realm_quest_done)
+	var world := WorldEvents.after_descent(profile, data, state.realm, WorldEvents.outcome_for(state, data, outcome), state.wins,
+			state.realm_quest_done, before)
 	for c in changes:
 		if c is Dictionary:
-			out.append("Kartan: fördärvet i %s %s (%d → %d)." % [data.realms[String(c.realm)].name,
-					"viker" if int(c.to) < int(c.from) else "växer", int(c.from), int(c.to)])
+			out.append("Kartan: " + map_change_text(data, c))
 	for l in WorldEvents.summary(profile, data, world):
 		out.append("Medan ni var borta: " + String(l))
 	var line := WorldEvents.map_line(profile, data)
 	if line != "":
 		out.append("Kampanjkartan: " + line)
 	profile.keep_worn(state.equipped, state.party)
+	if Intro.current(data, profile).get("id", "") == "descent" and profile.recruited.has("imma"):
+		Intro.notify(data, profile, "came_home")
 	state.finished = true
 	meta.mode = "home"
 	meta.erase("dialog")
@@ -941,6 +1061,20 @@ func _end_descent(outcome: String) -> void:
 	if FileAccess.file_exists(_path("run.cfg")):
 		DirAccess.remove_absolute(_path("run.cfg"))
 	state = null
+
+
+## En ändring på den levande kartan i klartext (LivingMap.after_descent ger {realm, from, to, why}).
+static func map_change_text(game_data: Dictionary, c: Dictionary) -> String:
+	var realm := String(game_data.realms.get(String(c.get("realm", "")), {}).get("name", c.get("realm", "")))
+	var a := int(c.get("from", 0))
+	var b := int(c.get("to", 0))
+	var why: String = {"quest": "questen klarades", "fought": "ni stred där", "rest": "ingen var där",
+			"neglect": "den har lämnats längst"}.get(String(c.get("why", "")), String(c.get("why", "")))
+	if b < a:
+		return "fördärvet i %s viker (%d → %d av %d): %s." % [realm, a, b, LivingMap.GROWTH_MAX, why]
+	if b > a:
+		return "fördärvet i %s växer (%d → %d av %d): %s." % [realm, a, b, LivingMap.GROWTH_MAX, why]
+	return "fördärvet i %s står still på %d av %d: %s." % [realm, a, LivingMap.GROWTH_MAX, why]
 
 
 # --- Makron och troféer ---------------------------------------------------------
@@ -951,7 +1085,8 @@ func _macro_cmd(w: PackedStringArray) -> void:
 		out.append("macro <hjälte> …")
 		return
 	if not macros.has(id):
-		macros[id] = {"name": data.heroes[id].name, "lines": []}
+		# Samma makro som striden använder när hjälten saknar ett eget (startmakrot ur data/macros.json).
+		macros[id] = data.macros.get(id, {"name": data.heroes[id].name, "lines": []}).duplicate(true)
 	var lines: Array = macros[id].lines
 	if w.size() > 2:
 		match w[2]:
@@ -1049,26 +1184,106 @@ func _list_trophies() -> void:
 				td.get("text", "")])
 
 
+## Hjältebladet i text (hero_screen): nivå och erfarenhet, personlighet, stats per källa (HeroStats.breakdown, samma
+## delar som bladet och striden), egenskaper med källa (EGEN, KALL, PERK, TROFÉ, ARTEFAKTENS TROFÉ, ARTEFAKT/Nether),
+## artefakten med nivå och material, förmågorna och historiken. hero all: en rad per hjälte.
 func _hero_sheet(s: String) -> void:
+	if s == "all":
+		for id in ["paladin"] + Array(profile.recruited):
+			out.append(_hero_line(id))
+		return
 	var id := _hero_id(s)
 	if id == "":
+		out.append("Okänd hjälte. Skriv hero <id> (t.ex. hero alva) eller hero all.")
 		return
 	var h := profile.hero(data, id)
-	var p: Dictionary = data.personalities.get(String(h.personality), {})
-	out.append("%s, %s – nivå %d (%d/%d erfarenhet), personlighet %s" % [data.heroes[id].name, data.heroes[id].get("title", ""),
-			int(h.level), int(h.xp), HeroStats.xp_to_next(int(h.level)), p.get("name", "")])
-	var traits: Array = [profile.oath] if id == "paladin" else data.heroes[id].get("traits", [])
-	for t in traits:
-		out.append("  Egen: %s – %s" % [data.traits[t].name, data.traits[t].get("text", "")])
-	if profile.worn.has(id):
-		out.append("  Trofé: %s – %s" % [data.traits[profile.worn[id]].name, data.traits[profile.worn[id]].get("text", "")])
+	var level := int(h.level)
+	var pers_id := String(h.get("personality", data.heroes[id].get("personality", "")))
+	var p: Dictionary = data.personalities.get(pers_id, {})
+	var title := String(data.heroes[id].get("title", ""))
+	out.append("=== HJÄLTEBLADET: %s%s – nivå %d ===" % [data.heroes[id].name, ", " + title if title != "" else "", level])
+	out.append("Erfarenhet: %d av %d till nivå %d (%d kvar)." % [int(h.xp), HeroStats.xp_to_next(level), level + 1,
+			maxi(HeroStats.xp_to_next(level) - int(h.xp), 0)])
+	if not p.is_empty():
+		out.append("Personlighet: %s – %s växer mest (↑), %s minst (↓). %s" % [p.get("name", pers_id),
+				HeroStats.STAT_NAMES.get(p.get("up", ""), "–"), HeroStats.STAT_NAMES.get(p.get("down", ""), "–"), p.get("text", "")])
 	var art := profile.artifact(id)
+	var b := HeroStats.breakdown(data, id, level, pers_id, art, float(h.get("carry", 0.0)))
+	var nxt := HeroStats.gains(data, id, level + 1, pers_id, float(h.get("carry", 0.0)))
+	out.append("Stats (summa = källorna; nästa nivå i parentes):")
+	for stat in HeroStats.STATS:
+		var sp := HeroStats.shown_parts(b[stat])
+		var text := ""
+		for source in HeroStats.SOURCES:
+			var v: float = sp.get(source, 0.0)
+			if source == "base":
+				text += "%s %s" % [HeroStats.shown(v), HeroStats.SOURCE_NAMES[source]]
+			elif v != 0.0:
+				text += (" + %s %s" if v > 0.0 else " − %s %s") % [HeroStats.shown(absf(v)), HeroStats.SOURCE_NAMES[source]]
+		var arrow := " ↑" if p.get("up", "") == stat else (" ↓" if p.get("down", "") == stat else "")
+		out.append("  %s%s %s = %s (+%s)" % [HeroStats.STAT_NAMES[stat], arrow, HeroStats.shown(sp.total), text,
+				HeroStats.shown(nxt[stat])])
+	out.append("Egenskaper:")
+	var list: Array = []
+	if id == "paladin":
+		list.append([profile.oath, "KALL"])
+		for perk in profile.active_perks(data, profile.oath):
+			list.append([perk, "PERK"])
+	else:
+		for t in data.heroes[id].get("traits", []):
+			list.append([t, "EGEN"])
+	var worn: String = state.equipped.get(id, "") if state != null else String(profile.worn.get(id, ""))
+	if worn != "":
+		list.append([worn, "TROFÉ"])
 	if not art.is_empty():
-		out.append("  Artefakt: %s nivå %d, förmåga %s; stat-platser %s; troféplats %s" % [data.artifacts[art.type].name,
-				int(art.level), data.abilities.get(art.ability, {}).get("name", "–"),
-				str(art.stat_slots), data.traits.get(art.trophy, {}).get("name", "tom" if Forge.trophy_open(int(art.level)) else "stängd")])
-	for a in data.heroes[id].abilities:
-		out.append("  Förmåga %s: %s" % [data.abilities[a].name, data.abilities[a].get("text", data.abilities[a].get("desc", ""))])
+		var fx := Forge.effect_traits(data, art, id)
+		for t in fx.trait_ids:
+			list.append([t, "ARTEFAKTENS TROFÉ" if t == String(art.get("trophy", "")) else "NETHER STONE"])
+	for row in list:
+		var td: Dictionary = data.traits.get(row[0], {})
+		var tot: Dictionary = state.trait_totals.get(row[0], {}) if state != null else {}
+		var stat_text := ""
+		if not tot.is_empty():
+			stat_text = " [den här körningen: slog till %d gånger%s%s]" % [int(tot.procs),
+					", %d skada" % int(tot.damage) if float(tot.get("damage", 0)) > 0.0 else "",
+					", %d helat" % int(tot.heal) if float(tot.get("heal", 0)) > 0.0 else ""]
+		var rarity := " (%s)" % td.rarity if td.has("rarity") else ""
+		out.append("  [%s] %s%s – %s%s" % [row[1], td.get("name", row[0]), rarity, td.get("text", ""), stat_text])
+	if art.is_empty():
+		out.append("Artefakt: ingen (smids hos Smeden).")
+	else:
+		var a := Forge.normalize(art)
+		var kind: Dictionary = data.artifacts.get(a.type, {})
+		out.append("Artefakt: %s nivå %d (nästa nivå %s) – förmåga %s, %s" % [kind.get("name", a.type), int(a.level),
+				"%d silver" % profile.artifact_level_cost(id) if profile.artifact_level_cost(id) > 0 else "–",
+				data.abilities.get(a.ability, {}).get("name", "–"), "%s (grundvärde, +10 %% per nivå); %s kastas förmågan gratis" % [kind.get("stat_text", ""), kind.get("trigger_text", "")]])
+		for i in a.stat_slots.size():
+			var am: String = a.stat_slots[i]
+			out.append("  Stat-plats %d: %s" % [i + 1, ("stängd (öppnas på nivå %d)" % Forge.STAT_SLOT_LEVELS[i]) if not Forge.stat_slot_open(int(a.level), i)
+					else (String(data.materials.amber.get(am, {}).get("name", am)) if am != "" else "tom")])
+		for i in a.trick_slots.size():
+			var tr: String = a.trick_slots[i]
+			out.append("  Trick-plats %d: %s" % [i + 1, ("stängd (öppnas på nivå %d)" % Forge.TRICK_SLOT_LEVELS[i]) if not Forge.trick_slot_open(int(a.level), i)
+					else ("%s – %s" % [data.materials.tricks.get(tr, {}).get("name", tr), Forge.trick_text(data, tr, int(a.level))] if tr != "" else "tom")])
+		out.append("  Troféplats: %s" % (("stängd (öppnas på nivå %d)" % Forge.TROPHY_LEVEL) if not Forge.trophy_open(int(a.level))
+				else (String(data.traits.get(a.trophy, {}).get("name", a.trophy)) if a.trophy != "" else "tom")))
+		if not Forge.nether_open(int(a.level)):
+			out.append("  Nether-plats: stängd (öppnas på nivå %d)" % Forge.NETHER_LEVEL)
+		elif not a.nether.is_empty():
+			out.append("  Nether Stone: " + "; ".join(Forge.stone_lines(data, a.nether)))
+		else:
+			out.append("  Nether-plats: tom")
+	out.append("Förmågor:")
+	for ab in data.heroes[id].abilities:
+		var ad: Dictionary = data.abilities[ab]
+		var left := ""
+		if state != null and state.charges.has(id) and state.charges[id].has(ab):
+			left = ", %d/%d Charges kvar" % [int(state.charges[id][ab]), int(ad.get("charges", 0))]
+		elif ad.has("charges"):
+			left = ", %d Charges" % int(ad.charges)
+		out.append("  %s (%s%s): %s" % [ad.name, ab, left, ad.get("text", ad.get("desc", ""))])
+	out.append("Historik: %d strider, %d segrar, stupat: %d." % [int(h.get("battles", 0)), int(h.get("wins", 0)),
+			int(h.get("deaths", 0))])
 
 
 # --- Skärmen -------------------------------------------------------------------
@@ -1101,8 +1316,14 @@ func _home_screen() -> void:
 			profile.points_used(data, profile.oath), profile.perk_points(), data.traits[profile.oath].name])
 	out.append("Vald nedstigning: %s, djup %d (klarat: %s)" % [data.realms[profile.realm].name, profile.depth,
 			", ".join(profile.realm_depth.keys().map(func(r: String) -> String: return "%s %d" % [data.realms[r].name, profile.realm_depth[r]]))])
-	var g := RunState.guardian_for(data, profile.realm, profile.depth)
-	out.append("Djupets slut: %s" % (data.encounters[g].get("name", g) if g != "" else "huvudbossen"))
+	out.append("Djupets slut: %s" % _forecast_boss())
+	_ensure_omen()
+	if profile.omen != "":
+		var om: Dictionary = data.floor_rules.get(profile.omen, {})
+		out.append("Djupets tecken för nästa nedstigning: %s – %s%s" % [om.get("name", profile.omen), om.get("text", ""),
+				" (redan bytt)" if profile.omen_rerolled else " (omen swap byter en gång för %d silver)" % RunState.OMEN_REROLL_COST])
+	out.append("Platser i sällskapet: Paladinen + %d%s" % [profile.party_slots() - 1,
+			"" if profile.next_slot_lock() == "" else " (nästa: %s)" % profile.next_slot_lock()])
 	if WorldEvents.map_line(profile, data) != "":
 		out.append("Kampanjkartan: " + WorldEvents.map_line(profile, data))
 	out.append("Sällskap:")
