@@ -291,12 +291,24 @@ func _home_cmd(w: PackedStringArray) -> void:
 			out.append("Okänt kommando här. Skriv help.")
 
 
+func _omen_line() -> String:
+	var om: Dictionary = data.floor_rules.get(state.omen, {})
+	return "Djupets tecken: %s (%s) – %s" % [om.get("name", state.omen), state.omen, om.get("text", "")]
+
+
 func _start_run() -> void:
 	state = RunState.new_run(profile, data)
 	state.instability = profile.instability
 	var rules := RunState.roll_rules(data, profile.instability, rng)
 	state.rules_visible = rules.visible.duplicate()
 	state.rules_hidden = rules.hidden.duplicate()
+	# 0.30.45 Djupets tecken: efter introt drar varje nedstigning ett (OMEN=<id> tvingar ett, OMEN=none inget).
+	if profile.intro_done:
+		var forced := OS.get_environment("OMEN")
+		if profile.omen == "":
+			profile.omen = RunState.roll_omen(data, rng)
+		state.omen = profile.omen if forced == "" else ("" if forced == "none" else forced)
+		profile.omen = RunState.roll_omen(data, rng, state.omen)
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
 	WorldEvents.begin_run(profile, state)
 	state.first_descent = false
@@ -307,6 +319,8 @@ func _start_run() -> void:
 	meta.descent = int(meta.get("descent", 0)) + 1
 	meta.battles = 0
 	out.append("=== Nedstigning %d: %s, djup %d ===" % [meta.descent, data.realms[state.realm].name, state.depth])
+	if state.omen != "":
+		out.append(_omen_line())
 	var g := RunState.guardian_for(data, state.realm, state.depth)
 	if g != "":
 		out.append("(Djupets väktare: %s)" % data.encounters[g].get("name", g))
@@ -714,6 +728,8 @@ func _event_text(sim: CombatSim, e: Dictionary, labels: Dictionary, trait_counts
 					what = "Provocerar"
 				"skip":
 					what = "står över"
+				"echo":
+					what = "(eko, %s) %s" % [sim.omen_name(), String(sim.ability(e.ability).get("name", e.ability))]
 				"artifact":
 					# Gratis kast: hjältarnas artefakter, och fiendernas egenskaper som kastar (t.ex. Benstorm vid vrede).
 					what = ("(artefakt) " if sim.unit(e.unit) != null and sim.unit(e.unit).team == 0 else "(utlöst) ") + String(sim.ability(e.ability).get("name", e.ability))
@@ -779,6 +795,8 @@ func _event_text(sim: CombatSim, e: Dictionary, labels: Dictionary, trait_counts
 			return "!! %s är en elitfiende" % L.call(e.unit)
 		"chaos_calm":
 			return "!! Kaosvinden lägger sig kring %s" % L.call(e.unit)
+		"omen":
+			return "!! %s: %s" % [sim.omen_name(), "ekot svarar %s" % L.call(e.unit) if e.what == "echo" else "%s kastar gratis" % L.call(e.unit)]
 		"exhaustion_start":
 			return "!! Facklorna falnar (utmattning)"
 		"corpse_consumed":
@@ -1005,6 +1023,9 @@ static func validate_line(game_data: Dictionary, line: Dictionary, hero_id := ""
 		"has_artifact", "lacks_artifact":
 			if not game_data.get("artifacts", {}).has(v):
 				return "okänd artefakttyp \"%s\"" % v
+		"omen_is":
+			if not RunState.is_omen(game_data, v):
+				return "okänt tecken \"%s\" (finns: %s)" % [v, ", ".join(RunState.omen_ids(game_data))]
 	if action == "ability":
 		var ability := String(line.get("ability", ""))
 		if not game_data.abilities.has(ability):
@@ -1150,6 +1171,8 @@ func _grotto_screen() -> void:
 			int(state.found.get("trick", 0)), int(state.found.get("nether", 0))])
 	if not state.known_rules().is_empty():
 		out.append("Regler: " + ", ".join(state.known_rules().map(func(r: String) -> String: return data.floor_rules[r].name)))
+	if state.omen != "":
+		out.append(_omen_line())
 	var r := state.current_room()
 	if state.at_group():
 		out.append("")

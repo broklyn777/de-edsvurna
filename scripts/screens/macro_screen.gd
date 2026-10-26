@@ -35,7 +35,7 @@ var _group := "common"
 var _group_buttons := {}
 var _shown := {}  # kolumn → index i _options som syns
 const COND_GROUPS := [["common", "Vanliga"], ["hp", "Liv"], ["status", "Status"], ["windup", "Laddning"],
-		["trait", "Egenskaper"],
+		["trait", "Egenskaper"], ["omen", "Tecken"],
 		["charges", "Charges"], ["artifact", "Artefakt"], ["all", "Alla"]]
 ## Makro-UX förslag 5: förslag som fyller i sökningen med ett tryck. Fältet får fokus av sig självt när villkoren är
 ## många, men bara utan pekskärm: på telefonen skulle tangentbordet täcka halva skärmen varje gång.
@@ -530,6 +530,8 @@ static func _cond_group(cond: String) -> String:
 		return "windup"
 	if cond == "has_charges":
 		return "charges"
+	if cond in ["omen_is", "next_ability_echoes", "free_ability_unused"]:
+		return "omen"
 	if cond in ["has_artifact", "lacks_artifact"]:
 		return "artifact"
 	return "common"
@@ -625,6 +627,8 @@ func _values_for(cond: String) -> Array:
 			return _macro_abilities()
 		"has_artifact", "lacks_artifact":
 			return data.artifacts.keys()
+		"omen_is":
+			return RunState.omen_ids(data)
 	return [0]
 
 

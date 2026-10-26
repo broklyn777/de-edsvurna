@@ -526,6 +526,10 @@ func _draw() -> void:
 		var seal_txt := "KVAR ÅT BOSSEN: " + ", ".join(RunState.seal_lines(data, state.boss_seals).map(
 				func(l: Dictionary) -> String: return l.name))
 		header = seal_txt if header == "" else header + "   ·   " + seal_txt
+	if state.omen != "" and data.floor_rules.has(state.omen):
+		# 0.30.45 Djupets tecken: namnet och regeln; delar raden med reglerna, löftet och sigillen (bara namnet då).
+		var om: Dictionary = data.floor_rules[state.omen]
+		header = ("TECKEN: %s – %s" % [om.name, om.text]) if header == "" else "TECKEN: %s   ·   %s" % [om.name, header]
 	if header != "":
 		UiStyle.text(self, Vector2(MARGIN, 110), UiStyle.fit(header, 15, size.x - 460), 15, Parchment.INK,
 				HORIZONTAL_ALIGNMENT_LEFT, size.x - 60, 0)

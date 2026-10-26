@@ -1,6 +1,6 @@
 {
 	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
-	"order": ["timeline", "combo", "windup", "guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "room_map", "realm_quest", "seals", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "living_map", "forfeit"],
+	"order": ["timeline", "combo", "windup", "guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "room_map", "realm_quest", "seals", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "omens", "living_map", "forfeit"],
 	"entries": {
 		"timeline": {
 			"title": "Tidslinjen",
@@ -175,6 +175,14 @@
 				"Fördärvet växer där du inte går, i den Realm du har lämnat i fred längst. Där bläcket ligger stilla är det lugnt; där det andas lever det.",
 				"Går du dit trängs det tillbaka, och klarar du questen där trängs det långt tillbaka. Tätare bläck betyder starkare fiender, men också bättre fynd.",
 				"Får det växa sig tätt kostar det något hemma i borgen. Får det växa ända ut kan en förvriden boss vakna."
+			]
+		},
+		"omens": {
+			"title": "Djupets tecken",
+			"text": [
+				"Varje nedstigning drar ett tecken: en regel som gäller hela vägen ned, för båda sidor. Fullmåne gör kritiska träffar farligare för alla, Helig mark låter också fienderna läka bättre.",
+				"Tecknet syns här innan du går, överst i grottan och i striden. Det ger inget extra silver; instabiliteten ligger ovanpå som förut. Vid porten kan du slumpa om det en gång för lite silver.",
+				"Makrona kan svara: villkoren under Tecken i radeditorn (\"tecknet är …\", \"nästa förmåga ekar\", \"har sin gratis förmåga kvar\"). Förmågor som träffar alla märks (alla)."
 			]
 		}
 	}

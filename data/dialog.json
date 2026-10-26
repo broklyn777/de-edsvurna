@@ -3842,5 +3842,68 @@
 				"text": "{Titel}. Jag har slutat räkna åt dig, {namn}. Krönikan gör det nu."
 			}
 		]
+	},
+	"omens": {
+		"_comment": "0.30.45 Djupets tecken (docs/ideer/chat-djupets-tecken.md): berättarens rad när nedstigningen börjar och Svens vid porten innan (Run.omen_line).",
+		"omen_full_moon": {
+			"narrator": {
+				"id": "omen_fullmane_narrator",
+				"text": "(Fullmånen lyser genom berget. Ett välriktat hugg kan avgöra striden – åt båda håll.)"
+			},
+			"sven": {
+				"id": "omen_fullmane_sven",
+				"text": "Månen skärper inga sinnen. Men den gör misstagen dyrare."
+			}
+		},
+		"omen_holy_ground": {
+			"narrator": {
+				"id": "omen_helig_mark_narrator",
+				"text": "(En stilla värme dröjer i stenen. Här läker även den som står er emot.)"
+			},
+			"sven": {
+				"id": "omen_helig_mark_sven",
+				"text": "Marken hjälper er att läka. Räkna med att fienden märker det också."
+			}
+		},
+		"omen_echo_vault": {
+			"narrator": {
+				"id": "omen_ekande_valv_narrator",
+				"text": "(Valven håller kvar ljudet. Var tredje kraftgärning får ett svar ur stenen.)"
+			},
+			"sven": {
+				"id": "omen_ekande_valv_sven",
+				"text": "Räkna till tre. Se till att den tredje är värd att höra igen."
+			}
+		},
+		"omen_quiet_mass": {
+			"narrator": {
+				"id": "omen_tyst_massa_narrator",
+				"text": "(En gammal stillhet vilar över djupet. Den första ansträngningen känns oväntat lätt.)"
+			},
+			"sven": {
+				"id": "omen_tyst_massa_sven",
+				"text": "Spara inte den stora kraften av gammal vana. Första gången kostar den inget."
+			}
+		},
+		"omen_last_strength": {
+			"narrator": {
+				"id": "omen_sista_kraften_narrator",
+				"text": "(När livet vacklar hårdnar greppet om vapnet. Ingen här nere är farligare än den trängde.)"
+			},
+			"sven": {
+				"id": "omen_sista_kraften_sven",
+				"text": "En sårad fiende är ingen halv fiende. Avsluta det ni börjar."
+			}
+		},
+		"omen_narrow_pass": {
+			"narrator": {
+				"id": "omen_trang_passage_narrator",
+				"text": "(Gångarna sluter sig kring er. Samlade slag hejdas; det riktade hugget finner fram.)"
+			},
+			"sven": {
+				"id": "omen_trang_passage_sven",
+				"text": "Här nere lönar det sig att välja ett mål. Fienden kan göra samma val."
+			}
+		}
 	}
 }

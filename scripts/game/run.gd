@@ -89,6 +89,7 @@ func _ready() -> void:
 	_load()
 	_load_macros()
 	roll_rules()
+	ensure_omen()
 	_dev_args()
 	apply_name()  # en påhittad profil från en utvecklarflagga
 	_start_fps_governor()
@@ -237,6 +238,7 @@ func choose_slot(i: int, new_name := "") -> void:
 	_load()
 	_load_macros()
 	roll_rules()
+	ensure_omen()
 	if SaveSlots.is_empty(i):
 		profile.set_hero_name(new_name)
 		apply_name()
@@ -478,6 +480,9 @@ func _dev_args() -> void:
 			state.depth = keep_depth
 			state.set_realm(data, keep_realm)
 			state.set_growth(data, LivingMap.growth(profile, keep_realm))
+			if profile.intro_done:
+				ensure_omen()
+				state.omen = profile.omen  # 0.30.45: djupets tecken (förbrukas inte av en skärmdump)
 			state.start_expedition(data, 7)
 			if WorldEvents.rumour_pending(profile):
 				state.apply_rumour()  # pilgrimens rykte (--world-demo), utan att förbruka det
@@ -551,6 +556,13 @@ func _dev_args() -> void:
 			else:
 				profile.narrated.erase(kind)
 				narrate(kind)
+		elif arg.begins_with("--omen="):
+			# --omen=<id> (0.30.45): djupets tecken för nästa nedstigning och den här striden; --omen=none tar bort det
+			var oid := arg.get_slice("=", 1)
+			if not oid.begins_with("omen_"):
+				oid = "omen_" + oid
+			profile.omen = oid if RunState.is_omen(data, oid) else ""
+			state.omen = profile.omen
 		elif arg.begins_with("--vow="):
 			profile.vow = arg.get_slice("=", 1)  # 0.30.17: löftet för nästa körning (före --map)
 		elif arg.begins_with("--growth="):
@@ -637,6 +649,36 @@ func roll_rules() -> void:
 	pending_rules = RunState.roll_rules(data, profile.instability, rng)
 
 
+## 0.30.45 Djupets tecken: varje nedstigning efter introt drar ett tecken, som syns på kampanjkartan innan man går
+## (Profile.omen, sparas så att en omstart inte slumpar om). except: förra nedstigningens tecken kommer inte direkt igen.
+func ensure_omen(except := "") -> void:
+	if profile.intro_done and profile.omen == "":
+		profile.omen = RunState.roll_omen(data, rng, except)
+		profile.omen_rerolled = false
+
+
+## Slumpa om tecknet en gång vid portalen för lite silver (Siralim: Realm Properties slumpas om vid en helgedom).
+func can_reroll_omen() -> bool:
+	return profile.intro_done and profile.omen != "" and not profile.omen_rerolled \
+			and profile.silver >= RunState.OMEN_REROLL_COST
+
+
+func reroll_omen() -> bool:
+	if not can_reroll_omen():
+		return false
+	profile.silver -= RunState.OMEN_REROLL_COST
+	profile.omen = RunState.roll_omen(data, rng, profile.omen)
+	profile.omen_rerolled = true
+	_save()
+	return true
+
+
+## Tecknets rad hos berättaren eller Sven (dialog.json "omens": {<tecken>: {narrator, sven}}).
+func omen_line(omen_id: String, who: String) -> String:
+	var e: Variant = data.dialog.get("omens", {}).get(omen_id, {}).get(who, "")
+	return Dialog.line_text(e) if e is Dictionary or e is String else ""
+
+
 ## Menyljud (assets/audio/ui_*). Ett tryck som inte gav något eget ljud får ui_tap (se ui_tap()).
 func ui(sound: String, volume_db := -10.0) -> void:
 	audio.play(sound, volume_db, 0.04)
@@ -663,6 +705,12 @@ func start_run(party: Array[String]) -> void:
 	state.rules_visible = pending_rules.visible.duplicate()
 	state.rules_hidden = pending_rules.hidden.duplicate()
 	roll_rules()  # nästa körning får nya regler
+	# 0.30.45: djupets tecken gäller den här nedstigningen; nästa dras direkt (syns på kampanjkartan nästa gång).
+	if profile.intro_done:
+		ensure_omen()
+		state.omen = profile.omen
+		profile.omen = ""
+		ensure_omen(state.omen)
 	state.start_expedition(data, rng.randi() % 1000000 + 1)
 	WorldEvents.begin_run(profile, state)  # välsignelsen och händelsernas styrka förbrukas
 	# 0.24: nedstigningarna räknas per Realm; första gången i en Realm säger någon något om den.
@@ -676,6 +724,10 @@ func start_run(party: Array[String]) -> void:
 	profile.homecoming = {}
 	state.chron = Chronicle.begin(profile, state.party)  # krönikan jämför med profilen när körningen slutar
 	narrate("first_gate")
+	if state.omen != "":
+		var said := omen_line(state.omen, "narrator")
+		if said != "":
+			pending_story.append({"who": StoryBox.NARRATOR, "text": said})
 	if seen == 0:
 		bark("new_realm")
 	else:

@@ -99,6 +99,8 @@ func _offer_help() -> void:
 	var wanted := []
 	if prof.total_descents() > 0:
 		wanted = ["depth", "instability"]
+	if prof.intro_done and prof.omen != "":
+		wanted.append("omens")  # 0.30.45 Djupets tecken
 	var grown := LivingMap.grown_realm(prof, run.data) if prof.intro_done else ""
 	if grown != "":
 		wanted.push_front("living_map")  # först: det är den nya (pilen pekar medan den syns)
@@ -107,6 +109,29 @@ func _offer_help() -> void:
 	var box := HelpBox.offer(self, wanted)
 	if box != null and grown != "":
 		box.focus = {"living_map": _rect(grown)}
+
+
+## 0.30.45 Djupets tecken: "DET HÄR DJUPET: <tecken>" med regeln, och SLUMPA OM för silver en gång. Höjden som gick åt.
+var _omen_button := Rect2()
+
+
+func _draw_omen(x: float, y: float, w: float) -> float:
+	var prof: Profile = run.profile
+	_omen_button = Rect2()
+	if not prof.intro_done or prof.omen == "" or not run.data.floor_rules.has(prof.omen):
+		return 0.0
+	var rule: Dictionary = run.data.floor_rules[prof.omen]
+	var bw := 96.0
+	UiStyle.text(self, Vector2(x, y), UiStyle.fit("Det här djupet: " + String(rule.name), 17, w - bw - 8), 17,
+			UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT, w - bw - 8, 3)
+	if not prof.omen_rerolled:
+		_omen_button = Rect2(x + w - bw, y - 22, bw, 30)
+		draw_rect(_omen_button, Color(0, 0, 0, 0.6))
+		draw_rect(_omen_button, Color(UiStyle.TRAIT_GOLD, 0.7 if run.can_reroll_omen() else 0.2), false, 2.0)
+		UiStyle.text(self, _omen_button.position + Vector2(0, 21), "BYT · %d" % RunState.OMEN_REROLL_COST, 15,
+				UiStyle.TRAIT_GOLD if run.can_reroll_omen() else Color(1, 1, 1, 0.35), HORIZONTAL_ALIGNMENT_CENTER, bw)
+	var h := UiStyle.para(self, Vector2(x, y + 20), String(rule.text), 15, Color("#e8d8b0"), w, 2)
+	return 24.0 + h
 
 
 ## En vinjett bakom kartans linjer (blandas med pergamentet så att den vita kanten försvinner).
@@ -203,6 +228,12 @@ func _tap(p: Vector2) -> void:
 				run.roll_rules()
 				run.save()
 			return
+	if _omen_button.has_point(p):
+		if run.reroll_omen():
+			run.ui("ui_confirm", -8.0)
+		else:
+			run.ui("ui_page", -14.0)
+		return
 	if _prep_rect().has_point(p):
 		run.go(run.START_SCENE)
 	elif _start_rect().has_point(p) and RunState.can_start(prof):
@@ -639,6 +670,7 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 			Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 	UiStyle.text(self, Vector2(x, y + 22), "Perk-poäng: %d (en per ny quest)" % prof.perk_points(), 14,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
+	y += _draw_omen(x, y + 50, w)
 	# 0.23: lärjungar som sitter fångna här syns i förväg (Siralims varelser hör till sina Realms).
 	var captives: Array[String] = []
 	for d in data.realms[prof.realm].get("disciples", []):

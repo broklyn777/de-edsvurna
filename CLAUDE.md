@@ -296,6 +296,18 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   eller en lugnare Realm). Flaggor: `--home=event_lost|event_won|start|loss|cost|gift` (och de gamla), `--event=<id>`,
   `--world-demo`, `--news` (den gamla rutan på kampanjkartan). Botarna: `SOAK=karriar` skriver händelserna (`VARLD=av`).
   Tester: `tests/test_world_events.gd`.
+- **Djupets tecken** (0.30.45, `docs/plan/mot-upprepning.md` §3, `docs/ideer/chat-djupets-tecken.md`): varje nedstigning efter
+  introt drar ett tecken, en synlig regel för hela nedstigningen som gäller **båda sidor** och inte ger silver (instabiliteten
+  ligger ovanpå). `floor_rules.json` med `"omen": true` (instabiliteten drar dem aldrig), `RunState.omen` (run.cfg),
+  `Profile.omen` (nästa nedstignings, dras i `Run.ensure_omen`, aldrig samma två gånger i rad), `CombatSim.omen`.
+  Fullmåne (kritiska träffars extra skada ×2), Helig mark (helning +25 %), Ekande valv (var tredje förmåga var och en använder
+  kastas en gång till, gratis, ny målväljning om målet dog; händelsen `omen`, action `echo`), Tyst mässa (den första förmågan
+  i varje strid kostar ingen Charge, också utan Charges kvar), Sista kraften (+25 % skada under halva livet), Trång passage
+  (+25 % mot ett mål, −25 % för förmågor som träffar alla, `CombatSim.is_multi_target`). Syns på kampanjkartan ("Det här
+  djupet: …", BYT för 25 silver en gång, `Run.reroll_omen`), överst i grottan och i stridens regelrad; berättarens rad när
+  nedstigningen börjar och Svens vid porten (`dialog.json` "omens", id:n som `omen_fullmane_sven`); hjälprutan "omens".
+  Makrovillkor under Tecken: `omen_is`, `next_ability_echoes`, `free_ability_unused`; förmågor som träffar alla märks "(alla)".
+  `--omen=<id>` (med eller utan `omen_`, `none`), `BALANS=tecken` (nedstigningar som balanssimuleringen), `OMEN=` i text_play.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
   +3 % stats per djup (inte Speed; 0.30.33; balans v2 prövade 5–15 %, allt över 3 % gav väggen vid djup 4–6 hos karriärbotarna, `docs/balans/sammanfattning-v2.md`; förr 8 %: det lades ovanpå fiendernivåerna och gav väggen vid djup 5–6, `docs/provspel/djupsteg-matning.md`), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,

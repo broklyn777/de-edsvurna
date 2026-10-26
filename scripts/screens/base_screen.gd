@@ -614,6 +614,10 @@ func _arrive(station: String) -> void:
 		var guard := Dialog.gate_guard_line(data, run.profile)
 		if guard != "":
 			said.append(guard)
+		# 0.30.45: och vad djupets tecken betyder (dialog.json "omens").
+		var omen_said: String = run.omen_line(run.profile.omen, "sven")
+		if omen_said != "":
+			said.append("Det här djupet: %s. %s" % [run.data.floor_rules[run.profile.omen].name, omen_said])
 	_talk(who, said, station, true)
 
 

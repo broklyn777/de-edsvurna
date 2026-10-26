@@ -651,6 +651,9 @@ func _update_rules_text() -> void:
 	for i in unknown:
 		names.append("?")
 	overlay.rules_text = ("Regler: " + " · ".join(names)) if not names.is_empty() else ""
+	if state.omen != "" and not state.practice and data.floor_rules.has(state.omen):
+		var omen_txt := "Tecken: " + String(data.floor_rules[state.omen].name)  # 0.30.45 Djupets tecken
+		overlay.rules_text = omen_txt if overlay.rules_text == "" else omen_txt + " · " + overlay.rules_text
 	if state.vow != "" and not state.practice:
 		var vow_txt := "Löfte: " + state.vow_name(data)
 		overlay.rules_text = vow_txt if overlay.rules_text == "" else overlay.rules_text + " · " + vow_txt
@@ -1015,6 +1018,10 @@ func _handle(e: Dictionary) -> void:
 			_after(_effect_delay(e) + 0.1, _on_aura_passed.bind(e))
 		"chaos_calm":
 			_after(_cursor + 0.1, _float.bind(e.unit, "KAOSVINDEN LÄGGER SIG", UiStyle.TRAIT_GOLD, 18, true))
+		# 0.30.45 Djupets tecken: ekot (Ekande valv) och den gratis förmågan (Tyst mässa).
+		"omen":
+			_after(_cursor + 0.05, _float.bind(e.unit, "EKO!" if e.what == "echo" else "GRATIS (TYST MÄSSA)",
+					UiStyle.TRAIT_GOLD, 18, true))
 		"elite":
 			_after(_cursor + 0.6, _on_elite.bind(e.unit))
 		"release":
@@ -1074,7 +1081,7 @@ func _on_action(e: Dictionary) -> void:
 		_cursor = maxf(m.last_impact_delay, 0.25)
 	if cue != "":
 		sfx.play(cue, -6.0, 0.05)
-	if e.action in ["ability", "artifact"] or (e.action == "intent" and e.ability != sim.unit(e.unit).attack_ability):
+	if e.action in ["ability", "artifact", "echo"] or (e.action == "intent" and e.ability != sim.unit(e.unit).attack_ability):
 		_float(e.unit, ab.name.to_upper(), UiStyle.GOLD if sim.unit(e.unit).team == 0 else Color("#ffb347"), 20, false)
 
 
