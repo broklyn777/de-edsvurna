@@ -83,7 +83,7 @@ Våra egna namn (Domens kall, Benfursten, Brokk …) är svenska överallt.
 | Introduktionen | intro (`data/intro.json`, `Intro`) | Tutorial | Småuppdrag i borgen för en ny profil. |
 | Imma, Mäster Gorm | imma, gorm | – | Paladinens barndomsvän (första följeslagaren) och borgens präst. |
 | Uträkning | `calc`, `DamageExplain` | – (vårt tillägg) | Hela vägen till en siffra: stat, variation, Defense, modifierare, krit, barriär. Tryck på en siffra i striden. |
-| Skadelogg | `DamageLog` | – (vårt tillägg) | Alla skador och helningar i striden, nyast överst; en rad öppnar uträkningen. |
+| Stridslogg (förr Skadelogg) | `DamageLog`, `BattleLog` | Combat log | Varje handling i striden, nyast överst; skador och helningar öppnar uträkningen, allt annat (buffar, debuffar, Barriär, tidslinjen, avbrott) är en rad. |
 | Ge upp | forfeit (`CombatSim.forfeit()`) | Forfeit | Avslutar striden som förlust; körningen är förlorad och Realmen börjar om från våning 1. Det som redan är vunnet behålls. |
 | Fynd | finds (`Forge.roll_finds`) | Loot | Material och stenar från rummen; trick och stenar bara på det djupaste djupet man nått. |
 | Svärd / Stav / Sköld / Hjälm / Stövlar | sword / staff / shield / helm / boots | Sword / Staff / Shield / Helmet / Boots | Stat: +5 % Attack / +5 % Intelligence / +10 Defense / +5 % Health / +1 Speed (som Siralim). |

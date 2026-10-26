@@ -363,7 +363,7 @@ func _draw() -> void:
 		UiStyle.text(self, Vector2(-w / 2, 0), _announce, 30, Color(1, 0.55, 0.2, a), HORIZONTAL_ALIGNMENT_CENTER, w, 6)
 		draw_set_transform(Vector2.ZERO)
 	if rules_text != "":
-		# Till vänster om knappkolumnen (SKADELOGG, MAKRON, LJUD), så att raden inte ritas ovanpå dem.
+		# Till vänster om knappkolumnen (STRIDSLOGG, MAKRON, LJUD), så att raden inte ritas ovanpå dem.
 		UiStyle.text(self, Vector2(0, 92), UiStyle.fit(rules_text, 16, w * 0.45), 16, Color(UiStyle.TRAIT_GOLD, 0.9),
 				HORIZONTAL_ALIGNMENT_RIGHT, w - 170, 4)
 	if inspect_title != "":

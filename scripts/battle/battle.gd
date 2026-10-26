@@ -39,7 +39,7 @@ var macro_log: MacroLog
 var speed_chip: ChipButton
 ## Ge upp (0.20.1, Siralims Forfeit), med en bekräftelse.
 var forfeit_chip: ChipButton
-## Skadeloggen och uträkningen bakom siffrorna (0.21).
+## Stridsloggen och uträkningen bakom siffrorna (0.21).
 var log_chip: ChipButton
 var settings_chip: ChipButton
 var order_chip: ChipButton  # 0.30: "Spara som order" efter ett eget val som makrot inte hade gjort
@@ -130,7 +130,7 @@ func _ready() -> void:
 		elif arg == "--show-calc":
 			_dev_calc = true  # visar uträkningen för en av hjältarnas träffar (skärmdumpar)
 		elif arg == "--damage-log":
-			_dev_log = true  # öppnar skadeloggen efter några turer (skärmdumpar)
+			_dev_log = true  # öppnar stridsloggen efter några turer (skärmdumpar)
 		elif arg == "--ask-forfeit":
 			_dev_ask_forfeit = true  # visar frågan om att ge upp när striden har börjat (skärmdumpar)
 		elif arg == "--windup-first":
@@ -293,7 +293,7 @@ func _build_ui() -> void:
 	forfeit_chip.pressed.connect(_ask_forfeit)
 	ui.add_child(forfeit_chip)
 	log_chip = ChipButton.new()
-	log_chip.setup("SKADELOGG", 140)
+	log_chip.setup("STRIDSLOGG", 140)
 	log_chip.pressed.connect(_open_damage_log)
 	ui.add_child(log_chip)
 	order_chip = ChipButton.new()
@@ -518,7 +518,6 @@ func _remember_number(e: Dictionary) -> void:
 	_recent_numbers.append({"pos": p, "at_ms": Time.get_ticks_msec(), "e": e})
 	if _recent_numbers.size() > 16:
 		_recent_numbers.pop_front()
-	damage_log.add(e)
 	if _dev_calc and e.type == "damage" and sim.unit(e.source).team == 0 and e.calc.get("scaled", false) \
 			and (e.calc.has("shelter") or (e.calc.get("kind", "") == "attack" and sim.turn_no >= 4)):  # Moderns famn först
 		_dev_calc = false
@@ -947,6 +946,7 @@ func _play_events() -> void:
 
 
 func _handle(e: Dictionary) -> void:
+	damage_log.log_event(sim, e)  # stridsloggen: varje handling, i den ordning den hände
 	match e.type:
 		"turn_start":
 			if sim.unit(e.unit).team == 0:
@@ -1156,7 +1156,7 @@ func _decider_alternatives(rows: Array) -> Dictionary:
 	return out
 
 
-## 0.31 Varslade attacker: ord över fienden, en rad i makrologgen och skadeloggen, och hjälprutan första gången.
+## 0.31 Varslade attacker: ord över fienden, en rad i makrologgen och stridsloggen, och hjälprutan första gången.
 func _on_windup(e: Dictionary) -> void:
 	var u := sim.unit(e.unit)
 	var ab_name: String = sim.ability(e.ability).get("name", e.ability)
@@ -1338,7 +1338,7 @@ func _on_outcome(result: String) -> void:
 	forfeit_chip.visible = false
 	macro_chip.visible = false
 	settings_chip.visible = false
-	# 0.29.5: skadeloggen går att öppna på resultatskärmen (det är då man vill läsa den): knappen och loggen ovanpå rutan.
+	# 0.29.5: stridsloggen går att öppna på resultatskärmen (det är då man vill läsa den): knappen och loggen ovanpå rutan.
 	log_chip.get_parent().move_child(log_chip, -1)
 	damage_log.get_parent().move_child(damage_log, -1)
 	var alive := sim.heroes.filter(func(h: CombatUnit) -> bool: return h.alive).size()

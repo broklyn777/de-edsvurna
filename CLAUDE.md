@@ -460,7 +460,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   är snabb och skör och river den svagaste förbi Provocera; bergets vanliga grupper blandar 2–4 roller.
   **Moderns famn** (strid-justering, `mothers_embrace`, `shelter_family`, `shelter_kind`, `CombatSim._shelter_for`): så länge
   ett större troll lever (mest maximalt liv i familjen) tar det hälften av varje anfall mot Bortbytingen (förmågor och
-  indirekt skada träffar honom fullt); händelsen `guarded` med `shelter`, siffran FAMN över trollet, raden i skadeloggen,
+  indirekt skada träffar honom fullt); händelsen `guarded` med `shelter`, siffran FAMN över trollet, raden i stridsloggen,
   Inspect säger vem som tar emot. Han fick 22 Health och 13,5 Attack (förr 30 / 15) så att berget håller sin svårighet. Kapellets Häxa: Tystnadens förbannelse går förbi Provocera.
 - **Drakvalvets fiender** (0.31, `docs/plan/drakvalvet-fiender.md`, `tests/test_enemies_crypt.gd`/`_chapel.gd`): **Likätaren**
   (`ghoul`, Benfolket) äter lik ur familjen (Likmåltid, `consume_corpse`, `CombatUnit.consumed`: kan aldrig väckas) och växer
@@ -477,7 +477,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (vårt val, formeln är inte publicerad). Barriär tar skada före livet. Se `docs/research/siralim.md` §12.
   **Små tal** (0.26, som Siralim): grundvärdena för Health, Attack, Intelligence och Defense delades med 10 (Paladinen 90
   Health, Brokk 115, en vanlig träff 10–15). Stats har en decimal (`CombatSim.snap_stat`, Speed i heltal); skada och
-  helning avrundas till heltal en gång på slutet (inget golv på 1 längre; en mycket svag träff kan göra 0 men räknas som en träff för egenskaperna), och skadeloggen visar mellanleden med en decimal och
+  helning avrundas till heltal en gång på slutet (inget golv på 1 längre; en mycket svag träff kan göra 0 men räknas som en träff för egenskaperna), och stridsloggen visar mellanleden med en decimal och
   avrundningen. Balansen är densamma (botarna före och efter, `docs/formler.md`).
 - **Statusar** (0.22, Siralims buffar och debuffar, `docs/formler.md` §5, `docs/research/siralim.md` §17): 12 buffar
   (Smidig, Arkan, Bärsärk, Defensiv, Immun, Livstörst, Läkning, Beskyddad, Pånyttfödd, Vildsint, Skyddsskal,
@@ -494,7 +494,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `-- --statuses` ger några statusar i en strid. Tester: `tests/test_status.gd`, `tests/test_numbers.gd`.
 - **Siffrorna** (0.21): alla formler med svensk förklaring i `docs/formler.md`. Varje skada, helning och
   undvikande bär sin uträkning (`calc` i händelsen); `DamageExplain` (`src/combat/damage_explain.gd`) skriver den
-  i klartext. I striden: tryck på en siffra, eller SKADELOGG. Hjältebladet räknar med `CombatSim.expected_damage()`
+  i klartext. I striden: tryck på en siffra, eller STRIDSLOGG (förr SKADELOGG; Siralims stridslogg: varje handling, också
+  förmågor utan skada, buffar, debuffar, Barriär, missar, tidslinjen, statusar som tar en tur och avbrott, en svensk rad
+  var ur `BattleLog`, `src/combat/battle_log.gd`; skador och helningar behåller uträkningen). Hjältebladet räknar med `CombatSim.expected_damage()`
   (samma formler och modifierare som striden). `tests/test_numbers.gd` prövar formlernas egenskaper.
   `-- --show-calc` och `-- --damage-log` visar dem direkt i en strid. **Granskningen** (0.23.3, `docs/formler.md` §11–12):
   `tests/numbers_reference.gd` är formlerna skrivna en gång till utan spelets kod; `tests/audit_sim.gd` + `numbers_audit.gd`

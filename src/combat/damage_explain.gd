@@ -2,7 +2,7 @@ class_name DamageExplain
 extends RefCounted
 ## Uträkningen bakom en skade- eller helningssiffra i klartext (0.21, vårt tillägg i samma anda som
 ## makroförklaringen). Läser "calc" som CombatSim lägger i händelserna damage, heal och dodge.
-## Ren logik: används av stridens skadelogg och av testerna.
+## Ren logik: används av stridsloggen och av testerna.
 
 
 static func title(data: Dictionary, e: Dictionary) -> String:
