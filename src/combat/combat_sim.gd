@@ -672,8 +672,7 @@ func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 		return "none"
 	if action == "ability" and u.team == 0 and not u.abilities.has(id):
 		return "none"
-	if u.charges.has(id) and full_charges(id) > 0 and u.charges[id] <= 0 \
-			and not (action == "ability" and free_ability_unused(u)):
+	if u.charges.has(id) and full_charges(id) > 0 and u.charges[id] <= 0:
 		return "charges"
 	if action == "ability" and is_silenced(u):
 		return "silenced"
@@ -920,8 +919,8 @@ func _rule(rule_id: String) -> bool:
 
 ## Djupets tecken (0.30.45, mot-upprepning.md §3): en regel för hela nedstigningen som gäller båda sidor. "" = inget.
 var omen := ""
-const OMEN_CRIT_MULT := 2.0  # Fullmåne: kritiska träffars extra skada
-const OMEN_HEAL_MULT := 1.25  # Helig mark
+const OMEN_CRIT_MULT := 1.25  # Fullmåne: kritiska träffars extra skada (×2 gav kryptan djup 2 −20 enheter, ×1,5 −13)
+const OMEN_HEAL_MULT := 1.15  # Helig mark (+25 % gav kapellet djup 1 +13 enheter)
 const OMEN_ECHO_EVERY := 3  # Ekande valv: var tredje förmåga kastas två gånger
 const OMEN_LOW_HP := 0.5  # Sista kraften: under halva livet …
 const OMEN_LOW_HP_MULT := 1.25  # … mer skada
@@ -940,14 +939,18 @@ func is_omen_ability(u: CombatUnit, action: String, ability_id: String) -> bool:
 	return action == "ability" or (action == "intent" and ability_id != u.attack_ability)
 
 
-## Ekande valv: figurens nästa förmåga ekar (makrovillkoret "next_ability_echoes").
+## Ekande valv: figurens nästa förmåga ekar (makrovillkoret "next_ability_echoes"; en varslad attack ekar ändå inte).
 func next_ability_echoes(u: CombatUnit) -> bool:
 	return omen == "omen_echo_vault" and (u.omen_casts + 1) % OMEN_ECHO_EVERY == 0
 
 
-## Tyst mässa: figurens första förmåga i striden är ännu inte använd (makrovillkoret "free_ability_unused").
+## Tyst mässa: lagets första förmåga i striden är ännu inte använd (makrovillkoret "free_ability_unused"). VAL: en per
+## lag och strid; en per figur gav kryptan djup 1 +15–20 enheter (fienderna har inga Charges, så bara hjältarna vann på det).
+var _quiet_used := {}
+
+
 func free_ability_unused(u: CombatUnit) -> bool:
-	return omen == "omen_quiet_mass" and u.omen_casts == 0
+	return omen == "omen_quiet_mass" and not _quiet_used.get(u.team, false)
 
 
 ## Trång passage: förmågan träffar alla på en sida.
@@ -1331,6 +1334,7 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 	var counts := is_omen_ability(u, action, ability_id)
 	var free := action == "ability" and u.charges.has(ability_id) and u.auras.has("arcane")
 	if counts and free_ability_unused(u):
+		_quiet_used[u.team] = true
 		if u.charges.has(ability_id) and full_charges(ability_id) > 0:
 			_emit({"type": "omen", "omen": omen, "unit": u.id, "ability": ability_id, "what": "free"})
 	elif free:
@@ -1347,7 +1351,9 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 	if counts:
 		u.omen_casts += 1
 		# Ekande valv: var tredje förmåga kastas en gång till, gratis; ett dött mål ger vanliga målregler.
-		if omen == "omen_echo_vault" and u.omen_casts % OMEN_ECHO_EVERY == 0 and u.alive and not is_silenced(u):
+		# VAL: en varslad attack (windup) ekar inte; det stora slaget ska gå att möta en gång.
+		if omen == "omen_echo_vault" and u.omen_casts % OMEN_ECHO_EVERY == 0 and u.alive and not is_silenced(u) \
+				and windup_of(ability_id).is_empty():
 			var again := _targets_for(u, ab, target_id)
 			if not again.is_empty():
 				_emit({"type": "omen", "omen": omen, "unit": u.id, "ability": ability_id, "what": "echo"})

@@ -434,7 +434,7 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 		"next_ability_echoes":
 			return "nästa förmåga ekar (Ekande valv)"
 		"free_ability_unused":
-			return "har sin gratis förmåga kvar (Tyst mässa)"
+			return "laget har sin gratis förmåga kvar (Tyst mässa)"
 	return cond
 
 

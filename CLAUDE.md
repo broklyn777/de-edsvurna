@@ -300,10 +300,12 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   introt drar ett tecken, en synlig regel för hela nedstigningen som gäller **båda sidor** och inte ger silver (instabiliteten
   ligger ovanpå). `floor_rules.json` med `"omen": true` (instabiliteten drar dem aldrig), `RunState.omen` (run.cfg),
   `Profile.omen` (nästa nedstignings, dras i `Run.ensure_omen`, aldrig samma två gånger i rad), `CombatSim.omen`.
-  Fullmåne (kritiska träffars extra skada ×2), Helig mark (helning +25 %), Ekande valv (var tredje förmåga var och en använder
-  kastas en gång till, gratis, ny målväljning om målet dog; händelsen `omen`, action `echo`), Tyst mässa (den första förmågan
-  i varje strid kostar ingen Charge, också utan Charges kvar), Sista kraften (+25 % skada under halva livet), Trång passage
-  (+25 % mot ett mål, −25 % för förmågor som träffar alla, `CombatSim.is_multi_target`). Syns på kampanjkartan ("Det här
+  Fullmåne (kritiska träffars extra skada ×1,25; ×2 gav kryptan djup 2 −20 enheter), Helig mark (helning +15 %; +25 % gav kapellet djup 1 +13), Ekande valv (var tredje förmåga var och en använder
+  kastas en gång till, gratis, ny målväljning om målet dog; händelsen `omen`, action `echo`), Tyst mässa (lagets första förmåga
+  i varje strid kostar ingen Charge, men kräver en kvar; en per figur gav +15–20 enheter), Sista kraften (+25 % skada under halva livet), Trång passage
+  (+25 % mot ett mål, −25 % för förmågor som träffar alla, `CombatSim.is_multi_target`). En varslad attack ekar inte.
+  Botarna (`BALANS=tecken`, 200 nedstigningar, djup 1–2): alla inom ±8 enheter utom Tyst mässa i kapellet djup 2 (−12: Eira
+  sparar Charges och lägger Pilregn på Abbedissans kör, där bara kronbäraren tar full skada; botmakrots fel, inte tecknets). Syns på kampanjkartan ("Det här
   djupet: …", BYT för 25 silver en gång, `Run.reroll_omen`), överst i grottan och i stridens regelrad; berättarens rad när
   nedstigningen börjar och Svens vid porten (`dialog.json` "omens", id:n som `omen_fullmane_sven`); hjälprutan "omens".
   Makrovillkor under Tecken: `omen_is`, `next_ability_echoes`, `free_ability_unused`; förmågor som träffar alla märks "(alla)".

@@ -588,9 +588,10 @@ func _grotto(data: Dictionary) -> void:
 				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"})
 
 
-## 0.30.45 Djupets tecken (BALANS=tecken): hela grottan med varje tecken tvingat mot inget, i kryptan och kapellet på
-## djup 1 och 2 (TECKEN_DJUP=1,2), fyra hjältar på väntad nivå, MACRO och TUNED. TECKEN=a,b begränsar tecknen,
-## NIVA_REALM en Realm. Mål: inget tecken flyttar vinsten mer än ungefär ±10 procentenheter.
+## 0.30.45 Djupets tecken (BALANS=tecken): hela nedstigningar med varje tecken tvingat mot inget, som balanssimuleringens
+## nedstigningar (tests/balance_sim.gd: väntad nivå, sim_macros, sim_gear, fyra hjältar, MACRO), i kryptan och kapellet på
+## djup 1 och 2 (TECKEN_DJUP=1,2). TECKEN=a,b begränsar tecknen, NIVA_REALM en Realm, KORNINGAR antalet.
+## Mål: inget tecken flyttar vinsten mer än ungefär ±10 procentenheter.
 func _omens(data: Dictionary) -> void:
 	var omens: Array = [""] + RunState.omen_ids(data)
 	if OS.get_environment("TECKEN") != "":
@@ -600,26 +601,29 @@ func _omens(data: Dictionary) -> void:
 		depths = Array(OS.get_environment("TECKEN_DJUP").split(",")).map(func(d: String) -> int: return int(d))
 	var realms := ["crypt", "chapel"] if OS.get_environment("NIVA_REALM") == "" else [OS.get_environment("NIVA_REALM")]
 	var party := ["paladin", "brokk", "alva", "eira"]
-	print("=== Djupets tecken, %d körningar per rad ===" % RUNS)
+	var macros := sim_macros(data, party)
+	print("=== Djupets tecken, %d nedstigningar per rad (väntad nivå, MACRO) ===" % RUNS)
 	for depth in depths:
-		var lv := 3 if depth == 1 else HeroStats.expected_level(depth)
 		for realm_id in realms:
-			var base := {}
+			var lv := sim_expected_level(data, realm_id, depth)
+			var gear := sim_gear(data, party, depth + RunState.realm_depth_offset(data, realm_id))
+			var base := 0
 			for omen_id in omens:
-				var line := "  djup %d %-8s %-16s" % [depth, data.realms[realm_id].short,
-						"inget" if omen_id == "" else String(data.floor_rules[omen_id].name)]
-				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
-					var cleared := 0
-					for seed_value in range(1, RUNS + 1):
-						var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party, "omen": omen_id}
-						var r := Bot.run_expedition(data, seed_value, skill, {}, {}, depth, realm_id, opts, "simple")
-						cleared += 1 if r.cleared else 0
-					var pct := roundi(100.0 * cleared / RUNS)
-					if omen_id == "":
-						base[skill] = pct
-					line += "  %s %3d %%%s" % [_skill_name(skill), pct,
-							"" if omen_id == "" else " (%+d)" % (pct - int(base[skill]))]
-				print(line)
+				var cleared := 0
+				var fights := 0
+				for seed_value in range(1, RUNS + 1):
+					var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party.duplicate(),
+							"bot_macros": macros, "owned": party.size(), "slots": Profile.BASE_SLOTS, "omen": omen_id}
+					var r := Bot.run_expedition(data, seed_value, Bot.Skill.MACRO, gear.traits, gear.artifacts, depth,
+							realm_id, opts, "simple")
+					cleared += 1 if r.cleared else 0
+					fights += int(r.fights)
+				var pct := roundi(100.0 * cleared / RUNS)
+				if omen_id == "":
+					base = pct
+				print("  djup %d %-8s nivå %d  %-15s %3d %%%s  (strider %.1f)" % [depth, data.realms[realm_id].short, lv,
+						"inget" if omen_id == "" else String(data.floor_rules[omen_id].name), pct,
+						"" if omen_id == "" else " (%+d)" % (pct - base), float(fights) / RUNS])
 
 
 ## Prototyp (sallskap-fem, GROTTA_FEM=1): Trollberget (NIVA_REALM ändrar) på GROTTA_DJUP med väntad nivå. Fyra hjältar som

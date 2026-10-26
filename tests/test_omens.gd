@@ -74,7 +74,7 @@ func test_omen_is_saved_and_goes_into_battle_rules() -> void:
 	assert_true(q.omen_rerolled)
 
 
-func test_full_moon_doubles_crit_bonus_for_both_sides() -> void:
+func test_full_moon_raises_crit_bonus_for_both_sides() -> void:
 	for omen in ["", "omen_full_moon"]:
 		var sim := _sim(omen)
 		var pal := sim.unit("paladin")
@@ -93,7 +93,7 @@ func test_full_moon_doubles_crit_bonus_for_both_sides() -> void:
 					found[c.source] = float(c.crit_bonus) / CombatSim.crit_bonus(ratio)
 		assert_eq(found.size(), 2, "båda sidor kritar")
 		for id in found:
-			assert_near(found[id], 2.0 if omen != "" else 1.0, 0.001, "%s %s" % [omen, id])
+			assert_near(found[id], CombatSim.OMEN_CRIT_MULT if omen != "" else 1.0, 0.001, "%s %s" % [omen, id])
 
 
 func test_holy_ground_heals_more_for_everyone() -> void:
@@ -104,8 +104,8 @@ func test_holy_ground_heals_more_for_everyone() -> void:
 		_foes(sim)[0].hp = 1.0
 		sim._heal(sim.unit("alva"), sim.unit("paladin"), 20.0, "healing_light")
 		sim._heal(_foes(sim)[1] if _foes(sim).size() > 1 else _foes(sim)[0], _foes(sim)[0], 20.0, "")
-	assert_near(holy.unit("paladin").hp - 1.0, (plain.unit("paladin").hp - 1.0) * 1.25, 1.0)
-	assert_near(_foes(holy)[0].hp - 1.0, (_foes(plain)[0].hp - 1.0) * 1.25, 1.0)
+	assert_near(holy.unit("paladin").hp - 1.0, (plain.unit("paladin").hp - 1.0) * CombatSim.OMEN_HEAL_MULT, 1.0)
+	assert_near(_foes(holy)[0].hp - 1.0, (_foes(plain)[0].hp - 1.0) * CombatSim.OMEN_HEAL_MULT, 1.0)
 
 
 func test_last_strength_only_below_half_health() -> void:
@@ -182,7 +182,7 @@ func test_echo_retargets_when_the_target_died() -> void:
 	assert_true(not (echo[0].targets as Array).has(first.id), "ekot går till ett levande mål")
 
 
-func test_quiet_mass_first_ability_is_free_once_per_battle() -> void:
+func test_quiet_mass_first_ability_per_side_is_free_once_per_battle() -> void:
 	var sim := _sim("omen_quiet_mass")
 	var alva := sim.unit("alva")
 	var foe: CombatUnit = _foes(sim)[0]
@@ -194,13 +194,17 @@ func test_quiet_mass_first_ability_is_free_once_per_battle() -> void:
 	assert_true(not sim.free_ability_unused(alva))
 	sim._perform(alva, "judgement", "ability", foe.id)
 	assert_eq(int(alva.charges.judgement), start - 1)
-	# Utan Charges kvar går den gratis förmågan ändå att använda (en gång).
+	# En per lag: Paladinen betalar, fienderna har sin egen.
+	var pal0 := sim.unit("paladin")
+	assert_true(not sim.free_ability_unused(pal0))
+	var smite := int(pal0.charges.holy_smite)
+	sim._perform(pal0, "holy_smite", "ability", foe.id)
+	assert_eq(int(pal0.charges.holy_smite), smite - 1)
+	assert_true(sim.free_ability_unused(foe), "fiendernas lag har sin kvar")
+	# VAL (botarna: +20 enheter i kryptan): utan Charges kvar går förmågan inte att använda, gratis eller inte.
 	var s2 := _sim("omen_quiet_mass")
 	var pal := s2.unit("paladin")
 	pal.charges.holy_smite = 0
-	assert_eq(s2.can_act(pal, "ability", "holy_smite"), "")
-	s2._perform(pal, "holy_smite", "ability", _foes(s2)[0].id)
-	assert_eq(int(pal.charges.holy_smite), 0)
 	assert_eq(s2.can_act(pal, "ability", "holy_smite"), "charges")
 	var plain := _sim()
 	plain._perform(plain.unit("alva"), "judgement", "ability", _foes(plain)[0].id)
