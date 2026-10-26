@@ -793,8 +793,8 @@ func _offer_order(u: CombatUnit, action: String, target_id: String, ability_id: 
 		var v := clampi(int(ceil((tgt.hp_pct() * 100.0 + 1.0) / 10.0)) * 10, 30, 80)
 		line = {"subject": "any_ally", "cond": "hp_below", "value": v, "action": "ability", "ability": ability_id,
 				"target": "that"}
-	elif ab.has("bonus_vs") and tgt.team != 0 and tgt.auras.has(ab.bonus_vs.aura):
-		line = {"subject": "any_enemy", "cond": "has_status", "value": ab.bonus_vs.aura, "action": "ability",
+	elif tgt.team != 0 and not CombatSim.bonus_vs_for(ab, tgt.auras).is_empty():
+		line = {"subject": "any_enemy", "cond": "has_status", "value": CombatSim.bonus_vs_for(ab, tgt.auras).aura, "action": "ability",
 				"ability": ability_id, "target": "that"}
 	if line.is_empty():
 		return

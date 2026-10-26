@@ -275,3 +275,7 @@ Valt: **varv 2** (attack 10, fart 11). Varv 3 gav inget mer i Trollberget men gi
 varv 2 i kryptan och kapellet är inte mätt (det ligger mellan varv 0 och varv 3). Trollberget når inte inom 10 enheter av
 Imma: 10 / 25 / 37,5 enheter under. Att provocera hjälpte inte (Trollbergets fara är nötningen över en lång nedstigning,
 inte ett fokuserat mål); fart och anfall gjorde det. Imma slår med fart 18, alltså ungefär dubbelt så ofta som trollen.
+
+Varv 4 (Claude, efter VD:s fråga): Kilslag +50 % även mot troll med Svedd hud (Trollhud), och en makrorad för det. Trollberget
+d2 / d3 med fem: 15 / 25 % – oförändrat. I en enskild väktarstrid (troll_g1, d2, fulla Charges) får 73 av 77 Kilslag
+bonusen; i nedstigningen är hennes 8 Kilslag slut före väktaren. Behålls (bara troll påverkas).

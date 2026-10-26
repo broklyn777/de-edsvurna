@@ -513,8 +513,8 @@ func check_damage(sim: CombatSim, r: Dictionary) -> void:
 	if r.release.get("unit", "") == src.id and r.release.get("ability", "") == r.ability:
 		factors.append(float(r.release.mult))
 	# 0.30: förmågans bonus mot en status som målet har (Rättfärdigt slag mot Förblindad).
-	var vs: Dictionary = data.abilities.get(r.ability, {}).get("bonus_vs", {})
-	if bool(r.get("direct", true)) and not vs.is_empty() and tgt.auras.has(vs.aura):
+	var vs := CombatSim.bonus_vs_for(data.abilities.get(r.ability, {}), tgt.auras)
+	if bool(r.get("direct", true)) and not vs.is_empty():
 		factors.append(float(vs.mult))
 	factors = factors.filter(func(f: float) -> bool: return f != 1.0)
 	var got_f: Array = c.get("mods", []).map(func(x: Dictionary) -> float: return float(x.f)).filter(

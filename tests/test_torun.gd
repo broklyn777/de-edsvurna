@@ -106,7 +106,8 @@ func test_silence_still_matters() -> void:
 	var m := _enemy(sim, "moss_troll")
 	sim._add_aura(t, m, "silenced")
 	assert_true(not sim._can_start_windup(m, "inquisitor_verdict"), "en Tystad fiende börjar ingen laddning")
-	assert_true(_data.abilities.torun_wedge.bonus_vs.aura == "staggered", "Kilslag lönar sig när Tystad har brutit en laddning")
+	var auras: Array = _data.abilities.torun_wedge.bonus_vs.map(func(v: Dictionary) -> String: return v.aura)
+	assert_true(auras == ["staggered", "troll_scorched"], "Kilslag lönar sig mot Vacklande och mot troll med Svedd hud")
 
 
 func test_macro_condition_intends_heal() -> void:

@@ -62,7 +62,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   en slägga (`placeholder_figure`). `--party=torun,imma` väljer sällskapet för en påhittad profil.
   Balans (en justeringsomgång, `docs/balans/balanslogg.md`): Stå beredd provocerar också, Health 120, Attack 10, Defense 6,5,
   Speed 11, Kilslag 150 % med 8 Charges. Som femte i Trollberget djup 1–3 25/15/25 % mot Immas 35/40/62,5 % (fyra utan femte
-  0/0/7,5 %); svagare än Imma men inget måste-val åt något håll.
+  0/0/7,5 %); svagare än Imma men inget måste-val åt något håll. Kilslag slår också 50 % hårdare mot ett troll med Svedd hud
+  (`bonus_vs` kan vara en lista, `CombatSim.bonus_vs_for`; startmakrot har raden): i en enskild väktarstrid 73 av 77 slag, men
+  nedstigningarna oförändrade – hennes 8 Kilslag är slut före väktaren (nötningen avgör, inte förmågan).
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
   egenskap. Vanlig = pålitlig byggdel, elit = specialiserad, boss = ändrar en regel (med kostnad).
   Hjältarna behåller sina troféer (0.26.3, som i Siralim, `Profile.worn`, `wear()`, `keep_worn()`): de följer med i varje

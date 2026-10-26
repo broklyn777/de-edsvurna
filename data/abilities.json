@@ -44,11 +44,17 @@
 		"icon": "bolt",
 		"button_color": "#8a6a48",
 		"sound": "bone_crush",
-		"text": "Ett tungt slag (150 %). Mot en Vacklande fiende – en laddning som Tystad eller skada bröt – slår det 50 % hårdare.",
-		"bonus_vs": {
-			"aura": "staggered",
-			"mult": 1.5
-		},
+		"text": "Ett tungt slag (150 %). Mot en Vacklande fiende – en laddning som Tystad eller skada bröt – eller ett troll med Svedd hud slår det 50 % hårdare.",
+		"bonus_vs": [
+			{
+				"aura": "staggered",
+				"mult": 1.5
+			},
+			{
+				"aura": "troll_scorched",
+				"mult": 1.5
+			}
+		],
 		"effects": [
 			{
 				"type": "damage",

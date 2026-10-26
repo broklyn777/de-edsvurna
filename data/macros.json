@@ -412,6 +412,14 @@
 				"target": "that"
 			},
 			{
+				"subject": "any_enemy",
+				"cond": "has_status",
+				"value": "troll_scorched",
+				"action": "ability",
+				"ability": "torun_wedge",
+				"target": "that"
+			},
+			{
 				"subject": "any_ally",
 				"cond": "hp_below",
 				"value": 40,

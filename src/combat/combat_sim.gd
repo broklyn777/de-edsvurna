@@ -1764,12 +1764,18 @@ func flag_aura(u: CombatUnit, flag: String) -> String:
 
 
 ## Statusens namn med staplarna ("Gift ×3").
-## 0.30: förmågans bonus mot en status ("bonus_vs": {"aura", "mult"}) om målet har den, annars {}.
+## 0.30: förmågans bonus mot en status ("bonus_vs": {"aura", "mult"}, eller en lista av sådana) om målet har den,
+## annars {}. Första statusen i listan som målet har gäller.
 func _bonus_vs(ability_id: String, tgt: CombatUnit) -> Dictionary:
-	var vs: Dictionary = data.abilities.get(ability_id, {}).get("bonus_vs", {})
-	if vs.is_empty() or not tgt.auras.has(vs.aura):
-		return {}
-	return vs
+	return bonus_vs_for(data.abilities.get(ability_id, {}), tgt.auras)
+
+
+static func bonus_vs_for(ab: Dictionary, auras: Dictionary) -> Dictionary:
+	var raw = ab.get("bonus_vs", [])
+	for vs in (raw if raw is Array else [raw]):
+		if not vs.is_empty() and auras.has(vs.aura):
+			return vs
+	return {}
 
 
 func status_name(u: CombatUnit, aura_id: String) -> String:
