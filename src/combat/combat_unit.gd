@@ -49,6 +49,8 @@ var turns_taken := 0
 ## Räknare för troféer: utförda Anfall, användningar per förmåga och direkta träffar man tagit.
 var attacks_done := 0
 var ability_uses := {}
+## Djupets tecken (0.30.45): förmågor figuren har använt i striden (Ekande valv, Tyst mässa). Ekot räknas inte.
+var omen_casts := 0
 var times_hit := 0
 ## Förmågor som Förseglade ord har låst resten av striden.
 var sealed := {}

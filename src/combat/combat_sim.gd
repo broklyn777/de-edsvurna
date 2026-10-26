@@ -179,6 +179,9 @@ static func create(game_data: Dictionary, encounter_id: String, seed_value := 1,
 	sim.depth = maxi(depth, 1)
 	sim.enemy_depth = sim.depth + maxi(int(opts.get("depth_offset", 0)), 0)
 	sim.rules = opts.get("rules", []).duplicate()
+	for r in sim.rules:
+		if game_data.get("floor_rules", {}).get(r, {}).get("omen", false):
+			sim.omen = String(r)
 	if opts.get("counter", false) and big_fight_exhaustion > 0:
 		sim.exhaustion_turn = big_fight_exhaustion
 	sim.no_heal = bool(opts.get("no_heal", false))
@@ -669,7 +672,8 @@ func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 		return "none"
 	if action == "ability" and u.team == 0 and not u.abilities.has(id):
 		return "none"
-	if u.charges.has(id) and full_charges(id) > 0 and u.charges[id] <= 0:
+	if u.charges.has(id) and full_charges(id) > 0 and u.charges[id] <= 0 \
+			and not (action == "ability" and free_ability_unused(u)):
 		return "charges"
 	if action == "ability" and is_silenced(u):
 		return "silenced"
@@ -912,6 +916,54 @@ func _end_turn() -> void:
 
 func _rule(rule_id: String) -> bool:
 	return rules.has(rule_id)
+
+
+## Djupets tecken (0.30.45, mot-upprepning.md §3): en regel för hela nedstigningen som gäller båda sidor. "" = inget.
+var omen := ""
+const OMEN_CRIT_MULT := 2.0  # Fullmåne: kritiska träffars extra skada
+const OMEN_HEAL_MULT := 1.25  # Helig mark
+const OMEN_ECHO_EVERY := 3  # Ekande valv: var tredje förmåga kastas två gånger
+const OMEN_LOW_HP := 0.5  # Sista kraften: under halva livet …
+const OMEN_LOW_HP_MULT := 1.25  # … mer skada
+const OMEN_SINGLE_MULT := 1.25  # Trång passage: mot ett mål
+const OMEN_MULTI_MULT := 0.75  # Trång passage: mot alla
+
+
+func omen_name() -> String:
+	return String(data.get("floor_rules", {}).get(omen, {}).get("name", omen))
+
+
+## En användning av en förmåga (inte Anfall, Försvara, Provocera eller ett gratis kast) räknas för tecknen.
+func is_omen_ability(u: CombatUnit, action: String, ability_id: String) -> bool:
+	if ability_id in ["defend", "provoke", "skip"]:
+		return false
+	return action == "ability" or (action == "intent" and ability_id != u.attack_ability)
+
+
+## Ekande valv: figurens nästa förmåga ekar (makrovillkoret "next_ability_echoes").
+func next_ability_echoes(u: CombatUnit) -> bool:
+	return omen == "omen_echo_vault" and (u.omen_casts + 1) % OMEN_ECHO_EVERY == 0
+
+
+## Tyst mässa: figurens första förmåga i striden är ännu inte använd (makrovillkoret "free_ability_unused").
+func free_ability_unused(u: CombatUnit) -> bool:
+	return omen == "omen_quiet_mass" and u.omen_casts == 0
+
+
+## Trång passage: förmågan träffar alla på en sida.
+static func is_multi_target(ab: Dictionary) -> bool:
+	return String(ab.get("target", "self")) in ["all_enemies", "all_allies"]
+
+
+## Tecknens faktorer på en träff (Sista kraften, Trång passage), som rader i uträkningen.
+func _omen_damage_fx(src: CombatUnit, ability_id: String, direct: bool) -> Array:
+	var out: Array = []
+	if omen == "omen_last_strength" and src.max_hp > 0.0 and src.hp < src.max_hp * OMEN_LOW_HP:
+		out.append({"f": OMEN_LOW_HP_MULT, "name": omen_name()})
+	if omen == "omen_narrow_pass" and direct and data.abilities.has(ability_id):
+		out.append({"f": OMEN_MULTI_MULT if is_multi_target(data.abilities[ability_id]) else OMEN_SINGLE_MULT,
+				"name": omen_name()})
+	return out
 
 
 ## Löftet "Jag helar inte" (0.30.17): hjältarna kan inte välja förmågor som helar.
@@ -1276,8 +1328,12 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 			or (ability_id != u.attack_ability and not ability_id in ["defend", "provoke"] and is_silenced(u))):
 		_emit({"type": "status_blocked", "unit": u.id, "aura": "scorned" if ability_id == u.attack_ability else "silenced"})
 		return
+	var counts := is_omen_ability(u, action, ability_id)
 	var free := action == "ability" and u.charges.has(ability_id) and u.auras.has("arcane")
-	if free:
+	if counts and free_ability_unused(u):
+		if u.charges.has(ability_id) and full_charges(ability_id) > 0:
+			_emit({"type": "omen", "omen": omen, "unit": u.id, "ability": ability_id, "what": "free"})
+	elif free:
 		_remove_aura(u, "arcane", "used")
 	elif u.charges.has(ability_id) and full_charges(ability_id) > 0:
 		u.charges[ability_id] -= 1
@@ -1288,6 +1344,15 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 	_emit({"type": "action", "unit": u.id, "action": action, "ability": ability_id, "targets": targets})
 	_note_team_action(u, action, ability_id)
 	_apply_effects(u, ability_id, targets)
+	if counts:
+		u.omen_casts += 1
+		# Ekande valv: var tredje förmåga kastas en gång till, gratis; ett dött mål ger vanliga målregler.
+		if omen == "omen_echo_vault" and u.omen_casts % OMEN_ECHO_EVERY == 0 and u.alive and not is_silenced(u):
+			var again := _targets_for(u, ab, target_id)
+			if not again.is_empty():
+				_emit({"type": "omen", "omen": omen, "unit": u.id, "ability": ability_id, "what": "echo"})
+				_emit({"type": "action", "unit": u.id, "action": "echo", "ability": ability_id, "targets": again})
+				_apply_effects(u, ability_id, again)
 	# Fiender agerar med "intent": deras grundanfall räknas som Anfall, resten som förmågor.
 	if action == "attack" or (action == "intent" and ability_id == u.attack_ability):
 		u.attacks_done += 1
@@ -1717,6 +1782,8 @@ func expected_heal(src: CombatUnit, tgt: CombatUnit, ability_id: String) -> floa
 			factors.append(float(m.heal_mult))
 	if _rule("withered_grace"):
 		factors.append(0.6)
+	if omen == "omen_holy_ground":
+		factors.append(OMEN_HEAL_MULT)
 	return roundf(src.stat("intelligence") * power * combine_mods(factors))
 
 
@@ -1847,9 +1914,13 @@ func _deal_damage(src: CombatUnit, tgt: CombatUnit, amount: float, school: Strin
 		fx.append({"f": float(vs.mult), "name": "%s mot %s" % [data.abilities[ability_id].name, status_name(tgt, vs.aura)]})
 		calc.combo = {"ability": ability_id, "aura": vs.aura, "mult": float(vs.mult),
 				"applier": String(tgt.auras[vs.aura].get("source", ""))}
+	fx.append_array(_omen_damage_fx(src, ability_id, direct))
 	var factors: Array = fx.map(func(x: Dictionary) -> float: return x.f)
 	var mods := combine_mods(factors)
 	var cb := crit_bonus(ratio) if crit else 0.0
+	if crit and omen == "omen_full_moon":
+		cb *= OMEN_CRIT_MULT
+		calc.crit_omen = OMEN_CRIT_MULT
 	var dmg := raw * mods * (1.0 + cb)
 	calc.mods = fx
 	calc.mod_total = mods
@@ -2169,6 +2240,8 @@ func _heal(src: CombatUnit, tgt: CombatUnit, base: float, ability_id: String) ->
 	if _rule("withered_grace"):
 		_rule_hit("withered_grace")
 		fx.append({"f": 0.6, "name": data.floor_rules.get("withered_grace", {}).get("name", "Vissnad nåd")})
+	if omen == "omen_holy_ground":
+		fx.append({"f": OMEN_HEAL_MULT, "name": omen_name()})
 	# Väktarsteg 2: mindre helning tagen – statusar (Skuld) och egenskaper hos målet ("modify_heal_taken").
 	for aura_id in tgt.auras:
 		var hm := float(tgt.auras[aura_id].get("heal_taken_mult", 1.0))

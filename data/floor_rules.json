@@ -61,5 +61,41 @@
 		"silver": 0.6,
 		"original": "Stats are Swapped",
 		"min_instability": 3
+	},
+	"omen_full_moon": {
+		"name": "Fullmåne",
+		"text": "Kritiska träffars extra skada fördubblas, för alla.",
+		"omen": true,
+		"original": "Critical Damage (Realm Property)"
+	},
+	"omen_holy_ground": {
+		"name": "Helig mark",
+		"text": "All helning är 25 % starkare, också fiendernas.",
+		"omen": true,
+		"original": "More Healing (Realm Property)"
+	},
+	"omen_echo_vault": {
+		"name": "Ekande valv",
+		"text": "Var tredje förmåga var och en använder i en strid kastas två gånger (ekot är gratis).",
+		"omen": true,
+		"original": "Cast Additional Times (Realm Property)"
+	},
+	"omen_quiet_mass": {
+		"name": "Tyst mässa",
+		"text": "Var och ens första förmåga i varje strid kostar ingen Charge, för alla.",
+		"omen": true,
+		"original": "– (vårt val)"
+	},
+	"omen_last_strength": {
+		"name": "Sista kraften",
+		"text": "Den som har mindre än halva livet kvar gör 25 % mer skada, för alla.",
+		"omen": true,
+		"original": "– (vårt val)"
+	},
+	"omen_narrow_pass": {
+		"name": "Trång passage",
+		"text": "Angrepp mot ett mål gör 25 % mer skada, mot alla 25 % mindre, för alla.",
+		"omen": true,
+		"original": "– (vårt val)"
 	}
 }

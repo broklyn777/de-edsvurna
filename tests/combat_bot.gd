@@ -190,6 +190,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 		state.realm_party = int(opts.realm_party)  # BALANS=fem: Trollberget som förr, balanserat mot fyra
 	if opts.has("vow"):
 		state.set_vow(data, opts.vow)  # 0.30.17: löftet för hela körningen
+	state.omen = String(opts.get("omen", ""))  # 0.30.45: djupets tecken för hela körningen
 	if opts.has("recruited"):
 		state.place_prisoners(data, opts.recruited)  # 0.23: botarna befriar lärjungar som i spelet
 	if opts.has("growth"):
@@ -232,7 +233,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "growth", "owned", "slots", "realm_party", "fight_log", "depth_cleared"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "omen", "growth", "owned", "slots", "realm_party", "fight_log", "depth_cleared"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels

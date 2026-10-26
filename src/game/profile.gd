@@ -108,6 +108,10 @@ var realm := "crypt"
 var instability := 0
 ## 0.30.17: löftet som väljs på kampanjkartan (data/vows.json), "" = inget.
 var vow := ""
+## 0.30.45 Djupets tecken (docs/plan/mot-upprepning.md §3): tecknet nästa nedstigning drar (floor_rules.json med "omen"),
+## "" = inget dragit än. omen_rerolled: det har slumpats om vid portalen en gång (RunState.OMEN_REROLL_COST).
+var omen := ""
+var omen_rerolled := false
 ## Segrar per boss (Siralims Masters): bosstrofén kräver RunState.BOSS_WINS_FOR_TROPHY.
 var boss_wins := {}
 ## Väktarsteg 2: segrar per roterande väktare (mötets id); väktarens trofé kräver RunState.GUARDIAN_WINS_FOR_TROPHY.
@@ -764,6 +768,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "realm", realm)
 	cfg.set_value("progress", "instability", instability)
 	cfg.set_value("progress", "vow", vow)
+	cfg.set_value("progress", "omen", omen)
+	cfg.set_value("progress", "omen_rerolled", omen_rerolled)
 	cfg.set_value("progress", "boss_wins", boss_wins)
 	cfg.set_value("progress", "guardian_wins", guardian_wins)
 	cfg.set_value("progress", "quests_done", quests_done)
@@ -851,6 +857,8 @@ static func load_from(path: String) -> Profile:
 	p.realm = cfg.get_value("progress", "realm", "crypt")
 	p.instability = clampi(int(cfg.get_value("progress", "instability", 0)), 0, RunState.MAX_INSTABILITY)
 	p.vow = String(cfg.get_value("progress", "vow", ""))
+	p.omen = String(cfg.get_value("progress", "omen", ""))
+	p.omen_rerolled = bool(cfg.get_value("progress", "omen_rerolled", false))
 	p.boss_wins = cfg.get_value("progress", "boss_wins", {})
 	p.guardian_wins = cfg.get_value("progress", "guardian_wins", {})
 	p.realm_depth = cfg.get_value("progress", "realm_depth", {})

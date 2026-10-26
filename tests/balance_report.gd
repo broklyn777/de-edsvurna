@@ -82,6 +82,10 @@ func _init() -> void:
 		_trophy_slot(data)
 		quit()
 		return
+	if OS.get_environment("BALANS") == "tecken":
+		_omens(data)
+		quit()
+		return
 	if OS.get_environment("BALANS") == "grotta":
 		_grotto(data)
 		quit()
@@ -582,6 +586,40 @@ func _grotto(data: Dictionary) -> void:
 		_grotto_line(data, realm_id, "Paladinen + Imma, nivå 3", ["paladin", "imma"], 3, {"bot_macros": fresh})
 		_grotto_line(data, realm_id, "första: ensam, Imma efter strid 1", ["paladin"], 1,
 				{"bot_macros": fresh, "recruited": data.heroes.keys(), "first_descent": true, "joins": "imma"})
+
+
+## 0.30.45 Djupets tecken (BALANS=tecken): hela grottan med varje tecken tvingat mot inget, i kryptan och kapellet på
+## djup 1 och 2 (TECKEN_DJUP=1,2), fyra hjältar på väntad nivå, MACRO och TUNED. TECKEN=a,b begränsar tecknen,
+## NIVA_REALM en Realm. Mål: inget tecken flyttar vinsten mer än ungefär ±10 procentenheter.
+func _omens(data: Dictionary) -> void:
+	var omens: Array = [""] + RunState.omen_ids(data)
+	if OS.get_environment("TECKEN") != "":
+		omens = [""] + Array(OS.get_environment("TECKEN").split(","))
+	var depths := [1, 2]
+	if OS.get_environment("TECKEN_DJUP") != "":
+		depths = Array(OS.get_environment("TECKEN_DJUP").split(",")).map(func(d: String) -> int: return int(d))
+	var realms := ["crypt", "chapel"] if OS.get_environment("NIVA_REALM") == "" else [OS.get_environment("NIVA_REALM")]
+	var party := ["paladin", "brokk", "alva", "eira"]
+	print("=== Djupets tecken, %d körningar per rad ===" % RUNS)
+	for depth in depths:
+		var lv := 3 if depth == 1 else HeroStats.expected_level(depth)
+		for realm_id in realms:
+			var base := {}
+			for omen_id in omens:
+				var line := "  djup %d %-8s %-16s" % [depth, data.realms[realm_id].short,
+						"inget" if omen_id == "" else String(data.floor_rules[omen_id].name)]
+				for skill in [Bot.Skill.MACRO, Bot.Skill.TUNED]:
+					var cleared := 0
+					for seed_value in range(1, RUNS + 1):
+						var opts := {"levels": Bot.party_levels(data, lv, party), "grow": true, "party": party, "omen": omen_id}
+						var r := Bot.run_expedition(data, seed_value, skill, {}, {}, depth, realm_id, opts, "simple")
+						cleared += 1 if r.cleared else 0
+					var pct := roundi(100.0 * cleared / RUNS)
+					if omen_id == "":
+						base[skill] = pct
+					line += "  %s %3d %%%s" % [_skill_name(skill), pct,
+							"" if omen_id == "" else " (%+d)" % (pct - int(base[skill]))]
+				print(line)
 
 
 ## Prototyp (sallskap-fem, GROTTA_FEM=1): Trollberget (NIVA_REALM ändrar) på GROTTA_DJUP med väntad nivå. Fyra hjältar som

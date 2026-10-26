@@ -22,7 +22,7 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"highest_defense", "highest_attack", "own_turn",
 		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced",
 		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff", "is_charging", "charge_left_at_most",
-		"is_channeling", "is_charge_target"]
+		"is_channeling", "is_charge_target", "omen_is", "next_ability_echoes", "free_ability_unused"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -258,6 +258,13 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return sim.is_charge_target(x)
 		"lacks_artifact":
 			return x.artifact.get("type", "") != v
+		# 0.30.45 Djupets tecken: vilket tecken som gäller, Ekande valv och Tyst mässa.
+		"omen_is":
+			return sim.omen == String(v)
+		"next_ability_echoes":
+			return sim.next_ability_echoes(x)
+		"free_ability_unused":
+			return sim.free_ability_unused(x)
 	return false
 
 
@@ -422,6 +429,12 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "håller en laddning vid liv"
 		"is_charge_target":
 			return "är måltavla för en laddning"
+		"omen_is":
+			return "tecknet är %s" % data.get("floor_rules", {}).get(value, {}).get("name", str(value))
+		"next_ability_echoes":
+			return "nästa förmåga ekar (Ekande valv)"
+		"free_ability_unused":
+			return "har sin gratis förmåga kvar (Tyst mässa)"
 	return cond
 
 
@@ -430,7 +443,9 @@ static func action_label(data: Dictionary, action: String, ability_id := "") -> 
 		"attack":
 			return "Anfall"
 		"ability":
-			return "Förmåga: " + data.abilities.get(ability_id, {}).get("name", ability_id)
+			# 0.30.45 (Trång passage): förmågor som träffar alla märks, så att makrot kan välja en som träffar ett mål.
+			var ab: Dictionary = data.abilities.get(ability_id, {})
+			return "Förmåga: " + String(ab.get("name", ability_id)) + (" (alla)" if CombatSim.is_multi_target(ab) else "")
 		"defend":
 			return "Försvara"
 		"provoke":

@@ -83,6 +83,10 @@ var depth := 1
 ## 0.30.17: körningens löfte (data/vows.json, docs/plan/loften.md): "" = inget. Brutet blir det den ödmjuka formen;
 ## vow_used = den ödmjuka formens gång per körning är förbrukad. commons_fought räknar vanliga grupper på våningen.
 var vow := ""
+## 0.30.45 Djupets tecken (mot-upprepning.md §3): en synlig regel för hela nedstigningen som gäller båda sidor
+## (floor_rules.json med "omen": true). Dras efter introt, ovanpå instabiliteten, utan silver. "" = inget.
+var omen := ""
+const OMEN_REROLL_COST := 25
 var vow_broken := false
 var vow_used := false
 var vow_breaks_on := ""
@@ -368,7 +372,7 @@ static func trophy_chance(at_depth: int, at_instability := 0) -> float:
 ## "min_instability" kräver minst den nivån, och "hidden_only" kan bara bli dolda.
 static func roll_rules(data: Dictionary, level: int, rng: RandomNumberGenerator) -> Dictionary:
 	var pool: Array = data.floor_rules.keys().filter(func(id: String) -> bool:
-		return int(data.floor_rules[id].get("min_instability", 0)) <= level)
+		return int(data.floor_rules[id].get("min_instability", 0)) <= level and not is_omen(data, id))
 	var visible := []
 	var hidden := []
 	for i in level:
@@ -382,6 +386,27 @@ static func roll_rules(data: Dictionary, level: int, rng: RandomNumberGenerator)
 			hidden.append(id)
 			pool.erase(id)
 	return {"visible": visible, "hidden": hidden}
+
+
+## Djupets tecken (0.30.45): alla tecken i floor_rules.json, och ett slumpat tecken (inte "except", t.ex. det förra).
+static func omen_ids(data: Dictionary) -> Array:
+	return data.get("floor_rules", {}).keys().filter(func(id: String) -> bool: return is_omen(data, id))
+
+
+static func is_omen(data: Dictionary, id: String) -> bool:
+	return bool(data.get("floor_rules", {}).get(id, {}).get("omen", false))
+
+
+static func roll_omen(data: Dictionary, rng: RandomNumberGenerator, except := "") -> String:
+	var ids := omen_ids(data)
+	if ids.size() > 1:
+		ids.erase(except)
+	return "" if ids.is_empty() else String(ids[rng.randi() % ids.size()])
+
+
+## Tecknet som en regel i striden (CombatSim läser det som en våningsregel).
+func omen_rules() -> Array:
+	return [omen] if omen != "" else []
 
 
 ## Alla regler som gäller i körningen (synliga och dolda).
@@ -1128,7 +1153,7 @@ func variant_extras(data: Dictionary, idx: int) -> Dictionary:
 func battle_opts() -> Dictionary:
 	var r := current_room()
 	var tier := int(r.get("tier", floor))
-	var opts := {"rules": active_rules() + next_rules, "instability": instability, "start_auras": next_auras.duplicate(),
+	var opts := {"rules": active_rules() + next_rules + omen_rules(), "instability": instability, "start_auras": next_auras.duplicate(),
 			"floor": tier}
 	if depth_offset > 0:
 		opts.depth_offset = depth_offset
@@ -1440,7 +1465,8 @@ func apply_shrine(data: Dictionary, rng: RandomNumberGenerator, o: Dictionary) -
 						text = "Pandemonium: %s förlorar en Charge på %s." % [data.heroes[hero_id].name, data.abilities[ab].name]
 				3:
 					var open: Array = data.floor_rules.keys().filter(func(id: String) -> bool:
-						return int(data.floor_rules[id].get("min_instability", 0)) <= 1 and not active_rules().has(id))
+						return int(data.floor_rules[id].get("min_instability", 0)) <= 1 and not active_rules().has(id) \
+								and not is_omen(data, id))
 					var rule: String = open[rng.randi() % open.size()]
 					next_rules.append(rule)
 					text = "Pandemonium: nästa strid gäller %s." % data.floor_rules[rule].name
@@ -1643,7 +1669,7 @@ func note_bark() -> void:
 const SAVED_FIELDS := ["oath", "perks", "floor", "realm", "floor_ids", "instability", "rules_visible", "rules_hidden",
 		"rules_revealed", "depth", "equipped", "charges", "artifacts", "run_seed", "pos", "visited", "seen", "came_from",
 		"side_index", "quest", "next_auras", "next_rules", "finished", "trait_totals", "found", "battle_pending", "prisoners",
-		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "vow_broken", "vow_used",
+		"barks_used", "barks_said", "bark_room", "rooms_entered", "first_descent", "joins_next", "revealed", "next_stat_mult", "vow", "omen", "vow_broken", "vow_used",
 		"vow_breaks_on", "vow_max_commons", "commons_fought", "owned_heroes", "depth_cleared", "party_slots", "realm_party", "depth_offset", "quest_hints", "trail_taken", "growth", "twisted",
 		"wins", "realm_quest_done", "chron", "world_heal_mod", "world_boss_mult", "world_stat_mult", "world_rumour",
 		"twists_used", "fresh_trophies", "boss_seals"]
