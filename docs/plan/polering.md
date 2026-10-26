@@ -49,6 +49,9 @@ Klart när:
 - Man förstår vad bärnsten, trick och Nether Stones gör innan man köper.
 - Trofébyte vid lägerelden visar vad man vinner och förlorar.
 - Varje roll (tank, helare, skada, kontroll, stöd) har minst två vanliga troféer att bygga med.
+Kända skavanker (skärmdump 2026-10-26, `--forge-demo --smith --smith-hero=alva`): listan "Förmåga i artefakten" visar alla
+hjältars förmågor (Alva erbjuds Rättfärdigt slag, Trickpil …) – kontrollera om det gäller vanliga profiler eller bara demon;
+knappen SMID täcker de nedersta förmågorna; "FÖRRÅD – TRYCK FÖR ALLT" ritas över Torun i hjältelistan.
 
 ### 6. Makroeditorn
 Klart när:
