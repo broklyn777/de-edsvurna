@@ -25,7 +25,9 @@ våningsreglernas skada avrundas inte längre på vägen.
 Statsen kommer från flera källor, som alla når striden och syns i hjältebladet:
 **bas + nivåer + personlighet + artefakt + material (bärnsten) + Nether Stone.**
 
-- Nivå: varje nivå ger +30 % av basvärdet (personligheten ger en stat 40 % och en annan 20 %).
+- Nivå (balans v1): styrkan är 1,2^(L − 1) upp till nivå 10, sedan steg på 13 % + 7 % · e^(−(L − 10)/10) mot nivån innan
+  (`HeroStats.strength`); en stat är bas × (1 + tillväxt/30 % × (styrkan − 1)), personligheten ger en stat 40 % och en
+  annan 20 % i stället för 30. Fienderna har samma styrka på sin nivå. Förr: +30 % av basvärdet per tillväxtnivå.
 - Artefakt: typens stat, t.ex. svärd +5 % Attack. Varje artefaktnivå gör det 10 % starkare.
 - Bärnsten: +6 % av statsen före artefakten per Stat-plats (en plats tar 5 bärnsten; tvåfärgad 3,6 % på var), gånger
   artefaktnivåns styrka.
@@ -208,7 +210,7 @@ lista visar samma fiender som striden (`CombatSim.enemy_lineup`).
 
 Fiendernas stats räknas i den här ordningen, och avrundas efter varje steg:
 
-1. bas × mötets skalning × djupet (+3 % per djup sedan 0.30.33, förr 8 %; inte Speed) × Portalens strid (×1,15) × profilens första
+1. bas × mötets skalning × djupet (+15 % per djup i balans v1, +3 % sedan 0.30.33, förr 8 %; inte Speed; Trollberget × (1 + 5 % per fiendedjup över 1)) × Portalens strid (×1,15) × profilens första
    nedstigning (se nedan). Båda kan gälla samtidigt. Health, Attack, Intelligence och Defense, inte Speed;
 2. × sällskapets storlek (0.23.3, *vårt val*): ×0,45 för en hjälte, ×0,54 för två, ×0,64 för tre, ×1 för fyra (Health,
    Attack och Intelligence, inte Defense och Speed);

@@ -108,3 +108,105 @@ nedstigningar, fyra hjältar, väntad nivå, efter varv 1–3.
 Nedstigningar med fyra, 100 per nivå, väntad nivå: kryptan 40 → 74 %, kapellet 73 → 91 %, Trollberget 4 % (oförändrat).
 Med ärlig utrustning är djup 1 ungefär lika svårt som djup 2 (kryptan 81 %, kapellet 88 %) och allt ligger över mål B
 (26–48 %). Stöder förslaget om ett större djupsteg; inget balansvärde ändrat.
+
+## Balans v1 (gren `balans-v2`, VD:s beslut 2026-10-25)
+
+Mätningen under justeringen: bara nedstigningar på väntad nivå (`--enc=__none__ --levels=0 --runs=100`, ny flagga
+`--levels`), prov utan att ändra spelet med `DJUPSTEG`, `BERGSTEG`, `FEM_I_FYRA` och `MOTE_MULT=möte=värde,…` i
+`tests/balance_sim.gd`. Utgångsläget är v0 med varv 1–3 och djup 1 med karriärbotarnas utrustning (kryptan d1 74 %,
+kapellet d1 91 %). Siffrorna: andel klarade nedstigningar, med boss/väktare i nedstigningen inom parentes.
+
+### Steg 1: nivåkurvan (`HeroStats.strength`)
+
+Styrkan per nivå är en egen kurva, delad av hjältar och fiender: +20 % mot nivån innan för nivå 2–10, sedan
+13 % + 7 % · e^(−(L − 10)/10) (+19,3 % nivå 11, +15,6 % nivå 20, +13,9 % nivå 30). Takten är orörd: erfarenheten per nivå
+(`xp_to_next`), fiendernas nivå per djup och våning (`enemy_level`) och väntad nivå (3, 6, 7, 8 …) följer variant C som
+förut. Bara multiplikatorn på en given nivå ändras: förr 1 + 0,3 · (g(L) − 1). `enemy_level_mult` = `strength(enemy_level)`.
+
+| Nivå | Förr | Steg förr | Nu | Steg nu |
+|---|---|---|---|---|
+| 1 | 1,00 | – | 1,00 | – |
+| 2 | 1,30 | +30 % | 1,20 | +20 % |
+| 3 | 1,60 | +23 % | 1,44 | +20 % |
+| 4 | 1,90 | +19 % | 1,73 | +20 % |
+| 5 | 2,20 | +16 % | 2,07 | +20 % |
+| 6 | 2,90 | +32 % | 2,49 | +20 % |
+| 7 | 4,05 | +40 % | 2,99 | +20 % |
+| 8 | 5,47 | +35 % | 3,58 | +20 % |
+| 9 | 7,09 | +30 % | 4,30 | +20 % |
+| 10 | 8,88 | +25 % | 5,16 | +20 % |
+| 11 | 10,82 | +22 % | 6,16 | +19,3 % |
+| 12 | 12,90 | +19 % | 7,31 | +18,7 % |
+| 13 | 15,10 | +17 % | 8,64 | +18,2 % |
+| 15 | 19,83 | +14 % | 11,92 | +17,2 % |
+| 20 | 33,31 | +9 % | 25,23 | +15,6 % |
+
+Gamla profiler: nivån står kvar (ingen omräkning). Resten från 0.19-omräkningen (`carry`) blir en del av en nivå på takten
+(`growth_level`: `strength(new_level(old_level(L) + carry))`), så att hjälten står lika långt från fienderna som förut.
+En hjälte på nivå 8: Paladinens Health 492 → 322 (−35 %); mot fienderna på djup 3 våning 2 1,07 → 0,83 och på djup 4
+(där nivå 8 är väntad) 0,79 → 0,63 i stats, nästan helt av djupsteget (kurvan ensam: 1,13 → 1,08 mot våning 2 på djup 3).
+
+Nedstigningar efter steg 1 (djupsteg 3 %, fyra): kryptan 72 / 99 / 97 %, kapellet 88 / 98 / 93 %, lunden 78 / 89 / 99 %,
+Trollberget fyra 69 / 100 / 80 %, fem 98 / 100 / 99 %. Allt blev lättare: en nivå mellan sällskapet och fienderna väger
+mindre.
+
+### Steg 2: djupsteget (`CombatSim.DEPTH_STEP`) 0,03 → **0,15**
+
+| Djupsteg | Kryptan d2 / d3 | Kapellet d2 / d3 | Lunden d2 / d3 |
+|---|---|---|---|
+| 0,03 | 99 / 97 | 98 / 93 | 89 / 99 |
+| 0,10 | 92 / 93 | 92 / 68 | 83 / 87 |
+| 0,15 | 92 / 72 | 92 / 30 | 63 / 71 |
+| 0,20 | 82 / 13 | 82 / 4 | 47 / 58 |
+
+Djup 3 svarar mycket brantare än djup 2: djup 2 är för lätt vid alla steg som inte gör djup 3 omöjligt, eftersom väktarna
+på djup 2 (Midnattsklockan, Abbedissans kör) var svaga för sitt djup. 0,15 lägger djup 3 närmast bandet (två över, en
+under) och djup 2 rättas med väktarna i steg 5. Djup 1 påverkas inte (`depth_mult(1)` = 1). Varning: 0,15 är linjärt och
+läggs på fiendernivåerna; djup 4+ är inte mätt här (karriärbotarna bör köras före en sammanslagning).
+
+### Steg 3: fem i en Realm byggd för fyra
+
+`RunState.full_party_size()`: fem i kryptan, kapellet eller lunden möter fiender som mot fem på djup som Realmen inte är
+klarad på (`depth_cleared`, `Profile.realm_depth`), som mot fyra på klarade djup. Mötena där saknar Trollbergets "extra",
+så "som mot fem" är `CombatSim.FIVE_IN_FOUR` på Health, Attack och Intelligence (opts `five_in_four`). Test:
+`test_party_five.gd::test_five_in_a_realm_for_four_scales_on_the_deepest_depth`.
+
+| FIVE_IN_FOUR | Kryptan d2 / d3 | Kapellet d2 / d3 | Lunden d2 / d3 |
+|---|---|---|---|
+| (som mot fyra, steg 1) | 100 / 100 | 100 / 100 | 100 / 100 |
+| 1,25 | 62 / 79 | 77 / 48 | 82 / 79 |
+| 1,35 | 54 / 67 | 61 / 32 | 65 / 82 |
+| 1,45 | 50 / 59 | 47 / 21 | 43 / 83 |
+
+Valt **1,4** (mellan de två sista; med väktarna i steg 5 inräknade).
+
+### Steg 4: Trollbergets eget djupsteg (`realms.json` mountain "depth_step" **0,05**)
+
+Per fiendedjup över 1 (djup 1 = fiendedjup 2, så att också djup 1 räknas), gånger det allmänna djupsteget. Test:
+`test_party_five.gd::test_mountain_has_its_own_depth_step`. Med djupsteg 0,15 (fyra / fem):
+
+| Bergsteg, Tullen vid bron | Djup 1 | Djup 2 | Djup 3 |
+|---|---|---|---|
+| 0, 1,17 | 18 / 87 | 93 / 100 | 21 / 79 |
+| 0,04, 1,5 | 6 / 75 | 0 / 32 | 3 / 52 |
+| 0,06, 1,6 | 1 / 74 | 0 / 0 | 1 / 39 |
+| 0,15, 1,17 | 1 / 25 | 1 / 82 | 0 / 1 |
+
+Berget är mycket brant (fem på djup 3: 79 % vid ×1,45, 1 % vid ×2,10). Ett linjärt steg kan inte ensamt ge både djup 1
+och djup 3 rätt (bossen på djup 1 behöver ungefär 0,10, väktaren på djup 3 0,05), och Tullen vid bron (djup 2) var svag
+för sitt djup. 0,05 ger djup 3; djup 1 och 2 rättas med mötena i steg 5.
+
+### Steg 5: mötena (`data/encounters.json` stat_mult, sex värden)
+
+| Möte | Djup | Förr → nu | Prövat (nedstigning, väktare/boss i den) |
+|---|---|---|---|
+| Benfurstens sal (crypt_3) | kryptan 1 | 1,02 → **1,14** | 72 (79) → 42 (46) |
+| Biskopens altare (chapel_3) | kapellet 1 | 1,06 → **1,33** | 88 (93); 1,22: 69 (73); 1,38: 24 (25); 1,33: 36 (38) |
+| Midnattsklockan (crypt_g1) | kryptan 2 | 1,025 → **1,24** | 92 (96); 1,17: 72 (75); 1,24: 53 (55) |
+| Abbedissans kör (chapel_g1) | kapellet 2 | 0,96 → **1,32** | 92 (98); 1,12: 84 (89); 1,32: 55 (59) |
+| Tullen vid bron (troll_g1) | berget 2 | 1,17 → **1,45** | fem 100; 1,5: 32; 1,45: 53 (fyra 0) |
+| Bergakungens sal (troll_3) | berget 1 | 1,05 → **1,12** | fem 75 (vid 1,05 och bergsteg 0,04); 1,10: 50; 1,12: 42 (fyra 1) |
+
+Utanför budgeten (sex värden) och kvar utanför bandet i proven: lunden djup 1 (78 %, Vävmoderns krona), lunden djup 2–3
+med fyra (63 / 71 %), kryptan djup 3 med fyra (72 %, Kistornas råd) och kapellet djup 3 med fyra (30 %, Inkvisitorns
+domstol, under bandet). Hela tabellen: `docs/balans/sammanfattning-v1.md`.
