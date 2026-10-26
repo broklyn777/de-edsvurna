@@ -279,3 +279,21 @@ inte ett fokuserat mål); fart och anfall gjorde det. Imma slår med fart 18, al
 Varv 4 (Claude, efter VD:s fråga): Kilslag +50 % även mot troll med Svedd hud (Trollhud), och en makrorad för det. Trollberget
 d2 / d3 med fem: 15 / 25 % – oförändrat. I en enskild väktarstrid (troll_g1, d2, fulla Charges) får 73 av 77 Kilslag
 bonusen; i nedstigningen är hennes 8 Kilslag slut före väktaren. Behålls (bara troll påverkas).
+
+## Den delade lågan (Irrblossets trofé, gruppläkaren)
+
+Ny vanlig trofé `shared_flame` (Irrblosset lämnar den i stället för Det släckta irrblosset, som finns kvar i datan): när
+bäraren helar någon får hela sällskapet Läkning i 1 tur, en gång per tur; en Läkning som tickar räknas inte (`not_hot`).
+Mätning: hela nedstigningar, fyra hjältar (Paladinen, Brokk, Alva, Eira) på väntad nivå, Alva med bara den trofén, ingen
+artefakt, n = 60 per ruta, samma frön (`tests/_alva_sim.gd`, inte incheckad). `stola_fix` = Diakonens stola med `not_hot`.
+
+| Varv | Ändring | Bot | Kryptan d1 / d2 / d3 | Kapellet d1 / d2 / d3 |
+|---|---|---|---|---|
+| 1 | lågan: Läkning 1 tur till alla, en gång per tur | MACRO | stola 52/40/57, radband 8/5/0, **låga 38/10/12** | stola 50/28/28, radband 0/3/7, **låga 7/2/15** |
+| 2 | samma, med jämförelser | MACRO | ingen 5/3/0, stola_fix 30/10/12, **låga 38/10/12** | ingen 0/0/2, stola_fix 7/0/15, **låga 7/2/15** |
+| 3 | samma | TUNED | ingen 18/8/0, radband 22/17/2, stola 65/65/58, stola_fix 37/32/30, **låga 47/43/28** | ingen 0/7/15, radband 0/7/22, stola 80/57/38, stola_fix 22/17/30, **låga 35/20/35** |
+
+Lågan ligger 8–45 enheter **under** Diakonens stola som den är i spelet, och i snitt +0 (MACRO) / +7 (TUNED, −2 … +13)
+över stolan med `not_hot`. Värdena behölls (1 tur, en gång per tur). **Fynd:** Diakonens stola håller sig själv vid liv:
+Läkningens tick är en helning från bäraren, så stolan fyller på Läkningen varje tur (266 Läkningar mot 72 med `not_hot`
+på 20 strider i crypt_2). Det ger +28–58 enheter. En rättelse (`"not_hot": true` i stolans `when`) är VD:s beslut.

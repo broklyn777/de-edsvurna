@@ -70,6 +70,8 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Hjältarna behåller sina troféer (0.26.3, som i Siralim, `Profile.worn`, `wear()`, `keep_worn()`): de följer med i varje
   körning och i Övningsgården tills man byter i lägret eller i Förberedelser; allt som hittas hamnar i samlingen.
   En andel av en träff (`pct_of_event`, t.ex. följdanfall) blir aldrig kritisk igen.
+  Gruppläkaren (0.30, vanlig): Irrblosset lämnar **Den delade lågan** (`shared_flame`): bärarens helning ger hela sällskapet
+  Läkning i 1 tur, en gång per tur; villkoret `not_hot` gör att en HoT som tickar inte räknas (`tests/test_shared_flame.gd`).
   **Namn och lärdom** (VD 2026-10-23, `docs/ideer/chat-trofeer-1.tsv`): en trofé är ett föremål man tagit eller en lärdom man
   dragit, aldrig en ed, en pakt, en mottagen kraft eller en kroppsdel; ett föremål från en ockult fiende låter besegrat eller
   brutet. Varje trofé har `lesson` ("{bärare} har lärt sig …", `GameData.lesson()`), kursiv under effekten (`UiStyle.lesson`) i

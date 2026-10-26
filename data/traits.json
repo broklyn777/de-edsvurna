@@ -2143,6 +2143,35 @@
 			}
 		]
 	},
+	"shared_flame": {
+		"combo": {
+			"needs": "heal_cast",
+			"creates": "mending",
+			"scope": "party"
+		},
+		"name": "Den delade lågan",
+		"trophy": true,
+		"text": "När bäraren helar någon får hela sällskapet Läkning i 1 tur (en gång per tur).",
+		"answers": "Nötning över hela sällskapet",
+		"rarity": "common",
+		"trigger": "heal",
+		"once_per_turn": true,
+		"when": {
+			"source": "self",
+			"target": "ally",
+			"not_from_trait": true,
+			"not_hot": true
+		},
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "mending",
+				"duration": 1,
+				"target": "allies"
+			}
+		],
+		"lesson": "Irrblosset lockade de vilsna bort, ett i taget. {bärare} har lärt sig att ett ljus ska samla, inte skingra."
+	},
 	"deacon_stole": {
 		"combo": {
 			"needs": "heal_cast",
