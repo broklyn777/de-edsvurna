@@ -1196,6 +1196,9 @@ func _hero_sheet(s: String) -> void:
 	if id == "":
 		out.append("Okänd hjälte. Skriv hero <id> (t.ex. hero alva) eller hero all.")
 		return
+	if id != "paladin" and not profile.recruited.has(id):
+		out.append("%s har inte anslutit än." % data.heroes[id].name)
+		return
 	var h := profile.hero(data, id)
 	var level := int(h.level)
 	var pers_id := String(h.get("personality", data.heroes[id].get("personality", "")))
