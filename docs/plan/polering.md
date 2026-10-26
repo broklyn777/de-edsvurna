@@ -7,6 +7,14 @@ Inga nya system under poleringen. Ett område i taget, i den ordning spelaren m�
 med vad "klart" betyder; när listan är uppfylld provspelar VD området på telefonen och säger "klart" eller vad som skaver.
 Först då går vi vidare. Ungefär 2–3 veckor totalt.
 
+## Ledstänger (VD 2026-10-26, efter att ha provat Baldur's Gate 3 igen)
+VD kom aldrig in i BG3 fast det "har allt": **för mycket att hålla reda på** (inventariet, väggar av siffror) och **långt
+mellan striderna** (mycket gång och samtal). Tärningsslump och långsamma nivåer är okej – så länge man **känner framsteg och
+vet vad man ska göra**. Därför, i varje område:
+- Visa det som spelar roll nu; resten bakom ett tryck. Förråd och samlingar sorteras efter nytta, inte i en lång lista.
+- Samtal korta och möjliga att hoppa över; vägen till nästa strid kort.
+- Alltid ett tydligt nästa steg och synligt framsteg.
+
 ## Ordningen
 
 ### 1. Första timmen (intro, borgen, de två första nedstigningarna)
