@@ -126,11 +126,11 @@ func _draw() -> void:
 	var pr := _personality_rect()
 	draw_rect(pr, Color(0, 0, 0, 0.55))
 	draw_rect(pr, Color(UiStyle.TRAIT_GOLD, 0.7 if run.sheet_can_change_personality else 0.3), false, 2.0)
-	UiStyle.text(self, pr.position + Vector2(14, 26), "%s: %s 40 %%, %s 20 %%" % [pers.get("name", "?"),
+	UiStyle.text(self, pr.position + Vector2(14, 26), "%s: ↑ %s 40 %%, ↓ %s 20 %%" % [pers.get("name", "?"),
 			HeroStats.STAT_NAMES.get(pers.get("up", ""), "–"), HeroStats.STAT_NAMES.get(pers.get("down", ""), "–")], 19,
 			UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, pr.size.x - 24, 2)
-	UiStyle.text(self, pr.position + Vector2(14, 52), ("Byt personlighet – %d silver" % Profile.PERSONALITY_COST)
-			if run.sheet_can_change_personality else pers.get("text", ""), 16, Color(1, 1, 1, 0.75),
+	UiStyle.text(self, pr.position + Vector2(14, 52), ("Tillväxt per nivå (annars 30 %%) · byt för %d silver" % Profile.PERSONALITY_COST)
+			if run.sheet_can_change_personality else "Tillväxt per nivå (annars 30 %%). " + pers.get("text", ""), 16, Color(1, 1, 1, 0.75),
 			HORIZONTAL_ALIGNMENT_LEFT, pr.size.x - 24, 2)
 	if picking:
 		_draw_picker(data, prog.personality)
@@ -424,5 +424,5 @@ func _draw_picker(data: Dictionary, current: String) -> void:
 	var ids: Array = data.personalities.keys()
 	for i in ids.size():
 		var p: Dictionary = data.personalities[ids[i]]
-		UiStyle.card(self, _pick_rect(i), p.name, "↑ %s 40 %%\n↓ %s 20 %%\n%s" % [HeroStats.STAT_NAMES[p.up],
+		UiStyle.card(self, _pick_rect(i), p.name, "↑ %s växer 40 %%\n↓ %s bara 20 %%\n%s" % [HeroStats.STAT_NAMES[p.up],
 				HeroStats.STAT_NAMES[p.down], p.text], ids[i] == current, UiStyle.TRAIT_GOLD)

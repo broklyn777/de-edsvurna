@@ -693,7 +693,7 @@ func _show_inspect(unit_id: String) -> void:
 			HeroStats.shown(u.speed)]]
 	if u.team == 0 and u.personality != "":
 		var p: Dictionary = data.personalities[u.personality]
-		lines.append("Nivå %d · %s (%s 40 %%, %s 20 %%)" % [int(u.level), p.name, HeroStats.STAT_NAMES[p.up],
+		lines.append("Nivå %d · %s (%s växer 40 %%, %s 20 %% per nivå)" % [int(u.level), p.name, HeroStats.STAT_NAMES[p.up],
 				HeroStats.STAT_NAMES[p.down]])
 	for trait_id in u.traits:
 		var t: Dictionary = data.traits[trait_id]
