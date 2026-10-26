@@ -68,3 +68,8 @@ Klart när:
 ## Efter poleringen
 Variation i det som finns (fler monster per Realm, bossar som skiftar mellan djup) före nya system. Sedan nya Realms
 och iPhone.
+
+## Fynd från VD:s provspel av 0.30.47 (ny profil, 2026-10-26)
+1. Borgen: hjältebladet går inte att nå härifrån. Man vill kunna se allt om sina karaktärer när som helst
+   (Siralim: skapelserna nås från slottets meny). Förslag: tryck på paladinpjäsen, eller en knapp SÄLLSKAPET under
+   INSTÄLLNINGAR, som öppnar `hero_screen` för alla som har anslutit. (Område 4, men syns redan i första timmen.)
