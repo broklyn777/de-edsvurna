@@ -81,6 +81,7 @@ func test_interrupt_costs_her_turn_and_has_a_cooldown() -> void:
 	sim.current = t
 	assert_eq(sim.act("ability", "", "torun_ready"), "")
 	assert_true(t.auras.has("torun_ready"), "hon står beredd")
+	assert_true(t.auras.has("provoke") and t.auras.has("defend"), "och drar anfallen till sig som andra tank")
 	assert_true(sim.can_act(t, "ability", "torun_ready") != "", "inte igen direkt")
 	# Utan beredskap avbryter hon ingenting.
 	var sim2 := _sim()

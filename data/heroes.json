@@ -653,11 +653,11 @@
 		"role": "tank",
 		"color": "#8a6a48",
 		"stats": {
-			"health": 110,
-			"attack": 8.8,
+			"health": 120,
+			"attack": 10.0,
 			"intelligence": 6.0,
-			"defense": 5.5,
-			"speed": 8
+			"defense": 6.5,
+			"speed": 11
 		},
 		"placeholder_figure": true,
 		"personality": "grundlig",

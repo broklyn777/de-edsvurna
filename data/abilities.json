@@ -20,11 +20,15 @@
 		"sound": "k_shield_wall",
 		"cooldown": 3,
 		"charges": 6,
-		"text": "Torun försvarar sig och håller släggan lyft till sin nästa tur. Släpper en fiende en varslad attack eller helar sig under tiden, avbryter hon det (Inte färdigt än). Nedkylning 3 turer.",
+		"text": "Torun försvarar sig, drar fiendernas anfall till sig och håller släggan lyft till sin nästa tur. Släpper en fiende en varslad attack eller helar sig under tiden, avbryter hon det (Inte färdigt än). Nedkylning 3 turer.",
 		"effects": [
 			{
 				"type": "aura",
 				"aura": "defend"
+			},
+			{
+				"type": "aura",
+				"aura": "provoke"
 			},
 			{
 				"type": "aura",
@@ -36,11 +40,11 @@
 		"name": "Kilslag",
 		"target": "enemy",
 		"melee": true,
-		"charges": 6,
+		"charges": 8,
 		"icon": "bolt",
 		"button_color": "#8a6a48",
 		"sound": "bone_crush",
-		"text": "Ett tungt slag (130 %). Mot en Vacklande fiende – en laddning som Tystad eller skada bröt – slår det 50 % hårdare.",
+		"text": "Ett tungt slag (150 %). Mot en Vacklande fiende – en laddning som Tystad eller skada bröt – slår det 50 % hårdare.",
 		"bonus_vs": {
 			"aura": "staggered",
 			"mult": 1.5
@@ -48,7 +52,7 @@
 		"effects": [
 			{
 				"type": "damage",
-				"power": 1.3
+				"power": 1.5
 			}
 		]
 	},

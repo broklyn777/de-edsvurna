@@ -256,3 +256,22 @@ Felet i karriären (frö 26, "paladin har inte fått agera på 21 turer … trol
 tur 9 (sjönk längst ned), slet sig loss på tur 13 (Fri), stod överst på tur 19 och knuffades ned när Lirien flyttade sig
 själv överst (originalets regel). Under väntan dog fyra figurer och kontrollens gräns (4 × levande) föll från 36 till 20.
 `tests/soak.gd` räknar nu gränsen på hur många som levde när hjälten senast stod på tur; frö 26 ger inga fel.
+
+## Torun som den femte (gren `torun`, 2026-10-26, en justeringsomgång godkänd av VD)
+
+Mätning: `tests/balance_sim.gd -- --realm=<r> --depth=<d> --fifth=torun --n=40 --n-side=20 --runs=40 --levels=0`, jämfört
+med samma körning `--fifth=imma`. Tabellen: vinst per nedstigning med fem i sällskapet (n 40, brus ungefär ±15 enheter).
+
+| Varv | Ändring | Trollberget d1 / d2 / d3 | Kryptan d2 / d3 | Kapellet d2 / d3 |
+|---|---|---|---|---|
+| Imma | – | 35 / 40 / 62,5 | 65 / 87,5 | 87,5 / 75 |
+| 0 | första versionen (attack 8,0, fart 8) | 2,5 / 0 / 15 | 67,5 / 60 | 57,5 / 60 |
+| 0b | attack 8,8, Kilslag i makrot | 5 / 0 / 20 | – | – |
+| 1 | Stå beredd provocerar också; Health 120, Defense 6,5; Kilslag 150 %; makrot provocerar | 10 / 2,5 / 7,5 | – | – |
+| 2 | attack 10, fart 11; Kilslag 8 Charges; makrot provocerar inte längre | 25 / 15 / 25 | – | – |
+| 3 | attack 11, fart 13 | 20 / 17,5 / 25 | 72,5 / 85 | 77,5 / 85 |
+
+Valt: **varv 2** (attack 10, fart 11). Varv 3 gav inget mer i Trollberget men gick förbi Imma i kryptan d2 och kapellet d3;
+varv 2 i kryptan och kapellet är inte mätt (det ligger mellan varv 0 och varv 3). Trollberget når inte inom 10 enheter av
+Imma: 10 / 25 / 37,5 enheter under. Att provocera hjälpte inte (Trollbergets fara är nötningen över en lång nedstigning,
+inte ett fokuserat mål); fart och anfall gjorde det. Imma slår med fart 18, alltså ungefär dubbelt så ofta som trollen.
