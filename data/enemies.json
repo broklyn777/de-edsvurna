@@ -1364,7 +1364,7 @@
 				"walk": "Walk"
 			}
 		},
-		"trophy": "wisp_flame",
+		"trophy": "shared_flame",
 		"elite": {
 			"name": "Lyktgubbe",
 			"trophy": "lantern_light",

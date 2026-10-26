@@ -3067,6 +3067,10 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 			"not_from_trait":
 				if want and e.has("trait"):
 					return false
+			"not_hot":
+				# Den delade lågan: en HoT som tickar (Läkning, Förnyelse) räknas inte som att bäraren helar.
+				if want and e.get("calc", {}).get("hot", false):
+					return false
 			"self_has_kind":
 				if owner.has_kind(want) != true:
 					return false
