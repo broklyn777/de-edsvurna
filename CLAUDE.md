@@ -297,7 +297,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `--world-demo`, `--news` (den gamla rutan på kampanjkartan). Botarna: `SOAK=karriar` skriver händelserna (`VARLD=av`).
   Tester: `tests/test_world_events.gd`.
 - **Djup** (0.14, Siralims Realm Depth): väljs på kampanjkartan, nästa öppnas när föregående är klarat. Fiender
-  +15 % stats per djup (inte Speed; balans v1 när nivåerna blev mindre, `docs/balans/sammanfattning-v1.md`; 3 % i 0.30.33, förr 8 %: det lades ovanpå fiendernivåerna och gav väggen vid djup 5–6, `docs/provspel/djupsteg-matning.md`), silver +25 % och troféchans +15 procentenheter per djup.
+  +3 % stats per djup (inte Speed; 0.30.33; balans v2 prövade 5–15 %, allt över 3 % gav väggen vid djup 4–6 hos karriärbotarna, `docs/balans/sammanfattning-v2.md`; förr 8 %: det lades ovanpå fiendernivåerna och gav väggen vid djup 5–6, `docs/provspel/djupsteg-matning.md`), silver +25 % och troféchans +15 procentenheter per djup.
 - **Fiender** (0.14): alla har egenskaper som makrona måste svara på (Benrustning, Jägarblick, Gravpakt,
   Taggig utmaning, Glödhetta). Benfursten är Resistant (halv effekt av debuffar) och vredgas under 50 % liv;
   Dödsdom laddar han också över 50 % när Benstormen vilar, två turer i förväg (strid-justering).
@@ -376,7 +376,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   Balans v1: fem i en Realm byggd för fyra möter fiender som mot fem (`CombatSim.FIVE_IN_FOUR` ×1,4 på Health, Attack och
   Intelligence, opts `five_in_four`) på det djupaste djupet, som mot fyra på djup Realmen redan är klarad på
   (`RunState.depth_cleared`, `Profile.realm_depth`). Trollberget har ett eget djupsteg ovanpå (`realms.json` "depth_step"
-  0,05 per fiendedjup, opts `realm_depth_step`).
+  0,17 per fiendedjup, opts `realm_depth_step`).
   **Sällskap om fem** (prototyp, grenen `sallskap-fem`, VD): platserna kommer ur `Profile.party_slots()` (4, eller 5 när
   `Profile.SLOT_UNLOCKS` är uppfyllt: huvudbossen besegrad på djup 4 i både kryptan och kapellet; `max_companions()`,
   `RunState.party_slots`). Den låsta platsen syns grå i Förberedelser och Värdshuset från att profilen äger fyra

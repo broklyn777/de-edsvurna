@@ -500,6 +500,10 @@ func _check_control(sim: CombatSim, events: Array, acted: Dictionary, encounter:
 				skips[u.id] = 0  # förra turen fick hen agera
 			pending[u.id] = e.type == "turn_start"
 			acted[u.id] = sim.turn_no
+			# Balans v2: gränsen räknas på hur många som levde när hjälten senast stod på tur. Förr på dem som lever nu, och
+			# när figurer dog under väntan blev gränsen för låg (karriären frö 26: Paladinen snärjd, sedan knuffad ned av
+			# Liriens Hjältens ballad, 21 turer med 9 → 5 levande; mekaniken gjorde rätt).
+			acted["_alive_" + u.id] = sim.units.filter(func(x: CombatUnit) -> bool: return x.alive).size()
 		elif e.type == "status_skip":
 			pending[u.id] = false
 			skips[u.id] = int(skips.get(u.id, 0)) + 1
@@ -512,7 +516,7 @@ func _check_control(sim: CombatSim, events: Array, acted: Dictionary, encounter:
 		if not acted.has(h.id):
 			acted[h.id] = sim.turn_no
 		var idle: int = sim.turn_no - int(acted[h.id])
-		if idle > maxi(4 * alive, 16) or int(skips.get(h.id, 0)) > MAX_SKIPS:
+		if idle > maxi(4 * maxi(alive, int(acted.get("_alive_" + h.id, 0))), 16) or int(skips.get(h.id, 0)) > MAX_SKIPS:
 			acted["_reported"] = true
 			_fail("kontroll", "%s har inte fått agera på %d turer (%d egna turer tagna) i %s (statusar %s)" % [h.id, idle,
 					int(skips.get(h.id, 0)), encounter, ", ".join(h.auras.keys())])

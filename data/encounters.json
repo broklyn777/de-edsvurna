@@ -1536,7 +1536,7 @@
 			"bone_runner",
 			"grave_priest"
 		],
-		"stat_mult": 1.24,
+		"stat_mult": 1.10,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "midnight_clapper",
@@ -1621,7 +1621,7 @@
 			"corrupted_deacon",
 			"witch"
 		],
-		"stat_mult": 1.32,
+		"stat_mult": 1.20,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "wandering_crown",
@@ -1655,7 +1655,7 @@
 			"cult_overseer",
 			"witch"
 		],
-		"stat_mult": 1.55,
+		"stat_mult": 1.45,
 		"guardian": true,
 		"template": "Väktare",
 		"trophy": "tribunal_gavel",

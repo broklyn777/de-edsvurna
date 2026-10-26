@@ -210,3 +210,49 @@ för sitt djup. 0,05 ger djup 3; djup 1 och 2 rättas med mötena i steg 5.
 Utanför budgeten (sex värden) och kvar utanför bandet i proven: lunden djup 1 (78 %, Vävmoderns krona), lunden djup 2–3
 med fyra (63 / 71 %), kryptan djup 3 med fyra (72 %, Kistornas råd) och kapellet djup 3 med fyra (30 %, Inkvisitorns
 domstol, under bandet). Hela tabellen: `docs/balans/sammanfattning-v1.md`.
+
+## Balans v2: rättelse efter karriärbotarna (2026-10-26)
+
+Karriärbotarna (`SOAK=karriar`, 40 profiler × 18 nedstigningar) med v1: kryptan d4 59 → 0 %, kapellet d4 52 → 14 %, lunden
+d4 62 → 4 %, ingen förbi djup 4 (förr djup 9). Orsak: fienderna och hjältarna delar nu styrkekurvan, och på karriärens
+nivåer (8,6 på djup 4, 10,3 på djup 7) ger djupsteget 3 % exakt samma kvot fiende/hjälte som förr (räknat: 1,00 på djup
+4–9). Varje procent över 3 lägger på: 0,05 → +6–13 %, 0,08 → +14–32 %, 0,15 → +34–60 % på djup 4–9.
+
+Prov (karriären, vinst per djup, kryptan / kapellet / lunden; djupaste djupet efter 18 nedstigningar):
+
+| Djupsteg och möten | n | Djup 4 | Djup 5 | Djup 6 | Djupast |
+|---|---|---|---|---|---|
+| förr (test-0.30) | 40 | 59 / 52 / 62 | 38 / 54 / 33 | 53 / 56 / 45 | 9 |
+| v1, 0,15 | 40 | 0 / 14 / 4 | – | – | 4 |
+| 0,08, v1:s möten | 20 | 19 / 38 / 40 | 8 / 33 / 50 | 0 / 0 / – | 6 |
+| 0,05, v1:s möten | 20 | 64 / 43 / 43 | 8 / 57 / 74 | 19 / 0 / 0 | 7 |
+| 0,05, möten A (nedan) | 40 | 33 / 42 / 46 | 39 / 31 / 35 | 37 / 25 / 0 | 7 |
+| **0,03, möten A** | 40 | 36 / 46 / 42 | 35 / 60 / 61 | 48 / 36 / 43 | **9** |
+
+Väktarna och bossarna återkommer var tredje djup (huvudbossen på djup 1, 4, 7, väktarna på 2, 5, 8 och 3, 6, 9), så
+v1:s höjningar av Midnattsklockan och Abbedissans kör gav väggen på djup 5 (kryptan 8 %). Möten A (tre nya värden av
+åtta tillåtna): **crypt_g1 1,24 → 1,10**, **chapel_g1 1,32 → 1,20**, **chapel_g2 1,55 → 1,45**. De andra föreslagna
+(grove_3, crypt_g2, grove_g1/g2 uppåt) gjordes inte: de skulle sänka karriären på djup 4–6 där de återkommer.
+
+Valt: **`DEPTH_STEP` tillbaka till 0,03** (spelets värde före balansen). Trollbergets eget steg **0,05 → 0,17** så att
+berget blir lika brant som i v1 (0,15 × 0,05 tillsammans ≈ 0,03 × 0,17 per fiendedjup); karriären kördes med 0,15 (berget
+vinns ändå inte med fyra). Botarna i Trollberget: 0 % i alla versioner med fyra (karriären går dit var fjärde nedstigning
+med fyra; förr 0–22 %). Det är botens val, berget kräver fem.
+
+Balanssimuleringen på väntad nivå med v2 (nedstigningar, 100 per rad, fyra / fem):
+
+| | Djup 1 | Djup 2 | Djup 3 |
+|---|---|---|---|
+| Kryptan | 42 | 97 / 73 | 97 / 92 |
+| Kapellet | 36 | 93 / 83 | 96 / 79 |
+| Lunden | 78 | 89 / 87 | 99 / 86 |
+| Trollberget | 1 / 39 | 0 / 56 | 6 / 48 |
+
+Djup 2–3 i simuleringen ligger åter över mål B: simuleringens väntade nivå och karriärens verklighet går inte att få i mål
+med samma mötesvärden, eftersom samma väktare möter sällskapet på djup 2 (väntad nivå 6, simuleringen 93–97 %) och på djup 5
+(karriären nivå 9,4, 35–61 %). Karriären är grinden; djup 2–3 i karriären vinns 54–81 % (förr 37–71 %).
+
+Felet i karriären (frö 26, "paladin har inte fått agera på 21 turer … troll_2a"): ingen motorbugg. Paladinen snärjdes på
+tur 9 (sjönk längst ned), slet sig loss på tur 13 (Fri), stod överst på tur 19 och knuffades ned när Lirien flyttade sig
+själv överst (originalets regel). Under väntan dog fyra figurer och kontrollens gräns (4 × levande) föll från 36 till 20.
+`tests/soak.gd` räknar nu gränsen på hur många som levde när hjälten senast stod på tur; frö 26 ger inga fel.
