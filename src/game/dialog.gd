@@ -220,9 +220,10 @@ static func reply(data: Dictionary, station_id: String) -> String:
 
 ## Lägen för replikerna (plan §3).
 ## 0.28.1 (grottan): cave (ny våning), elite (ser en elitgrupp), back (backar), treasure, stairs (questen klar, trappan
-## öppen), boss (ser bossen), fallen (någon stupade); home finns i datan men visas inte än.
+## öppen), boss (ser bossen), fallen (någon stupade); home finns i datan men visas inte än. interrupt: Torun avbröt något
+## i striden (sägs efteråt, Run._bark_after_battle).
 const BARK_KINDS := ["hard_fight", "campfire", "rare_find", "rescue", "new_realm", "alone",
-		"cave", "elite", "back", "treasure", "stairs", "boss", "fallen", "home"]
+		"cave", "elite", "back", "treasure", "stairs", "boss", "fallen", "home", "interrupt"]
 
 
 ## En replik (eller ett kort samtal mellan två) för läget: {lines: [{who, text}]}, eller {} om ingen passar.
@@ -316,8 +317,9 @@ static func present(data: Dictionary, entry: Variant, party: Array) -> bool:
 	return mentioned(data, entry).all(func(id: String) -> bool: return id == "paladin" or id == "narrator" or party.has(id))
 
 
+## realm: körningens Realm; repliker med "realm" (Toruns rader från Trollberget) sägs bara där.
 static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng: RandomNumberGenerator,
-		profile: Profile = null, fallback := true) -> Dictionary:
+		profile: Profile = null, fallback := true, realm := "") -> Dictionary:
 	var d: Dictionary = data.get("dialog", {})
 	var n := profile.total_descents() if profile != null else 0
 	# Kandidaterna: {key, entry, who, pair, rest}; rest = nedstigningar sedan senast (INF = aldrig).
@@ -325,7 +327,7 @@ static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng:
 	var pool := 0
 	for pair in d.get("pairs", []):
 		if pair.get("kind", "") == kind and party.has(pair.heroes[0]) and party.has(pair.heroes[1]) \
-				and present(data, pair, party):
+				and present(data, pair, party) and realm_ok(pair, realm):
 			pool += 1
 			var key := pair_key(pair)
 			if _bark_ok(pair, key, used, profile, rng):
@@ -334,7 +336,7 @@ static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng:
 		if id == "paladin":
 			continue
 		for e in d.get("barks", {}).get(id, {}).get(kind, []):
-			if not present(data, e, party):
+			if not present(data, e, party) or not realm_ok(e, realm):
 				continue
 			pool += 1
 			var key := line_key(e)
@@ -380,6 +382,11 @@ static func bark(data: Dictionary, kind: String, party: Array, used: Array, rng:
 	if pick.pair:
 		return {"lines": pick.entry.lines.map(func(l: Array) -> Dictionary: return {"who": l[0], "text": l[1]})}
 	return {"lines": [{"who": pick.who, "text": line_text(pick.entry)}]}
+
+
+## Sant om repliken får sägas i Realmen (utan "realm" gäller den överallt).
+static func realm_ok(entry: Variant, realm: String) -> bool:
+	return not (entry is Dictionary and entry.has("realm")) or String(entry.realm) == realm
 
 
 ## Den som vilat längst (aldrig sagda först); slumpen avgör lika.

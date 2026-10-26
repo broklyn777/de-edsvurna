@@ -80,7 +80,7 @@ func setup(u: CombatUnit, s: CombatSim, vis: Dictionary) -> void:
 	_body.add_child(_model)
 	_player = _model.find_children("*", "AnimationPlayer", true, false)[0]
 	for donor in vis.get("anims_from", []):
-		_borrow_anims(donor)
+		_borrow_anims(donor, vis.get("borrow_skip", []))
 	ProceduralAnims.add_to(_player, vis.get("procedural", []))
 	for loop_anim in [anims.get("idle", ""), anims.get("cast", ""), anims.get("block", ""),
 			anims.get("run", ""), anims.get("walk", "")]:
@@ -479,7 +479,8 @@ static func _donor(model_name: String) -> Node:
 
 ## Lånar animationer från en annan figur med samma rigg. Spåren pekar på figurens rotnod
 ## ("Torvald/CharacterArmature/Skeleton3D:Hips"), så rotnamnet byts ut.
-func _borrow_anims(model_name: String) -> void:
+## skip: ben vars spår inte lånas (t.ex. fingrarna, när givarens vilopose för händerna inte passar: Torun).
+func _borrow_anims(model_name: String, skip: Array = []) -> void:
 	var donor := _donor(model_name)
 	var from: AnimationPlayer = donor.find_children("*", "AnimationPlayer", true, false)[0]
 	var own_path := String(_player.get_animation(_player.get_animation_list()[0]).track_get_path(0))
@@ -489,8 +490,12 @@ func _borrow_anims(model_name: String) -> void:
 		if _player.has_animation(anim_name):
 			continue
 		var anim: Animation = from.get_animation(anim_name).duplicate()
-		for t in anim.get_track_count():
+		for t in range(anim.get_track_count() - 1, -1, -1):
 			var path := String(anim.track_get_path(t))
+			var bone := path.get_slice(":", 1)
+			if skip.any(func(b: String) -> bool: return bone.begins_with(b)):
+				anim.remove_track(t)
+				continue
 			anim.track_set_path(t, NodePath(to_root + path.substr(path.find("/"))))
 		lib.add_animation(anim_name, anim)
 

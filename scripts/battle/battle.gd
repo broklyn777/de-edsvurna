@@ -1006,6 +1006,8 @@ func _handle(e: Dictionary) -> void:
 				_after(_effect_delay(e), _float.bind(e.unit, "KAN INTE VÄCKAS", Color("#a8c070"), 18, false))
 		"windup_start", "windup_tick", "windup_delayed", "windup_broken":
 			_after(_effect_delay(e) + 0.05, _on_windup.bind(e))
+		"interrupt":
+			_after(_effect_delay(e), _on_interrupt.bind(e))
 		# Väktarsteg 2: klockans slag, rådets arv och kronan som flyttar.
 		"stack_said":
 			_after(_effect_delay(e) + 0.2, _float.bind(e.unit, String(e.text), Color("#ffb347"), 26, true))
@@ -1187,6 +1189,18 @@ func _on_windup(e: Dictionary) -> void:
 	if note != "":
 		macro_log.add({"text": note, "ok": true, "skipped": [], "notes": []})
 		damage_log.add_note(note, warn)
+
+
+## Torun (Inte färdigt än): ordet över fienden, ett slag i marken och en rad i makrologgen (stridsloggen har sin egen).
+func _on_interrupt(e: Dictionary) -> void:
+	var delayed: bool = e.get("delayed", false)
+	_float(e.target, "FÖRDRÖJD" if delayed else "AVBRUTEN!", UiStyle.GOLD, 26, true)
+	sfx.play("bone_crush", -6.0, 0.0)
+	_hitstop(70)
+	world.add_shake(2.0)
+	var ab_name: String = sim.ability(e.ability).get("name", e.ability)
+	macro_log.add({"text": "%s avbryter %s: %s %s." % [sim.unit(e.unit).name, sim.unit(e.target).name, ab_name,
+			"skjuts upp en tur" if delayed else "blir inte av"], "ok": true, "skipped": [], "notes": []})
 
 
 const WINDUP_REASONS := {"silenced": "Tystad", "stagger": "skakad loss av skadan", "channel": "kanalen föll",

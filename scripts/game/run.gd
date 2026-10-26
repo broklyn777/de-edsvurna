@@ -376,6 +376,10 @@ func _dev_args() -> void:
 				profile.realm_depth[realm_id] = maxi(int(Profile.SLOT_UNLOCKS[0].requires[realm_id]),
 						int(profile.realm_depth.get(realm_id, 0)))
 			profile.slots_seen = Profile.BASE_SLOTS
+		elif arg.begins_with("--party="):
+			# --party=torun,imma (efter --all-companions): sällskapet för en påhittad profil (sparas inte), t.ex. före --encounter
+			dev_profile = true
+			profile.set_party(Array(arg.get_slice("=", 1).split(",")))
 		elif arg == "--all-companions":
 			# --all-companions: en påhittad profil (sparas inte) som har befriat alla lärjungar
 			dev_profile = true
@@ -542,7 +546,7 @@ func _dev_args() -> void:
 				profile.forge("paladin", "sword", "")  # svärdet som smiddes i introt
 				profile.silver = keep_silver - Profile.FORGE_COST + 77 if profile.intro_step >= 7 else 0
 		elif arg.begins_with("--bark="):
-			pending_bark = Dialog.bark(data, arg.get_slice("=", 1), state.party, state.barks_used, rng)  # replik på rumskartan
+			pending_bark = Dialog.bark(data, arg.get_slice("=", 1), state.party, state.barks_used, rng, null, true, state.realm)  # replik på rumskartan
 		elif arg.begins_with("--story="):
 			# 0.25: --story=imma_joins | first_gate | first_boss visar berättelsen på nästa skärm (rumskartan, borgen)
 			var kind := arg.get_slice("=", 1)
@@ -1138,6 +1142,9 @@ func _bark_after_battle(sim: CombatSim) -> void:
 		bark("alone")
 	elif last_finds.any(func(f: Dictionary) -> bool: return Forge.is_rare_find(f)):
 		bark("rare_find")
+	elif int(sim.trait_stats.get("torun_not_done", {}).get("procs", 0)) > 0 \
+			and standing.any(func(h: CombatUnit) -> bool: return h.id == "torun"):
+		bark("interrupt", ["torun"])  # Torun avbröt något i striden (repliker sägs aldrig i striden, så efteråt)
 	elif standing.size() < sim.heroes.size():
 		bark("fallen", standing.map(func(h: CombatUnit) -> String: return h.id))  # 0.28.1: någon stupade (sägs varmt efter striden, av någon som står kvar)
 		bark("hard_fight")  # om ingen har en replik för det
@@ -1154,7 +1161,7 @@ var pending_bark := {}
 func bark(kind: String, speakers: Array = []) -> void:
 	if not pending_bark.is_empty() or state.practice or not state.bark_allowed(kind, rng):
 		return
-	pending_bark = Dialog.bark(data, kind, speakers if not speakers.is_empty() else state.party, state.barks_used, rng, profile, RunState.STRONG_BARKS.has(kind))
+	pending_bark = Dialog.bark(data, kind, speakers if not speakers.is_empty() else state.party, state.barks_used, rng, profile, RunState.STRONG_BARKS.has(kind), state.realm)
 	if not pending_bark.is_empty():
 		state.note_bark()
 
@@ -1327,7 +1334,27 @@ func check_slot_unlock() -> bool:
 	profile.slots_seen = n
 	pending_story += Intro.speech(data.dialog.get("party_slot", {}).get("lines", []))
 	slot_toast = String(data.dialog.get("party_slot", {}).get("toast", "%d")) % (n - 1)
+	if fifth_arrives(data, profile):
+		pending_story += Intro.speech(data.dialog.party_slot.torun)
+		slot_toast = String(data.dialog.party_slot.get("torun_toast", "%d")) % (n - 1)
 	_save()
+	return true
+
+
+## Torun Bergsbrytare (den femte, docs/ideer/chat-femte-foljeslagaren.md) kommer till borgen när den femte platsen
+## öppnas och ansluter direkt, på samma nivå som en befriad lärjunge (Profile.join_level efter sällskapets snitt).
+## Sant om hon kom nu.
+static func fifth_arrives(game_data: Dictionary, prof: Profile) -> bool:
+	if not game_data.heroes.has("torun") or prof.recruited.has("torun") or prof.earned_slots() <= Profile.BASE_SLOTS:
+		return false
+	var avg := 0.0
+	var lowest := INF
+	var ids: Array = prof.party if not prof.party.is_empty() else ["paladin"]
+	for id in ids:
+		var lv := float(prof.hero(game_data, id).level)
+		avg += lv
+		lowest = minf(lowest, lv)
+	prof.recruit(game_data, "torun", avg / ids.size(), lowest)
 	return true
 
 

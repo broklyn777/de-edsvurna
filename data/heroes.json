@@ -645,5 +645,80 @@
 			}
 		},
 		"placeholder_figure": true
+	},
+	"torun": {
+		"name": "Torun Bergsbrytare",
+		"short": "Torun",
+		"title": "Bergsbrytare",
+		"role": "tank",
+		"color": "#8a6a48",
+		"stats": {
+			"health": 110,
+			"attack": 8.8,
+			"intelligence": 6.0,
+			"defense": 5.5,
+			"speed": 8
+		},
+		"placeholder_figure": true,
+		"personality": "grundlig",
+		"crit_chance": 0.06,
+		"attack_ability": "torun_hammer",
+		"abilities": [
+			"torun_ready",
+			"torun_wedge",
+			"torun_props"
+		],
+		"traits": [
+			"torun_not_done"
+		],
+		"visual": {
+			"model": "druid",
+			"anims_from": [
+				"torvald"
+			],
+			"borrow_skip": [
+				"Index",
+				"Middle",
+				"Ring",
+				"Pinky",
+				"Thumb"
+			],
+			"hide": [
+				"Dru_Antlers",
+				"Dru_Leaves"
+			],
+			"colors": {
+				"Hjalte_Cloth": "#5a4632",
+				"Hjalte_Leather": "#6b4a2e",
+				"Hjalte_Metal": "#6e6a66",
+				"Hjalte_Trousers": "#3e3428",
+				"Huf_Hair_Brown": "#3a2a1e"
+			},
+			"weapons": {
+				"grip_r": "Maul"
+			},
+			"anims": {
+				"idle": "Staff_Idle",
+				"attack": [
+					"TwoHand_Attack",
+					"TwoHand_Attack_B"
+				],
+				"hit": "Hit_Chest",
+				"death": "Death01",
+				"block": "Shield_Block",
+				"walk": "Staff_Walk",
+				"run": "Staff_Run"
+			}
+		},
+		"macro_hint": {
+			"line": {
+				"subject": "any_enemy",
+				"cond": "charge_left_at_most",
+				"value": 1,
+				"action": "ability",
+				"ability": "torun_ready"
+			},
+			"text": "Torun kan avbryta: \"Om någon fiende laddar och slår om högst 1 tur: Stå beredd.\""
+		}
 	}
 }

@@ -22,7 +22,7 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"highest_defense", "highest_attack", "own_turn",
 		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced",
 		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff", "is_charging", "charge_left_at_most",
-		"is_channeling", "is_charge_target"]
+		"is_channeling", "is_charge_target", "intends_heal"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -256,6 +256,9 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return sim.is_channeling(x)
 		"is_charge_target":
 			return sim.is_charge_target(x)
+		# Torun (Inte färdigt än): fiendens avsikt är en helning.
+		"intends_heal":
+			return sim.intends_heal(x)
 		"lacks_artifact":
 			return x.artifact.get("type", "") != v
 	return false
@@ -422,6 +425,8 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "håller en laddning vid liv"
 		"is_charge_target":
 			return "är måltavla för en laddning"
+		"intends_heal":
+			return "tänker hela"
 	return cond
 
 

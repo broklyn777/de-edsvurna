@@ -1,4 +1,73 @@
 {
+	"torun_hammer": {
+		"name": "Släggslag",
+		"target": "enemy",
+		"melee": true,
+		"sound": "k_hero_hit",
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.0
+			}
+		]
+	},
+	"torun_ready": {
+		"name": "Stå beredd",
+		"cue": "defend",
+		"target": "self",
+		"icon": "shield",
+		"button_color": "#a07a4a",
+		"sound": "k_shield_wall",
+		"cooldown": 3,
+		"charges": 6,
+		"text": "Torun försvarar sig och håller släggan lyft till sin nästa tur. Släpper en fiende en varslad attack eller helar sig under tiden, avbryter hon det (Inte färdigt än). Nedkylning 3 turer.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "defend"
+			},
+			{
+				"type": "aura",
+				"aura": "torun_ready"
+			}
+		]
+	},
+	"torun_wedge": {
+		"name": "Kilslag",
+		"target": "enemy",
+		"melee": true,
+		"charges": 6,
+		"icon": "bolt",
+		"button_color": "#8a6a48",
+		"sound": "bone_crush",
+		"text": "Ett tungt slag (130 %). Mot en Vacklande fiende – en laddning som Tystad eller skada bröt – slår det 50 % hårdare.",
+		"bonus_vs": {
+			"aura": "staggered",
+			"mult": 1.5
+		},
+		"effects": [
+			{
+				"type": "damage",
+				"power": 1.3
+			}
+		]
+	},
+	"torun_props": {
+		"name": "Stötta upp",
+		"target": "ally",
+		"charges": 5,
+		"icon": "shield",
+		"button_color": "#b08a5a",
+		"sound": "k_shield_wall",
+		"text": "En allierad får en Barriär (8 % av Toruns Health).",
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "health",
+				"pct": 0.08
+			}
+		]
+	},
 	"strike": {
 		"name": "Svärdshugg",
 		"target": "enemy",

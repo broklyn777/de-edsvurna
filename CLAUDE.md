@@ -47,6 +47,22 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `CombatSim.PARTY_SCALE` (×0,54 för två, ×0,64 för tre). `BALANS=forsta` mäter första nedstigningen med en ny profils makron.
   När en ny sorts hjälte ansluter föreslår spelet en makrorad (`heroes.json` "macro_hint"). Äldre profiler
   behåller sina fyra och får Imma i Värdshuset.
+  **Torun Bergsbrytare** (den femte, `docs/ideer/chat-femte-foljeslagaren.md`, `chat-torun-repliker.tsv`): 46, bröt malm i
+  Trollbergets järngruva, brodern blev kvar bakom en nedrasad port; torr humor, räknar allt. Hon kommer när den femte platsen
+  öppnas (`Run.check_slot_unlock` → `Run.fifth_arrives`: ankomstscenen `dialog.json` "party_slot" "torun" med Gorm, paladinen
+  och Imma, sedan `Profile.recruit`); Broder Alriks tre rykten före det (`alrik_torun_rumour_*`, `not_recruited`). Andra
+  tank och avbrytare: **Inte färdigt än** (`torun_not_done`, `"interrupt"`) – står hon **Beredd** (förmågan Stå beredd: Försvara
+  + statusen `torun_ready`, nedkylning 3) när en fiende helar eller släpper en varslad attack avbryter hon det
+  (`CombatSim._interrupted`, händelsen `interrupt`): fiendens tur går åt, beredskapen förbrukas. Kostnaden är hennes tur och
+  nedkylningen. Tystad behövs ändå: inte när hon själv är Tystad/sover/frusen, inte laddningar som bara bryts på annat sätt
+  (Midnatt), en boss eller Resistent fiende får laddningen uppskjuten en tur i stället, och bara Tystad hindrar en laddning
+  innan den börjar och ger Vacklande – som hennes Kilslag slår 50 % hårdare mot. Makrovillkoret `intends_heal` ("tänker
+  hela"). Repliker under nedstigningen (Trollbergets rader med `"realm": "mountain"`, `Dialog.realm_ok`), avbrottets rader
+  efter striden (läget `interrupt`). Figuren är druidens kvinnokropp med Torvalds tvåhandsslag (`borrow_skip` utan fingrarna),
+  en slägga (`placeholder_figure`). `--party=torun,imma` väljer sällskapet för en påhittad profil.
+  Balans (`tests/balance_sim.gd --fifth=torun` mot `--fifth=imma`, n 40, nedstigningar 40): hon är svagare än Imma som femte –
+  Trollberget djup 1–3 5/0/20 % mot 35/40/62 % (fyra utan femte 0/0/7,5 %), kryptan djup 2–3 68/60 % mot 65/88 %, kapellet
+  58/60 % mot 88/75 % (krypta/kapell före attack 8,0 → 8,8 och Kilslag i makrot). Inget måste-val; behöver mer kraft.
 - **Troféer** ersätter Siralims smältning: besegrade monstertyper lämnar en trofé som ger bäraren monstrets
   egenskap. Vanlig = pålitlig byggdel, elit = specialiserad, boss = ändrar en regel (med kostnad).
   Hjältarna behåller sina troféer (0.26.3, som i Siralim, `Profile.worn`, `wear()`, `keep_worn()`): de följer med i varje

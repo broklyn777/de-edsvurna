@@ -1,4 +1,14 @@
 {
+	"torun_not_done": {
+		"name": "Inte färdigt än",
+		"interrupt": true,
+		"trigger": "interrupt",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [],
+		"text": "Står Torun beredd (Stå beredd) när en fiende släpper en varslad attack eller helar, avbryter hon det: handlingen blir inte av och fiendens tur går åt. En boss eller Resistent fiende tappar inte laddningen, den skjuts upp en tur. Inte när Torun är Tystad, sover eller är frusen, och inte laddningar som bara bryts på annat sätt (Midnatt)."
+	},
 	"oath_vengeance": {
 		"name": "Domens kall",
 		"text": "När en annan i sällskapet tar direkt skada från en fiende slår Paladinen tillbaka för 40 % (en gång per tur).",

@@ -386,5 +386,52 @@
 				"target": "that"
 			}
 		]
+	},
+	"torun": {
+		"name": "Torun",
+		"lines": [
+			{
+				"subject": "any_enemy",
+				"cond": "charge_left_at_most",
+				"value": 1,
+				"action": "ability",
+				"ability": "torun_ready"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "intends_heal",
+				"action": "ability",
+				"ability": "torun_ready"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "has_status",
+				"value": "staggered",
+				"action": "ability",
+				"ability": "torun_wedge",
+				"target": "that"
+			},
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 40,
+				"action": "ability",
+				"ability": "torun_props",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "ability",
+				"ability": "torun_wedge",
+				"target": "that"
+			},
+			{
+				"subject": "any_enemy",
+				"cond": "lowest_hp",
+				"action": "attack",
+				"target": "that"
+			}
+		]
 	}
 }

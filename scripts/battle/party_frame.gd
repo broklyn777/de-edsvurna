@@ -86,9 +86,14 @@ func _draw() -> void:
 	draw_rect(r, border, false, border_w)
 
 	Glyphs.draw(self, UiStyle.GLYPHS.get(unit.id, "diamond"), Vector2(19, 15), 8.0, unit.color)
-	UiStyle.text(self, Vector2(32, 21), unit.name, 17, unit.color)
 	# 0.26: livet har decimaler; den som lever visar minst 1.
 	var hp_text := "DÖD" if not unit.alive else "%d / %d" % [maxi(roundi(unit.hp), 1), roundi(unit.max_hp)]
+	# Ett långt namn (Torun Bergsbrytare) krockar med livet: då står det korta namnet.
+	var shown_name := unit.name
+	var room := size.x - 42.0 - UiStyle.bold().get_string_size(hp_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x - 8.0
+	if UiStyle.bold().get_string_size(shown_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x > room:
+		shown_name = String(sim.data.get("heroes", {}).get(unit.id, {}).get("short", shown_name))
+	UiStyle.text(self, Vector2(32, 21), shown_name, 17, unit.color)
 	UiStyle.text(self, Vector2(10, 21), hp_text, 13, Color(1, 1, 1, 0.8), HORIZONTAL_ALIGNMENT_RIGHT, size.x - 20)
 
 	var hp_rect := Rect2(10, 28, size.x - 20, 18)

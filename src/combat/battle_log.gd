@@ -102,7 +102,8 @@ static func line(sim: CombatSim, e: Dictionary) -> String:
 		"chaos_calm":
 			return "Kaosvinden lägger sig kring %s." % who
 		"interrupt":
-			return "%s avbryter %s: %s blir inte av." % [who, _name(sim, e.target), _ability(sim, e.get("ability", ""))]
+			return "%s avbryter %s: %s %s." % [who, _name(sim, e.target), _ability(sim, e.get("ability", "")),
+					"skjuts upp en tur" if e.get("delayed", false) else "blir inte av"]
 	return ""
 
 
