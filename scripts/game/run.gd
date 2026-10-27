@@ -1071,13 +1071,32 @@ func add_macro_hint(hero_id: String) -> void:
 	var hint := macro_hint(hero_id)
 	if hint.is_empty():
 		return
-	var id: String = assignment.get(hero_id, hero_id)
-	if not macros.has(id):
-		macros[id] = {"name": data.heroes[hero_id].name, "lines": []}
+	add_row(hero_id, hint.line)
+
+
+## Gambits 2: lägger en funnen rad överst i hjältens makro (LÄGG TILL HOS <hjälte>, som Spara som order).
+func add_row(hero_id: String, line: Dictionary) -> void:
+	var id: String = assignment.get(hero_id, "")
+	if id == "" or not macros.has(id):
+		id = hero_id
+		if not macros.has(id):
+			macros[id] = {"name": data.heroes[hero_id].name, "lines": []}
 		assignment[hero_id] = id
-	macros[id].lines.insert(0, hint.line.duplicate(true))
+	var l: Dictionary = line.duplicate(true)
+	l.erase("enabled")
+	macros[id].lines.insert(0, l)
+	if macros[id].lines.size() > MacroRunner.MAX_LINES:
+		macros[id].lines.resize(MacroRunner.MAX_LINES)
 	save_macros()
 	ui("ui_confirm", -8.0)
+
+
+## Står raden redan i hjältens makro?
+func has_row(hero_id: String, line: Dictionary) -> bool:
+	for l in raw_macro_for(hero_id).get("lines", []):
+		if Gambits.same_line(l, line):
+			return true
+	return false
 
 
 func rescue_prisoner() -> String:
@@ -1106,10 +1125,13 @@ func rescue_prisoner() -> String:
 		text += " Följer med direkt (nivå %d)." % int(profile.hero(data, hero_id).level)
 	else:
 		text += " Sällskapet är fullt – väntar i Värdshuset."
-	var taught := Gambits.teach_for(data, hero_id)
-	if profile.gambit_news.has(taught):
-		profile.gambit_news.erase(taught)
-		text += "\n%s lär dig ett nytt villkor för makrona: %s." % [h.name, Gambits.name_of(data, taught)]
+	# Gambits 2: följeslagaren lär ut en färdig rad. Makroförslaget visas av rumskartan; annars nämns raden här.
+	if profile.gambit_news.size() > 0 and h.get("macro_hint", {}).is_empty():
+		var row: Dictionary = Gambits.recruit_gift(data, hero_id).row
+		if not row.is_empty():
+			text += "\n%s lär dig en rad för makrona: \"%s\" (FUNNA RADER på makrosidan)." % [h.name,
+					MacroRunner.describe_line(data, row.line)]
+	profile.gambit_news.clear()
 	ui("room_lock", -4.0)
 	bark("rescue")
 	_save()
@@ -1129,25 +1151,28 @@ func use_object(choice: String) -> Dictionary:
 	return res
 
 
-## Gambits: villkoret som den senaste vunna striden gav (segerskärmen visar "Ny gambit"), eller "".
-var last_gambit := ""
+## Gambits 2: raden som den senaste vunna striden gav ({line, hero, block}; segerskärmen visar den med LÄGG TILL HOS
+## <hjälte>), eller {}.
+var last_row := {}
 
 
-## Efter en vunnen strid: kanske ett villkor från de besegrade fiendernas hem (Gambits.roll_battle).
-func roll_gambit(sim: CombatSim) -> String:
+## Efter en vunnen strid: kanske en färdig rad från de besegrade fiendernas hem (Gambits.roll_battle, make_row).
+func roll_gambit(sim: CombatSim) -> Dictionary:
 	var kinds := sim.enemies.map(func(u: CombatUnit) -> String: return u.kind)
 	var id := Gambits.roll_battle(data, profile.gambits, kinds, rng)
 	if "--gambit-demo" in OS.get_cmdline_user_args():
 		id = _demo_gambit()  # skärmdumpar: segerskärmens fynd
-	if profile.learn_gambit(data, id):
-		profile.gambit_news.erase(id)
-		return id
-	return ""
+	if id == "":
+		return {}
+	var row := Gambits.make_row(data, id, state.party, rng)
+	profile.learn_row(data, row, "battle")
+	profile.gambit_news.clear()
+	return row
 
 
 func _demo_gambit() -> String:
-	for id in ["g_deaths", "g_hp_above", "g_status"]:
-		if not profile.gambits.has(id):
+	for id in ["g_hp_below@50", "g_deaths", "g_hp_above@50", "g_status"]:
+		if not Gambits.has(profile.gambits, id):
 			return id
 	return ""
 
@@ -1173,9 +1198,12 @@ func treasure() -> String:
 		room_result += " och trofén %s!" % data.traits[t.trophy].name
 		_trophy_sound_for([t.trophy])
 	var g := Gambits.roll_chest(data, profile.gambits, state.depth, rng)
-	if profile.learn_gambit(data, g):
-		profile.gambit_news.erase(g)
-		room_result += "\nNytt villkor för makrona: %s!" % Gambits.name_of(data, g)
+	if g != "":
+		var row := Gambits.make_row(data, g, state.party, rng)
+		profile.learn_row(data, row, "chest")
+		profile.gambit_news.clear()
+		room_result += "\nEn ny rad för makrona (%s): \"%s\". Lägg till den under FUNNA RADER." % [
+				data.heroes[row.hero].name, MacroRunner.describe_line(data, row.line)]
 		play_gambit_sound(0.6)
 	var finds := roll_finds("treasure" if not state.current_room().get("guarded", false) else "portal_battle")
 	if not finds.is_empty():
@@ -1223,11 +1251,11 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 		state.trait_totals[trait_id] = tot
 	var out := []
 	last_finds = []
-	last_gambit = ""
+	last_row = {}
 	if victory and not state.practice:
 		var r := state.current_room()
 		last_finds = roll_finds("boss" if r.get("boss", false) else RunState.fight_kind(r))
-		last_gambit = roll_gambit(sim)
+		last_row = roll_gambit(sim)
 		var xp := HeroStats.battle_xp(RunState.fight_kind(r), state.enemy_depth(), r.get("boss", false))
 		last_xp = xp
 		var ups := profile.grant_xp(data, state.party, xp)

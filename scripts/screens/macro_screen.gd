@@ -31,6 +31,10 @@ var _drag_to := -1
 const CARD_GAP := 8
 const HOLD_TIME := 0.35
 const HOLD_SLOP := 14.0
+## Gambits 2: listan med funna rader (fynd från strider, kistor, befrielser och introt), att lägga till i ett makro.
+var _found: Control
+var _found_box: VBoxContainer
+var _found_button: Button
 var _name_edit: LineEdit
 var _add_line: Button
 var _editor: Control
@@ -83,6 +87,10 @@ func _ready() -> void:
 		_demo_drag.call_deferred()
 	if "--edit-line" in OS.get_cmdline_user_args():  # utvecklarflagga för skärmdumpar
 		_open_editor(0)
+	if "--new-line" in OS.get_cmdline_user_args():  # skärmdumpar: radeditorn för en ny rad
+		_open_editor(-1)
+	if "--found-rows" in OS.get_cmdline_user_args():  # skärmdumpar: listan med funna rader
+		_open_found()
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--macro-search="):  # 0.30.24: sökningen ifylld (skärmdumpar)
 			_open_editor(0)
@@ -104,6 +112,8 @@ func _done() -> void:
 func go_back() -> bool:
 	if _editor != null and _editor.visible:
 		_editor.visible = false
+	elif _found != null and _found.visible:
+		_found.visible = false
 	else:
 		_done()
 	return true
@@ -200,13 +210,23 @@ func _build() -> void:
 	_lines_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_lines_box.add_theme_constant_override("separation", CARD_GAP)
 	_scroll.add_child(_lines_box)
+	var add_row := HBoxContainer.new()
+	add_row.add_theme_constant_override("separation", 8)
+	right.add_child(add_row)
 	_add_line = _button("+ Lägg till rad", func() -> void: _open_editor(-1))
 	_add_line.custom_minimum_size.y = 56
-	right.add_child(_add_line)
+	_add_line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	add_row.add_child(_add_line)
+	_found_button = _button("", _open_found, 260)
+	_found_button.custom_minimum_size.y = 56
+	add_row.add_child(_found_button)
 
 	_editor = _build_editor()
 	_editor.visible = false
 	add_child(_editor)
+	_found = _build_found()
+	_found.visible = false
+	add_child(_found)
 
 
 func _build_editor() -> Control:
@@ -322,9 +342,108 @@ func _build_editor() -> Control:
 	return shade
 
 
+# --- Funna rader (Gambits 2) -------------------------------------------------------
+
+func _build_found() -> Control:
+	var shade := ColorRect.new()
+	shade.color = Color(0.03, 0.025, 0.045, 1.0)
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 18)
+	shade.add_child(margin)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	margin.add_child(col)
+	var top := HBoxContainer.new()
+	col.add_child(top)
+	var title := Label.new()
+	title.text = "FUNNA RADER"
+	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_color_override("font_color", UiStyle.GOLD)
+	top.add_child(title)
+	var hint := Label.new()
+	hint.text = "  Rader du har hittat. Klossarna i dem är dina och går att använda i alla rader."
+	hint.add_theme_font_size_override("font_size", SMALL)
+	hint.modulate = Color(1, 1, 1, 0.65)
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(hint)
+	top.add_child(_button("Stäng", func() -> void: _found.visible = false, 140))
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.scroll_deadzone = 10
+	col.add_child(scroll)
+	_found_box = VBoxContainer.new()
+	_found_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_found_box.add_theme_constant_override("separation", 8)
+	scroll.add_child(_found_box)
+	return shade
+
+
+func _open_found() -> void:
+	_refresh_found()
+	_found.visible = true
+
+
+## Varje funnen rad: texten, var den kom ifrån, och LÄGG TILL HOS <hjälte> (hjältens makro) och I DET HÄR MAKROT.
+func _refresh_found() -> void:
+	for c in _found_box.get_children():
+		c.queue_free()
+	var rows: Array = run.profile.found_rows.duplicate()
+	rows.reverse()  # de senaste först
+	if rows.is_empty():
+		var l := Label.new()
+		l.text = "Inga rader än. Fiender, kistor och de du befriar lär dig nya rader."
+		l.add_theme_font_size_override("font_size", 18)
+		_found_box.add_child(l)
+	for r in rows:
+		var box := HBoxContainer.new()
+		box.add_theme_constant_override("separation", 8)
+		box.custom_minimum_size.y = 64
+		var text := Label.new()
+		text.text = "%s\n%s" % [MacroRunner.describe_line(data, r.line), FOUND_SOURCE.get(r.get("source", ""), "")]
+		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		text.add_theme_font_size_override("font_size", 18)
+		box.add_child(text)
+		var hero_id: String = r.hero
+		var name: String = String(data.heroes.get(hero_id, {}).get("name", hero_id)).to_upper()
+		var known: bool = run.profile.recruited.has(hero_id) or hero_id == "paladin"
+		var at_hero := _button(("STÅR HOS " if run.has_row(hero_id, r.line) else "LÄGG TILL HOS ") + name, func() -> void:
+			run.add_row(hero_id, r.line)
+			_refresh_found()
+			_refresh_all(), 300)
+		at_hero.disabled = not known or run.has_row(hero_id, r.line)
+		box.add_child(at_hero)
+		var here := _button("I DET HÄR MAKROT", func() -> void:
+			if current != "":
+				run.macros[current].lines.insert(0, r.line.duplicate(true))
+				run.save_macros()
+				run.ui("ui_confirm", -8.0)
+			_found.visible = false
+			_refresh_all(), 220)
+		here.disabled = current == "" or (run.macros[current].lines as Array).any(func(l: Dictionary) -> bool:
+				return Gambits.same_line(l, r.line))
+		box.add_child(here)
+		_found_box.add_child(box)
+
+
+const FOUND_SOURCE := {"intro": "Mäster Gorms första rad", "battle": "Fynd efter en strid", "chest": "Fynd i en skattkista",
+		"rescue": "Lärd av en följeslagare"}
+
+
+## En låst kloss i radeditorn: namnet och ryktet.
+func _locked_label(block: String) -> String:
+	return "LÅST · %s – %s" % [Gambits.name_of(data, block), Gambits.clue(data, block)]
+
+
 # --- Uppdatera listorna ---------------------------------------------------------
 
 func _refresh_all() -> void:
+	_found_button.text = "FUNNA RADER (%d)" % run.profile.found_rows.size()
 	_refresh_heroes()
 	_refresh_macros()
 	_refresh_lines()
@@ -607,7 +726,7 @@ func _open_editor(index: int) -> void:
 	_edit_index = index
 	var lines: Array = run.macros[current].lines
 	_edit_line = lines[index].duplicate() if index >= 0 else \
-			{"subject": "any_enemy", "cond": "is_alive", "value": 0, "action": "attack", "ability": "", "target": "that"}
+			{"subject": "any_enemy", "cond": "lowest_hp", "value": 0, "action": "attack", "ability": "", "target": "that"}
 	_fill_lists()
 	_delete_button.visible = index >= 0
 	_editor.visible = true
@@ -617,26 +736,35 @@ func _open_editor(index: int) -> void:
 ## Siralims Macro Editor. Förmågor hämtas från hjältarna som kör makrot (annars alla).
 func _fill_lists() -> void:
 	_options.clear()
+	var owned: Array = run.profile.gambits
+	# Gambits 2: bara ägda klossar, och de låsta en gång var, sist och med sitt rykte (de går inte att välja).
 	var subjects: Array = []
+	var locked_subjects: Array = []
 	for s in MacroRunner.SUBJECTS:
-		subjects.append({"label": _cap(MacroRunner.subject_name(s)), "subject": s})
+		var b := Gambits.subject_block(data, s)
+		if b == "" or Gambits.has(owned, b):
+			subjects.append({"label": _cap(MacroRunner.subject_name(s)), "subject": s})
+		elif not locked_subjects.any(func(o: Dictionary) -> bool: return o.gambit == b):
+			locked_subjects.append({"label": _locked_label(b), "subject": s, "locked": true, "gambit": b})
+	subjects.append_array(locked_subjects)
 	var conds: Array = []
 	var locked: Array = []
 	for cond in MacroRunner.CONDITIONS:
-		# Gambits: villkor profilen inte äger står sist, låsta och med sitt rykte (de går inte att välja).
 		var gid := Gambits.for_cond(data, cond)
-		if gid != "" and not run.profile.gambits.has(gid):
-			if not locked.any(func(o: Dictionary) -> bool: return o.get("gambit", "") == gid):
-				locked.append({"label": "LÅST · %s – %s" % [Gambits.name_of(data, gid), Gambits.clue(data, gid)], "cond": cond,
-						"value": _values_for(cond)[0], "locked": true, "gambit": gid})
-			continue
+		var shown := 0
 		for v in _values_for(cond):
-			conds.append({"label": MacroRunner.condition_name(data, cond, v), "cond": cond, "value": v})
+			if gid == "" or Gambits.has(owned, Gambits.cond_block(data, cond, v)):
+				conds.append({"label": MacroRunner.condition_name(data, cond, v), "cond": cond, "value": v})
+				shown += 1
+		if shown == 0 and gid != "" and not locked.any(func(o: Dictionary) -> bool: return o.get("gambit", "") == gid):
+			var first: Variant = _values_for(cond)[0]
+			locked.append({"label": _locked_label(Gambits.cond_block(data, cond, 50 if cond in ["hp_below", "hp_above"] else first)),
+					"cond": cond, "value": first, "locked": true, "gambit": gid})
 	conds.append_array(locked)
 	var actions: Array = []
 	for a in ["attack", "defend", "provoke", "skip", "test_next"]:
 		var gid := Gambits.for_cond(data, a)
-		if gid != "" and not run.profile.gambits.has(gid):
+		if gid != "" and not Gambits.has(owned, gid):
 			actions.append({"label": "LÅST · %s – %s" % [MacroRunner.action_label(data, a), Gambits.clue(data, gid)], "action": a,
 					"ability": "", "locked": true})
 			continue
@@ -644,8 +772,14 @@ func _fill_lists() -> void:
 	for ability_id in _macro_abilities():
 		actions.insert(1, {"label": MacroRunner.action_label(data, "ability", ability_id), "action": "ability", "ability": ability_id})
 	var targets: Array = []
+	var locked_targets: Array = []
 	for t in MacroRunner.TARGETS:
-		targets.append({"label": _cap(MacroRunner.target_name(t)), "target": t})
+		var b := Gambits.target_block(data, t)
+		if b == "" or Gambits.has(owned, b):
+			targets.append({"label": _cap(MacroRunner.target_name(t)), "target": t})
+		elif not locked_targets.any(func(o: Dictionary) -> bool: return o.gambit == b):
+			locked_targets.append({"label": _locked_label(b), "target": t, "locked": true, "gambit": b})
+	targets.append_array(locked_targets)
 	_options = {"subject": subjects, "cond": conds, "action": actions, "target": targets}
 	_search.text = ""
 	if conds.size() > AUTO_FOCUS_OVER and not OS.has_feature("mobile"):
@@ -889,6 +1023,9 @@ func _values_for(cond: String) -> Array:
 			return [1, 2, 3]
 		"has_charges":
 			return _macro_abilities()
+		"weak_to":
+			var bonus := _macro_abilities().filter(func(a: String) -> bool: return data.abilities.get(a, {}).has("bonus_vs"))
+			return bonus if not bonus.is_empty() else ["holy_smite"]
 		"has_artifact", "lacks_artifact":
 			return data.artifacts.keys()
 		"omen_is":

@@ -5,6 +5,8 @@ extends Control
 signal restart_requested
 ## Ge upp (0.20.1): bekräftelsen svarar ja eller nej.
 signal forfeit_answered(yes: bool)
+## Gambits 2: LÄGG TILL HOS <hjälte> på segerskärmens nya rad.
+signal row_add_requested
 
 var mode := ""  # "", "countdown", "victory", "defeat"
 var paused := false
@@ -23,8 +25,9 @@ var lines: Array[String] = []
 var level_ups: Array = []
 ## Fynden efter segern (0.20): material och Nether Stones, till höger, ett i taget med glöd.
 var finds: Array = []
-## Gambits: ett nytt villkor för makrona som striden gav (id i data/gambits.json), eller "".
-var gambit := ""
+## Gambits 2: raden som striden gav ({line, hero, block}, Run.last_row), eller {}. row_added: knappen är tryckt.
+var gambit_row := {}
+var row_added := false
 ## 0.30: "Det här avgjorde striden" till vänster (BattleSummary.deciders): [{name, tag, who, text}].
 var deciders: Array = []
 ## 0.30.16: fingeravtryckets andra halva. Radindex -> troféer man äger som kunde ta dess plats (BattleSummary.alternatives);
@@ -224,8 +227,8 @@ func _draw_alternatives(h: float, a: float) -> void:
 func _draw_finds(w: float, h: float, a: float) -> void:
 	var x := w - 330.0
 	var y := h * 0.45 - 40.0
-	if gambit != "":
-		_draw_gambit(Vector2(x, y - 96.0), a)
+	if not gambit_row.is_empty():
+		_draw_gambit(_row_card_rect(), a)
 	if finds.is_empty():
 		return
 	UiStyle.text(self, Vector2(x, y), "FYND", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, 300, 4)
@@ -245,22 +248,33 @@ func _draw_finds(w: float, h: float, a: float) -> void:
 				HORIZONTAL_ALIGNMENT_LEFT, 290, 4)
 
 
-## "Nytt villkor" (gambits.md) ovanför fynden: ett guldkort med villkorets namn och vad det betyder.
-func _draw_gambit(p: Vector2, a: float) -> void:
+## Gambits 2: den nya raden ovanför fynden, ett guldkort med raden och knappen LÄGG TILL HOS <hjälte>.
+func _row_card_rect() -> Rect2:
+	return Rect2(size.x - 340.0, size.y * 0.45 - 40.0 - 168.0, 320, 156)
+
+
+func row_button_rect() -> Rect2:
+	var r := _row_card_rect()
+	return Rect2(r.position.x + 12, r.end.y - 52, r.size.x - 24, 42)
+
+
+func _draw_gambit(r: Rect2, a: float) -> void:
 	var t := clampf((_big_t - 1.3) / 0.4, 0.0, 1.0)
 	if t <= 0.0:
 		return
-	var r := Rect2(p, Vector2(310, 78))
 	var pop := 1.0 + 0.08 * maxf(0.0, 1.0 - t * 2.0)
-	r = r.grow((pop - 1.0) * 60.0)
-	draw_rect(r, Color(0.16, 0.12, 0.04, 0.92 * a * t))
-	draw_rect(r, Color(UiStyle.GOLD, a * t), false, 2.0)
-	UiStyle.text(self, r.position + Vector2(14, 22), "NYTT VILLKOR", 15, Color(UiStyle.GOLD, 0.85 * a * t),
-			HORIZONTAL_ALIGNMENT_LEFT, 280, 4)
-	UiStyle.text(self, r.position + Vector2(14, 46), Gambits.name_of(data, gambit), 20, Color(1, 0.95, 0.8, a * t),
-			HORIZONTAL_ALIGNMENT_LEFT, 285, 4)
-	UiStyle.text(self, r.position + Vector2(14, 68), "Hjältarna kan nu tänka så i makrona", 15, Color(1, 1, 1, 0.7 * a * t),
-			HORIZONTAL_ALIGNMENT_LEFT, 285, 4)
+	var card := r.grow((pop - 1.0) * 60.0)
+	draw_rect(card, Color(0.16, 0.12, 0.04, 0.92 * a * t))
+	draw_rect(card, Color(UiStyle.GOLD, a * t), false, 2.0)
+	UiStyle.text(self, r.position + Vector2(14, 22), "NY RAD FÖR MAKRONA", 15, Color(UiStyle.GOLD, 0.85 * a * t),
+			HORIZONTAL_ALIGNMENT_LEFT, 290, 4)
+	UiStyle.para(self, r.position + Vector2(14, 46), "\"%s\"" % MacroRunner.describe_line(data, gambit_row.line), 16,
+			Color(1, 0.95, 0.8, a * t), r.size.x - 28, 2)
+	var b := row_button_rect()
+	var who: String = String(data.heroes.get(gambit_row.hero, {}).get("name", gambit_row.hero)).to_upper()
+	draw_rect(b, Color(UiStyle.GOLD, (0.25 if row_added else 0.9) * a * t))
+	UiStyle.text(self, b.position + Vector2(0, 28), ("TILLAGD HOS " if row_added else "LÄGG TILL HOS ") + who, 17,
+			Color(0.1, 0.07, 0.02, a * t) if not row_added else Color(1, 1, 1, 0.7 * a * t), HORIZONTAL_ALIGNMENT_CENTER, b.size.x, 4)
 
 
 func set_result(result: String, sub: String, title := "") -> void:
@@ -322,6 +336,9 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if mode in ["victory", "defeat"] and _big_t > 1.0 and event is InputEventMouseButton and event.pressed:
 		accept_event()
+		if not gambit_row.is_empty() and not row_added and row_button_rect().has_point(event.position):
+			row_add_requested.emit()
+			return
 		for i in alternatives:
 			if _decider_rect(i).has_point(event.position):
 				alt_open = -1 if alt_open == i else i

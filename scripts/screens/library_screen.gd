@@ -101,12 +101,12 @@ func _toggle_rect() -> Rect2:
 
 ## Makronas villkor i ordning: ägda först, sedan efter sällsynthet.
 func _gambit_ids() -> Array:
-	var g := Gambits.all(run.data)
+	var g := Gambits.blocks(run.data)
 	var order := {"start": 0, "common": 1, "chest": 2, "elite": 3, "boss": 4}
 	var ids := g.keys()
 	ids.sort_custom(func(a: String, b: String) -> bool:
-		var oa: bool = run.profile.gambits.has(a)
-		var ob: bool = run.profile.gambits.has(b)
+		var oa: bool = Gambits.has(run.profile.gambits, a)
+		var ob: bool = Gambits.has(run.profile.gambits, b)
 		if oa != ob:
 			return oa
 		return order.get(g[a].get("rarity", ""), 1) < order.get(g[b].get("rarity", ""), 1))
@@ -114,9 +114,9 @@ func _gambit_ids() -> Array:
 
 
 func _gambit_rect(i: int) -> Rect2:
-	var per := 6
+	var per := 7
 	var w := (size.x - MARGIN * 2 - GAP * (per - 1)) / per
-	return Rect2(MARGIN + (i % per) * (w + GAP), 142 + (i / per) * 50, w, 42)
+	return Rect2(MARGIN + (i % per) * (w + GAP), 142 + (i / per) * 46, w, 40)
 
 
 const GAMBIT_TAG := {"start": "START", "common": "VANLIGT", "chest": "KISTA", "elite": "ELIT", "boss": "BOSS"}
@@ -126,18 +126,19 @@ const GAMBIT_TAG := {"start": "START", "common": "VANLIGT", "chest": "KISTA", "e
 func _draw_gambits() -> void:
 	var data: Dictionary = run.data
 	var ids := _gambit_ids()
-	UiStyle.text(self, Vector2(MARGIN, 120), "MAKRONAS VILLKOR %d / %d – TRYCK FÖR RYKTET" % [run.profile.gambits.size(), ids.size()],
+	var n := ids.filter(func(id: String) -> bool: return Gambits.has(run.profile.gambits, id)).size()
+	UiStyle.text(self, Vector2(MARGIN, 120), "MAKRONAS KLOSSAR %d / %d – TRYCK FÖR RYKTET" % [n, ids.size()],
 			16, Color(1, 1, 1, 0.6))
 	if gambit_selected < 0 or gambit_selected >= ids.size():
 		gambit_selected = 0
 		for i in ids.size():
-			if not run.profile.gambits.has(ids[i]):
+			if not Gambits.has(run.profile.gambits, ids[i]):
 				gambit_selected = i
 				break
 	for i in ids.size():
 		var id: String = ids[i]
-		var own: bool = run.profile.gambits.has(id)
-		var tag: String = GAMBIT_TAG.get(Gambits.all(data)[id].get("rarity", ""), "")
+		var own: bool = Gambits.has(run.profile.gambits, id)
+		var tag: String = GAMBIT_TAG.get(Gambits.entry(data, id).get("rarity", ""), "")
 		# Oägda syns med namn och sällsynthet, som troféernas rykten: det ska väcka längtan.
 		UiStyle.card(self, _gambit_rect(i), Gambits.name_of(data, id), "", gambit_selected == i,
 				UiStyle.TRAIT_GOLD if own else Color("#8a93a6"), "" if own else tag)
@@ -146,11 +147,15 @@ func _draw_gambits() -> void:
 	draw_rect(box, Color(0, 0, 0, 0.35))
 	draw_rect(box, Color(UiStyle.TRAIT_GOLD, 0.35), false, 1.5)
 	var sel: String = ids[gambit_selected]
-	var owned: bool = run.profile.gambits.has(sel)
-	var g: Dictionary = Gambits.all(data)[sel]
-	var conds: Array = g.get("conds", [])
-	var example := MacroRunner.condition_name(data, conds[0], 50 if conds[0] in ["hp_below", "hp_above"] else 1) \
-			if conds[0] != "test_next" else "pröva nästa rad"
+	var owned: bool = Gambits.has(run.profile.gambits, sel)
+	var g: Dictionary = Gambits.entry(data, sel)
+	var rows: Array = g.get("rows", [])
+	var example := ""
+	if not rows.is_empty():
+		var t: Dictionary = rows[rows.size() - 1]
+		example = MacroRunner.describe_line(data, {"subject": t.subject, "cond": t.cond, "value": g.get("value", t.get("value", 1)),
+				"action": t.action, "ability": "", "target": t.get("target", "that")}) if not str(t.get("value", "")).begins_with("@") \
+				else MacroRunner.subject_name(t.subject) + " …"
 	UiStyle.text(self, box.position + Vector2(16, 28), "%s – %s" % [Gambits.name_of(data, sel),
 			"ditt" if owned else "rykte, inte ditt än"], 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, box.size.x - 32, 3)
 	var text := Gambits.clue(data, sel)
@@ -162,7 +167,7 @@ func _draw_gambits() -> void:
 func _draw() -> void:
 	var data: Dictionary = run.data
 	header("BIBLIOTEKET", "Alla troféer. Elitfiender är sällsynta (fler på djupare djup och högre instabilitet); bossens trofé kräver tre segrar."
-			if not gambits_view else "Makronas villkor. Handlingarna kan du alltid välja; villkoren förtjänar du i striderna.")
+			if not gambits_view else "Makronas klossar. Handlingarna kan du alltid välja; villkoren, gränserna och subjekten hittar du som färdiga rader.")
 	small_button(back_rect(), "‹ BASEN")
 	small_button(_toggle_rect(), "TROFÉER" if gambits_view else "VILLKOR")
 	if gambits_view:
