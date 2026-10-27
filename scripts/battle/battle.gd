@@ -114,6 +114,11 @@ func _ready() -> void:
 			seed_value = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--exhaust="):
 			_dev_exhaust = int(arg.get_slice("=", 1))  # 0.30.20: striden börjar på den turen (skärmdumpar av utmattningen)
+		elif arg == "--float-demo":
+			# polering: ett stigande ord över varje fiende (skärmdumpar av var ordet hamnar mot namnskyltarna)
+			(func() -> void:
+				for u in sim.enemies:
+					_float(u.id, "MOTSTÖT", Color("#ffb347"), 22, true)).call_deferred()
 		elif arg == "--statuses":
 			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
 		elif arg == "--settings":
@@ -1434,8 +1439,13 @@ func _at(node: Node2D, p: Vector2) -> Node2D:
 	return node
 
 
+## Ord som stiger över en figur (egenskaper, statusar). Polering: över en fiende börjar ordet vid bröstet i stället för
+## ovanför huvudet, så att det inte hamnar över namnskyltarna (MOTSTÖT över Häxans namn); det stiger upp mot huvudet.
 func _float(unit_id: String, text: String, color: Color, size: int, big: bool) -> void:
-	var p := world.project(models[unit_id].head_position()) + Vector2(randf_range(-14, 14), -46)
+	var m: UnitModel = models[unit_id]
+	var p := world.project(m.head_position()) + Vector2(randf_range(-14, 14), -46)
+	if sim.unit(unit_id).team == 1:
+		p = world.project(m.chest_position()) + Vector2(randf_range(-14, 14), 18)
 	fx_layer.add_child(_at(Fx.FloatingText.new(text, color, size, big, 1.1 if big else 0.9), p))
 
 
