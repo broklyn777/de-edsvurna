@@ -113,3 +113,8 @@ Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som
   uppdateras. Nackdel: spelare som kan Siralim känner igen mindre.
 - **Avvisa/vänta:** "RUMSÖGONBLICK" bort ur grottvyn (flytta till Inställningar, inte ta bort); "GÅ HEM" → "Avsluta
   nedstigningen" (ok, billigt).
+6. Striden, välja mål: svårt att träffa den nedersta fienden, särskilt när två står nära (Häxan och Kultisten i
+   kapellet). Huvudet fungerade förut som träffyta, men inte när figurerna överlappar. Förslag (område 2, högt prio):
+   namnskylten/livmätaren över varje fiende är också en träffyta; vid målval visas en rad stora målknappar (namn + liv)
+   längst ned eller pilar för att stega mellan mål (Siralim stegar med pilar); tryck på fel figur markerar bara, ett
+   andra tryck bekräftar. Och sprid fiendernas platser så att de inte står i varandra.
