@@ -159,3 +159,6 @@ Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som
 
 14. **Följeslagare 3 och 4 kommer lite för fort** (VD, osäker: "det kanske är bra sådär"). Man ska kämpa för dem.
     Förslag: inte senare, utan dyrare – den fjärde bevakad av en elitgrupp eller efter den första bossen. Avgörs efter mer provspel.
+15. **Artefakterna växer för fort** (VD, 0.30.51): svärdet på nivå 4 med två bärnstenar efter en nedstigning. Introt tar det
+    till nivå 3 (Gorm ger silver för det). Förslag: dyrare nivåer eller mindre silver i början, alternativt introt bara till
+    nivå 2. Ska mätas (silver per nedstigning) innan något ändras.
