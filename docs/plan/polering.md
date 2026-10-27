@@ -146,3 +146,8 @@ Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som
     (jfr BG3: "för mycket att hålla reda på"). Förslag: knapparna i en egen rad under en rullbar lista; sortera/filtrera
     efter roll (tank, helare, skada, kontroll, stöd) och "passar den valda hjälten" först; visa sällsynthet med färg.
     Kontrollera i 1280×720 och 1560×720 med 30+ troféer.
+13. Troféer flyttas i tysthet (VIKTIG): en trofé finns i ett exemplar (`Profile._free_trophy`). VD satte Den rivna slöjan i
+    Brokks hjälm och gav den sedan av misstag till Eira i Förberedelser – den försvann ur hjälmen utan ett ord. VD: "ett gem
+    som sätts dit borde vara evigt tills jag tar bort den med flit". Förslag: Förberedelser och lägerelden visar var en
+    trofé sitter ("i Brokks hjälm", "bärs av Alva") på rutan, och att flytta den kräver en bekräftelse ("Flytta från
+    Brokks hjälm till Eira?"). Samma i smedjan åt andra hållet (den visar redan vem som har den).
