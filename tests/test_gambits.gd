@@ -386,3 +386,37 @@ func test_needs_covers_chain_subject_and_target() -> void:
 	assert_eq(Gambits.needs(data, _line("hp_below", 50, "attack", "all_enemies", "enemy_2")),
 			["g_hp_below@50", "g_all_enemies", "g_enemy_n"])
 	assert_eq(Gambits.used_in(data, {"a": {"lines": [_line("own_turn", 1)]}}), ["g_own_turn"])
+
+
+func test_found_rows_name_their_source() -> void:
+	var p := Profile.new()
+	p.setup_gambits(data, {})
+	assert_eq(p.found_rows[0].from, "Mäster Gorms första rad")
+	p.recruit(data, "alva")
+	assert_eq(p.found_rows[p.found_rows.size() - 1].from, "Lärd av Syster Alva")
+	p.learn_row(data, Gambits.make_row(data, "g_deaths", ["paladin"], RandomNumberGenerator.new()), "battle", "Från Klockaren")
+	assert_eq(p.found_rows[p.found_rows.size() - 1].from, "Från Klockaren")
+
+
+func test_same_row_is_saved_once_with_every_hero() -> void:
+	var p := Profile.new()
+	p.setup_gambits(data, {})
+	for h in ["imma", "sefir", "ragnhild"]:
+		p.recruit(data, h)
+	var buff: Array = p.found_rows.filter(func(r: Dictionary) -> bool: return r.line.cond == "has_buff")
+	assert_eq(buff.size(), 1, "Immas, Sefirs och Ragnhilds rad är samma rad")
+	assert_eq(buff[0].heroes, ["imma", "sefir", "ragnhild"])
+	assert_eq(buff[0].from, "Lärd av Imma", "den första behåller sin källa")
+	# En gammal sparfil med dubbletter rensas när den läses.
+	var path := "user://test_gambits_dupes.cfg"
+	var cfg := ConfigFile.new()
+	var line := _line("has_buff")
+	cfg.set_value("progress", "gambits", ["g_lowest_hp", "g_buffs"])
+	cfg.set_value("progress", "gambit_version", Profile.GAMBIT_VERSION)
+	cfg.set_value("progress", "found_rows", [{"line": line, "hero": "imma", "block": "", "source": "rescue"},
+			{"line": line.duplicate(), "hero": "sefir", "block": "", "source": "rescue"}])
+	cfg.save(path)
+	var q := Profile.load_from(path)
+	assert_eq(q.found_rows.size(), 1)
+	assert_eq(q.found_rows[0].heroes, ["imma", "sefir"])
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

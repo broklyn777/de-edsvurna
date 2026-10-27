@@ -166,8 +166,8 @@ var world := {}
 ## Gambits (docs/plan/gambits.md): makronas klossar som profilen äger (villkor, gränser som "g_hp_below@50", subjekt och
 ## mål; id:n i data/gambits.json). Handlingarna är fria.
 var gambits: Array = []
-## Gambits 2: funna rader, färdiga att lägga till i ett makro: [{line, hero, block, source}] (source: intro, battle, chest,
-## rescue). Den senaste står sist.
+## Gambits 2: funna rader, färdiga att lägga till i ett makro: [{line, hero, heroes, block, source, from}] (source: intro,
+## battle, chest, rescue; from: "Från Klockaren", "Lärd av Syster Alva", "Ur en kista på djup 2"). Den senaste står sist.
 var found_rows: Array = []
 ## Gambits 2: profiler sparade med en äldre version (1 = villkor utan gränser och subjekt) migreras som gamla profiler.
 const GAMBIT_VERSION := 2
@@ -529,7 +529,7 @@ func recruit(data: Dictionary, hero_id: String, party_avg := 1.0, party_min := -
 	for id in gift.blocks:
 		learn_gambit(data, id)
 	if not gift.row.is_empty():
-		add_found_row(gift.row, "rescue")
+		add_found_row(gift.row, "rescue", "Lärd av " + String(data.heroes[hero_id].name))
 	var h := hero(data, hero_id)
 	if int(h.level) <= 1:
 		h.level = join_level(party_avg, party_min)
@@ -816,23 +816,41 @@ func learn_gambit(data: Dictionary, id: String) -> bool:
 
 ## Gambits 2: ett fynd är en färdig rad ({line, hero, block}, Gambits.make_row). Radens klossar blir profilens, och raden
 ## sparas bland de funna. Returnerar klossarna som var nya.
-func learn_row(data: Dictionary, row: Dictionary, source: String) -> Array:
+func learn_row(data: Dictionary, row: Dictionary, source: String, from := "") -> Array:
 	var out := []
 	if row.is_empty():
 		return out
 	for id in Gambits.needs(data, row.line):
 		if learn_gambit(data, id):
 			out.append(id)
-	add_found_row(row, source)
+	add_found_row(row, source, from)
 	return out
 
 
 ## Sparar en funnen rad (samma rad hos samma hjälte bara en gång).
-func add_found_row(row: Dictionary, source: String) -> void:
+func add_found_row(row: Dictionary, source: String, from := "") -> void:
+	if row.is_empty():
+		return
+	found_rows.append({"line": row.line.duplicate(true), "hero": row.hero, "heroes": [row.hero], "block": row.get("block", ""),
+			"source": source, "from": from})
+	merge_found_rows()
+
+
+## Samma rad sparas en gång (Gambits.same_line), med alla hjältar den har kommit från i "heroes"; den första behåller sin
+## plats och källa. Rensar också dubbletter i gamla sparfiler.
+func merge_found_rows() -> void:
+	var out: Array = []
 	for r in found_rows:
-		if r.hero == row.hero and Gambits.same_line(r.line, row.line):
-			return
-	found_rows.append({"line": row.line.duplicate(true), "hero": row.hero, "block": row.get("block", ""), "source": source})
+		var heroes: Array = r.get("heroes", [r.hero])
+		var same: Array = out.filter(func(o: Dictionary) -> bool: return Gambits.same_line(o.line, r.line))
+		if same.is_empty():
+			r.heroes = heroes.duplicate()
+			out.append(r)
+			continue
+		for h in heroes:
+			if not same[0].heroes.has(h):
+				same[0].heroes.append(h)
+	found_rows = out
 
 
 ## Ställer in villkoren när makrona är lästa: en ny profil får startvillkoren, en gammal profil äger allt som står i dess
@@ -850,7 +868,7 @@ func setup_gambits(data: Dictionary, macros: Dictionary) -> void:
 	if gambits_state == "new":
 		var rng := RandomNumberGenerator.new()
 		for id in Gambits.starters(data):
-			add_found_row(Gambits.make_row(data, id, ["paladin"], rng), "intro")
+			add_found_row(Gambits.make_row(data, id, ["paladin"], rng), "intro", "Mäster Gorms första rad")
 	for id in Gambits.starters(data):
 		if not gambits.has(id):
 			gambits.append(id)
@@ -1033,6 +1051,7 @@ static func load_from(path: String) -> Profile:
 	p.gambits = cfg.get_value("progress", "gambits", [])
 	p.gambit_slot_floor = int(cfg.get_value("progress", "gambit_slot_floor", 0))
 	p.found_rows = cfg.get_value("progress", "found_rows", [])
+	p.merge_found_rows()
 	# Före klossarna (version 1, 0.30.50) ägde man villkoren utan gränser och subjekt: migreras som en gammal profil.
 	p.gambits_state = "ok" if int(cfg.get_value("progress", "gambit_version", 0)) >= GAMBIT_VERSION else "legacy"
 	if not p.titles.has(p.title):

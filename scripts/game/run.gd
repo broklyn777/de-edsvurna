@@ -1165,7 +1165,15 @@ func roll_gambit(sim: CombatSim) -> Dictionary:
 	if id == "":
 		return {}
 	var row := Gambits.make_row(data, id, state.party, rng)
-	profile.learn_row(data, row, "battle")
+	var homes: Array = Gambits.entry(data, id).get("homes", [])
+	var home: String = ""
+	for k in kinds:
+		if homes.has(k):
+			home = k
+			break
+	var from := "Från " + String(data.enemies[home].name) if home != "" \
+			else "Efter en strid i " + String(data.realms.get(state.realm, {}).get("short", data.realms.get(state.realm, {}).get("name", "")))
+	profile.learn_row(data, row, "battle", from)
 	profile.gambit_news.clear()
 	return row
 
@@ -1200,7 +1208,7 @@ func treasure() -> String:
 	var g := Gambits.roll_chest(data, profile.gambits, state.depth, rng)
 	if g != "":
 		var row := Gambits.make_row(data, g, state.party, rng)
-		profile.learn_row(data, row, "chest")
+		profile.learn_row(data, row, "chest", "Ur en kista på djup %d" % state.depth)
 		profile.gambit_news.clear()
 		room_result += "\nEn ny rad för makrona (%s): \"%s\". Lägg till den under FUNNA RADER." % [
 				data.heroes[row.hero].name, MacroRunner.describe_line(data, row.line)]

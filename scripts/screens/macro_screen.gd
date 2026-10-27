@@ -404,19 +404,22 @@ func _refresh_found() -> void:
 		box.add_theme_constant_override("separation", 8)
 		box.custom_minimum_size.y = 64
 		var text := Label.new()
-		text.text = "%s\n%s" % [MacroRunner.describe_line(data, r.line), FOUND_SOURCE.get(r.get("source", ""), "")]
+		text.text = "%s\n%s" % [MacroRunner.describe_line(data, r.line), _found_from(r)]
 		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		text.add_theme_font_size_override("font_size", 18)
 		box.add_child(text)
-		var hero_id: String = r.hero
+		# En knapp för den första av radens hjältar som har anslutit och saknar raden.
+		var heroes: Array = r.get("heroes", [r.hero]).filter(func(h: String) -> bool:
+				return data.heroes.has(h) and (h == "paladin" or run.profile.recruited.has(h)))
+		var missing: Array = heroes.filter(func(h: String) -> bool: return not run.has_row(h, r.line))
+		var hero_id: String = missing[0] if not missing.is_empty() else (heroes[0] if not heroes.is_empty() else String(r.hero))
 		var name: String = String(data.heroes.get(hero_id, {}).get("name", hero_id)).to_upper()
-		var known: bool = run.profile.recruited.has(hero_id) or hero_id == "paladin"
-		var at_hero := _button(("STÅR HOS " if run.has_row(hero_id, r.line) else "LÄGG TILL HOS ") + name, func() -> void:
+		var at_hero := _button(("LÄGG TILL HOS " if not missing.is_empty() else "STÅR HOS ") + name, func() -> void:
 			run.add_row(hero_id, r.line)
 			_refresh_found()
 			_refresh_all(), 300)
-		at_hero.disabled = not known or run.has_row(hero_id, r.line)
+		at_hero.disabled = missing.is_empty()
 		box.add_child(at_hero)
 		var here := _button("I DET HÄR MAKROT", func() -> void:
 			if current != "":
@@ -431,8 +434,16 @@ func _refresh_found() -> void:
 		_found_box.add_child(box)
 
 
-const FOUND_SOURCE := {"intro": "Mäster Gorms första rad", "battle": "Fynd efter en strid", "chest": "Fynd i en skattkista",
-		"rescue": "Lärd av en följeslagare"}
+const FOUND_SOURCE := {"intro": "Mäster Gorms första rad", "battle": "Fynd efter en strid", "chest": "Fynd i en skattkista"}
+
+
+## Var raden kom ifrån, med namn ("Från Klockaren", "Lärd av Syster Alva"); rader sparade utan namn får hjältens.
+func _found_from(r: Dictionary) -> String:
+	if String(r.get("from", "")) != "":
+		return r.from
+	if r.get("source", "") == "rescue":
+		return "Lärd av " + String(data.heroes.get(r.hero, {}).get("name", r.hero))
+	return FOUND_SOURCE.get(r.get("source", ""), "")
 
 
 ## En låst kloss i radeditorn: namnet och ryktet.

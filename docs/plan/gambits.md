@@ -24,7 +24,9 @@ Biblioteket) gäller som förut.
 2. **Segerskärmen** visar raden i ett guldkort, "NY RAD FÖR MAKRONA", med knappen **LÄGG TILL HOS <HJÄLTE>**. Ett tryck
    lägger raden överst i hjältens makro (`Run.add_row`, samma väg som Spara som order och makroförslagen). Skattkammaren
    skriver raden i rummets text. Alla fynd sparas i **FUNNA RADER** på gambitsidan, där varje rad kan läggas till hos sin
-   hjälte eller i det makro som är öppet.
+   hjälte eller i det makro som är öppet. Varje rad säger var den kom ifrån, med namn ("Från Klockaren", "Lärd av Syster
+   Alva", "Ur en kista på djup 2", `from`). Samma rad sparas en gång (`Profile.merge_found_rows`, också för gamla sparfiler),
+   med alla hjältar den kom från i `heroes`. Knappen gäller den första av dem som har anslutit och saknar raden.
 3. **Klossarna i en funnen rad blir ens egna** och är fria att kombinera: "liv < 50 %" går att använda både för att hela
    och för att slå en fiende. `Gambits.needs(rad)` ger radens klossar, och raden är spelbar när profilen äger alla.
 4. **Gränserna är egna klossar** (`"thresholds"` i gambits.json, id `g_hp_below@50`). Liv under 10–80 % och Liv över
