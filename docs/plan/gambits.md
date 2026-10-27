@@ -59,7 +59,7 @@ kamratens slag) av 40 karriärer, Bossen laddar i 34 och Tänker träffa alla i 
 - Före gav Lunden och Berget i stort sett ingenting (+0,4 klossar på sex nedstigningar). Nu ger de 4,2 klossar och 4,2 rader,
   de flesta på de första tre nedstigningarna där.
 - **Förrådet räcker fortfarande inte mycket längre.** Med den här karriären har man 44 av 49 klossar efter tio nedstigningar,
-  för krypta och kapell ger alla vanliga klossar först. Hemmen i Lunden och Berget är ett andra ställe att hitta samma klossar,
+  eftersom kryptan och kapellet redan ger alla vanliga klossar. Hemmen i Lunden och Berget är ett andra ställe att hitta samma klossar,
   inte nya klossar. Den som går till Lunden tidigt hittar sina klossar där i stället. För att förrådet ska räcka märkbart
   längre behövs fler klossar som bara finns i de nya Realmerna, eller färre hem per kloss i kryptan och kapellet. Det är VD:s
   val.
