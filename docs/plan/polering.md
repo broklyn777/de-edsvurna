@@ -79,3 +79,8 @@ och iPhone.
    Samma skärm har för mycket för en ny spelare (jfr BG3): instabilitet, perk-poäng, "Fiender +0 % / Silver +0 %",
    0/3-märkena och hela listan "Sägs sitta fången här" (sex namn, och Alva står som djup 1 fast hon kommer på andra
    nedstigningen). Förslag: visa instabilitet och perk-poäng först när de går att använda, visa bara nästa fånge som rykte.
+3. Smedjan: listan "Förmåga i artefakten" visar alla hjältars förmågor även i en vanlig profil (bekräftat). Troligen rätt
+   (Siralims spell gems bär vilken besvärjelse som helst), men elva knappar utan ordning är mycket för en ny spelare.
+   VD fick fråga vad som var bäst för Brokk. Förslag: sortera så att det som passar hjälten och typen står först (t.ex.
+   Hjälm → förmågor som skyddar, bärarens egna först) och märk ett "Förslag" utifrån hjältens makro (hur ofta hen
+   anfaller/provocerar/försvarar).
