@@ -23,6 +23,8 @@ var lines: Array[String] = []
 var level_ups: Array = []
 ## Fynden efter segern (0.20): material och Nether Stones, till höger, ett i taget med glöd.
 var finds: Array = []
+## Gambits: ett nytt villkor för makrona som striden gav (id i data/gambits.json), eller "".
+var gambit := ""
 ## 0.30: "Det här avgjorde striden" till vänster (BattleSummary.deciders): [{name, tag, who, text}].
 var deciders: Array = []
 ## 0.30.16: fingeravtryckets andra halva. Radindex -> troféer man äger som kunde ta dess plats (BattleSummary.alternatives);
@@ -220,10 +222,12 @@ func _draw_alternatives(h: float, a: float) -> void:
 
 ## Fynden till höger om resultatet: en ädelsten i fyndets färg och namnet, ett i taget.
 func _draw_finds(w: float, h: float, a: float) -> void:
-	if finds.is_empty():
-		return
 	var x := w - 330.0
 	var y := h * 0.45 - 40.0
+	if gambit != "":
+		_draw_gambit(Vector2(x, y - 96.0), a)
+	if finds.is_empty():
+		return
 	UiStyle.text(self, Vector2(x, y), "FYND", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, 300, 4)
 	for i in finds.size():
 		var f: Dictionary = finds[i]
@@ -239,6 +243,24 @@ func _draw_finds(w: float, h: float, a: float) -> void:
 		# 0.29.5: vad fyndet gör, på en rad under namnet.
 		UiStyle.text(self, c + Vector2(24, 22), Forge.find_effect(data, f), 15, Color(1, 1, 1, 0.7 * a * t),
 				HORIZONTAL_ALIGNMENT_LEFT, 290, 4)
+
+
+## "Ny gambit: …" ovanför fynden: ett guldkort med villkorets namn och vad det betyder.
+func _draw_gambit(p: Vector2, a: float) -> void:
+	var t := clampf((_big_t - 1.3) / 0.4, 0.0, 1.0)
+	if t <= 0.0:
+		return
+	var r := Rect2(p, Vector2(310, 78))
+	var pop := 1.0 + 0.08 * maxf(0.0, 1.0 - t * 2.0)
+	r = r.grow((pop - 1.0) * 60.0)
+	draw_rect(r, Color(0.16, 0.12, 0.04, 0.92 * a * t))
+	draw_rect(r, Color(UiStyle.GOLD, a * t), false, 2.0)
+	UiStyle.text(self, r.position + Vector2(14, 8), "NY GAMBIT", 15, Color(UiStyle.GOLD, 0.85 * a * t),
+			HORIZONTAL_ALIGNMENT_LEFT, 280, 4)
+	UiStyle.text(self, r.position + Vector2(14, 28), Gambits.name_of(data, gambit), 20, Color(1, 0.95, 0.8, a * t),
+			HORIZONTAL_ALIGNMENT_LEFT, 285, 4)
+	UiStyle.text(self, r.position + Vector2(14, 54), "Nytt villkor i makrona", 15, Color(1, 1, 1, 0.7 * a * t),
+			HORIZONTAL_ALIGNMENT_LEFT, 285, 4)
 
 
 func set_result(result: String, sub: String, title := "") -> void:

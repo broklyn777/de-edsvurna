@@ -403,7 +403,7 @@ func _process(delta: float) -> void:
 					_set_auto_mode(0)
 					_offer_order(sim.unit("paladin"), "ability", sim.enemies[0].id, "holy_smite")
 				# Paladinens makro slår Rättfärdigt slag, så att kombinationen syns (bara skärmdumpar, sparas inte).
-				var pal: Dictionary = {} if _dev_order else run.macro_for("paladin")
+				var pal: Dictionary = {} if _dev_order else run.raw_macro_for("paladin")
 				pal.lines = [{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "holy_smite",
 						"target": "that"}]
 			if _dev_windup:
@@ -1387,6 +1387,9 @@ func _on_outcome(result: String) -> void:
 		# 0.20: fynden syns till höger med eget ljud; ett sällsynt fynd får en egen liten scen.
 		overlay.data = data
 		overlay.finds = run.last_finds
+		overlay.gambit = run.last_gambit  # gambits.md: "Ny gambit: …" med ljud
+		if run.last_gambit != "":
+			run.play_gambit_sound(2.2)
 		run.play_find_sound(run.last_finds, 1.7)
 		run.show_rare_finds(run.last_finds, 2.6)
 	else:

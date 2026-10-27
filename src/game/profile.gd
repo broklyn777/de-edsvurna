@@ -163,6 +163,14 @@ var titles: Array = []
 ## Den levande världen (WorldEvents): händelsen som pågår, när nästa kan starta, loggen, gåvor som väntar (handelsmannen),
 ## välsignelser och följder med tidsgräns. Ett lexikon, så att gamla profiler läses som {}.
 var world := {}
+## Gambits (docs/plan/gambits.md): makronas villkor som profilen äger (id:n i data/gambits.json). Handlingarna är fria.
+var gambits: Array = []
+## Gamla profiler får minst så många platser som deras längsta makro hade (migreringen, aldrig en förlust).
+var gambit_slot_floor := 0
+## "new" (ny profil), "legacy" (sparad före gambits, migreras när makrona är lästa) eller "ok".
+var gambits_state := "new"
+## Nyss lärda villkor som en skärm ännu inte har visat (sparas inte).
+var gambit_news: Array = []
 
 
 static func reward(floor: int, at_depth := 1) -> int:
@@ -510,6 +518,7 @@ func recruit(data: Dictionary, hero_id: String, party_avg := 1.0, party_min := -
 	if recruited.has(hero_id) or not data.heroes.has(hero_id) or hero_id == "paladin":
 		return false
 	recruited.append(hero_id)
+	learn_gambit(data, Gambits.teach_for(data, hero_id))  # följeslagaren lär ut sitt sätt att tänka
 	var h := hero(data, hero_id)
 	if int(h.level) <= 1:
 		h.level = join_level(party_avg, party_min)
@@ -785,6 +794,39 @@ func keep_worn(equipped: Dictionary, party: Array) -> void:
 			wear(hero_id, equipped[hero_id])
 
 
+## Lär profilen ett villkor. Sant om det var nytt (då hamnar det i gambit_news).
+func learn_gambit(data: Dictionary, id: String) -> bool:
+	if id == "" or gambits.has(id) or not Gambits.all(data).has(id):
+		return false
+	gambits.append(id)
+	gambit_news.append(id)
+	return true
+
+
+## Ställer in villkoren när makrona är lästa: en ny profil får startvillkoren, en gammal profil äger allt som står i dess
+## sparade makron och får minst så många platser som det längsta makrot (gambits.md "Gamla profiler").
+## Följeslagare som redan har anslutit har lärt ut sitt villkor.
+func setup_gambits(data: Dictionary, macros: Dictionary) -> void:
+	if gambits_state == "legacy":
+		for id in Gambits.used_in(data, macros):
+			if not gambits.has(id):
+				gambits.append(id)
+		gambit_slot_floor = maxi(gambit_slot_floor, Gambits.most_lines(macros))
+	for id in Gambits.starters(data):
+		if not gambits.has(id):
+			gambits.append(id)
+	for hero_id in recruited:
+		var t := Gambits.teach_for(data, hero_id)
+		if t != "" and not gambits.has(t):
+			gambits.append(t)
+	gambits_state = "ok"
+
+
+## Platser i hjältens makro: efter nivån, men aldrig färre än en gammal profil redan använde.
+func gambit_slots(data: Dictionary, hero_id: String) -> int:
+	return maxi(Gambits.slots_for_level(data, int(hero(data, hero_id).level)), gambit_slot_floor)
+
+
 func save(path: String) -> Error:
 	var cfg := ConfigFile.new()
 	cfg.set_value("progress", "collection", collection)
@@ -846,6 +888,8 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "title", title)
 	cfg.set_value("progress", "titles", titles)
 	cfg.set_value("progress", "world", world)
+	cfg.set_value("progress", "gambits", gambits)
+	cfg.set_value("progress", "gambit_slot_floor", gambit_slot_floor)
 	return cfg.save(path)
 
 
@@ -943,6 +987,10 @@ static func load_from(path: String) -> Profile:
 	p.titles = cfg.get_value("progress", "titles", [])
 	p.title = String(cfg.get_value("progress", "title", ""))
 	p.world = cfg.get_value("progress", "world", {})
+	# Gambits: en profil sparad före dem migreras när makrona är lästa (Profile.setup_gambits).
+	p.gambits = cfg.get_value("progress", "gambits", [])
+	p.gambit_slot_floor = int(cfg.get_value("progress", "gambit_slot_floor", 0))
+	p.gambits_state = "ok" if cfg.has_section_key("progress", "gambits") else "legacy"
 	if not p.titles.has(p.title):
 		p.title = ""
 	p.choose_depth(int(cfg.get_value("progress", "depth", 1)))
