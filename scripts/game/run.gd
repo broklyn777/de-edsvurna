@@ -1160,7 +1160,7 @@ func treasure() -> String:
 	var g := Gambits.roll_chest(data, profile.gambits, state.depth, rng)
 	if profile.learn_gambit(data, g):
 		profile.gambit_news.erase(g)
-		room_result += "\nNy gambit: %s!" % Gambits.name_of(data, g)
+		room_result += "\nNytt villkor för makrona: %s!" % Gambits.name_of(data, g)
 		play_gambit_sound(0.6)
 	var finds := roll_finds("treasure" if not state.current_room().get("guarded", false) else "portal_battle")
 	if not finds.is_empty():

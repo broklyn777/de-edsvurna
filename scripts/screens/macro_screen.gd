@@ -2,7 +2,9 @@ extends Control
 ## Makroredigeraren, som Siralims Macro Editor men för touch.
 ##
 ## Vänster: hjältarna (vilket makro de kör; AUTO eller MANUELL väljs i striden, 0.29.5) och
-## listan med makron. Höger: det valda makrots rader (upp till 20), som flyttas, ändras och tas bort.
+## listan med makron. Höger: gambitsidan (docs/plan/gambits.md): varje rad är ett stort kort med villkoret till vänster,
+## handlingen till höger och en stor PÅ/AV-knapp. Håll kvar tummen så lyfts kortet och kan dras; telefonen vibrerar när
+## det släpps. Rader under hjältens sista plats och rader med villkor profilen inte äger körs inte och syns låsta.
 ## En rad redigeras i fyra kolumner: subjekt | villkor | handling | mål.
 
 const FONT := 19
@@ -21,6 +23,14 @@ var current := ""  # macro_id som redigeras
 var _heroes_box: VBoxContainer
 var _macro_box: VBoxContainer
 var _lines_box: VBoxContainer
+var _scroll: ScrollContainer
+var _slots_label: Label
+## Gambitsidan: kortet som dras (lyft med kvarhållen tumme) och var det hamnar.
+var _drag_card: Card = null
+var _drag_to := -1
+const CARD_GAP := 8
+const HOLD_TIME := 0.35
+const HOLD_SLOP := 14.0
 var _name_edit: LineEdit
 var _add_line: Button
 var _editor: Control
@@ -29,6 +39,7 @@ var _edit_line := {}
 var _lists := {}
 var _options := {}
 var _preview: Label
+var _delete_button: Button
 ## 0.30.24: sökfältet och villkorens grupper i radeditorn (VD: listan var för lång att rulla i).
 var _search: LineEdit
 var _group := "common"
@@ -57,11 +68,16 @@ func _ready() -> void:
 	add_child(bg)
 	_build()
 	var ids := _macro_ids()
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--macro-focus="):  # skärmdumpar: en hjältes makro, t.ex. --macro-focus=brokk
+			focus_hero = arg.get_slice("=", 1)
 	var own: String = run.assignment.get(focus_hero if focus_hero != "" else "paladin", "")
 	if ids.has(own):
 		_select(own)
 	elif not ids.is_empty():
 		_select(ids[0])
+	if "--gambit-off" in OS.get_cmdline_user_args() and current != "" and run.macros[current].lines.size() > 1:
+		run.macros[current].lines[1].enabled = false  # skärmdumpar: en avstängd rad (sparas inte med en påhittad profil)
 	_refresh_all()
 	if "--edit-line" in OS.get_cmdline_user_args():  # utvecklarflagga för skärmdumpar
 		_open_editor(0)
@@ -169,14 +185,21 @@ func _build() -> void:
 			_refresh_macros()
 			_refresh_heroes())
 	name_row.add_child(_name_edit)
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right.add_child(scroll)
+	_slots_label = Label.new()
+	_slots_label.add_theme_font_size_override("font_size", SMALL)
+	_slots_label.add_theme_color_override("font_color", Color(UiStyle.TRAIT_GOLD, 0.85))
+	name_row.add_child(_slots_label)
+	_scroll = ScrollContainer.new()
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.scroll_deadzone = 10
+	right.add_child(_scroll)
 	_lines_box = VBoxContainer.new()
 	_lines_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_lines_box.add_theme_constant_override("separation", 6)
-	scroll.add_child(_lines_box)
+	_lines_box.add_theme_constant_override("separation", CARD_GAP)
+	_scroll.add_child(_lines_box)
 	_add_line = _button("+ Lägg till rad", func() -> void: _open_editor(-1))
+	_add_line.custom_minimum_size.y = 56
 	right.add_child(_add_line)
 
 	_editor = _build_editor()
@@ -287,6 +310,11 @@ func _build_editor() -> Control:
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	col.add_child(buttons)
+	_delete_button = _button("Ta bort rad", _delete_edited, 180)
+	buttons.add_child(_delete_button)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	buttons.add_child(spacer)
 	buttons.add_child(_button("Avbryt", func() -> void: _editor.visible = false, 160))
 	buttons.add_child(_button("OK", _save_line, 160))
 	return shade
@@ -333,40 +361,128 @@ func _refresh_macros() -> void:
 
 func _refresh_lines() -> void:
 	for c in _lines_box.get_children():
+		_lines_box.remove_child(c)
 		c.queue_free()
+	_drag_card = null
 	if current == "" or not run.macros.has(current):
 		_name_edit.text = ""
+		_slots_label.text = ""
 		_add_line.disabled = true
 		return
 	var macro: Dictionary = run.macros[current]
 	if _name_edit.text != macro.name:
 		_name_edit.text = macro.name
 	var lines: Array = macro.lines
+	var slots := _slots()
+	var lv_next := _next_slot_level()
+	_slots_label.text = "  PLATSER %d / %d%s" % [mini(lines.size(), slots), slots,
+			"  ·  nästa på nivå %d" % lv_next if lv_next > 0 else ""]
 	if lines.is_empty():
 		_empty_hint()
 	for i in lines.size():
-		var row := HBoxContainer.new()
-		row.custom_minimum_size = Vector2(0, ROW_H)
-		_lines_box.add_child(row)
-		var num := Label.new()
-		num.text = "%d." % (i + 1)
-		num.custom_minimum_size = Vector2(36, 0)
-		row.add_child(num)
-		var text := _button(MacroRunner.describe_line(data, lines[i]), _open_editor.bind(i))
-		text.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		text.add_theme_font_size_override("font_size", 16)
-		row.add_child(text)
-		row.add_child(_button("↑", _move_line.bind(i, -1), 52))
-		row.add_child(_button("↓", _move_line.bind(i, 1), 52))
-		# 0.27.2: luft mellan flytta och ta bort, så att ett felgrepp inte raderar raden.
-		var gap := Control.new()
-		gap.custom_minimum_size = Vector2(28, 0)
-		row.add_child(gap)
-		row.add_child(_button("✕", _delete_line.bind(i), 52))
+		var card := Card.new()
+		card.screen = self
+		card.index = i
+		card.line = lines[i]
+		card.locked_id = Gambits.missing(data, lines[i], run.profile.gambits)
+		card.beyond = i >= slots
+		card.custom_minimum_size = Vector2(0, card_height())
+		_lines_box.add_child(card)
 	_add_line.disabled = lines.size() >= MacroRunner.MAX_LINES
 	_add_line.text = "+ Lägg till rad" if not _add_line.disabled else "Max %d rader" % MacroRunner.MAX_LINES
+
+
+## Kortets höjd: ungefär en sjättedel av skärmen (gambits.md), aldrig under 96 px.
+func card_height() -> float:
+	return maxf(96.0, get_viewport_rect().size.y / 6.0)
+
+
+## Platserna för makrot: hjältarna som kör det (den med minst platser avgör), annars Paladinens.
+func _slots() -> int:
+	var heroes := _runners()
+	var n := MacroRunner.MAX_LINES
+	for hero_id in heroes:
+		n = mini(n, run.profile.gambit_slots(data, hero_id))
+	return n if not heroes.is_empty() else run.profile.gambit_slots(data, "paladin")
+
+
+func _runners() -> Array:
+	return run.macro_heroes().filter(func(h: String) -> bool: return run.assignment.get(h, "") == current)
+
+
+## Nivån då nästa plats öppnas för den som har minst platser, eller 0.
+func _next_slot_level() -> int:
+	var heroes := _runners()
+	if heroes.is_empty():
+		heroes = ["paladin"]
+	var best := 0
+	for hero_id in heroes:
+		if run.profile.gambit_slots(data, hero_id) == _slots():
+			var lv := Gambits.next_slot_level(data, int(run.profile.hero(data, hero_id).level))
+			if lv > 0 and (best == 0 or lv < best):
+				best = lv
+	return best
+
+
+## Slår av eller på en rad (PÅ/AV-knappen på kortet).
+func toggle_line(i: int) -> void:
+	var line: Dictionary = run.macros[current].lines[i]
+	line.enabled = not line.get("enabled", true)
+	run.save_macros()
+	run.ui("ui_toggle", -10.0)
+	_refresh_lines()
+
+
+## Kvarhållen tumme: kortet lyfts och följer fingret.
+func begin_drag(card: Card) -> void:
+	_drag_card = card
+	_drag_to = card.index
+	card.z_index = 10
+	card.lifted = true
+	card.queue_redraw()
+	Input.vibrate_handheld(25)
+	run.ui("ui_toggle", -14.0)
+
+
+## Fingret flyttas med ett lyft kort: de andra korten glider undan, och listan rullar vid kanterna.
+func drag_to(card: Card, global_y: float) -> void:
+	var lines: Array = run.macros[current].lines
+	var pitch := card_height() + CARD_GAP
+	var local_y := global_y - _lines_box.get_global_rect().position.y
+	_drag_to = clampi(int(floor(local_y / pitch)), 0, lines.size() - 1)
+	card.drag_offset = local_y - (card.index + 0.5) * pitch
+	for c in _lines_box.get_children():
+		var other := c as Card
+		if other == null or other == card:
+			continue
+		var shift := 0.0
+		if card.index < _drag_to and other.index > card.index and other.index <= _drag_to:
+			shift = -pitch
+		elif card.index > _drag_to and other.index < card.index and other.index >= _drag_to:
+			shift = pitch
+		other.shift = shift
+		other.queue_redraw()
+	card.queue_redraw()
+	var view := _scroll.get_global_rect()
+	if global_y < view.position.y + 40.0:
+		_scroll.scroll_vertical -= 12
+	elif global_y > view.end.y - 40.0:
+		_scroll.scroll_vertical += 12
+
+
+## Kortet släpps: raden flyttas dit och telefonen vibrerar (gambits.md).
+func end_drag(card: Card) -> void:
+	var lines: Array = run.macros[current].lines
+	var to := _drag_to
+	_drag_card = null
+	if to >= 0 and to != card.index:
+		var line: Dictionary = lines[card.index]
+		lines.remove_at(card.index)
+		lines.insert(to, line)
+		run.save_macros()
+	Input.vibrate_handheld(40)
+	run.ui("ui_confirm", -10.0)
+	_refresh_lines.call_deferred()
 
 
 ## Ett tomt makro (0.23.2): vad en rad är, introts uppdrag och en föreslagen rad som läggs till med ett tryck.
@@ -456,21 +572,18 @@ func _toggle_mode(hero_id: String) -> void:
 	_refresh_heroes()
 
 
-func _move_line(i: int, step: int) -> void:
-	var lines: Array = run.macros[current].lines
-	var j := i + step
-	if j < 0 or j >= lines.size():
-		return
-	var tmp: Dictionary = lines[i]
-	lines[i] = lines[j]
-	lines[j] = tmp
-	_refresh_lines()
-
-
 func _delete_line(i: int) -> void:
 	run.macros[current].lines.remove_at(i)
+	run.save_macros()
 	_refresh_lines()
 	_refresh_macros()
+
+
+## Radeditorns "Ta bort rad".
+func _delete_edited() -> void:
+	if _edit_index >= 0:
+		_delete_line(_edit_index)
+	_editor.visible = false
 
 
 # --- Radeditorn -------------------------------------------------------------------
@@ -483,6 +596,7 @@ func _open_editor(index: int) -> void:
 	_edit_line = lines[index].duplicate() if index >= 0 else \
 			{"subject": "any_enemy", "cond": "is_alive", "value": 0, "action": "attack", "ability": "", "target": "that"}
 	_fill_lists()
+	_delete_button.visible = index >= 0
 	_editor.visible = true
 
 
@@ -494,11 +608,25 @@ func _fill_lists() -> void:
 	for s in MacroRunner.SUBJECTS:
 		subjects.append({"label": _cap(MacroRunner.subject_name(s)), "subject": s})
 	var conds: Array = []
+	var locked: Array = []
 	for cond in MacroRunner.CONDITIONS:
+		# Gambits: villkor profilen inte äger står sist, låsta och med sitt rykte (de går inte att välja).
+		var gid := Gambits.for_cond(data, cond)
+		if gid != "" and not run.profile.gambits.has(gid):
+			if not locked.any(func(o: Dictionary) -> bool: return o.get("gambit", "") == gid):
+				locked.append({"label": "LÅST · %s – %s" % [Gambits.name_of(data, gid), Gambits.clue(data, gid)], "cond": cond,
+						"value": _values_for(cond)[0], "locked": true, "gambit": gid})
+			continue
 		for v in _values_for(cond):
 			conds.append({"label": MacroRunner.condition_name(data, cond, v), "cond": cond, "value": v})
+	conds.append_array(locked)
 	var actions: Array = []
 	for a in ["attack", "defend", "provoke", "skip", "test_next"]:
+		var gid := Gambits.for_cond(data, a)
+		if gid != "" and not run.profile.gambits.has(gid):
+			actions.append({"label": "LÅST · %s – %s" % [MacroRunner.action_label(data, a), Gambits.clue(data, gid)], "action": a,
+					"ability": "", "locked": true})
+			continue
 		actions.append({"label": MacroRunner.action_label(data, a), "action": a, "ability": ""})
 	for ability_id in _macro_abilities():
 		actions.insert(1, {"label": MacroRunner.action_label(data, "ability", ability_id), "action": "ability", "ability": ability_id})
@@ -578,9 +706,15 @@ func _apply_filter() -> void:
 			elif key == "cond" and _group != "all":
 				var g := _cond_group(o.cond)
 				ok = g == _group or (_group == "common" and g == "hp")
+			if key == "cond" and o.get("locked", false) and words.is_empty() and _group != "all" \
+					and _group != _cond_group(o.cond) and not (_group == "common" and _cond_group(o.cond) == "hp"):
+				ok = false
 			if ok or chosen:
 				_shown[key].append(i)
 				list.add_item(o.label)
+				if o.get("locked", false):
+					list.set_item_disabled(list.item_count - 1, true)
+					list.set_item_custom_fg_color(list.item_count - 1, Color("#b8a27a"))
 				if chosen:
 					list.select(list.item_count - 1)
 
@@ -589,6 +723,123 @@ func _apply_filter() -> void:
 func _chip_search(word: String) -> void:
 	_search.text = "" if _norm(_search.text).strip_edges() == _norm(word) else word
 	_apply_filter()
+
+
+## Ett kort på gambitsidan: villkoret till vänster, handlingen till höger, PÅ/AV längst till höger. Ett tryck öppnar
+## radeditorn, ett tryck på PÅ/AV slår av eller på raden, och en kvarhållen tumme lyfter kortet så att det kan dras.
+class Card extends Control:
+	var screen: Node
+	var index := 0
+	var line := {}
+	var locked_id := ""  # villkoret profilen inte äger, eller ""
+	var beyond := false  # under hjältens sista plats
+	var lifted := false
+	var shift := 0.0  # när ett annat kort dras förbi
+	var drag_offset := 0.0
+	var _press := Vector2.ZERO
+	var _held := 0.0
+	var _down := false
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_PASS
+		set_process(false)
+
+	func toggle_rect() -> Rect2:
+		var w := minf(118.0, size.x * 0.16)
+		return Rect2(size.x - w - 10.0, 12.0, w, size.y - 24.0)
+
+	func _gui_input(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				_down = true
+				_held = 0.0
+				_press = event.global_position
+				set_process(true)
+			else:
+				set_process(false)
+				_down = false
+				if lifted:
+					lifted = false
+					drag_offset = 0.0
+					accept_event()
+					screen.end_drag(self)
+				elif event.global_position.distance_to(_press) < HOLD_SLOP:
+					if toggle_rect().has_point(event.position):
+						screen.toggle_line(index)
+					else:
+						screen.run.ui_tap()
+						screen._open_editor(index)
+		elif event is InputEventMouseMotion and _down:
+			if lifted:
+				accept_event()
+				screen.drag_to(self, event.global_position.y)
+			elif event.global_position.distance_to(_press) >= HOLD_SLOP:
+				_down = false  # ett drag: listan rullar
+				set_process(false)
+
+	func _process(delta: float) -> void:
+		_held += delta
+		if _down and not lifted and _held >= HOLD_TIME:
+			screen.begin_drag(self)
+
+	func _draw() -> void:
+		var data: Dictionary = screen.data
+		var on: bool = line.get("enabled", true)
+		var live := on and locked_id == "" and not beyond
+		var r := Rect2(Vector2(0, shift + drag_offset), size)
+		if lifted:
+			r = r.grow(4.0)
+			draw_rect(Rect2(r.position + Vector2(6, 8), r.size), Color(0, 0, 0, 0.45))
+		var bg := Color(0.12, 0.105, 0.15) if live else Color(0.075, 0.07, 0.09)
+		draw_rect(r, bg.lightened(0.08) if lifted else bg)
+		var edge := Color(UiStyle.TRAIT_GOLD, 0.7 if live else 0.25)
+		if lifted:
+			edge = UiStyle.GOLD
+		draw_rect(r, edge, false, 3.0 if lifted else 1.5)
+		var a := 1.0 if live else 0.5
+		var y0 := r.position.y
+		var tr := toggle_rect()
+		tr.position.y += shift + drag_offset
+		var text_w := tr.position.x - 64.0
+		var half := text_w * 0.5
+		# Numret.
+		UiStyle.text(self, Vector2(14, y0 + r.size.y * 0.5 + 9), "%d" % (index + 1), 26,
+				Color(UiStyle.GOLD, 0.8 * a), HORIZONTAL_ALIGNMENT_LEFT, 40)
+		var x := 52.0
+		# Villkoret till vänster.
+		UiStyle.text(self, Vector2(x, y0 + 26), "OM " + MacroRunner.subject_name(line.subject).to_upper(), 15,
+				Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, half - 16)
+		var cond_text := MacroRunner.condition_name(data, line.cond, line.get("value", 0))
+		UiStyle.para(self, Vector2(x, y0 + 54), cond_text, 21, Color(1, 0.95, 0.82, a), half - 16, 2)
+		# Pilen och handlingen till höger.
+		var ax := x + half
+		UiStyle.text(self, Vector2(ax - 6, y0 + r.size.y * 0.5 + 10), "→", 26, Color(UiStyle.TRAIT_GOLD, 0.8 * a),
+				HORIZONTAL_ALIGNMENT_LEFT, 30)
+		var act := MacroRunner.action_label(data, line.action, line.get("ability", "")).replace("Förmåga: ", "")
+		var tail := ""
+		if line.action in ["attack", "ability"]:
+			var ab: Dictionary = data.abilities.get(line.get("ability", ""), {}) if line.action == "ability" else {}
+			if line.action == "attack" or ab.get("target", "") in ["enemy", "ally"]:
+				tail = "PÅ " + MacroRunner.target_name(line.get("target", "that")).to_upper()
+		UiStyle.para(self, Vector2(ax + 30, y0 + 54), act, 21, Color(UiStyle.TRAIT_GOLD, a), half - 40, 2)
+		if tail != "":
+			UiStyle.text(self, Vector2(ax + 30, y0 + 26), tail, 15, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, half - 40)
+		# Låst villkor eller låst plats, längst ned på kortet.
+		var note := ""
+		if locked_id != "":
+			note = "LÅST · " + Gambits.clue(data, locked_id)
+		elif beyond:
+			var lv: int = screen._next_slot_level()
+			note = "LÅST · Platsen öppnas på nivå %d" % lv if lv > 0 else "LÅST · Ingen plats"
+		if note != "":
+			UiStyle.text(self, Vector2(x, y0 + r.size.y - 12), note, 15, Color("#d9a35a"), HORIZONTAL_ALIGNMENT_LEFT,
+					text_w - 8)
+		# PÅ/AV.
+		var col := Color(0.18, 0.42, 0.2) if on else Color(0.25, 0.18, 0.18)
+		draw_rect(tr, col)
+		draw_rect(tr, Color(1, 1, 1, 0.35), false, 2.0)
+		UiStyle.text(self, Vector2(tr.position.x, tr.get_center().y + 10), "PÅ" if on else "AV", 26,
+				Color(1, 1, 1, 0.95 if on else 0.6), HORIZONTAL_ALIGNMENT_CENTER, tr.size.x)
 
 
 ## Luppen i sökfältet, ritad med linjer så att den inte beror på typsnittets tecken.
@@ -663,6 +914,8 @@ func _matches_option(key: String, o: Dictionary) -> bool:
 
 func _on_pick(index: int, key: String) -> void:
 	var o: Dictionary = _options[key][_shown[key][index]]
+	if o.get("locked", false):
+		return
 	match key:
 		"subject":
 			_edit_line.subject = o.subject

@@ -245,7 +245,7 @@ func _draw_finds(w: float, h: float, a: float) -> void:
 				HORIZONTAL_ALIGNMENT_LEFT, 290, 4)
 
 
-## "Ny gambit: …" ovanför fynden: ett guldkort med villkorets namn och vad det betyder.
+## "Nytt villkor" (gambits.md) ovanför fynden: ett guldkort med villkorets namn och vad det betyder.
 func _draw_gambit(p: Vector2, a: float) -> void:
 	var t := clampf((_big_t - 1.3) / 0.4, 0.0, 1.0)
 	if t <= 0.0:
@@ -255,11 +255,11 @@ func _draw_gambit(p: Vector2, a: float) -> void:
 	r = r.grow((pop - 1.0) * 60.0)
 	draw_rect(r, Color(0.16, 0.12, 0.04, 0.92 * a * t))
 	draw_rect(r, Color(UiStyle.GOLD, a * t), false, 2.0)
-	UiStyle.text(self, r.position + Vector2(14, 8), "NY GAMBIT", 15, Color(UiStyle.GOLD, 0.85 * a * t),
+	UiStyle.text(self, r.position + Vector2(14, 22), "NYTT VILLKOR", 15, Color(UiStyle.GOLD, 0.85 * a * t),
 			HORIZONTAL_ALIGNMENT_LEFT, 280, 4)
-	UiStyle.text(self, r.position + Vector2(14, 28), Gambits.name_of(data, gambit), 20, Color(1, 0.95, 0.8, a * t),
+	UiStyle.text(self, r.position + Vector2(14, 46), Gambits.name_of(data, gambit), 20, Color(1, 0.95, 0.8, a * t),
 			HORIZONTAL_ALIGNMENT_LEFT, 285, 4)
-	UiStyle.text(self, r.position + Vector2(14, 54), "Nytt villkor i makrona", 15, Color(1, 1, 1, 0.7 * a * t),
+	UiStyle.text(self, r.position + Vector2(14, 68), "Hjältarna kan nu tänka så i makrona", 15, Color(1, 1, 1, 0.7 * a * t),
 			HORIZONTAL_ALIGNMENT_LEFT, 285, 4)
 
 

@@ -8,11 +8,15 @@ const RARITY := {"common": "VANLIG", "elite": "ELIT", "boss": "BOSS"}
 
 ## Vald trofé (dess text visas i rutan under korten).
 var selected := -1
+## Gambits (docs/plan/gambits.md): VILLKOR visar makronas villkor, ägda i guld och de andra som rykten.
+var gambits_view := false
+var gambit_selected := -1
 
 
 func _ready() -> void:
 	super()
 	run.intro("library_read")  # 0.23: introts steg om troféer och kryptan
+	gambits_view = "--library-gambits" in OS.get_cmdline_user_args()  # skärmdumpar
 
 
 func _tap(p: Vector2) -> void:
@@ -24,6 +28,19 @@ func _tap(p: Vector2) -> void:
 		if _hero_rect(i).has_point(p):
 			run.open_sheet(heroes[i], heroes, run.LIBRARY_SCENE, true)
 			return
+	if _toggle_rect().has_point(p):
+		gambits_view = not gambits_view
+		run.ui("ui_toggle", -10.0)
+		queue_redraw()
+		return
+	if gambits_view:
+		for i in _gambit_ids().size():
+			if _gambit_rect(i).has_point(p):
+				gambit_selected = i
+				run.ui_tap()
+				queue_redraw()
+				return
+		return
 	# 0.20.3: korten visar namnen; ett tryck visar hela texten i rutan under.
 	for i in _all_trophies().size():
 		if _trophy_rect(i).has_point(p):
@@ -78,10 +95,79 @@ func _rumoured(entry: Dictionary) -> bool:
 	return entry.realm == "crypt" and not entry.elite
 
 
+func _toggle_rect() -> Rect2:
+	return Rect2(MARGIN + 164, 18, 150, 44)
+
+
+## Makronas villkor i ordning: ägda först, sedan efter sällsynthet.
+func _gambit_ids() -> Array:
+	var g := Gambits.all(run.data)
+	var order := {"start": 0, "common": 1, "chest": 2, "elite": 3, "boss": 4}
+	var ids := g.keys()
+	ids.sort_custom(func(a: String, b: String) -> bool:
+		var oa: bool = run.profile.gambits.has(a)
+		var ob: bool = run.profile.gambits.has(b)
+		if oa != ob:
+			return oa
+		return order.get(g[a].get("rarity", ""), 1) < order.get(g[b].get("rarity", ""), 1))
+	return ids
+
+
+func _gambit_rect(i: int) -> Rect2:
+	var per := 6
+	var w := (size.x - MARGIN * 2 - GAP * (per - 1)) / per
+	return Rect2(MARGIN + (i % per) * (w + GAP), 142 + (i / per) * 50, w, 42)
+
+
+const GAMBIT_TAG := {"start": "START", "common": "VANLIGT", "chest": "KISTA", "elite": "ELIT", "boss": "BOSS"}
+
+
+## Villkoren: ägda i guld, de andra som rykten (som troféernas), och ryktet i rutan under.
+func _draw_gambits() -> void:
+	var data: Dictionary = run.data
+	var ids := _gambit_ids()
+	UiStyle.text(self, Vector2(MARGIN, 120), "MAKRONAS VILLKOR %d / %d – TRYCK FÖR RYKTET" % [run.profile.gambits.size(), ids.size()],
+			16, Color(1, 1, 1, 0.6))
+	if gambit_selected < 0 or gambit_selected >= ids.size():
+		gambit_selected = 0
+		for i in ids.size():
+			if not run.profile.gambits.has(ids[i]):
+				gambit_selected = i
+				break
+	for i in ids.size():
+		var id: String = ids[i]
+		var own: bool = run.profile.gambits.has(id)
+		var tag: String = GAMBIT_TAG.get(Gambits.all(data)[id].get("rarity", ""), "")
+		UiStyle.card(self, _gambit_rect(i), UiStyle.fit(Gambits.name_of(data, id), 15, _gambit_rect(i).size.x - 12) if own else "Okänt villkor",
+				"" if own else "rykte", gambit_selected == i, UiStyle.TRAIT_GOLD if own else Color("#b8a27a"), "" if own else tag)
+	var last := _gambit_rect(ids.size() - 1)
+	var box := Rect2(MARGIN, last.end.y + 12, size.x - MARGIN * 2, size.y - 150 - last.end.y - 12)
+	draw_rect(box, Color(0, 0, 0, 0.35))
+	draw_rect(box, Color(UiStyle.TRAIT_GOLD, 0.35), false, 1.5)
+	var sel: String = ids[gambit_selected]
+	var owned: bool = run.profile.gambits.has(sel)
+	var g: Dictionary = Gambits.all(data)[sel]
+	var conds: Array = g.get("conds", [])
+	var example := MacroRunner.condition_name(data, conds[0], 50 if conds[0] in ["hp_below", "hp_above"] else 1) \
+			if conds[0] != "test_next" else "pröva nästa rad"
+	UiStyle.text(self, box.position + Vector2(16, 28), "%s – %s" % [Gambits.name_of(data, sel) if owned else "Okänt villkor",
+			"ditt" if owned else "rykte"], 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, box.size.x - 32, 3)
+	var text := Gambits.clue(data, sel)
+	if owned:
+		text = "I makrona: \"%s\". %s" % [example, text]
+	UiStyle.para(self, box.position + Vector2(16, 54), text, 18, Color(1, 1, 1, 0.9), box.size.x - 32, 2)
+
+
 func _draw() -> void:
 	var data: Dictionary = run.data
-	header("BIBLIOTEKET", "Alla troféer. Elitfiender är sällsynta (fler på djupare djup och högre instabilitet); bossens trofé kräver tre segrar.")
+	header("BIBLIOTEKET", "Alla troféer. Elitfiender är sällsynta (fler på djupare djup och högre instabilitet); bossens trofé kräver tre segrar."
+			if not gambits_view else "Makronas villkor. Handlingarna kan du alltid välja; villkoren förtjänar du i striderna.")
 	small_button(back_rect(), "‹ BASEN")
+	small_button(_toggle_rect(), "TROFÉER" if gambits_view else "VILLKOR")
+	if gambits_view:
+		_draw_gambits()
+		_draw_heroes(data)
+		return
 	var all := _all_trophies()
 	UiStyle.text(self, Vector2(MARGIN, 108), "TROFÉER %d / %d – TRYCK FÖR ATT LÄSA" % [run.collection.size(), all.size()], 16,
 			Color(1, 1, 1, 0.6))
@@ -161,7 +247,11 @@ func _draw() -> void:
 		UiStyle.lesson(self, Vector2(box.position.x + 16, ly), detail_lesson, box.size.x - 32,
 				clampi(int((box.end.y - ly) / 20.0), 1, 2))
 
-	# Hjältarna (0.19): tryck för hjältebladet; här kan personligheten bytas mot silver.
+	_draw_heroes(data)
+
+
+## Hjältarna (0.19): tryck för hjältebladet; här kan personligheten bytas mot silver.
+func _draw_heroes(data: Dictionary) -> void:
 	var y := size.y - (120.0 if _heroes().size() <= 5 else 126.0)
 	UiStyle.text(self, Vector2(MARGIN, y), "HJÄLTARNA – TRYCK FÖR HJÄLTEBLADET (HÄR BYTS PERSONLIGHET)", 16, Color(1, 1, 1, 0.6))
 	var heroes: Array = _heroes()
