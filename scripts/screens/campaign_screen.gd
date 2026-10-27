@@ -622,11 +622,9 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	var x := p.position.x + 20
 	var w := p.size.x - 40
 	UiStyle.text(self, Vector2(x, p.position.y + 34), realm.name.to_upper(), 22, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT, w, 3)
-	var too_big := RunState.realm_too_big(prof, data, prof.realm)  # prototyp (sallskap-fem): varningen på andra raden
-	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 58), UiStyle.fit(realm.text, 15, w) if too_big else realm.text,
-			HORIZONTAL_ALIGNMENT_LEFT, w, 15, 2, Color(1, 1, 1, 0.8))
-	if too_big:
-		UiStyle.text(self, Vector2(x, p.position.y + 80), UiStyle.fit(FIVE_WARNING, 15, w), 15, Color("#ff8a6a"))
+	# Polering: beskrivningen får sina två rader hel; varningen för fem (sallskap-fem) står längre ned, under questraden.
+	draw_multiline_string(UiStyle.bold(), Vector2(x, p.position.y + 58), realm.text, HORIZONTAL_ALIGNMENT_LEFT, w, 15, 2,
+			Color(1, 1, 1, 0.8))
 
 	# Djup
 	UiStyle.text(self, Vector2(x, p.position.y + 98), "DJUP (DJUPASTE KLARADE %d)" % prof.best_depth, 15, Color(1, 1, 1, 0.6))
@@ -673,6 +671,9 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	# 0.30.48 (B5, fynd 4): allt under questraden ritas nedåt mot en fast gräns ovanför Sällskap-raden, aldrig över den.
 	var limit := _prep_rect().position.y - 30
 	var c := y + 48
+	if RunState.realm_too_big(prof, data, prof.realm):
+		UiStyle.text(self, Vector2(x, c + 4), UiStyle.fit(FIVE_WARNING, 15, w), 15, Color("#ff8a6a"))
+		c += 24
 	c += _draw_omen(x, c, w)
 	# 0.23: lärjungar som sitter fångna här syns i förväg (Siralims varelser hör till sina Realms). 0.30.48: på en rad,
 	# den närmaste med namn och resten som ett antal.
@@ -703,6 +704,12 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 	small_button(_prep_rect(), "FÖRBEREDELSER")
 	if _vows_on():
+		# Polering: "LÖFTE: INGEN S…" klipptes; ordet LÖFTE överst och löftet på en egen rad.
+		var vr := _vow_rect()
 		var vname := "INGET" if prof.vow == "" else String(data.vows[prof.vow].name).to_upper()
-		small_button(_vow_rect(), UiStyle.fit("LÖFTE: " + vname, 18, _vow_rect().size.x - 16))
+		small_button(vr, "")
+		UiStyle.text(self, vr.position + Vector2(0, 19), "LÖFTE", 15, Color(UiStyle.TRAIT_GOLD, 0.7), HORIZONTAL_ALIGNMENT_CENTER,
+				vr.size.x, 3)
+		UiStyle.text(self, vr.position + Vector2(0, 40), UiStyle.fit(vname, 17, vr.size.x - 12), 17, UiStyle.TRAIT_GOLD,
+				HORIZONTAL_ALIGNMENT_CENTER, vr.size.x, 4)
 	UiStyle.big_button(self, _start_rect(), "IN I " + str(realm.short).to_upper(), _t, RunState.can_start(prof))
