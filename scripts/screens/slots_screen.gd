@@ -37,6 +37,19 @@ func _delete_rect(i: int) -> Rect2:
 	return Rect2(r.position.x + (r.size.x - 160) / 2.0, r.end.y + 18, 160, 44)
 
 
+## Testversioner (0.30.52): HOPPA ÖVER INTROT under en tom plats, där en profil annars har Radera.
+func _skip_rect(i: int) -> Rect2:
+	var r := _card_rect(i)
+	return Rect2(r.position.x + 28, r.end.y + 18, r.size.x - 56, 44)
+
+
+## Knappen syns i testversioner (versionen i project.godot, application/config/version, slutar på "-test") och med
+## --skip-intro-button.
+static func skip_shown() -> bool:
+	return String(ProjectSettings.get_setting("application/config/version", "")).ends_with("-test") \
+			or "--skip-intro-button" in OS.get_cmdline_user_args()
+
+
 func _yes_rect() -> Rect2:
 	return Rect2(size.x / 2 + 20, size.y / 2 + 50, 240, 60)
 
@@ -45,9 +58,9 @@ func _no_rect() -> Rect2:
 	return Rect2(size.x / 2 - 260, size.y / 2 + 50, 240, 60)
 
 
-func _ask_name(i: int) -> void:
+func _ask_name(i: int, skip_intro := false) -> void:
 	var entry := NameEntry.new()
-	entry.chosen.connect(func(n: String) -> void: run.choose_slot(i, n))
+	entry.chosen.connect(func(n: String) -> void: run.choose_slot(i, n, skip_intro))
 	add_child(entry)
 	run.ui("ui_page", -10.0)
 
@@ -71,6 +84,9 @@ func _tap(p: Vector2) -> void:
 			confirm_delete = 0
 		return
 	for i in range(1, SaveSlots.COUNT + 1):
+		if _summaries[i].empty and skip_shown() and _skip_rect(i).has_point(p):
+			_ask_name(i, true)
+			return
 		if not _summaries[i].empty and _delete_rect(i).has_point(p):
 			confirm_delete = i
 			run.ui("ui_error", -10.0)
@@ -103,6 +119,12 @@ func _draw() -> void:
 			UiStyle.text(self, r.position + Vector2(0, 190), "Ny profil", 26, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 4)
 			UiStyle.para(self, r.position + Vector2(28, 230), "Börjar från början: eden, borgen och kryptan under den.", 18,
 					Color(1, 1, 1, 0.7), r.size.x - 56, 3)
+			if skip_shown():
+				var k := _skip_rect(i)
+				draw_rect(k, Color(0, 0, 0, 0.6))
+				draw_rect(k, Color(UiStyle.GOLD, 0.6), false, 1.5)
+				UiStyle.text(self, k.position + Vector2(0, 29), "HOPPA ÖVER INTROT (TEST)", 17, UiStyle.GOLD,
+						HORIZONTAL_ALIGNMENT_CENTER, k.size.x, 3)
 			continue
 		var rows := [
 			["Namn", String(s.name)],
