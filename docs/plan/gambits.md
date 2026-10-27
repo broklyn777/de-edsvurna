@@ -37,8 +37,9 @@ som håller på att dö, men då måste man se det själv.
    Benkolossen och Den svarta lansen, **Laddar** hos Benfursten och biskopen, och **Har väckts** hos Gravväckaren.
    Kistvillkoren (Bär en artefakt från djup 2, Djupets tecken från djup 1) finns i skattkistor.
 7. **Droppen** (*vårt val*, `gambits.json` "drops"): efter en vunnen strid kan högst ett villkor droppa. Varje oägt villkor
-   som har ett hem bland de besegrade får ett slag, de sällsyntaste först: vanligt 40 %, elit 60 %, boss 100 %. Annars finns
-   en chans på 4 % till ett vanligt villkor var som helst. En kista ger ett kistvillkor från djupet med 50 % chans, annars ett
+   som har ett hem bland de besegrade får ett slag, de sällsyntaste först: vanligt 25 %, elit 60 %, boss 100 %. Annars finns
+   en chans på 3 % till ett vanligt villkor var som helst (först 40 % och 4 %; botarna gav då 10 villkor redan under
+   den andra nedstigningen). En kista ger ett kistvillkor från djupet med 50 % chans, annars ett
    vanligt med 12 % chans. Övningsgården ger inga villkor.
 8. **Avstängda rader** (`enabled: false` på raden): `MacroRunner.decide` hoppar över dem, och i en kedja bryter de kedjan.
    Förklaringsloggen skriver "Rad N är avstängd".
@@ -61,4 +62,74 @@ Se tabellen nedan, som botarna har skrivit. `BALANS=forsta` och `BALANS=grotta` 
 `GAMBITS=ny` är satt (startvillkoren och det sällskapet har lärt ut, inga droppar; det är det svåraste fallet).
 `tests/gambit_drops.gd` mäter hur snabbt villkoren kommer.
 
-(tabellen fylls i av botarna nedan)
+Kört 2026-10-27, 100 körningar per rad, djup 1. *Före* = main (alla villkor ägda, inga platser). *Efter* =
+`GAMBITS=ny`: startvillkoren och det sällskapet har lärt ut, platser efter nivån och inga droppar. Det är det svåraste
+fallet, eftersom en riktig profil har hittat fler villkor efter några strider. MACRO = en ny profils makron och
+makroförslagen.
+
+### Första nedstigningen och små sällskap (`BALANS=forsta`, MACRO)
+
+| Realm | Rad | Före | Efter |
+|---|---|---|---|
+| Kryptan | 0.25: ensam, Imma efter strid 1 (profilens första nedstigning) | 44 % | 44 % |
+| Kryptan | första nedstigningen (trappa) | 46 % | 46 % |
+| Kryptan | Paladinen + Imma, nivå 3 | 31 % | 31 % |
+| Kryptan | + Imma + Brokk, nivå 3 | 51 % | 53 % |
+| Kryptan | andra, nivå 3, en fånge | 33 % | 26 % |
+| Kryptan | ny profil nivå 1, befriar fångar | 10 % | 7 % |
+| Kapellet | 0.25: ensam, Imma efter strid 1 | 96 % | 96 % |
+| Kapellet | första nedstigningen (trappa) | 96 % | 96 % |
+| Kapellet | Paladinen + Imma, nivå 3 | 69 % | 69 % |
+| Kapellet | + Imma + Brokk, nivå 3 | 49 % | 45 % |
+| Kapellet | andra, nivå 3, en fånge | 41 % | 43 % |
+| Kapellet | ny profil nivå 1, befriar fångar | 15 % | 16 % |
+
+### Grottan, kryptan och kapellet (`BALANS=grotta`, MACRO)
+
+| Realm | Rad | Före | Efter |
+|---|---|---|---|
+| Kryptan | första: ensam, Imma efter strid 1 | 44 % | 44 % |
+| Kryptan | Paladinen + Imma, nivå 3 | 31 % | 31 % |
+| Kryptan | 4 hjältar, *fulla* startmakron, nivå 3 | 6 % | 0 % |
+| Kapellet | första: ensam, Imma efter strid 1 | 96 % | 96 % |
+| Kapellet | Paladinen + Imma, nivå 3 | 69 % | 69 % |
+| Kapellet | 4 hjältar, *fulla* startmakron, nivå 3 | 0 % | 0 % |
+
+**Så ska tabellen läsas**
+
+- **En ny profils väg ändras inte.** Profilens första nedstigning ligger på 44 % i kryptan och 96 % i kapellet, före och
+  efter, eftersom Paladinens första rad och Immas rader bara använder startvillkoren och Immas Buff. Raderna med fångar
+  ligger inom ±7 enheter, vilket är brus vid 100 körningar.
+- **Målet "ungefär 80 %" nås inte ens före ändringen.** CLAUDE.md anger 91 % för kryptan, men main ger i dag 44 %, och det
+  beror inte på gambits. Någon senare balansändring har sänkt kryptan, och det bör ses över för sig.
+- **Raden "4 hjältar med fulla startmakron" är konstgjord.** Den kör de långa startmakrona i `data/macros.json`, där varannan
+  rad behöver ett villkor en ny profil inte har. En ny profil får aldrig de makrona, eftersom `Run.starter_lines` ger två
+  rader och reservanfallet. Raden visar ändå en verklig risk: en hjälte vars ägda rader slutar passa (Charges slut) väntar.
+- **TUNED** (de förbättrade botmakrona) är skrivna med alla villkor och tolv rader. Med en ny profils villkor och tre
+  platser står Paladinen ensam ibland stilla. Därför räknas bara MACRO. Den första körningen, där oägda rader tog platser,
+  gav TUNED 0–3 % i "ensam".
+- **Platsräkningen ändrades efter den första körningen** (beslut 5): oägda rader tar ingen plats, och en kedja tar en.
+  Före den ändringen var MACRO-raderna desamma, men Alvas anfall hamnade utanför hennes tre platser.
+
+### Hur snabbt villkoren kommer (`tests/gambit_drops.gd`, 40 karriärer, MACRO)
+
+En ny profil: kryptan djup 1 ×2, kapellet, kryptan, kapellet, sedan djup 2 ×4 och kryptan djup 3. Bara funna villkor räknas,
+inte de tre startvillkoren och inte det följeslagarna lär ut.
+
+| Villkor funna | Vunna strider (median, 25–75 %) | Nedstigning (median) |
+|---|---|---|
+| 3 | 3 (2–4) | 1 |
+| 6 | 8 (7–10) | 1 |
+| 10 | 18 (15–20) | 3 |
+
+| Efter nedstigning | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 |
+|---|---|---|---|---|---|---|---|---|
+| Funna villkor (av 23) | 6,4 | 9,8 | 14,2 | 16,1 | 17,8 | 19,4 | 20,2 | 20,7 |
+| Vunna strider | 9 | 18 | 27 | 36 | 46 | 55 | 72 | 88 |
+
+Med 40 % och 4 % (det första förslaget) kom 10 villkor efter 14 strider och 18 efter fem nedstigningar. Det var för fort.
+De sällsynta (Kedja, På sin tur …, Bär laddningen, Har väckts) hittas i 16–35 av 40 karriärer efter tio nedstigningar.
+
+**Nackdelen:** 26 villkor räcker ungefär sex nedstigningar för en spelare som går ned ofta. Därefter finns bara de
+sällsynta kvar att jaga. Fler villkor bör få hem i Lunden och Trollberget, och villkor som läser fiendernas avsikter
+("tänker anfalla Paladinen") är förslagets egen styrka. Det är ett eget nästa steg.

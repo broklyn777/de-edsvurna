@@ -582,9 +582,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   **Villkoren förtjänas** (gambits, VD 2026-10-27, `docs/plan/gambits.md`, som Final Fantasy XII; i texten fortfarande
   "Makron"): handlingarna är fria, villkoren ägs per profil (`Profile.gambits`, `data/gambits.json`, `src/game/gambits.gd`
   `Gambits`). Start: Lägst liv, Liv under …, Lever; följeslagare lär ut sitt när de ansluter (`teach`, `Profile.recruit`),
-  vanliga villkor faller hos sina hem bland fienderna (40 %), elit 60 %, boss 100 % (Klockaren: Har stupat), kistor ger
-  kistvillkor (Djupets tecken, Artefakt från djup 2), 4 % var som helst; högst ett per strid (`Run.roll_gambit`,
-  `last_gambit`, segerskärmens NYTT VILLKOR, skattkammaren). Platser 3 + 1 per två nivåer, högst 12
+  vanliga villkor faller hos sina hem bland fienderna (25 %), elit 60 %, boss 100 % (Klockaren: Har stupat), kistor ger
+  kistvillkor (Djupets tecken, Artefakt från djup 2), 3 % var som helst (botarna: 3 villkor efter 3 vunna strider, 10 under tredje nedstigningen); högst ett per strid (`Run.roll_gambit`,
+  `last_gambit`, segerskärmens NYTT VILLKOR, skattkammaren). Platser 3 + 1 per två nivåer, högst 12 (en kedja tar en plats, en rad med oägt villkor ingen, `Gambits.line_states`)
   (`Gambits.slots_for_level`, `Profile.gambit_slots`). Striden kör `Run.macro_for` = `Gambits.playable`: de första platserna,
   utan avstängda rader (`enabled`, `MacroRunner.decide` hoppar också över dem) och utan oägda villkor, kedjor hela eller
   inte alls. Gamla profiler (`gambits` saknas) äger allt i sina makron och får minst lika många platser som det längsta

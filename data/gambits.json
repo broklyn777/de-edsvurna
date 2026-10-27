@@ -1,10 +1,10 @@
 {
 	"_doc": "Makronas villkor som man förtjänar (gambits, docs/plan/gambits.md). Varje post: conds (MacroRunner.CONDITIONS, och action test_next för kedjan), name (kortets text), rarity (start/common/elite/boss/chest), homes (fiendetyper i enemies.json där villkoret kan falla), chest ({realm, depth}: kistor från det djupet), clue (Bibliotekets rykte). Siffrorna i 'drops' är vårt val.",
 	"drops": {
-		"home_common": 0.4,
+		"home_common": 0.25,
 		"home_elite": 0.6,
 		"home_boss": 1.0,
-		"anywhere": 0.04,
+		"anywhere": 0.03,
 		"chest_home": 0.5,
 		"chest_any": 0.12
 	},

@@ -173,8 +173,9 @@ func test_battle_drop_from_home() -> void:
 		got[id] = int(got.get(id, 0)) + 1
 	assert_true(not got.has("g_deaths"))
 	var pct := float(got.get("g_hp_above", 0)) / 400.0
-	assert_true(pct > 0.3 and pct < 0.5, "Liv över … ungefär 40 %% (%.2f)" % pct)
-	assert_true(got.get("", 0) > 150, "oftast inget")
+	var want := float(data.gambits.drops.home_common)
+	assert_true(absf(pct - want) < 0.08, "Liv över … ungefär %.2f (%.2f)" % [want, pct])
+	assert_true(got.get("", 0) > 200, "oftast inget")
 
 
 func test_anywhere_drop_is_common_only() -> void:
