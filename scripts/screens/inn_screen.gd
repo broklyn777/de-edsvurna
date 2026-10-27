@@ -88,10 +88,9 @@ func _draw() -> void:
 	# Rykten: lärjungar som ännu sitter fångna (Siralim: varelserna hör till sina Realms).
 	var rumors: Array[String] = []
 	for realm_id in data.realms:
-		for d in data.realms[realm_id].get("disciples", []):
-			if not run.profile.recruited.has(d.hero):
-				rumors.append("%s sägs sitta fången i %s, djup %d" % [String(data.heroes[d.hero].get("short", data.heroes[d.hero].name)),
-						String(data.realms[realm_id].short).to_lower(), int(d.depth)])
+		for d in RunState.findable_for(run.profile, data, realm_id):
+			rumors.append("%s sägs sitta fången i %s, djup %d" % [String(data.heroes[d.hero].get("short", data.heroes[d.hero].name)),
+					String(data.realms[realm_id].short).to_lower(), int(d.depth)])
 	if not rumors.is_empty():
 		var y := 126 + ceili(roster.size() / 4.0) * 150 + 24
 		UiStyle.text(self, Vector2(MARGIN, y), "RYKTEN", 16, Color(1, 1, 1, 0.6))

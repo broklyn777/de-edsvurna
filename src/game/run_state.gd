@@ -204,15 +204,36 @@ static func new_run(profile: Profile, data: Dictionary) -> RunState:
 	return s
 
 
+## Lärjungar som går att hitta i Realmen (0.30.52): inte rekryterade, och så många nedstigningar i Realmen som
+## "after_descents" kräver (Syster Alva först på den andra i kryptan). Samma regel för fångarna i grottan och för allt
+## som nämner dem (kampanjkartan, rykten i borgen och Värdshuset). Djupet nämns i rykten men krävs bara i grottan.
+## descents < 0 = räkna inte (botarna).
+static func findable_disciples(data: Dictionary, realm_id: String, recruited: Array, descents := -1) -> Array:
+	var out := []
+	for d in data.realms.get(realm_id, {}).get("disciples", []):
+		if recruited.has(d.hero):
+			continue
+		if descents >= 0 and descents < int(d.get("after_descents", 0)):
+			continue
+		out.append(d)
+	return out
+
+
+## Fångarna som profilen kan nå nu (det som skärmarna nämner): Realmen är öppen och djupet går att välja.
+static func findable_for(profile: Profile, data: Dictionary, realm_id: String) -> Array:
+	if not realm_open(profile, data, realm_id):
+		return []
+	return findable_disciples(data, realm_id, profile.recruited, int(profile.descents.get(realm_id, 0))) \
+			.filter(func(d: Dictionary) -> bool: return int(d.depth) <= profile.max_depth())
+
+
 ## Lärjungar som sitter fångna i den här Realmen på det här djupet (0.23, Siralims varelser per Realm): de man inte
 ## redan har och vars djup är nått. 0.24: en i taget (den första i listan som passar), och "after_descents" kräver så
 ## många tidigare nedstigningar i Realmen (Syster Alva på den andra i kryptan). descents < 0 = räkna inte (botarna).
 func place_prisoners(data: Dictionary, recruited: Array, descents := -1) -> void:
 	prisoners.clear()
-	for d in data.realms[realm].get("disciples", []):
-		if recruited.has(d.hero) or depth < int(d.depth):
-			continue
-		if descents >= 0 and descents < int(d.get("after_descents", 0)):
+	for d in findable_disciples(data, realm, recruited, descents):
+		if depth < int(d.depth):
 			continue
 		var f := clampi(int(d.floor), 0, FLOORS_PER_RUN - 1)  # 0.27: dagens våning 2–3 blir grottans andra
 		prisoners[str(f)] = {"hero": d.hero, "first": d.get("first", false),
