@@ -89,3 +89,7 @@ och iPhone.
    Dessutom: rubriken säger "DJUPASTE KLARADE 1" för Kapellet fast kortet säger "Djup klarat: 0" (rubriken verkar visa
    profilens djupaste, inte Realmens). Förslag: rullbar panel eller färre rader (fånge som ett rykte, sällskapet bara i
    Förberedelser), och Realmens eget djup i rubriken. Kontrollera i 1280×720 och 1560×720 med tecken + löfte + fångar.
+5. Lägerelden: "DINA TROFÉER" visar bara körningens troféer (de burna + de hittade i körningen, `camp_screen._inventory`).
+   VD trodde att de andra troféerna var borta eller måste väljas i borgen. Förslag: rubriken "KÖRNINGENS TROFÉER" och en
+   rad "Hela samlingen väljer du i Förberedelser innan du går ned"; en hjälte utan trofé (Brokk) markerad som "tom plats".
+   Fråga till VD senare: ska hela samlingen gå att välja vid lägerelden? (Mer att hålla reda på, men mindre förvirring.)
