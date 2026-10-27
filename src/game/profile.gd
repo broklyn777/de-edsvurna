@@ -604,6 +604,23 @@ func set_party(companions: Array) -> void:
 	party = p
 
 
+## Testversioner (0.30.52, HOPPA ÖVER INTROT på sparplatsskärmen): en ny profil som om introt vore klart. Imma har
+## anslutit (med sitt makroförslag och sina klossar), svärdet är smitt med Rättfärdigt slag på nivå 1, silvret är slut
+## och den första nedstigningen räknas som gjord, så att trappan, berättarens port och Alvas tur (andra nedstigningen)
+## kommer som för den som spelade introt. Gorms första rad ger setup_gambits som för en ny profil.
+func skip_intro(data: Dictionary) -> void:
+	intro_step = Intro.steps(data).size()
+	intro_done = true
+	intro_talked = false
+	recruit(data, STARTER, 1.0)
+	set_party([STARTER])
+	artifacts["paladin"] = Forge.normalize({"type": "sword", "ability": "holy_smite"})
+	silver = 0
+	descents["crypt"] = maxi(int(descents.get("crypt", 0)), 1)
+	if not narrated.has("first_gate"):
+		narrated.append("first_gate")
+
+
 ## 0.29.3: räknar vilka som stannar hemma när en nedstigning börjar (de som är med börjar om från 0).
 func count_home_runs() -> void:
 	for id in recruited:
