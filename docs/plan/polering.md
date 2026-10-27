@@ -118,3 +118,11 @@ Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som
    namnskylten/livmätaren över varje fiende är också en träffyta; vid målval visas en rad stora målknappar (namn + liv)
    längst ned eller pilar för att stega mellan mål (Siralim stegar med pilar); tryck på fel figur markerar bara, ett
    andra tryck bekräftar. Och sprid fiendernas platser så att de inte står i varandra.
+7. Trollberget djup 1 med fyra: vunnen på 132 turer (utmattningen börjar vid 100). VD: "rätt svårt men egentligen ingen
+   fara" – helningen (Gryningens kall 151 helning, 79 gånger; radbandet 14 gånger) höll jämna steg, så striden blev lång
+   utan att bli farlig. Kontrollera bossens längd i botarna; en bossstrid ska kännas farlig, inte seg.
+   Språk: "%s RENSAD!" (`battle.gd` rad ~1372) ger "BERGET RENSAD!" – ska vara "RENSAT" för ett ett-ord. Lägg genus i
+   realms.json (t.ex. `"cleared": "RENSAT"`) eller skriv "KRYPTAN ÄR FRI!"-liknande per Realm.
+8. VD önskar en mätare som Recount i WoW: skada, helning, tagen skada och skydd per hjälte som staplar. Data finns
+   (`CombatSim.contrib`, `trait_stats`). Förslag: en flik "MÄTARE" på segerskärmen och i Stridsloggen (staplar per hjälte,
+   tryck för att växla skada/helning/tagen/skydd); senare kanske en liten live-mätare. Passar ledstången "känna framsteg".
