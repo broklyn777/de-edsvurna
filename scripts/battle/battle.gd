@@ -1369,7 +1369,7 @@ func _on_outcome(result: String) -> void:
 		sfx.play("jingle_victory", -1.0, 0.0)
 		world.add_shake(10.0)
 		var last: bool = run.state.is_last_floor() and run.state.current_room().get("kind", "end") == "end"
-		var title := ("%s RENSAD!" % run.data.realms[run.state.realm].short.to_upper()) if last else "SEGER!"
+		var title := RunState.cleared_title(run.data, run.state.realm) if last else "SEGER!"
 		if run.state.practice:
 			title = "ÖVNINGEN VUNNEN"
 		overlay.set_result("victory", "%d turer   ·   %d av %d står kvar" % [sim.turn_no, alive, sim.heroes.size()], title)
