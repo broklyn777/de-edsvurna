@@ -590,9 +590,10 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   subjekten och målen Allierad 1–4, Fiende 1–6, Alla allierade, Alla fiender och Slumpvis. Fria: Denna hjälte, Någon
   allierad, Någon fiende, Den som matchade, sig själv och alla handlingar. Ett fynd är en färdig rad (`Gambits.make_row`
   ur klossens radmallar `rows`, med en hjälte i sällskapet som kan utföra den; `Profile.learn_row`, `found_rows`): efter en
-  vunnen strid (hem 15 %, elit 60 %, boss 100 %, 2 % var som helst, högst en; `Run.roll_gambit`, `last_row`), i kistor
-  (Djupets tecken, Artefakt från djup 2), från följeslagare (makroförslaget eller `teach`, och klossarna i deras startrader,
-  `Gambits.recruit_gift`) och introt (Gorms rad, den enda klossen en ny profil har: Lägst liv). Segerskärmen: NY RAD FÖR
+  vunnen strid (hem 4 %, elit 25 %, boss 50 %, 1 % var som helst, högst en; VD: lugnare; `Run.roll_gambit`, `last_row`), i kistor
+  (Djupets tecken, Artefakt från djup 2; 15 %), från följeslagare (bara den egna raden, makroförslaget eller `teach`, och dess
+  klossar, `Gambits.own_row`, `recruit_gift`; en ny profils följeslagare börjar med den enda raden, `Run.starter_lines`,
+  och passar den inte väntar hen och spelas för hand, VD; botarna `BOT_HAND=1` anfaller då den svagaste) och introt (Gorms rad, den enda klossen en ny profil har: Lägst liv). Segerskärmen: NY RAD FÖR
   MAKRONA och LÄGG TILL HOS <HJÄLTE> (`Run.add_row`, överst i makrot); gambitsidan: FUNNA RADER. Nya villkor: Svag mot
   förmågan (`weak_to`, förmågans `bonus_vs`), Näst i tur (`next_in_turn`). Platser 3 + 1 per två nivåer, högst 12 (en
   kedja tar en plats, en rad med oägd kloss ingen, `Gambits.line_states`) (`Gambits.slots_for_level`,

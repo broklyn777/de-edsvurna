@@ -339,7 +339,9 @@ func test_battle_drop_from_home() -> void:
 		rng.seed = seed_value
 		var id := Gambits.roll_battle(data, owned, ["bell_ringer"], rng)
 		got[id] = int(got.get(id, 0)) + 1
-	assert_eq(int(got.get("g_deaths", 0)), 200, "Klockaren ger alltid Har stupat (boss 100 %)")
+	var boss := float(data.gambits.drops.home_boss)
+	assert_true(absf(int(got.get("g_deaths", 0)) / 200.0 - boss) < 0.1, "Klockaren ger Har stupat ungefär %.2f av gångerna" % boss)
+	assert_true(got.keys().all(func(id: String) -> bool: return id in ["g_deaths", ""] or Gambits.entry(data, id).rarity != "boss"))
 	owned.append("g_deaths")
 	got = {}
 	for seed_value in 400:

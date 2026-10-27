@@ -64,6 +64,55 @@ kamratens slag) av 40 karriärer, Bossen laddar i 34 och Tänker träffa alla i 
   längre behövs fler klossar som bara finns i de nya Realmerna, eller färre hem per kloss i kryptan och kapellet. Det är VD:s
   val.
 
+### En rad per följeslagare och lugnare droppar (VD 2026-10-27, efter provspel av 0.30.51)
+
+5. **En rad per följeslagare** (`Gambits.own_row`, `recruit_gift`, `Run.starter_lines`). En följeslagare som ansluter ger
+   bara sin egen rad, makroförslaget eller teach-raden om förslag saknas, och klossarna i den. Hon ger inte sina startmakron
+   och inte klossarna i dem. En ny profils följeslagare börjar med den raden och inget annat (Alva: "liv < 50 % → Helande
+   ljus", Imma: "har en buff → Anfall"). Passar den inte väntar hjälten, och man spelar henne för hand. Gamla profiler
+   behåller sina makron och allt de äger.
+6. **Lugnare droppar**: hem 4 %, elit 25 %, boss 50 %, mästare 50 %, var som helst 1 %, kista 15 % för en kistkloss och 3 %
+   för en vanlig (förut 15/60/100/50/2, 50/12). VD bad om ungefär 10 % och 1 %, men det gav 9,9 rader efter två
+   nedstigningar. Målet 5–6 krävde också lägre chans hos elit, boss och kistor.
+
+`BALANS=forsta`, `GAMBITS=ny`, 100 körningar per rad, MACRO. *Före* = 0.30.51 (följeslagarna med två startrader och
+reservanfallet). *Efter, AUTO* = en rad per följeslagare, och boten försvarar sig när ingen rad passar, som en spelare som
+bara trycker AUTO. *Efter, för hand* = samma, men boten anfaller den svagaste fienden när ingen rad passar
+(`BOT_HAND=1`), som en spelare som tar över.
+
+| Realm | Rad | Före | Efter, AUTO | Efter, för hand |
+|---|---|---|---|---|
+| Kryptan | ensam, Imma efter strid 1 (profilens första) | 44 % | 19 % | 46 % |
+| Kryptan | första nedstigningen (trappa) | 46 % | 17 % | 46 % |
+| Kryptan | Paladinen + Imma, nivå 3 | 31 % | 0 % | 28 % |
+| Kryptan | + Imma + Brokk, nivå 3 | 51 % | 2 % | 62 % |
+| Kryptan | andra, nivå 3, en fånge | 33 % | 0 % | 35 % |
+| Kryptan | ny profil nivå 1, befriar fångar | 10 % | 0 % | 9 % |
+| Kapellet | ensam, Imma efter strid 1 | 96 % | 33 % | 96 % |
+| Kapellet | första nedstigningen (trappa) | 96 % | 33 % | 96 % |
+| Kapellet | Paladinen + Imma, nivå 3 | 69 % | 9 % | 69 % |
+| Kapellet | + Imma + Brokk, nivå 3 | 49 % | 11 % | 46 % |
+| Kapellet | andra, nivå 3, en fånge | 41 % | 6 % | 42 % |
+| Kapellet | ny profil nivå 1, befriar fångar | 15 % | 1 % | 18 % |
+
+- **Den som bara trycker AUTO förlorar mycket oftare**: kryptans första nedstigning 44 → 19 % och kapellets 96 → 33 %. Imma
+  har bara "har en buff → Anfall" och står och försvarar sig nästan hela striden. Det är VD:s avsikt ("då spelar man henne
+  för hand"), men den som inte vet det fastnar. En hjälpruta eller Gorms replik om att en hjälte utan passande rad väntar
+  på en kan behövas. Siffrorna är inte kompenserade.
+- **Den som tar över för hand vinner lika ofta som förut.**
+
+Droppmätningen (`BOT_HAND=1 GAMBIT_PLAN=lang`, 40 karriärer):
+
+| Efter nedstigning | 1 | 2 | 3 | 5 | 10 | 13 (Lunden) | 16 (Berget 2) | 18 |
+|---|---|---|---|---|---|---|---|---|
+| Funna rader | 3,3 | 6,5 | 10,0 | 15,2 | 24,3 | 32,5 | 36,4 | 37,8 |
+| Klossar ägda (av 49) | 5,5 | 9,2 | 13,3 | 19,1 | 28,7 | 37,1 | 41,1 | 42,5 |
+
+3/6/10 rader efter 8/17/26 vunna strider (median, nedstigning 1/2/3), förut 3/7/14. Med 15 % gav samma karriär 12,8 rader
+efter två nedstigningar och 44 av 49 klossar efter tio. Nu räcker förrådet ungefär 18 nedstigningar, och Lunden och Berget
+ger en tredjedel av fynden. Mästarklossarna hittades i 29 (Tänker fälla någon) och 17 (Förbered kamratens slag) av 40
+karriärer.
+
 ## Gambits 2: legoklossar och funna rader
 
 VD 2026-10-27 ("kör"): **en makrorad består av legoklossar, och man bygger upp makrosystemet från noll genom att hitta hela
