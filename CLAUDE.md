@@ -9,8 +9,9 @@ som leder ett sällskap av följeslagare i Baldur's Gate-stil.
 **Siralim är en verktygslåda, inte en regel** (VD 2026-10-27). Målet är djup och rollspelskänsla, inte en kopia.
 Pröva varje idé så här: 1) gör den kombinationerna roligare eller världen mer levande? 2) vet spelaren vad nästa steg
 är? 3) har Siralim redan löst det? Ta då deras lösning, den är prövad, men vi får gå ifrån den. Baldur's Gate 3 är en
-stor inspiration; undvik bara dess baksidor för VD: för mycket att hålla reda på (stort förråd, väggar av siffror) och
-långt mellan striderna.
+stor inspiration. Siffror får gärna vara många om de är begripliga och märks (förbered dig mot ett känt hot, känn
+skillnaden när en stat växer). Undvik dess baksidor för VD: långt mellan striderna, mycket prat, krångliga quests och
+skräpföremål att hålla reda på.
 
 **Bevisa att det är roligt att kombinera innan vi bygger mycket innehåll.**
 Få följeslagare, troféer och artefakter som ändrar regler, hellre än många som bara ger mer skada.
