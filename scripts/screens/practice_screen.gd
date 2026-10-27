@@ -66,14 +66,27 @@ func _tap(p: Vector2) -> void:
 			return
 	for i in run.collection.size():
 		if _chip_rect(i).has_point(p):
+			if profile.artifact_trophy_owner(run.collection[i]) != "":
+				selected = ""  # 0.30.48 (fynd 13): sitter i en artefakt tills den tas ut hos Smeden
+				run.ui("ui_error", -10.0)
+				return
 			selected = "" if selected == run.collection[i] else run.collection[i]
 			return
 	for i in profile.party.size():
 		if _hero_rect(i).has_point(p):
 			var hero_id: String = profile.party[i]
-			profile.wear(hero_id, selected)
-			selected = ""
-			run.save()
+			var trophy := selected
+			var q := Profile.move_question(data, profile.worn, profile.artifacts, hero_id, trophy)
+			if q == "":
+				profile.wear(hero_id, trophy)
+				selected = ""
+				run.save()
+			else:  # 0.30.48: att ta en trofé från en annan hjälte kräver ett ja
+				ConfirmBox.ask(self, q).answered.connect(func(yes: bool) -> void:
+					if yes:
+						profile.wear(hero_id, trophy)
+						run.save()
+					selected = "")
 			return
 	if _log_rect().has_point(p) and not run.practice_log.is_empty():
 		_full_log.visible = true
@@ -112,7 +125,7 @@ func _chip_rect(i: int) -> Rect2:
 	var x0 := _right_x()
 	var w := 168.0
 	var per_row := maxi(1, int((size.x - MARGIN - x0 + GAP) / (w + GAP)))
-	return Rect2(x0 + (i % per_row) * (w + GAP), 252 + (i / per_row) * 44, w, 36)
+	return Rect2(x0 + (i % per_row) * (w + GAP), 248 + (i / per_row) * 54, w, 48)  # 0.30.48: två rader
 
 
 func _log_rect() -> Rect2:
@@ -165,11 +178,15 @@ func _draw() -> void:
 		UiStyle.text(self, Vector2(_right_x(), 276), "Samlingen är tom – troféer hittas i kryptan.", 15, Color(1, 1, 1, 0.45))
 	for i in run.collection.size():
 		var t: String = run.collection[i]
-		var who: String = ""
-		for hero_id in profile.worn:
-			if profile.worn[hero_id] == t:
-				who = " · " + data.heroes[hero_id].name
-		chip(_chip_rect(i), UiStyle.fit(data.traits[t].name + who, 15, _chip_rect(i).size.x - 12), selected == t, 13)
+		var r := _chip_rect(i)
+		var place := profile.trophy_label(data, t)  # 0.30.48: "Bärs av Brokk" / "I Brokks hjälm" på en egen rad
+		var locked := profile.artifact_trophy_owner(t) != ""
+		chip(r, "", selected == t)
+		UiStyle.text(self, r.position + Vector2(0, 21 if place != "" else 30), UiStyle.fit(data.traits[t].name, 15, r.size.x - 10), 15,
+				Color(1, 1, 1, 0.4 if locked else 1.0), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
+		if place != "":
+			UiStyle.text(self, r.position + Vector2(0, 40), UiStyle.fit(place, 15, r.size.x - 10), 15,
+					Color(UiStyle.TRAIT_GOLD, 0.4 if locked else 0.8), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
 
 	_draw_log(data)
 	UiStyle.big_button(self, _fight_rect(), "STRID!", _t)
