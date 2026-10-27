@@ -126,3 +126,7 @@ Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som
 8. VD önskar en mätare som Recount i WoW: skada, helning, tagen skada och skydd per hjälte som staplar. Data finns
    (`CombatSim.contrib`, `trait_stats`). Förslag: en flik "MÄTARE" på segerskärmen och i Stridsloggen (staplar per hjälte,
    tryck för att växla skada/helning/tagen/skydd); senare kanske en liten live-mätare. Passar ledstången "känna framsteg".
+9. Smedjan, byta typ: VD trodde att man kunde ha både svärd och sköld (Paladinen bär båda i 3D). Skärmen säger inte att
+   varje hjälte bär EN artefakt, och att välja en annan typ ger knappen "SMID – 160 SILVER" (`Profile.forge_cost` =
+   FORGE_COST) utan att säga att svärdet ersätts och utan bekräftelse. Förslag: raden "Varje hjälte bär en artefakt" under
+   TYP; knappen "BYT SVÄRD → SKÖLD – 160 SILVER" med "Nivå 4 och materialen följer med" under; samma i textspelet.
