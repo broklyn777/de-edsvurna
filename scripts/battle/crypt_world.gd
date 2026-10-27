@@ -18,6 +18,12 @@ var _trunks: Array[Vector3] = []
 var _runes: StandardMaterial3D
 var _t := 0.0
 var _rng := RandomNumberGenerator.new()
+## Prototyp (ink-proto): tuschstilen. set_ink() växlar mellan den och den vanliga 3D-stilen medan striden pågår; varje
+## material och ljus som byter färg står i _ink_swaps som [objekt, egenskap, vanligt värde, tuschvärde].
+var ink := false
+var _ink_post: InkPost
+var _ink_swaps: Array = []
+var _env: Environment
 
 
 func _ready() -> void:
@@ -36,6 +42,22 @@ func _ready() -> void:
 	add_child(camera)
 	camera.position = CAMERA_POS
 	camera.look_at(CAMERA_LOOK)
+	_ink_post = InkPost.new()
+	camera.add_child(_ink_post)
+	set_ink(ink)
+
+
+## Tuschstilen på eller av (GameSettings.ink_style): efterbehandlingen, pergamentets golv, varmt och dämpat ljus.
+func set_ink(on: bool) -> void:
+	ink = on
+	_ink_post.visible = on
+	for sw in _ink_swaps:
+		sw[0].set(sw[1], sw[3] if on else sw[2])
+
+
+## Ett värde som byter i tuschstilen (materialets färg, ljusets färg och styrka, miljöns färger).
+func _ink(obj: Object, prop: String, ink_value: Variant) -> void:
+	_ink_swaps.append([obj, prop, obj.get(prop), ink_value])
 
 
 func _process(delta: float) -> void:
@@ -100,6 +122,14 @@ func _build_environment() -> void:
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
+	_env = env
+	# Tusch: ett varmt, dämpat ljus i ett pergamentfärgat rum utan glöd; efterbehandlingen gör resten.
+	_ink(env, "background_color", Color(0.42, 0.34, 0.24))
+	_ink(env, "ambient_light_color", Color(0.75, 0.7, 0.62))
+	_ink(env, "ambient_light_energy", 0.85)
+	_ink(env, "glow_enabled", false)
+	_ink(env, "fog_light_color", Color(0.45, 0.37, 0.26))
+	_ink(env, "tonemap_mode", Environment.TONE_MAPPER_LINEAR)
 
 	var moon := DirectionalLight3D.new()
 	moon.light_color = Color(0.75, 0.9, 0.8) if grove else (Color(0.72, 0.82, 1.0) if mountain else Color(0.7, 0.72, 1.0))
@@ -107,6 +137,8 @@ func _build_environment() -> void:
 	moon.shadow_enabled = true
 	moon.rotation_degrees = Vector3(-62, -35, 0)
 	add_child(moon)
+	_ink(moon, "light_color", Color(1.0, 0.95, 0.86))
+	_ink(moon, "light_energy", 0.75)
 
 	var key := OmniLight3D.new()
 	key.light_color = Color(0.86, 0.9, 1.0) if mountain else Color(1.0, 0.85, 0.7)
@@ -114,6 +146,7 @@ func _build_environment() -> void:
 	key.omni_range = 9.0
 	key.position = Vector3(-1.0, 4.5, 2.5)
 	add_child(key)
+	_ink(key, "light_color", Color(1.0, 0.86, 0.66))
 
 
 func _build_floor() -> void:
@@ -134,6 +167,8 @@ func _build_floor() -> void:
 	stone.albedo_texture = tex
 	stone.uv1_scale = Vector3(6, 6, 6)
 	stone.roughness = 0.95
+	_ink(stone, "albedo_color", Color(0.6, 0.57, 0.52))
+	_ink(stone, "albedo_texture", null)  # pappret i efterbehandlingen är golvets korn
 
 	var floor_mesh := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
@@ -156,6 +191,7 @@ func _build_floor() -> void:
 	var dais_mat := stone.duplicate() as StandardMaterial3D
 	dais_mat.albedo_color = Color(0.34, 0.38, 0.3) if style == "grove" else (Color(0.42, 0.44, 0.47) if style == "mountain" else Color(0.45, 0.42, 0.47))
 	dais.material_override = dais_mat
+	_ink(dais_mat, "albedo_color", Color(0.54, 0.5, 0.45))
 	dais.position.y = 0.0
 	add_child(dais)
 
@@ -165,6 +201,7 @@ func _build_floor() -> void:
 	_runes.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_runes.albedo_color = Color(0.85, 0.85, 0.8, 0.22) if style == "grove" else (Color(0.62, 0.7, 0.82, 0.2) if style == "mountain" else Color(0.42, 0.36, 0.55, 0.28))
 	_runes.emission_enabled = false
+	_ink(_runes, "albedo_color", Color(0.25, 0.16, 0.08, 0.5))
 	for r in [3.2, 4.4]:
 		var ring := MeshInstance3D.new()
 		var torus := TorusMesh.new()
@@ -191,6 +228,7 @@ func _build_pillars() -> void:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.22, 0.17, 0.12) if style == "grove" else (Color(0.34, 0.35, 0.37) if style == "mountain" else Color(0.3, 0.28, 0.32))
 	mat.roughness = 0.9
+	_ink(mat, "albedo_color", Color(0.5, 0.47, 0.42))
 	_trunks.clear()
 	for i in 10:
 		var a := i * TAU / 10.0 + 0.3
@@ -213,6 +251,8 @@ func _build_pillars() -> void:
 			var torch := OmniLight3D.new()
 			torch.light_color = Color(1.0, 0.55, 0.2)
 			torch.omni_range = 6.0
+			_ink(torch, "light_color", Color(1.0, 0.88, 0.72))
+			_ink(torch, "omni_range", 4.0)
 			torch.position = p + Vector3(0, 2.2, 0) - p.normalized() * 0.7
 			add_child(torch)
 			_torches.append(torch)
