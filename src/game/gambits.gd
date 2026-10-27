@@ -77,24 +77,53 @@ static func next_slot_level(data: Dictionary, level: int) -> int:
 	return lv
 
 
-## Raderna som hjälten faktiskt kör: de första `slots` raderna, utan avstängda (enabled = false) och utan rader vars
-## villkor profilen inte äger. En kedja tas med hel eller inte alls (som Run.macro_units), så att en kedja aldrig kopplas
-## på fel rad. owned = null betyder att allt är ägt (botar utan gambits, och tester).
-static func playable(data: Dictionary, macro: Dictionary, owned: Variant, slots: int) -> Dictionary:
-	var lines: Array = macro.get("lines", [])
+## Varje rads läge: "ok" (körs), "off" (avstängd), "locked" (villkor profilen inte äger) eller "beyond" (under den sista
+## platsen). En kedja (rader med "pröva nästa rad" och raden de leder till) är en enhet och tar en plats, och en enhet med
+## ett oägt villkor tar ingen plats (vårt val: i FF XII kan ett villkor man inte äger inte stå i listan alls). En avstängd
+## enhet tar sin plats, som i FF XII. owned = null betyder att allt är ägt.
+static func line_states(data: Dictionary, lines: Array, owned: Variant, slots: int) -> Array:
 	var out := []
+	var used := 0
 	var unit := []
-	var unit_ok := true
-	for i in mini(lines.size(), slots):
+	for i in lines.size():
 		var l: Dictionary = lines[i]
 		unit.append(l)
-		if not l.get("enabled", true) or (owned != null and not line_owned(data, l, owned)):
-			unit_ok = false
-		if l.get("action", "") != "test_next":
-			if unit_ok:
-				out.append_array(unit)
-			unit = []
-			unit_ok = true
+		if l.get("action", "") == "test_next" and i < lines.size() - 1:
+			continue
+		var state := "ok"
+		for u in unit:
+			if owned != null and not line_owned(data, u, owned):
+				state = "locked"
+		if state == "ok":
+			used += 1
+			if used > slots:
+				state = "beyond"
+			elif unit.any(func(u: Dictionary) -> bool: return not u.get("enabled", true)):
+				state = "off"
+		for u in unit:
+			out.append(state)
+		unit = []
+	return out
+
+
+## Platser som makrots ägda enheter tar (PLATSER n / m på gambitsidan).
+static func used_slots(data: Dictionary, lines: Array, owned: Variant) -> int:
+	var n := 0
+	var states := line_states(data, lines, owned, 1000)
+	for i in lines.size():
+		if states[i] != "locked" and (i == lines.size() - 1 or lines[i].get("action", "") != "test_next"):
+			n += 1
+	return n
+
+
+## Raderna som hjälten faktiskt kör (Run.macro_for, botarna): bara rader i läget "ok" (line_states).
+static func playable(data: Dictionary, macro: Dictionary, owned: Variant, slots: int) -> Dictionary:
+	var lines: Array = macro.get("lines", [])
+	var states := line_states(data, lines, owned, slots)
+	var out := []
+	for i in lines.size():
+		if states[i] == "ok":
+			out.append(lines[i])
 	return {"name": macro.get("name", ""), "lines": out}
 
 
@@ -174,9 +203,9 @@ static func used_in(data: Dictionary, macros: Dictionary) -> Array:
 	return out
 
 
-## Flest rader i något sparat makro (migrering: gamla profiler får minst så många platser).
-static func most_lines(macros: Dictionary) -> int:
+## Flest platser något sparat makro tar (migrering: gamla profiler får minst så många platser).
+static func most_lines(macros: Dictionary, data := {}) -> int:
 	var n := 0
 	for m in macros.values():
-		n = maxi(n, (m.get("lines", []) as Array).size())
+		n = maxi(n, used_slots(data, m.get("lines", []), null))
 	return n

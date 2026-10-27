@@ -377,7 +377,8 @@ func _refresh_lines() -> void:
 	var lines: Array = macro.lines
 	var slots := _slots()
 	var lv_next := _next_slot_level()
-	_slots_label.text = "  PLATSER %d / %d%s" % [mini(lines.size(), slots), slots,
+	var states := Gambits.line_states(data, lines, run.profile.gambits, slots)
+	_slots_label.text = "  PLATSER %d / %d%s" % [mini(Gambits.used_slots(data, lines, run.profile.gambits), slots), slots,
 			"  ·  nästa på nivå %d" % lv_next if lv_next > 0 else ""]
 	if lines.is_empty():
 		_empty_hint()
@@ -387,7 +388,7 @@ func _refresh_lines() -> void:
 		card.index = i
 		card.line = lines[i]
 		card.locked_id = Gambits.missing(data, lines[i], run.profile.gambits)
-		card.beyond = i >= slots
+		card.beyond = states[i] == "beyond"
 		card.custom_minimum_size = Vector2(0, card_height())
 		_lines_box.add_child(card)
 	_add_line.disabled = lines.size() >= MacroRunner.MAX_LINES

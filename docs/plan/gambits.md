@@ -25,9 +25,11 @@ som håller på att dö, men då måste man se det själv.
    (hennes rad "om en fiende har en buff → anfall"), Alva kedjan, Brokk högst Defense, Eira status, Torun "tänker hela" och
    så vidare. Befrielserutan säger "Alva lär dig ett nytt villkor för makrona: …".
 5. **Platser per hjälte** (*vårt val*, satt med botarna): 3 från start och +1 per två nivåer, högst 12
-   (`Gambits.slots_for_level`: nivå 1–2 = 3, 3–4 = 4, 5–6 = 5 … nivå 19 = 12). Platserna är rader uppifrån, och en avstängd rad
-   tar också en plats, som i FF XII. Rader under den sista platsen står kvar men körs inte (de syns som "Plats öppnas på nivå
-   N"). Kedjans rader tar en plats var.
+   (`Gambits.slots_for_level`: nivå 1–2 = 3, 3–4 = 4, 5–6 = 5 … nivå 19 = 12). En plats rymmer en enhet: en rad, eller en
+   kedja med "pröva nästa rad" och raden den leder till. En avstängd rad tar sin plats, som i FF XII. En rad med ett villkor
+   profilen inte äger tar ingen plats, eftersom ett oägt villkor inte kan stå i listan i FF XII. Den står kvar låst
+   (`Gambits.line_states`). Det beslutet kom efter den första botkörningen, där låsta rader åt platserna (se Balans). Rader
+   under den sista platsen står kvar men körs inte, och de syns som "Platsen öppnas på nivå N".
 6. **Var villkoren finns** (`homes` i gambits.json): varje vanligt villkor har två eller tre hem bland kryptans och kapellets
    fiender. Tankvillkoren finns hos fiender som själva försvarar sig (Kistbäraren, Fanbäraren och Gravväktaren), och
    helarvillkoren i kapellet (Fördärvad diakon: Tänker hela, Häxa och Botgörare: debuffar). De sällsynta finns hos elit och

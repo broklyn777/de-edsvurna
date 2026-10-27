@@ -811,7 +811,7 @@ func setup_gambits(data: Dictionary, macros: Dictionary) -> void:
 		for id in Gambits.used_in(data, macros):
 			if not gambits.has(id):
 				gambits.append(id)
-		gambit_slot_floor = maxi(gambit_slot_floor, Gambits.most_lines(macros))
+		gambit_slot_floor = maxi(gambit_slot_floor, Gambits.most_lines(macros, data))
 	for id in Gambits.starters(data):
 		if not gambits.has(id):
 			gambits.append(id)

@@ -66,7 +66,7 @@ func test_legacy_profile_keeps_everything_in_its_macros() -> void:
 	var p := Profile.load_from(path)
 	assert_eq(p.gambits_state, "legacy")
 	var macros: Dictionary = data.macros.duplicate(true)
-	var longest := Gambits.most_lines(macros)
+	var longest := Gambits.most_lines(macros, data)
 	p.setup_gambits(data, macros)
 	for m in macros.values():
 		for l in m.lines:
@@ -74,7 +74,8 @@ func test_legacy_profile_keeps_everything_in_its_macros() -> void:
 	assert_eq(p.gambit_slot_floor, longest)
 	for hero_id in macros:
 		if data.heroes.has(hero_id):
-			assert_true(p.gambit_slots(data, hero_id) >= macros[hero_id].lines.size(), "%s fick färre platser" % hero_id)
+			assert_true(p.gambit_slots(data, hero_id) >= Gambits.used_slots(data, macros[hero_id].lines, null),
+					"%s fick färre platser" % hero_id)
 			# Inget försvinner: striden kör samma rader som förut.
 			var before: Array = macros[hero_id].lines
 			var after: Array = Gambits.playable(data, macros[hero_id], p.gambits, p.gambit_slots(data, hero_id)).lines
@@ -109,10 +110,13 @@ func test_playable_drops_unowned_disabled_and_beyond_slots() -> void:
 	off.enabled = false
 	var macro := {"lines": [_line("has_trait", "grave_pact"), off, _line("hp_below", 50), _line("is_alive"),
 			_line("lowest_hp")]}
-	var lines: Array = Gambits.playable(data, macro, owned, 4).lines
+	# Den oägda raden tar ingen plats; den avstängda tar sin (som i FF XII); med 3 platser hamnar den sista utanför.
+	var lines: Array = Gambits.playable(data, macro, owned, 3).lines
 	assert_eq(lines.size(), 2, "oägd och avstängd bort, femte raden utanför platserna")
 	assert_eq(lines[0].cond, "hp_below")
 	assert_eq(lines[1].cond, "is_alive")
+	assert_eq(Gambits.line_states(data, macro.lines, owned, 3), ["locked", "off", "ok", "ok", "beyond"])
+	assert_eq(Gambits.used_slots(data, macro.lines, owned), 4)
 	assert_eq(Gambits.playable(data, macro, null, 20).lines.size(), 4, "utan ägande: bara avstängda bort")
 
 
@@ -125,8 +129,9 @@ func test_chain_is_kept_whole_or_not_at_all() -> void:
 	assert_eq(lines[0].cond, "lowest_hp")
 	owned.append("g_chain")
 	assert_eq(Gambits.playable(data, macro, owned, 10).lines.size(), 3)
-	# En kedja som klipps av platserna tas bort hel.
-	assert_eq(Gambits.playable(data, macro, owned, 1).lines.size(), 0)
+	# En kedja tar en plats.
+	assert_eq(Gambits.playable(data, macro, owned, 1).lines.size(), 2)
+	assert_eq(Gambits.used_slots(data, macro.lines, owned), 2)
 
 
 func test_runner_skips_disabled_line() -> void:
