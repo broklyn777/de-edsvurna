@@ -634,11 +634,6 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   mot evigt lås). Sömn/Frusen skjuter upp. Makrovillkor `is_charging`, `charge_left_at_most` (gruppen Laddning); inga rader i
   startmakrona – hjälprutan "windup" och Gorms replik (`help_seen`) lär ut det. Först: Benfurstens Dödsdom (1 tur).
   `--windup` startar en laddning direkt (skärmdumpar). Tester: `tests/test_windup.gd`.
-  **Tuschstilen** (prototyp, grenen `ink-proto`, `docs/plan/tusch-strid.md`): STIL: TUSCH / 3D i inställningsrutan (LJUD ·
-  STIL i striden; `GameSettings.ink_style`, `--ink`/`--no-ink`) växlar direkt. `InkPost` (silhuetter ur djupet, färgens
-  kanter, sepia, papper, skraffering), `CryptWorld.set_ink` (pergamentgolv, varmt ljus, `_ink_swaps`) och `UiStyle.ink`
-  (livmätare, avsikter, ringar, siffror, paneler, bläckstänk; guld bara för val, rött bara för fara, `UiStyle.inked`).
-  `INK_PROBE=1|2|3` mäter delarna. Tester: `tests/test_ink_style.gd`.
   **Träffytor** (polering fynd 6, `TargetPick`): kroppen och namnskylten (namn, livmätare, avsikt) räknas; träffar ett tryck
   flera vinner närmaste mitt. Fiender vars skyltar och överkroppar överlappar i bilden knuffas isär i sidled när striden
   byggs (`battle.gd` `_spread_enemies`, bara utseende). Ord som stiger över en fiende börjar vid bröstet (`--float-demo`).

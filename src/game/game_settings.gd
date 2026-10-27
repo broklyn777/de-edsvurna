@@ -11,9 +11,6 @@ static var music := 1.0
 static var sfx := 1.0
 ## Prototyp (sallskap-fem): bildtakten i ett hörn (FpsMeter), för att mäta på telefonen.
 static var show_fps := false
-## Prototyp (ink-proto, VD 2026-10-27): striden i tusch på pergament i stället för mättad 3D (STIL: TUSCH / 3D).
-## --ink slår på den för en körning utan att spara.
-static var ink_style := false
 
 
 ## Skapar kanalerna om de saknas (Sfx anropar detta innan spelarna får sin kanal).
@@ -32,11 +29,6 @@ static func load_and_apply() -> void:
 		music = clampf(float(cfg.get_value("audio", "music", 1.0)), 0.0, 1.0)
 		sfx = clampf(float(cfg.get_value("audio", "sfx", 1.0)), 0.0, 1.0)
 		show_fps = bool(cfg.get_value("debug", "show_fps", false))
-		ink_style = bool(cfg.get_value("look", "ink_style", false))
-	if "--ink" in OS.get_cmdline_user_args():
-		ink_style = true
-	elif "--no-ink" in OS.get_cmdline_user_args():
-		ink_style = false
 	apply()
 
 
@@ -45,7 +37,6 @@ static func save() -> void:
 	cfg.set_value("audio", "music", music)
 	cfg.set_value("audio", "sfx", sfx)
 	cfg.set_value("debug", "show_fps", show_fps)
-	cfg.set_value("look", "ink_style", ink_style)
 	cfg.save(PATH)
 
 

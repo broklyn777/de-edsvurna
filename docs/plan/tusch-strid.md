@@ -1,4 +1,8 @@
-# Striden i tusch: prototyp
+# Striden i tusch: prototyp (borttagen)
+
+**VD 2026-10-28, efter 0.30.53:** tusch var inte bra på något sätt; 3D fungerar och syns tydligt. Stilen togs bort helt på
+grenen `paladin-paths` (inställningen, efterbehandlingen, arenaskiftet och gränssnittet). Koden finns kvar i git
+(`ink-proto`, 895f242). Inget av det blev bättre oberoende av tuschen, så inget behölls.
 
 VD (2026-10-27): spelet har två stilar som krockar. Borgen, kartorna och porträtten är tusch på pergament, striden är
 mättad 3D. Frågan: kan striden bli vacker och höra ihop med resten? Prototypen är en växelbar stil på grenen `ink-proto`.
