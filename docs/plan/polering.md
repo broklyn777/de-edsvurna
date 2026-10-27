@@ -130,3 +130,10 @@ Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som
    varje hjälte bär EN artefakt, och att välja en annan typ ger knappen "SMID – 160 SILVER" (`Profile.forge_cost` =
    FORGE_COST) utan att säga att svärdet ersätts och utan bekräftelse. Förslag: raden "Varje hjälte bär en artefakt" under
    TYP; knappen "BYT SVÄRD → SKÖLD – 160 SILVER" med "Nivå 4 och materialen följer med" under; samma i textspelet.
+10. Smedjan, sätta i (VIKTIG): ett alternativ (trofé, bärnsten, trick, Nether Stone) sätts i först vid ett ANDRA tryck på
+    samma kort (`smith_screen.gd` ~rad 175); den stora röda knappen bredvid höjer nivån. VD tryckte på Den rivna slöjan och
+    sedan på knappen i tron att den bekräftade – köpte nivå 7 (230 silver) och trofén kom aldrig i. Förslag: när något är
+    valt blir den stora knappen "SÄTT I <NAMN>" (gratis, eller vad det kostar); nivåknappen bara när inget är valt, eller
+    en egen mindre knapp vid nivåstegen. Samma mönster på andra skärmar med "tryck två gånger" ska ses över.
+11. Artefaktens troféplats (nivå 6) gör att en hjälte bär två troféer; VD kände inte till det. Visa det i nivåstegen och
+    hjälprutan "material" (eller en egen första gång platsen öppnas).
