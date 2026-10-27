@@ -4227,7 +4227,7 @@
 			{"id": "gorm_path_choose_2", "text": "Står du framför de andra, eller lyser du för dem? Båda är en paladins väg."}
 		],
 		"gorm_first_change": [
-			{"id": "gorm_path_change_1", "text": "Du vill byta väg. En paladin som byter väg har inte svikit sin ed – han har lärt sig något om den."},
+			{"id": "gorm_path_change_1", "text": "Du vill byta väg. Den som byter väg har inte svikit sin ed. Det är att ha lärt sig något om den."},
 			{"id": "gorm_path_change_2", "text": "Första gången kostar det ingenting. Sedan vill jag ha femtio silver till ljusen i kapellet."}
 		],
 		"gorm_change": [

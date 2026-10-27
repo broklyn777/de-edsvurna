@@ -2197,7 +2197,7 @@
 		"sound": "k_shield_wall",
 		"charges": 6,
 		"cooldown": 2,
-		"text": "Paladinen kastar sig emellan: fiendernas anfall går till honom fram till hans nästa tur, och han tar 25 % mindre skada. Ingen Defense går förlorad.",
+		"text": "Paladinen kastar sig emellan: fiendernas anfall går till Paladinen fram till nästa egna tur, med 25 % mindre skada. Ingen Defense går förlorad.",
 		"effects": [
 			{
 				"type": "aura",
@@ -2239,12 +2239,12 @@
 		"button_color": "#ffe48a",
 		"sound": "shield_wall",
 		"charges": 6,
-		"text": "En allierad får en Barriär (160 % av Intelligence) innan slaget kommer.",
+		"text": "En allierad får en Barriär (140 % av Intelligence) innan slaget kommer.",
 		"effects": [
 			{
 				"type": "barrier",
 				"stat": "intelligence",
-				"pct": 1.6
+				"pct": 1.4
 			}
 		]
 	},
@@ -2258,11 +2258,11 @@
 		"button_color": "#5dff73",
 		"sound": "heal_light",
 		"charges": 4,
-		"text": "Hela sällskapet helas (75 % av Intelligence).",
+		"text": "Hela sällskapet helas (65 % av Intelligence).",
 		"effects": [
 			{
 				"type": "heal",
-				"power": 0.75
+				"power": 0.65
 			}
 		]
 	}

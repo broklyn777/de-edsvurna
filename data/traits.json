@@ -4043,12 +4043,12 @@
 		"name": "Edens sköld",
 		"trigger": "passive",
 		"guard_allies": 0.15,
-		"text": "Paladinen tar 15 % av varje träff mot en annan i sällskapet. Hans Försvara, Beskyddad och Kasta sig emellan minskar andelen."
+		"text": "Paladinen tar 15 % av varje träff mot en annan i sällskapet. Paladinens Försvara, Beskyddad och Kasta sig emellan minskar andelen."
 	},
 	"path_shield_glow": {
 		"name": "Glöd",
 		"quiet": true,
-		"text": "Paladinen får en Glöd när han träffas eller tar en träff åt någon (högst 5). Rättfärdigt slag förbrukar all: +15 % skada, 2 Barriär och 2 helning åt honom per Glöd. Befäl kostar 3.",
+		"text": "Paladinen får en Glöd för varje träff mot sig och varje träff som Edens sköld tar (högst 5). Rättfärdigt slag förbrukar all: +20 % skada, 3 Barriär och 3 helning åt Paladinen per Glöd. Befäl kostar 3.",
 		"trigger": "damage",
 		"when": {
 			"target": "self",
@@ -4066,19 +4066,19 @@
 		"release": {
 			"ability": "holy_smite",
 			"stack": "glod",
-			"damage_mult_per": 0.15,
+			"damage_mult_per": 0.2,
 			"effects": [
 				{
 					"type": "barrier",
-					"min": 2,
-					"max": 2,
+					"min": 3,
+					"max": 3,
 					"per_stack": true,
 					"target": "self"
 				},
 				{
 					"type": "heal",
-					"min": 2,
-					"max": 2,
+					"min": 3,
+					"max": 3,
 					"per_stack": true,
 					"target": "self"
 				}
@@ -4108,7 +4108,7 @@
 	},
 	"path_light_core": {
 		"name": "Gryningens hand",
-		"text": "Paladinens direkta träffar helar den svagaste i sällskapet för 25 % av skadan. Med Gryningens kall ersätter den kallets egen helning.",
+		"text": "Paladinens direkta träffar helar den svagaste i sällskapet för 20 % av skadan. Med Gryningens kall ersätter den kallets egen helning.",
 		"trigger": "damage",
 		"when": {
 			"source": "self",
@@ -4117,7 +4117,7 @@
 		"effects": [
 			{
 				"type": "heal",
-				"pct_of_event": 0.25,
+				"pct_of_event": 0.2,
 				"target": "weakest_ally"
 			}
 		],
@@ -4128,7 +4128,7 @@
 	"path_light_glow": {
 		"name": "Glöd",
 		"quiet": true,
-		"text": "Paladinen får en Glöd när han helar någon (högst 5). Rättfärdigt slag förbrukar all: +15 % skada och 2 Barriär åt den svagaste per Glöd. Befäl kostar 3.",
+		"text": "Paladinen får en Glöd för varje helning (högst 5). Rättfärdigt slag förbrukar all: +15 % skada och 2 Barriär åt den svagaste per Glöd. Befäl kostar 3.",
 		"trigger": "heal",
 		"when": {
 			"source": "self",

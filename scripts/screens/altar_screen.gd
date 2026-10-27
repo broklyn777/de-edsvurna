@@ -15,6 +15,8 @@ func _ready() -> void:
 	super()
 	HelpBox.offer(self, ["perks"])  # 0.25: hjälprutan första gången
 	anoint_mode = OS.get_cmdline_user_args().has("--anoint")
+	if OS.get_cmdline_user_args().has("--path-oath"):  # valet vid eden (skärmdumpar; sparas inte)
+		PathBox.open.call_deferred(self, Dialog.fill_for(String(run.data.dialog.get("paths", {}).get("oath_question", "")), run.profile))
 
 
 func _process(delta: float) -> void:

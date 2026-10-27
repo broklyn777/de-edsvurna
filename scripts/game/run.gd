@@ -571,6 +571,12 @@ func _dev_args() -> void:
 			# Paladinens inriktning för en körning (shield, light, "" = som förut); sparas inte av sig själv.
 			profile.path = arg.get_slice("=", 1)
 			Paths.apply(data, profile.path)
+			# Som efter eden: vägens startrader överst i paladinens makro (bara i minnet).
+			var mid: String = assignment.get("paladin", "paladin")
+			if macros.has(mid):
+				var rows := Paths.rows(data, profile.path)
+				for i in range(rows.size() - 1, -1, -1):
+					macros[mid].lines.insert(0, rows[i].line)
 		elif arg.begins_with("--name="):
 			profile.set_hero_name(arg.get_slice("=", 1))  # paladinens namn (0.24.2), sparas inte av sig självt
 		elif arg.begins_with("--silver="):

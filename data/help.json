@@ -123,7 +123,7 @@
 		},
 		"glow": {
 			"title": "Glöden och din väg",
-			"text": ["Sköldbäraren får Glöd av slagen han tar, också dem han tar åt någon annan. Ljusbäraren helar genom att slåss och får Glöd när han helar.", "Glöden är de fem pärlorna i hans ram. Rättfärdigt slag förbrukar all och slår hårdare för varje pärla. Befäl kostar tre: en vän agerar direkt.", "Kasta sig emellan drar fiendernas anfall till Sköldbäraren till nästa tur. Vägen byts hos Mäster Gorm."]
+			"text": ["Sköldbäraren får Glöd av slagen som träffar, också dem Edens sköld tar åt någon annan. Ljusbäraren helar genom att slåss och får Glöd av varje helning.", "Glöden är de fem pärlorna i Paladinens ram. Rättfärdigt slag förbrukar all och slår hårdare för varje pärla. Befäl kostar tre: en vän agerar direkt.", "Kasta sig emellan drar fiendernas anfall till Sköldbäraren till nästa tur. Vägen byts hos Mäster Gorm."]
 		},
 		"perks": {
 			"title": "Kallets perks",

@@ -6,14 +6,14 @@
 		"icon": "shield",
 		"feel": "Du står framför de andra. Slagen som skulle ha fällt dem tar du, och av varje slag växer din Glöd.",
 		"card": [
-			"Tank: mer liv och Defense, lite mindre Attack.",
+			"Tank: mer liv och Defense, lite mindre Intelligence och Speed.",
 			"Edens sköld: tar 15 % av varje träff mot de andra.",
 			"Glöd av slagen du tar. Rättfärdigt slag helar och skyddar dig.",
 			"Kasta sig emellan och Befäl."
 		],
 		"stats": {
-			"health": 100,
-			"attack": 8.8,
+			"health": 105,
+			"attack": 9.5,
 			"intelligence": 8.8,
 			"defense": 6.5,
 			"speed": 9
@@ -67,7 +67,7 @@
 		"stats": {
 			"health": 90,
 			"attack": 9.5,
-			"intelligence": 11.0,
+			"intelligence": 10.5,
 			"defense": 4.5,
 			"speed": 11
 		},
