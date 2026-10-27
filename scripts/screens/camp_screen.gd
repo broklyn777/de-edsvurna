@@ -221,8 +221,9 @@ func _draw() -> void:
 		UiStyle.lesson(self, Vector2(MARGIN, 287), lesson, size.x - MARGIN * 2, 1)
 
 	# 0.27.2: med en vald trofé står vad den gör i rubrikens ställe.
-	var head := "DINA TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE" if _swap() \
-			else "DINA TROFÉER – DE BYTS VID EN LÄGERELD I GROTTAN"
+	# 0.30.48 (fynd 5): det är körningens troféer; hela samlingen väljs i Förberedelser.
+	var head := "KÖRNINGENS TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE" if _swap() \
+			else "KÖRNINGENS TROFÉER – DE BYTS VID EN LÄGERELD I GROTTAN"
 	if _swap() and selected != "":
 		head = "%s: %s Tryck på en hjälte." % [data.traits[selected].name, data.traits[selected].text]
 	elif _swap() and _locked_note != "":
