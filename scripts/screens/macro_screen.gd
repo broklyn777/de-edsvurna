@@ -448,11 +448,6 @@ func _found_from(r: Dictionary) -> String:
 	return FOUND_SOURCE.get(r.get("source", ""), "")
 
 
-## En låst kloss i radeditorn: namnet och ryktet.
-func _locked_label(block: String) -> String:
-	return "LÅST · %s – %s" % [Gambits.name_of(data, block), Gambits.clue(data, block)]
-
-
 # --- Uppdatera listorna ---------------------------------------------------------
 
 func _refresh_all() -> void:
@@ -762,49 +757,30 @@ func _open_editor(index: int) -> void:
 func _fill_lists() -> void:
 	_options.clear()
 	var owned: Array = run.profile.gambits
-	# Gambits 2: bara ägda klossar, och de låsta en gång var, sist och med sitt rykte (de går inte att välja).
+	# Bara ägda klossar syns (VD 2026-10-27: "Det får komma överraskningar"); oägda erbjuds aldrig, inte ens som låsta.
 	var subjects: Array = []
-	var locked_subjects: Array = []
 	for s in MacroRunner.SUBJECTS:
 		var b := Gambits.subject_block(data, s)
 		if b == "" or Gambits.has(owned, b):
 			subjects.append({"label": _cap(MacroRunner.subject_name(s)), "subject": s})
-		elif not locked_subjects.any(func(o: Dictionary) -> bool: return o.gambit == b):
-			locked_subjects.append({"label": _locked_label(b), "subject": s, "locked": true, "gambit": b})
-	subjects.append_array(locked_subjects)
 	var conds: Array = []
-	var locked: Array = []
 	for cond in MacroRunner.CONDITIONS:
 		var gid := Gambits.for_cond(data, cond)
-		var shown := 0
 		for v in _values_for(cond):
 			if gid == "" or Gambits.has(owned, Gambits.cond_block(data, cond, v)):
 				conds.append({"label": MacroRunner.condition_name(data, cond, v), "cond": cond, "value": v})
-				shown += 1
-		if shown == 0 and gid != "" and not locked.any(func(o: Dictionary) -> bool: return o.get("gambit", "") == gid):
-			var first: Variant = _values_for(cond)[0]
-			locked.append({"label": _locked_label(Gambits.cond_block(data, cond, 50 if cond in ["hp_below", "hp_above"] else first)),
-					"cond": cond, "value": first, "locked": true, "gambit": gid})
-	conds.append_array(locked)
 	var actions: Array = []
 	for a in ["attack", "defend", "provoke", "skip", "test_next"]:
 		var gid := Gambits.for_cond(data, a)
-		if gid != "" and not Gambits.has(owned, gid):
-			actions.append({"label": "LÅST · %s – %s" % [MacroRunner.action_label(data, a), Gambits.clue(data, gid)], "action": a,
-					"ability": "", "locked": true})
-			continue
-		actions.append({"label": MacroRunner.action_label(data, a), "action": a, "ability": ""})
+		if gid == "" or Gambits.has(owned, gid):
+			actions.append({"label": MacroRunner.action_label(data, a), "action": a, "ability": ""})
 	for ability_id in _macro_abilities():
 		actions.insert(1, {"label": MacroRunner.action_label(data, "ability", ability_id), "action": "ability", "ability": ability_id})
 	var targets: Array = []
-	var locked_targets: Array = []
 	for t in MacroRunner.TARGETS:
 		var b := Gambits.target_block(data, t)
 		if b == "" or Gambits.has(owned, b):
 			targets.append({"label": _cap(MacroRunner.target_name(t)), "target": t})
-		elif not locked_targets.any(func(o: Dictionary) -> bool: return o.gambit == b):
-			locked_targets.append({"label": _locked_label(b), "target": t, "locked": true, "gambit": b})
-	targets.append_array(locked_targets)
 	_options = {"subject": subjects, "cond": conds, "action": actions, "target": targets}
 	_search.text = ""
 	if conds.size() > AUTO_FOCUS_OVER and not OS.has_feature("mobile"):
