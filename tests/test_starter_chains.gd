@@ -34,8 +34,9 @@ func test_no_starter_chain_ends_on_the_fallback() -> void:
 				assert_true(not _run._is_fallback(unit[-1]), "%s: mallens kedja slutar inte på reservanfallet" % id)
 
 
+## Mallen (data/macros.json, som de gamla profilernas makron och botarnas TUNED bygger på) håller ihop Liriens kedja.
 func test_lirien_keeps_his_lullaby_chain() -> void:
-	var lines: Array = _run.starter_lines(_data, "lirien", _data.macros.lirien.lines)
+	var lines: Array = _data.macros.lirien.lines
 	var i := -1
 	for k in lines.size():
 		if lines[k].action == "test_next":
@@ -72,7 +73,7 @@ func test_alva_heals_the_wounded_not_the_first_without_mending() -> void:
 func test_hulda_spores_any_enemy_without_poison() -> void:
 	for l in _data.macros.hulda.lines:
 		assert_true(l.action != "test_next" or l.subject != "all_enemies", "ingen kedja som binder den första fienden")
-	var lines: Array = _run.starter_lines(_data, "hulda", _data.macros.hulda.lines)
+	var lines: Array = _data.macros.hulda.lines.filter(func(l: Dictionary) -> bool: return l.get("ability", "") != "leaf_shield")
 	var sim := CombatSim.create(_data, "crypt_1", 3, ["paladin", "hulda"])
 	var first: CombatUnit = sim.enemies[0]
 	sim._add_aura(first, first, "poisoned")

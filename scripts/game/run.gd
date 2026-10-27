@@ -1018,14 +1018,14 @@ func macro_hint(hero_id: String) -> Dictionary:
 	return hint
 
 
-## En ny profils startrader för en följeslagare (0.23, 0.24.1): de två första, men inte raden som makroförslaget
-## lär ut (som Alvas "hela den som har lågt liv"), så att förslaget visas när hen ansluter.
-## Makro-UX förslag 2, varianten nära Siralim: sist står alltid FIRST_LINE (anfall fienden med lägst liv), så att en ny
-## profils följeslagare aldrig står stilla för att ingen rad passade. Ingen fast standardrad utanför listan: raden är
-## en vanlig rad som går att ändra och ta bort, och ett makro där inget passar väntar fortfarande som i Siralim.
-## 0.30.25: en kedja ("pröva nästa rad" och raden den leder till) räknas som en enhet och tas med hel eller inte alls;
-## förut kunde Liriens "liv < 50 % → pröva nästa rad" bli kvar utan sin Vaggvisa och kopplas på reservanfallet.
+## En ny profils startrader för en följeslagare: bara hens egen rad (Gambits.own_row, makroförslaget eller teach-raden;
+## VD 2026-10-27: "en rad per följeslagare"). Passar den inte väntar hjälten, och spelaren styr hen för hand.
+## En hjälte utan egen rad (Paladinen) får de gamla startraderna: 0.23 och 0.24.1 tog de två första enheterna utan
+## förslagets rad och lade FIRST_LINE sist (makro-UX förslag 2); en kedja tas med hel eller inte alls (0.30.25).
 static func starter_lines(game_data: Dictionary, hero_id: String, lines: Array) -> Array:
+	var own := Gambits.own_row(game_data, hero_id)
+	if not own.is_empty():
+		return [own.line.duplicate(true)]
 	var hint: Dictionary = game_data.heroes.get(hero_id, {}).get("macro_hint", {}).get("line", {})
 	var units := macro_units(lines).filter(func(unit: Array) -> bool: return hint.is_empty() or not unit.any(
 			func(l: Dictionary) -> bool: return l.get("cond", "") == hint.cond and l.get("action", "") == hint.action \

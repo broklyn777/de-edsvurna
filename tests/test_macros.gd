@@ -233,12 +233,16 @@ func test_why_not_names_missing_and_failing_units() -> void:
 
 # --- Makro-UX förslag 2: startraderna slutar med en rad som nästan alltid passar --
 
-func test_starter_lines_end_with_a_fallback() -> void:
+func test_new_profile_companions_start_with_their_own_row() -> void:
+	# VD 2026-10-27: en rad per följeslagare, makroförslaget eller teach-raden. Passar den inte väntar hjälten.
 	var run_script: Script = load("res://scripts/game/run.gd")
 	for id in _data.macros:
+		if id == "paladin" or not _data.heroes.has(id):
+			continue
 		var lines: Array = run_script.starter_lines(_data, id, _data.macros[id].lines)
-		assert_true(run_script.macro_units(lines).size() <= 3, "%s: få rader (kedjor räknas som en) i början (%d)" % [id, lines.size()])
-		assert_true(lines.any(func(l: Dictionary) -> bool: return l.action == "attack" and l.subject == "any_enemy"),
-				"%s har en anfallsrad" % id)
-	var brokk: Array = run_script.starter_lines(_data, "brokk", _data.macros.brokk.lines)
-	assert_eq(brokk[-1].cond, "lowest_hp", "Brokks två första rader passar inte efter tur 1: anfallsraden sist")
+		assert_eq(lines.size(), 1, "%s: en rad" % id)
+		assert_true(Gambits.same_line(lines[0], Gambits.own_row(_data, id).line), id)
+	var alva: Array = run_script.starter_lines(_data, "alva", _data.macros.alva.lines)
+	assert_eq(alva[0].ability, "healing_light", "Alvas förslag: hela den som har lågt liv")
+	var imma: Array = run_script.starter_lines(_data, "imma", _data.macros.imma.lines)
+	assert_eq(imma[0].cond, "has_buff", "Imma utan förslag: hennes teach-rad")

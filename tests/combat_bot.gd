@@ -125,7 +125,17 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 				act_fail += 1
 		else:
 			no_match += 1
-			if sim.act("defend") != "":
+			# BOT_HAND=1 (gambits 3): passar ingen rad spelar boten hjälten för hand som en spelare, anfall på den svagaste
+			# fienden. Utan den försvarar sig hjälten (en spelare som bara trycker AUTO).
+			var weakest: CombatUnit = null
+			if BOT_HAND:
+				for e in sim.enemies:
+					if e.alive and not sim.is_immune(e) and (weakest == null or e.hp < weakest.hp):
+						weakest = e
+			if weakest != null:
+				if sim.act("attack", weakest.id) != "":
+					sim.act("defend")
+			elif sim.act("defend") != "":
 				sim.act("attack")  # Inga bönder: Försvara går inte
 		var events := sim.drain_events()
 		if opts.has("event_log"):
@@ -559,6 +569,7 @@ static func _gift(data: Dictionary, hero_id: String) -> Array:
 
 
 static var GAMBITS_NEW := OS.get_environment("GAMBITS") == "ny"
+static var BOT_HAND := OS.get_environment("BOT_HAND") == "1"
 
 
 ## En ny profils klossar (Gambits 2): introts första rad och det hjältarna i striden lärde ut när de anslöt (deras
