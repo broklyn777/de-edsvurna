@@ -16,6 +16,8 @@ const MAX_OPTIONS := 6
 const MAX_STONES := 4
 ## 0.30.48 (B2): raden efter det första trycket på ett alternativ.
 const AGAIN := "Tryck igen för att sätta i"
+## Polering fynd 11: troféplatsen (nivå 6) ger hjälten en trofé till.
+const TROPHY_SLOT_LINE := "Trofén ger artefakten sin egenskap och sitter kvar tills du tar ut den. Det kostar inget silver."
 
 var hero := "paladin"
 var type := "sword"
@@ -764,13 +766,16 @@ func _draw_compare(data: Dictionary, art: Dictionary, level: int, cur: String) -
 			now_text = "%s: %s" % [ArtifactText.material_name(data, cur), ArtifactText.material_text(data, cur, level)]
 		if pending != "":
 			new_text = "%s: %s" % [ArtifactText.material_name(data, pending), ArtifactText.material_text(data, pending, level)]
+	if slot.kind == "trophy":
+		# Polering fynd 11: vad troféplatsen är, en gång överst.
+		y += 8 + UiStyle.para(self, Vector2(x, y), TROPHY_SLOT_LINE, 15, Color(UiStyle.GOLD, 0.85), w, 2)
 	UiStyle.text(self, Vector2(x, y), "NU", 15, Color(1, 1, 1, 0.5))
-	y += 6 + UiStyle.para(self, Vector2(x + 40, y), now_text, 16, Color(1, 1, 1, 0.85), w - 40, 3 if slot.kind == "trophy" else 2)
+	y += 6 + UiStyle.para(self, Vector2(x + 40, y), now_text, 16, Color(1, 1, 1, 0.85), w - 40, 2)
 	UiStyle.text(self, Vector2(x, y + 4), "VALT", 15, Color(1, 1, 1, 0.5))
 	if new_text == "":
 		UiStyle.text(self, Vector2(x + 52, y + 4), "Tryck på ett alternativ", 16, Color(1, 1, 1, 0.55))
 		return
-	y += 10 + UiStyle.para(self, Vector2(x + 52, y + 4), new_text, 16, UiStyle.TRAIT_GOLD, w - 52, 3)
+	y += 10 + UiStyle.para(self, Vector2(x + 52, y + 4), new_text, 16, UiStyle.TRAIT_GOLD, w - 52, 2 if slot.kind == "trophy" else 3)
 	# Vad bytet gör med hjältens stats, i siffror.
 	var after := art.duplicate(true)
 	match slot.kind:
