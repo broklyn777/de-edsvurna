@@ -4,6 +4,55 @@ VD 2026-10-27: "kör". Förslaget kommer från Claude-chatten (`docs/ideer/claud
 med Final Fantasy XII som förebild. Siralim är en verktygslåda: där har man alla villkor från start, och här förtjänar man dem.
 I spelets text heter det fortfarande **Makron**. VD har inte bestämt namnet, och "gambit" används bara i koden, datan och den här planen.
 
+## Gambits 2: legoklossar och funna rader
+
+VD 2026-10-27 ("kör"): **en makrorad består av legoklossar, och man bygger upp makrosystemet från noll genom att hitta hela
+rader.** Den här delen ersätter beslut 1–4, 6, 7 och 12 nedan där de säger emot den. Resten (platser, PÅ/AV, gambitsidan,
+Biblioteket) gäller som förut.
+
+1. **Fynd är färdiga rader** (`Gambits.make_row`, `Profile.learn_row`, `Profile.found_rows`). En droppe, en kista, en
+   befrielse eller introt ger en hel rad, till exempel "Om någon allierad har liv < 30 % → Helande ljus på den som
+   matchade". Varje kloss har radmallar i `gambits.json` ("rows"), prövade i ordning. Den första mall som någon hjälte i
+   sällskapet kan utföra blir raden, och fyndet väljer den hjälten: för en förmåga den som har den, för Anfall någon, och
+   för Försvara och Provocera den med högst Defense. Kan ingen läka blir "liv < 30 %" en Helig sköld hos Paladinen, och
+   kan ingen skydda blir det Provocera. En mall kan ange en förmåga eller en sort (heal, protect, support, cleanse, damage,
+   aoe, debuff, bonus, `Gambits.ability_fits`). *Vårt val*: sorterna läses ur förmågornas effekter, så att nya hjältar
+   passar in utan ny data.
+2. **Segerskärmen** visar raden i ett guldkort, "NY RAD FÖR MAKRONA", med knappen **LÄGG TILL HOS <HJÄLTE>**. Ett tryck
+   lägger raden överst i hjältens makro (`Run.add_row`, samma väg som Spara som order och makroförslagen). Skattkammaren
+   skriver raden i rummets text. Alla fynd sparas i **FUNNA RADER** på gambitsidan, där varje rad kan läggas till hos sin
+   hjälte eller i det makro som är öppet.
+3. **Klossarna i en funnen rad blir ens egna** och är fria att kombinera: "liv < 50 %" går att använda både för att hela
+   och för att slå en fiende. `Gambits.needs(rad)` ger radens klossar, och raden är spelbar när profilen äger alla.
+4. **Gränserna är egna klossar** (`"thresholds"` i gambits.json, id `g_hp_below@50`). Liv under 10–80 % och Liv över
+   30/50/70/90 % har var sitt hem. De skarpa gränserna finns hos svårare fiender: Liv under 10 % hos bossar, 20 % och Liv
+   över 90 % hos elit. Charges kvar har ingen siffra i vårt villkor (värdet är en förmåga), så där är villkoret klossen.
+   Statusar, egenskaper och förmågor är fria värden när man äger villkoret. *Vårt val*: tröskelvärdena följer editorns gamla
+   steg om tio. En gräns som inte står i listan (35 eller 45 i gamla startmakron) är också en egen kloss, men den kan inte
+   hittas.
+5. **Vad som förtjänas**: villkoren, gränserna och de specifika subjekten och målen, nämligen Allierad 1–4, Fiende 1–6
+   (subjekt och mål), Alla allierade, Alla fiender och Slumpvis (`"subjects"`/`"targets"` i gambits.json). **Fria från
+   start**: Denna hjälte, Någon allierad, Någon fiende, Den som matchade och mål "sig själv" (`free_subjects`,
+   `free_targets`). Ett mål räknas bara när handlingen använder det (Anfall, Förmåga). **Handlingarna är fria**.
+6. **En ny profil börjar nästan tom** (`Profile.setup_gambits`): bara Lägst liv. Gorms rad i introt ("Om någon fiende har
+   lägst liv → Anfall på den som matchade") är det första fyndet. En följeslagare som ansluter (`Profile.recruit`,
+   `Gambits.recruit_gift`) ger sitt makroförslag som funnen rad, till exempel Alvas "liv < 50 % → Helande ljus" och Brokks
+   "liv < 50 % → Provocera". Följeslagare utan förslag ger en rad för sin kloss i `"teach"`, Imma till exempel "Om någon
+   fiende har en buff → Anfall". Följeslagaren lär också ut klossarna i sina startrader (`Run.starter_lines`), så att en ny
+   profils följeslagare gör samma sak som förut. *Vårt val*: VD vill att makrona byggs från noll, men en följeslagare som
+   står stilla för att hennes egen startrad är låst är inte roligt.
+7. **Radeditorn visar bara ägda klossar** och sist de låsta villkoren, subjekten och målen, en gång var med sitt rykte.
+   En ny profil ser alltså bara Lägst liv bland villkoren, inte tio rader med liv.
+8. **Gamla profiler förlorar ingenting**. Den här versionen (`gambit_version` 2) behandlar profiler från före gambits och
+   från 0.30.50 som gamla: allt i deras makron räknas som ägt, och för ett villkor man äger räknas alla gränser som ägda
+   (familjens id, `g_hp_below`, äger alla gränser, `Gambits.has`). De startvillkor som 0.30.50 gav (Liv under …, Lever)
+   äger alltså fortfarande alla sina gränser.
+9. **Tre villkor från idéfilen**: **Svag mot förmågan** (`weak_to`, värdet är en förmåga med `bonus_vs`, till exempel
+   Rättfärdigt slag mot en Förblindad fiende) och **Näst i tur** (`next_in_turn`, den som står efter den som har turen,
+   till exempel "Paladinen står näst på tidslinjen") finns, med hem hos Gast och Kyrkogrim respektive Benspringare och
+   Blodsvuren. **Högst en gång per strid** är inget villkor utan en egenskap hos raden, som kräver att striden minns vilka
+   rader som har körts. Det blir nästa steg.
+
 ## Kärnan
 
 En gambit ger ett **omdöme**, inte en förmåga. Handlingarna (Anfall, förmågorna, Försvara, Provocera) kan man alltid välja för
