@@ -49,13 +49,13 @@ func _ready() -> void:
 		elif arg.begins_with("--smith-slot="):
 			var parts := arg.get_slice("=", 1).split(":")
 			slot = {"kind": parts[0], "i": int(parts[1]) if parts.size() > 1 else 0}
-		elif arg.begins_with("--smith-pick="):
-			pending = arg.get_slice("=", 1)  # för skärmdumpar: ett valt alternativ med jämförelsen
 		elif arg.begins_with("--smith-type="):
 			tab = 1  # 0.30.48: smidesfliken med en annan typ vald (typbytets knapp)
 			type = arg.get_slice("=", 1)
 		elif arg == "--smith-confirm":
 			_ask_insert.call_deferred(pending)  # 0.30.48: frågan när trofén tas från någon annan
+		elif arg.begins_with("--smith-pick="):
+			pending = arg.get_slice("=", 1)  # för skärmdumpar: ett valt alternativ med jämförelsen
 
 
 func _process(delta: float) -> void:
@@ -218,8 +218,6 @@ func _delayed_sound(sound: String, delay: float) -> void:
 	run.ui(sound, -4.0)
 
 
-func _insert(option: String) -> void:
-	var ok: bool
 ## 0.30.48 (fynd 13): en trofé som en annan hjälte bär eller har i sin artefakt flyttas först efter ett ja.
 func _ask_insert(option: String) -> void:
 	var holder := _trophy_holder(option) if slot.kind == "trophy" else ""
@@ -240,6 +238,8 @@ func _art_name(art: Dictionary) -> String:
 	return String(run.data.artifacts.get(String(art.get("type", "")), {}).get("name", "artefakt")).to_lower()
 
 
+func _insert(option: String) -> void:
+	var ok: bool
 	match slot.kind:
 		"nether":
 			ok = run.profile.socket_stone(hero, option)
@@ -716,6 +716,17 @@ func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int
 	_draw_compare(data, art, level, cur)
 
 
+func _has_materials(art: Dictionary) -> bool:
+	return Array(art.get("stat_slots", [])).any(func(m: String) -> bool: return m != "") \
+			or Array(art.get("trick_slots", [])).any(func(m: String) -> bool: return m != "") \
+			or not Dictionary(art.get("nether", {})).is_empty() or String(art.get("trophy", "")) != ""
+
+
+## Svensk bestämd form för artefakttyperna: svärdet, staven, skölden, hjälmen, stövlarna.
+static func _definite(name: String) -> String:
+	return {"svärd": "svärdet", "stav": "staven", "sköld": "skölden", "hjälm": "hjälmen", "stövlar": "stövlarna"}.get(name, name)
+
+
 func _short(name: String) -> String:
 	return name.replace(" bärnsten", "").replace("bärnsten", "")
 
@@ -820,6 +831,13 @@ func _draw_forge(data: Dictionary, profile: Profile) -> void:
 			16, Color(1, 1, 1, 0.6), _w() - 440, 3)
 	var cost := profile.forge_cost(hero, type, ability)
 	var label := "SMIDD" if cost == 0 else ("%s – %d SILVER" % ["BYT FÖRMÅGA" if cost == Profile.RESOCKET_COST else "SMID", cost])
+	var cur: Dictionary = profile.artifact(hero)
+	if not cur.is_empty() and cur.type != type:
+		# 0.30.48 (B3): ett typbyte säger vad som byts, och att nivån och materialen följer med.
+		label = "BYT %s → %s" % [String(data.artifacts[cur.type].name).to_upper(), String(k.name).to_upper()]
+		var mats := "materialen" if _has_materials(cur) else "platserna"
+		UiStyle.para(self, _button_rect().position + Vector2(0, -44), "%d silver. Nivå %d och %s följer med till %s." % [cost,
+				int(cur.level), mats, _definite(String(k.name).to_lower())], 16, UiStyle.TRAIT_GOLD, _button_rect().size.x, 2)
 	UiStyle.big_button(self, _button_rect(), label, _t, cost > 0 and profile.silver >= cost)
 	if cost > profile.silver:
 		UiStyle.text(self, _button_rect().position + Vector2(0, -10), "För lite silver", 16, Color("#ff8a6a"),
