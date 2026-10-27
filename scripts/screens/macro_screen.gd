@@ -79,6 +79,8 @@ func _ready() -> void:
 	if "--gambit-off" in OS.get_cmdline_user_args() and current != "" and run.macros[current].lines.size() > 1:
 		run.macros[current].lines[1].enabled = false  # skärmdumpar: en avstängd rad (sparas inte med en påhittad profil)
 	_refresh_all()
+	if "--gambit-drag" in OS.get_cmdline_user_args():  # skärmdumpar: det första kortet lyft och draget nedåt
+		_demo_drag.call_deferred()
 	if "--edit-line" in OS.get_cmdline_user_args():  # utvecklarflagga för skärmdumpar
 		_open_editor(0)
 	for arg in OS.get_cmdline_user_args():
@@ -422,6 +424,16 @@ func _next_slot_level() -> int:
 			if lv > 0 and (best == 0 or lv < best):
 				best = lv
 	return best
+
+
+func _demo_drag() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var cards := _lines_box.get_children()
+	if cards.size() < 2:
+		return
+	begin_drag(cards[0])
+	drag_to(cards[0], _lines_box.get_global_rect().position.y + card_height() * 1.3)
 
 
 ## Slår av eller på en rad (PÅ/AV-knappen på kortet).

@@ -138,8 +138,9 @@ func _draw_gambits() -> void:
 		var id: String = ids[i]
 		var own: bool = run.profile.gambits.has(id)
 		var tag: String = GAMBIT_TAG.get(Gambits.all(data)[id].get("rarity", ""), "")
-		UiStyle.card(self, _gambit_rect(i), UiStyle.fit(Gambits.name_of(data, id), 15, _gambit_rect(i).size.x - 12) if own else "Okänt villkor",
-				"" if own else "rykte", gambit_selected == i, UiStyle.TRAIT_GOLD if own else Color("#b8a27a"), "" if own else tag)
+		# Oägda syns med namn och sällsynthet, som troféernas rykten: det ska väcka längtan.
+		UiStyle.card(self, _gambit_rect(i), Gambits.name_of(data, id), "", gambit_selected == i,
+				UiStyle.TRAIT_GOLD if own else Color("#8a93a6"), "" if own else tag)
 	var last := _gambit_rect(ids.size() - 1)
 	var box := Rect2(MARGIN, last.end.y + 12, size.x - MARGIN * 2, size.y - 150 - last.end.y - 12)
 	draw_rect(box, Color(0, 0, 0, 0.35))
@@ -150,8 +151,8 @@ func _draw_gambits() -> void:
 	var conds: Array = g.get("conds", [])
 	var example := MacroRunner.condition_name(data, conds[0], 50 if conds[0] in ["hp_below", "hp_above"] else 1) \
 			if conds[0] != "test_next" else "pröva nästa rad"
-	UiStyle.text(self, box.position + Vector2(16, 28), "%s – %s" % [Gambits.name_of(data, sel) if owned else "Okänt villkor",
-			"ditt" if owned else "rykte"], 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, box.size.x - 32, 3)
+	UiStyle.text(self, box.position + Vector2(16, 28), "%s – %s" % [Gambits.name_of(data, sel),
+			"ditt" if owned else "rykte, inte ditt än"], 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, box.size.x - 32, 3)
 	var text := Gambits.clue(data, sel)
 	if owned:
 		text = "I makrona: \"%s\". %s" % [example, text]
