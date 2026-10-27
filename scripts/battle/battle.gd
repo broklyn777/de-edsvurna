@@ -318,6 +318,9 @@ func _build_ui() -> void:
 	overlay = BattleOverlay.new()
 	overlay.restart_requested.connect(_continue)
 	overlay.forfeit_answered.connect(_on_forfeit_answer)
+	overlay.row_add_requested.connect(func() -> void:
+		run.add_row(overlay.gambit_row.hero, overlay.gambit_row.line)
+		overlay.row_added = true)
 	ui.add_child(overlay)
 	damage_log = DamageLog.new()
 	damage_log.data = data
@@ -1415,8 +1418,9 @@ func _on_outcome(result: String) -> void:
 		# 0.20: fynden syns till höger med eget ljud; ett sällsynt fynd får en egen liten scen.
 		overlay.data = data
 		overlay.finds = run.last_finds
-		overlay.gambit = run.last_gambit  # gambits.md: "Ny gambit: …" med ljud
-		if run.last_gambit != "":
+		overlay.gambit_row = run.last_row  # gambits.md: den nya raden med LÄGG TILL HOS <hjälte>, med ljud
+		overlay.row_added = false
+		if not run.last_row.is_empty():
 			run.play_gambit_sound(2.2)
 		run.play_find_sound(run.last_finds, 1.7)
 		run.show_rare_finds(run.last_finds, 2.6)

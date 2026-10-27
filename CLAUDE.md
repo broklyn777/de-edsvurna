@@ -584,19 +584,27 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   bara X". Alvas startmakro prövar den skadade först (liv < 80 % → pröva nästa rad; saknar Läkning → Läkande hand).
   Tester: `tests/test_starter_chains.gd` (skriver ut varje startmakro).
   **Villkoren förtjänas** (gambits, VD 2026-10-27, `docs/plan/gambits.md`, som Final Fantasy XII; i texten fortfarande
-  "Makron"): handlingarna är fria, villkoren ägs per profil (`Profile.gambits`, `data/gambits.json`, `src/game/gambits.gd`
-  `Gambits`). Start: Lägst liv, Liv under …, Lever; följeslagare lär ut sitt när de ansluter (`teach`, `Profile.recruit`),
-  vanliga villkor faller hos sina hem bland fienderna (25 %), elit 60 %, boss 100 % (Klockaren: Har stupat), kistor ger
-  kistvillkor (Djupets tecken, Artefakt från djup 2), 3 % var som helst (botarna: 3 villkor efter 3 vunna strider, 10 under tredje nedstigningen); högst ett per strid (`Run.roll_gambit`,
-  `last_gambit`, segerskärmens NYTT VILLKOR, skattkammaren). Platser 3 + 1 per två nivåer, högst 12 (en kedja tar en plats, en rad med oägt villkor ingen, `Gambits.line_states`)
-  (`Gambits.slots_for_level`, `Profile.gambit_slots`). Striden kör `Run.macro_for` = `Gambits.playable`: de första platserna,
-  utan avstängda rader (`enabled`, `MacroRunner.decide` hoppar också över dem) och utan oägda villkor, kedjor hela eller
-  inte alls. Gamla profiler (`gambits` saknas) äger allt i sina makron och får minst lika många platser som det längsta
-  (`setup_gambits`, `gambit_slot_floor`). Gambitsidan: stora kort (en sjättedel av höjden, `Card` i macro_screen), håll
-  kvar tummen och dra, vibration när kortet släpps, PÅ/AV, låsta kort med rykte; radeditorn visar oägda villkor låsta sist.
-  Biblioteket: VILLKOR med rykten. Botarna: `GAMBITS=ny` (en ny profils villkor, inga droppar), `tests/gambit_drops.gd`
-  (strider till 3/6/10 villkor). Flaggor: `--macro-focus=<hjälte>`, `--gambit-off`, `--gambit-drag`, `--gambit-demo`,
-  `--library-gambits`. Tester: `tests/test_gambits.gd`.
+  "Makron"). **Gambits 2, legoklossar**: en rad är klossar, och man bygger makrona från noll genom att hitta hela rader.
+  Klossarna ägs per profil (`Profile.gambits`, `data/gambits.json`, `src/game/gambits.gd` `Gambits`): villkoren, gränserna
+  som egna klossar (`thresholds`, id `g_hp_below@50`; Liv under 10 % hos bossar, 20 % och Liv över 90 % hos elit) och
+  subjekten och målen Allierad 1–4, Fiende 1–6, Alla allierade, Alla fiender och Slumpvis. Fria: Denna hjälte, Någon
+  allierad, Någon fiende, Den som matchade, sig själv och alla handlingar. Ett fynd är en färdig rad (`Gambits.make_row`
+  ur klossens radmallar `rows`, med en hjälte i sällskapet som kan utföra den; `Profile.learn_row`, `found_rows`): efter en
+  vunnen strid (hem 15 %, elit 60 %, boss 100 %, 2 % var som helst, högst en; `Run.roll_gambit`, `last_row`), i kistor
+  (Djupets tecken, Artefakt från djup 2), från följeslagare (makroförslaget eller `teach`, och klossarna i deras startrader,
+  `Gambits.recruit_gift`) och introt (Gorms rad, den enda klossen en ny profil har: Lägst liv). Segerskärmen: NY RAD FÖR
+  MAKRONA och LÄGG TILL HOS <HJÄLTE> (`Run.add_row`, överst i makrot); gambitsidan: FUNNA RADER. Nya villkor: Svag mot
+  förmågan (`weak_to`, förmågans `bonus_vs`), Näst i tur (`next_in_turn`). Platser 3 + 1 per två nivåer, högst 12 (en
+  kedja tar en plats, en rad med oägd kloss ingen, `Gambits.line_states`) (`Gambits.slots_for_level`,
+  `Profile.gambit_slots`). Striden kör `Run.macro_for` = `Gambits.playable`: de första platserna, utan avstängda rader
+  (`enabled`, `MacroRunner.decide` hoppar också över dem) och utan oägda klossar, kedjor hela eller inte alls. Gamla
+  profiler (`gambit_version` < 2, också 0.30.50) äger allt i sina makron med alla gränser för sina villkor (familjens id
+  äger alla, `Gambits.has`) och får minst lika många platser som det längsta (`setup_gambits`, `gambit_slot_floor`).
+  Gambitsidan: stora kort (en sjättedel av höjden, `Card` i macro_screen), håll kvar tummen och dra, vibration när kortet
+  släpps, PÅ/AV, låsta kort med rykte; radeditorn visar bara ägda klossar och de låsta sist, en gång var. Biblioteket:
+  VILLKOR med alla klossar och rykten. Botarna: `GAMBITS=ny` (en ny profils klossar, inga droppar), `tests/gambit_drops.gd`
+  (strider till 3/6/10 funna rader, ägda klossar per nedstigning). Flaggor: `--macro-focus=<hjälte>`, `--gambit-off`,
+  `--gambit-drag`, `--gambit-demo`, `--library-gambits`, `--found-rows`, `--new-line`. Tester: `tests/test_gambits.gd`.
   **Spara som order** (0.30, prototyp): väljer spelaren själv något som makrot inte hade valt (en helning på en skadad,
   eller en förmåga mot en status den slår hårdare mot) visar striden en guldknapp i 9 sekunder som lägger en sådan rad
   överst i hjältens makro (`battle.gd` `_offer_order`, `_save_order`; `--offer-order`).

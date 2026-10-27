@@ -23,7 +23,8 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"highest_defense", "highest_attack", "own_turn",
 		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced",
 		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff", "is_charging", "charge_left_at_most",
-		"is_channeling", "is_charge_target", "omen_is", "next_ability_echoes", "free_ability_unused", "intends_heal"]
+		"is_channeling", "is_charge_target", "omen_is", "next_ability_echoes", "free_ability_unused", "intends_heal",
+		"weak_to", "next_in_turn"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -225,6 +226,12 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return _timeline_pos(sim, x) == _timeline_len(sim) - 1
 		"not_bottom_of_timeline":
 			return _timeline_pos(sim, x) != _timeline_len(sim) - 1
+		# Gambits 2 (idéfilen): står näst på tidslinjen, efter den som har turen.
+		"next_in_turn":
+			return _timeline_pos(sim, x) == 1
+		# Gambits 2: förmågan (value) slår hårdare mot x just nu (förmågans bonus_vs, t.ex. Rättfärdigt slag mot Förblindad).
+		"weak_to":
+			return not CombatSim.bonus_vs_for(sim.data.abilities.get(v, {}), x.auras).is_empty()
 		"has_trait":
 			return x.traits.has(v)
 		"lacks_trait":
@@ -447,6 +454,10 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "laget har sin gratis förmåga kvar (Tyst mässa)"
 		"intends_heal":
 			return "tänker hela"
+		"next_in_turn":
+			return "står näst på tidslinjen"
+		"weak_to":
+			return "är svag mot %s" % data.abilities.get(value, {}).get("name", str(value))
 	return cond
 
 

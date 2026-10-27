@@ -293,7 +293,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 				var kinds := (result.sim as CombatSim).enemies.map(func(u: CombatUnit) -> String: return u.kind)
 				var got := Gambits.roll_battle(data, gp.owned, kinds, loot_rng)
 				if got != "":
-					gp.owned.append(got)
+					_learn_row(data, gp, Gambits.make_row(data, got, state.party, loot_rng))
 					gp.log.append({"id": got, "wins": gp.wins})
 			state.vow_after_battle(data, result.sim)
 			if opts.has("finds"):
@@ -324,7 +324,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					if opts.has("gambit_progress"):
 						var got := Gambits.roll_chest(data, opts.gambit_progress.owned, depth, loot_rng)
 						if got != "":
-							opts.gambit_progress.owned.append(got)
+							_learn_row(data, opts.gambit_progress, Gambits.make_row(data, got, state.party, loot_rng))
 							opts.gambit_progress.log.append({"id": got, "wins": int(opts.gambit_progress.get("wins", 0)), "chest": true})
 				"item":
 					state.collect_item()
@@ -349,7 +349,7 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					if opts.has("gambit_progress"):
 						var got := Gambits.roll_chest(data, opts.gambit_progress.owned, depth, loot_rng)
 						if got != "":
-							opts.gambit_progress.owned.append(got)
+							_learn_row(data, opts.gambit_progress, Gambits.make_row(data, got, state.party, loot_rng))
 							opts.gambit_progress.log.append({"id": got, "wins": int(opts.gambit_progress.get("wins", 0)), "chest": true})
 					if opts.has("finds"):
 						_count_finds(finds, Forge.roll_finds(data, "treasure", depth, opts.finds, state.instability, loot_rng))
@@ -535,21 +535,40 @@ static func _count_finds(counts: Dictionary, finds: Array) -> void:
 ## två första rader.
 static func _gambit_teach(data: Dictionary, gp: Dictionary, party: Array) -> void:
 	for hero_id in party:
-		var t := Gambits.teach_for(data, hero_id)
-		if t != "" and not gp.owned.has(t):
-			gp.owned.append(t)
+		for id in _gift(data, hero_id):
+			if not Gambits.has(gp.owned, id):
+				gp.owned.append(id)
+
+
+## Gambits 2: ett fynd är en färdig rad, och alla dess klossar blir profilens.
+static func _learn_row(data: Dictionary, gp: Dictionary, row: Dictionary) -> void:
+	if row.is_empty():
+		return
+	for id in Gambits.needs(data, row.line):
+		if not Gambits.has(gp.owned, id):
+			gp.owned.append(id)
+
+
+static var _gifts := {}
+
+
+static func _gift(data: Dictionary, hero_id: String) -> Array:
+	if not _gifts.has(hero_id):
+		_gifts[hero_id] = Gambits.recruit_gift(data, hero_id).blocks
+	return _gifts[hero_id]
 
 
 static var GAMBITS_NEW := OS.get_environment("GAMBITS") == "ny"
 
 
-## En ny profils villkor: startvillkoren och det hjältarna i striden har lärt ut när de anslöt.
+## En ny profils klossar (Gambits 2): introts första rad och det hjältarna i striden lärde ut när de anslöt (deras
+## startrader och makroförslag).
 static func gambits_new_profile(data: Dictionary, sim: CombatSim) -> Array:
 	var out := Gambits.starters(data)
 	for h in sim.heroes:
-		var t := Gambits.teach_for(data, h.id)
-		if t != "" and not out.has(t):
-			out.append(t)
+		for id in _gift(data, h.id):
+			if not out.has(id):
+				out.append(id)
 	return out
 
 

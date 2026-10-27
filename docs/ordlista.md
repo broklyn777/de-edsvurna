@@ -236,7 +236,10 @@ Källa: `docs/research/siralim.md`.
 | Hoppa över tur | skip | skip turn |
 | Den som matchade | that_unit | that creature |
 | Förklaring | macro log | – (vårt tillägg) |
-| Villkor man äger, nytt villkor (UI: "Makron"; namnet gambit är bara ett förslag) | gambit (`data/gambits.json`, `Gambits`, `Profile.gambits`, `learn_gambit`, `setup_gambits`) | – (FF XII:s gambits; i Siralim har man alla från start) | Villkoren förtjänas, handlingarna är fria. Startvillkor: Lägst liv, Liv under …, Lever. docs/plan/gambits.md. |
+| Kloss, villkor man äger (UI: "Makron"; namnet gambit är bara ett förslag) | gambit block (`data/gambits.json`, `Gambits.blocks`/`entry`/`needs`/`has`, `Profile.gambits`, `learn_gambit`, `setup_gambits`) | – (FF XII:s gambits; i Siralim har man alla från start) | Gambits 2: villkor, gränser och de specifika subjekten och målen förtjänas, handlingarna är fria. En ny profil har bara Lägst liv. docs/plan/gambits.md. |
+| Gräns (Liv under 50 %, Liv över 90 %) | threshold, `"thresholds"`, id `g_hp_below@50` | – (FF XII: varje tröskel en egen gambit) | Egen kloss; de skarpa (10 och 20 %) hos svårare fiender. Familjens id (gamla profiler) äger alla gränser. |
+| Funnen rad, NY RAD FÖR MAKRONA, LÄGG TILL HOS <hjälte>, FUNNA RADER | found row, `Gambits.make_row`, radmallar `rows`, `Profile.learn_row`/`found_rows`, `Run.add_row`, `last_row` | – | Ett fynd är en färdig rad hos en hjälte som kan utföra den; klossarna i den blir ens egna. |
+| Svag mot förmågan, Näst i tur | makrovillkoren `weak_to` (förmågans `bonus_vs`), `next_in_turn` | – | Gambits 2, ur idéfilen. |
 | Plats (PLATSER n / m, "Platsen öppnas på nivå N") | gambit slot, `Gambits.slots_for_level`, `Profile.gambit_slots`, `gambit_slot_floor` | – (FF XII:s gambitplatser) | 3 från start, +1 per två nivåer, högst 12. Rader under sista platsen körs inte. |
 | PÅ / AV (avstängd rad) | `enabled` på raden, `Gambits.playable` | – (FF XII: On/Off) | En avstängd rad står kvar men prövas inte; i en kedja bryter den kedjan. |
 | Låst villkor, rykte ("Det sägs att …") | locked condition, `Gambits.missing`, `clue` | – | Syns i radeditorn, på kortet och i Biblioteket (VILLKOR). |
