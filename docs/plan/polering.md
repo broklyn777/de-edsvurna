@@ -141,3 +141,8 @@ Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som
     en egen mindre knapp vid nivåstegen. Samma mönster på andra skärmar med "tryck två gånger" ska ses över.
 11. Artefaktens troféplats (nivå 6) gör att en hjälte bär två troféer; VD kände inte till det. Visa det i nivåstegen och
     hjälprutan "material" (eller en egen första gång platsen öppnas).
+12. Förberedelser: knapparna KLAR och MAKRON ritas ovanpå trofénätet (Den brutna fanstaven, Blodsvurens kniv, Den trasiga
+    fanan, Den kluvna stenen skyms). Samlingen (30+ troféer) är ett osorterat rutnät utan beskrivning förrän man trycker
+    (jfr BG3: "för mycket att hålla reda på"). Förslag: knapparna i en egen rad under en rullbar lista; sortera/filtrera
+    efter roll (tank, helare, skada, kontroll, stöd) och "passar den valda hjälten" först; visa sällsynthet med färg.
+    Kontrollera i 1280×720 och 1560×720 med 30+ troféer.
