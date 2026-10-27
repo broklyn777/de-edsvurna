@@ -445,6 +445,7 @@ func _dev_args() -> void:
 				profile.wear(["paladin", "alva", "eira"][i], picks[i])
 			if picks.size() > 3 and not profile.artifact("brokk").is_empty():
 				profile.set_artifact_trophy("brokk", picks[3])
+			state.artifacts = profile.artifacts  # så att lägret (--campfire-camp) visar artefakternas troféer
 		elif arg == "--find-demo":
 			# --find-demo visar scenen för ett legendariskt fynd
 			_find_demo.call_deferred()

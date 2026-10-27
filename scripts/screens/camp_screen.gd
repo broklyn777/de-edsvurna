@@ -256,15 +256,21 @@ func _draw() -> void:
 		var h: Dictionary = data.heroes[hero_id]
 		var trophy: String = state.equipped.get(hero_id, "")
 		var own: String = state.oath if hero_id == "paladin" else h.traits[0]
-		var body := "%s\nTrofé: %s" % [data.traits[own].name, data.traits[trophy].name if trophy != "" else "–"]
+		var lines := [data.traits[own].name, "Trofé: %s" % (data.traits[trophy].name if trophy != "" else "–")]
 		# trofeplats (VAL): artefaktens trofé byts bara hos Smeden; lägret visar den.
 		var art: Dictionary = Forge.normalize(state.artifacts.get(hero_id, {}))
 		if not art.is_empty() and Forge.trophy_open(int(art.level)) and data.traits.has(art.trophy):
-			body += " · Artefakt: %s" % data.traits[art.trophy].name
+			lines.append("I artefakten: %s" % data.traits[art.trophy].name)
 		var lv := int(run.profile.hero(data, hero_id).level)
-		UiStyle.card(self, _hero_rect(i), "%s · nivå %d" % [h.name, lv], body, trophy != "", Color(h.color), h.title.to_upper(),
-				0.0, 30.0)
+		var hr := _hero_rect(i)
 		var sr := _sheet_rect(i)
+		var on := trophy != ""
+		UiStyle.card(self, hr, "%s · nivå %d" % [h.name, lv], "", on, Color(h.color), h.title.to_upper(), 0.0, 30.0)
+		# Polering: egna rader i stället för en brödtext som bröts in under BLAD; den tredje slutar före knappen.
+		for j in lines.size():
+			var lw := (sr.position.x - 8.0 if j == 2 else hr.end.x - 12.0) - (hr.position.x + 16.0)
+			UiStyle.text(self, hr.position + Vector2(16, 52 + j * 22), UiStyle.fit(String(lines[j]), 16, lw), 16,
+					(UiStyle.TRAIT_GOLD if j == 2 else Color(1, 1, 1, 0.92 if on else 0.7)))
 		draw_rect(sr, Color(0, 0, 0, 0.7))
 		draw_rect(sr, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
 		UiStyle.text(self, sr.position + Vector2(0, 21), "BLAD", 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, sr.size.x, 3)
