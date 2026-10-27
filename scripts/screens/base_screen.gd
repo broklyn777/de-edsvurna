@@ -14,7 +14,7 @@ const DOUBLE_TAP_MS := 350
 const WALK_SPEED := 650.0  # planritningens pixlar per sekund
 const PIECE_H := 92.0
 const TRAIL_STEP := 10.0
-const TRAIL_GAP := 6  # trail-punkter mellan pjäserna i raden
+const TRAIL_GAP := 7  # trail-punkter mellan pjäserna i raden (70 px: porträtten är 59 breda och får en glipa)
 
 const INK_SHADER := """
 shader_type canvas_item;
@@ -132,10 +132,7 @@ func _ready() -> void:
 	_light = _shader_rect(LIGHT_SHADER, false)
 	_ui_layer = Layer.new(_paint_ui)
 	add_child(_ui_layer)
-	pal = _v(keep.yard.home)
-	for i in TRAIL_GAP * 4:
-		_trail.append(pal + Vector2(0, (TRAIL_GAP * 4 - i) * TRAIL_STEP * 0.6))
-	_trail.append(pal)
+	_line_up()
 	run.audio.start_ambience("ambience_home", -16.0)
 	_start_dialog()
 	_home_pending = _has_homecoming()
@@ -269,8 +266,7 @@ func _has_homecoming() -> bool:
 
 func _start_homecoming() -> void:
 	_home_pending = false
-	pal = _v(keep.yard.home)
-	_trail.append(pal)
+	_line_up()
 	_home_queue = Array(run.profile.homecoming.get("remarks", [])).duplicate(true)
 	# tydliga-val: efter en förlust Gorms konkreta råd (LossTips) sist; pratar han redan läggs råden efter hans replik.
 	var tips: Array = run.profile.homecoming.get("tips", [])
@@ -456,6 +452,24 @@ func _followers() -> Array:
 ## Lärjungar som bor i värdshuset (inte med i sällskapet).
 func _lodgers() -> Array:
 	return Array(run.profile.recruited).filter(func(id: String) -> bool: return not run.profile.party.has(id))
+
+
+## Polering: sällskapet stod staplat 36 px isär under paladinen (porträtten klumpade ihop sig ovanför PORTEN). Nu en
+## trail genom fasta platser i sicksack bakom paladinen, TRAIL_GAP * TRAIL_STEP isär, så att varje porträtt får egen yta
+## och raden går vidare därifrån när paladinen börjar gå. Besökarna vid hemkomsten (VISIT_SPOTS) står ovanför.
+const LINE_UP := [Vector2(-30, 63.2), Vector2(70, 0), Vector2(-35, 60.6), Vector2(70, 0)]
+
+
+func _line_up() -> void:
+	pal = _v(keep.yard.home)
+	var spots: Array[Vector2] = [pal]
+	for d in LINE_UP:
+		spots.append(spots.back() + d)
+	_trail.clear()
+	for k in range(spots.size() - 1, 0, -1):
+		for j in TRAIL_GAP:
+			_trail.append(spots[k].lerp(spots[k - 1], float(j) / TRAIL_GAP))
+	_trail.append(pal)
 
 
 func _follower_pos(i: int) -> Vector2:
