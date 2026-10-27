@@ -836,7 +836,7 @@ func _offer_order(u: CombatUnit, action: String, target_id: String, ability_id: 
 	for l in macro.get("lines", []):
 		if l.get("ability", "") == ability_id and l.get("cond", "") == line.cond:
 			return  # makrot har redan en sådan rad
-	var d := MacroRunner.decide(sim, u, macro)
+	var d := MacroRunner.decide(sim, u, macro, false, true)
 	if d.ok and d.action == action and d.ability == ability_id and d.target == target_id:
 		return  # makrot hade gjort samma sak
 	_orders_offered[key] = true

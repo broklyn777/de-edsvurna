@@ -54,7 +54,8 @@ func test_sharp_thresholds_live_with_harder_enemies() -> void:
 		assert_true(e.rarity in ["elite", "boss"], "liv under %s %% är skarp" % v)
 		for kind in e.homes:
 			var rank: String = data.enemies[kind].get("rank", "normal")
-			assert_true(rank != "normal" or kind in ["bone_lich", "fallen_bishop", "mountain_king"], "%s är inte svår" % kind)
+			assert_true(rank != "normal" or data.enemies[kind].get("boss", false) or kind in ["bone_lich", "fallen_bishop"],
+					"%s är inte svår" % kind)
 	assert_eq(Gambits.entry(data, "g_hp_below@50").rarity, "common")
 	assert_eq(Gambits.name_of(data, "g_hp_below@20"), "Liv under 20 %")
 	assert_eq(Gambits.name_of(data, "g_hp_below@35"), "Liv under 35 %", "en gräns utanför listan (gamla makron)")
@@ -420,3 +421,100 @@ func test_same_row_is_saved_once_with_every_hero() -> void:
 	assert_eq(q.found_rows.size(), 1)
 	assert_eq(q.found_rows[0].heroes, ["imma", "sefir"])
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func test_once_per_battle() -> void:
+	var sim := CombatSim.create(data, "crypt_1", 3, ["paladin"])
+	sim.begin()
+	while not sim.needs_input():
+		sim.ai_act()
+	var first := _line("is_alive", 0, "defend", "self")
+	first.once = true
+	var macro := {"lines": [first, _line("lowest_hp")]}
+	assert_eq(MacroRunner.decide(sim, sim.current, macro, false, true).action, "defend", "en titt räknas inte")
+	assert_eq(MacroRunner.decide(sim, sim.current, macro).action, "defend")
+	var d := MacroRunner.decide(sim, sim.current, macro, true)
+	assert_eq(d.action, "attack", "raden har redan körts den här striden")
+	assert_true(d.notes.any(func(n: String) -> bool: return n.contains("en gång per strid")))
+	# En ny strid minns ingenting.
+	var sim2 := CombatSim.create(data, "crypt_1", 3, ["paladin"])
+	sim2.begin()
+	while not sim2.needs_input():
+		sim2.ai_act()
+	assert_eq(MacroRunner.decide(sim2, sim2.current, macro).action, "defend")
+
+
+func _intent_sim() -> CombatSim:
+	var sim := CombatSim.create(data, "crypt_1", 3, ["paladin", "imma"])
+	sim.begin()
+	while not sim.needs_input():
+		sim.ai_act()
+	return sim
+
+
+func test_intent_conditions_read_enemy_intents() -> void:
+	var sim := _intent_sim()
+	var u: CombatUnit = sim.current
+	var foe: CombatUnit = sim.enemies[0]
+	var other: CombatUnit = sim.heroes[0] if sim.heroes[0] != u else sim.heroes[1]
+	for e in sim.enemies:
+		e.intent = {}
+	foe.intent = {"ability": foe.attack_ability, "targets": [u.id]}
+	var on_me := {"subject": "any_enemy", "cond": "intends_attack_on", "value": "me", "action": "defend"}
+	assert_eq(MacroRunner.match_line(sim, u, on_me), foe)
+	on_me.value = other.id
+	assert_true(MacroRunner.match_line(sim, u, on_me) == null, "anfaller inte %s" % other.name)
+	assert_eq(MacroRunner.match_line(sim, u, _line("intends_attack")), foe)
+	var low := _line("intends_attack_low", 50)
+	assert_true(MacroRunner.match_line(sim, u, low) == null, "målet har fullt liv")
+	u.hp = u.max_hp * 0.3
+	assert_eq(MacroRunner.match_line(sim, u, low), foe)
+	u.hp = 1.0
+	assert_eq(MacroRunner.match_line(sim, u, _line("intends_lethal")), foe, "ett slag fäller den som har 1 liv kvar")
+	u.hp = u.max_hp
+	assert_true(MacroRunner.match_line(sim, u, _line("intends_lethal")) == null)
+	assert_true(MacroRunner.match_line(sim, u, _line("intends_aoe")) == null)
+	assert_true(MacroRunner.match_line(sim, u, _line("leader_charging")) == null, "ingen laddar")
+	foe.intent = {}
+	assert_true(MacroRunner.match_line(sim, u, _line("intends_attack")) == null)
+	# En helning är ingen attack.
+	assert_eq(MacroRunner.condition_name(data, "intends_attack_on", "paladin"), "tänker anfalla Paladinen")
+
+
+func test_master_condition_reads_the_party() -> void:
+	# Paladinens Rättfärdigt slag slår hårdare mot Förblindad: en fiende utan Förblindad matchar, en förblindad inte.
+	var sim := _intent_sim()
+	var u: CombatUnit = sim.current
+	for e in sim.enemies:
+		e.auras["blind"] = {"turns": 2}
+	var line := _line("ally_bonus_missing")
+	assert_true(MacroRunner.match_line(sim, u, line) == null, "alla är redan förblindade")
+	sim.enemies[0].auras.erase("blind")
+	assert_eq(MacroRunner.match_line(sim, u, line), sim.enemies[0])
+
+
+func test_grove_and_mountain_are_homes_with_their_own_rumours() -> void:
+	var realm_kinds := {"grove": ["snare_spider", "venom_spider", "dust_spider", "barb_spider", "web_mother", "devourer_spider",
+			"sleep_weaver", "old_knot"], "mountain": ["moss_troll", "porridge_troll", "grumpy_troll", "club_troll",
+			"changeling_troll", "troll_mother", "bridge_troll", "mountain_king"]}
+	var n := {"grove": 0, "mountain": 0}
+	for id in Gambits.blocks(data):
+		var e := Gambits.entry(data, id)
+		for realm in realm_kinds:
+			if e.get("homes", []).any(func(k: String) -> bool: return realm_kinds[realm].has(k)):
+				n[realm] += 1
+				assert_true(String(e.get("home_clues", {}).get(realm, "")) != "", "%s saknar rykte i %s" % [id, realm])
+		if e.rarity == "master":
+			for k in e.homes:
+				assert_true(data.enemies[k].get("boss", false), "mästarklossen %s bara hos bossar (%s)" % [id, k])
+	assert_true(n.grove >= 30 and n.mountain >= 30, "hem i Lunden %d och Berget %d" % [n.grove, n.mountain])
+	assert_true(Gambits.clues(data, "g_buffs").size() == 3)
+	# Mästarklossen faller hos Bergakungen, men inte alltid.
+	var got := 0
+	var rng := RandomNumberGenerator.new()
+	var owned: Array = Gambits.blocks(data).keys().filter(func(id: String) -> bool: return Gambits.entry(data, id).rarity != "master")
+	for seed_value in 200:
+		rng.seed = seed_value
+		if Gambits.roll_battle(data, owned, ["mountain_king"], rng) in ["g_lethal", "g_party_bonus"]:
+			got += 1
+	assert_true(got > 100 and got < 200, "mästare %d av 200" % got)

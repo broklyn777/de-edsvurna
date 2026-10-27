@@ -239,7 +239,7 @@ static func roll_battle(data: Dictionary, owned: Array, kinds: Array, rng: Rando
 
 
 static func _rank(e: Dictionary) -> int:
-	return {"common": 0, "chest": 0, "elite": 1, "boss": 2}.get(e.get("rarity", "common"), 0)
+	return {"common": 0, "chest": 0, "elite": 1, "boss": 2, "master": 3}.get(e.get("rarity", "common"), 0)
 
 
 ## Droppen ur en skattkista på ett djup: en kistkloss från djupet, annars ibland en vanlig.
@@ -270,6 +270,16 @@ static func name_of(data: Dictionary, id: String) -> String:
 
 static func clue(data: Dictionary, id: String) -> String:
 	return String(entry(data, id).get("clue", ""))
+
+
+## Alla rykten om klossen: det vanliga och ett per Realm där den också har hem (Gambits 3, "home_clues").
+static func clues(data: Dictionary, id: String) -> Array:
+	var e := entry(data, id)
+	var out := [String(e.get("clue", ""))]
+	for realm in e.get("home_clues", {}):
+		if String(e.home_clues[realm]) != "":
+			out.append(String(e.home_clues[realm]))
+	return out.filter(func(c: String) -> bool: return c != "")
 
 
 ## Fyndet (Gambits 2): en färdig rad för klossen. Radmallarna prövas i ordning; den första som någon hjälte i sällskapet

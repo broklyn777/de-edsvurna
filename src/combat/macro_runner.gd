@@ -5,6 +5,7 @@ extends RefCounted
 ## Ett makro är {name, lines}. En rad är:
 ##   {subject, cond, value, action, ability, target, enabled}
 ## enabled (gambits, valfritt, sant om det saknas): en avstängd rad står kvar men hoppas över.
+## once (gambits 3, valfritt): raden körs högst en gång per strid; striden minns det i CombatSim.macro_once.
 ## Raderna prövas uppifrån och ned. Den första rad som matchar och går att utföra utförs, och turen
 ## tar slut. Se docs/plan/0.11-makron.md för vilka regler som är bekräftade i originalet och vilka
 ## som är våra val (märkta VAL nedan).
@@ -24,7 +25,8 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"has_charges", "has_artifact", "lacks_artifact", "is_immune", "not_immune", "is_silenced",
 		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff", "is_charging", "charge_left_at_most",
 		"is_channeling", "is_charge_target", "omen_is", "next_ability_echoes", "free_ability_unused", "intends_heal",
-		"weak_to", "next_in_turn"]
+		"weak_to", "next_in_turn", "intends_attack", "intends_attack_on", "intends_attack_low", "intends_aoe", "leader_charging",
+		"intends_lethal", "ally_bonus_missing"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -33,7 +35,7 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 ## skipped: rader som stämde men inte gick att utföra. notes (bara med explain, makro-UX förslag 1): varför varje
 ## rad ovanför den valda inte valdes, också rader vars villkor inte stämde ("Rad 1 stämde inte: … (lägst: Brokk 64 %)").
 ## När inget passade står raden som var närmast att stämma först.
-static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary, explain := false) -> Dictionary:
+static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary, explain := false, peek := false) -> Dictionary:
 	var lines: Array = macro.get("lines", [])
 	var skipped: Array[String] = []
 	var notes: Array[Dictionary] = []  # {text, near}
@@ -51,6 +53,12 @@ static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary, explain := 
 				matched = false
 				if explain:
 					notes.append({"text": "Rad %d är avstängd." % (j + 1), "near": 2000.0})
+				break
+			# Gambits 3: en rad som körs en gång per strid och redan har körts.
+			if line.get("once", false) and sim.macro_once.has(once_key(u, line)):
+				matched = false
+				if explain:
+					notes.append({"text": "Rad %d har redan körts den här striden (en gång per strid)." % (j + 1), "near": 1500.0})
 				break
 			var hit := match_line(sim, u, line, bound)
 			if hit == null:
@@ -72,6 +80,10 @@ static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary, explain := 
 				plan.notes = _note_texts(notes, false)
 				plan.text = "%s %s – rad %d matchade: %s." % [u.name, _describe_plan(sim, plan),
 						j + 1, " och ".join(why)]
+				if not peek:
+					for k in range(i, j + 1):
+						if lines[k].get("once", false):
+							sim.macro_once[once_key(u, lines[k])] = true
 				# 0.30.25: en kedja håller fast vid figuren som den första raden valde (VAL, se match_line).
 				if j > i and bound != null and lines[i].subject in ["any_ally", "any_enemy"]:
 					plan.text += " Kedjan prövade bara %s, som rad %d valde." % [bound.name, i + 1]
@@ -86,6 +98,12 @@ static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary, explain := 
 		i = j + 1
 	return {"ok": false, "skipped": skipped, "notes": _note_texts(notes, true),
 			"text": "%s: inget makro passade." % u.name}
+
+
+## Nyckeln för en rad som körs en gång per strid: hjälten och radens innehåll (raderna kopieras mellan striderna).
+static func once_key(u: CombatUnit, line: Dictionary) -> String:
+	return "%s|%s|%s|%s|%s|%s|%s" % [u.id, line.get("subject", ""), line.get("cond", ""), str(line.get("value", 0)),
+			line.get("action", ""), line.get("ability", ""), line.get("target", "")]
 
 
 static func _note_texts(notes: Array[Dictionary], nearest_first: bool) -> Array[String]:
@@ -229,6 +247,36 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 		# Gambits 2 (idéfilen): står näst på tidslinjen, efter den som har turen.
 		"next_in_turn":
 			return _timeline_pos(sim, x) == 1
+		# Gambits 3: fiendernas avsikter (det som syns över dem). x tänker anfalla, någon särskild, någon med lågt liv,
+		# alla på en gång, eller fälla någon (avsiktens väntade skada når målets liv, CombatSim.expected_damage).
+		"intends_attack":
+			return _intent_victims(sim, x).size() > 0
+		"intends_attack_on":
+			var who := u.id if str(v) in ["me", "", "0"] else str(v)
+			return _intent_victims(sim, x).any(func(t: CombatUnit) -> bool: return t.id == who)
+		"intends_attack_low":
+			return _intent_victims(sim, x).any(func(t: CombatUnit) -> bool: return t.hp_pct() * 100.0 < float(v))
+		"intends_aoe":
+			return _intent_victims(sim, x).size() > 0 and CombatSim.is_multi_target(sim.ability(String(x.intent.get("ability", ""))))
+		"intends_lethal":
+			var ab_id := String(x.intent.get("ability", ""))
+			return _intent_victims(sim, x).any(func(t: CombatUnit) -> bool:
+					return t.hp + t.barrier <= sim.expected_damage(x, t, ab_id))
+		# Bossen, en miniboss eller en elit laddar en varslad attack (det stora slaget).
+		"leader_charging":
+			return sim.is_charging(x) and (x.elite or String(sim.data.enemies.get(x.kind, {}).get("rank", "")) in ["elite", "miniboss"]
+					or bool(sim.data.enemies.get(x.kind, {}).get("boss", false)))
+		# Mästarklossen: x saknar en status som någon levande allierad har en förmåga som slår hårdare mot (bonus_vs).
+		"ally_bonus_missing":
+			for a in (sim.heroes if u.team == 0 else sim.enemies):
+				if not a.alive:
+					continue
+				for ab_id in a.abilities:
+					var raw = sim.data.abilities.get(ab_id, {}).get("bonus_vs", [])
+					for vs in (raw if raw is Array else [raw]):
+						if vs is Dictionary and vs.has("aura") and not x.auras.has(vs.aura):
+							return true
+			return false
 		# Gambits 2: förmågan (value) slår hårdare mot x just nu (förmågans bonus_vs, t.ex. Rättfärdigt slag mot Förblindad).
 		"weak_to":
 			return not CombatSim.bonus_vs_for(sim.data.abilities.get(v, {}), x.auras).is_empty()
@@ -287,6 +335,18 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 
 ## Tidslinjen räknas från den som har turen (0) och sedan kön. VAL: den som har turen räknas som
 ## överst, eftersom villkoret prövas under dess tur.
+## De levande på andra sidan som x:s avsikt riktar sig mot (inte en helning).
+static func _intent_victims(sim: CombatSim, x: CombatUnit) -> Array:
+	if x.intent.is_empty() or sim.intends_heal(x):
+		return []
+	var out := []
+	for id in x.intent.get("targets", []):
+		var t := sim.unit(String(id))
+		if t != null and t.alive and t.team != x.team:
+			out.append(t)
+	return out
+
+
 static func _timeline_pos(sim: CombatSim, x: CombatUnit) -> int:
 	if sim.current == x:
 		return 0
@@ -458,6 +518,22 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "står näst på tidslinjen"
 		"weak_to":
 			return "är svag mot %s" % data.abilities.get(value, {}).get("name", str(value))
+		"intends_attack":
+			return "tänker anfalla"
+		"intends_attack_on":
+			if str(value) in ["me", "", "0"]:
+				return "tänker anfalla denna hjälte"
+			return "tänker anfalla %s" % data.heroes.get(str(value), {}).get("name", str(value))
+		"intends_attack_low":
+			return "tänker anfalla någon med liv < %d %%" % int(value)
+		"intends_aoe":
+			return "tänker träffa alla"
+		"intends_lethal":
+			return "tänker fälla någon"
+		"leader_charging":
+			return "är bossen eller en elit och laddar sitt stora slag"
+		"ally_bonus_missing":
+			return "saknar en status som en allierad slår hårdare mot"
 	return cond
 
 
