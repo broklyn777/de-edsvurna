@@ -57,7 +57,7 @@ func _draw() -> void:
 	if expanded:
 		_draw_expanded()
 		return
-	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55))
+	draw_rect(Rect2(Vector2.ZERO, size), UiStyle.panel(0.7) if UiStyle.ink else Color(0, 0, 0, 0.55))
 	draw_rect(Rect2(Vector2.ZERO, size), Color(UiStyle.TRAIT_GOLD, 0.25 + 0.5 * _flash), false, 1.5)
 	UiStyle.text(self, Vector2(8, 16), "MAKROLOGG – TRYCK FÖR ALLT", 15, Color(1, 1, 1, 0.5))
 	var rows: Array = []

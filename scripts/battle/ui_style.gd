@@ -22,6 +22,48 @@ const GLYPHS := {"paladin": "shield", "brokk": "daggers", "alva": "cross", "eira
 
 static var _bold: Font
 
+## Prototyp (ink-proto): striden i tusch på pergament (GameSettings.ink_style). Sätts av striden när den startar och när
+## STIL växlas, och nollställs när striden tar slut, så att menyerna aldrig påverkas. Guld bara för val, rött bara för fara.
+static var ink := false
+const INK := Color("#241a10")
+const PAPER := Color("#ecdfbf")
+const INK_PANEL := Color(0.17, 0.12, 0.075, 0.9)
+const INK_EDGE := Color(0.72, 0.6, 0.42, 0.7)
+const INK_DANGER := Color("#a3301e")
+const INK_GOLD := Color("#d9a93c")
+const INK_HERO := Color("#5f6f36")
+const INK_FOE := Color("#5e4128")
+
+
+## Panelens bakgrund i striden (tusch: en mörk sepialavering i stället för nästan svart lila).
+static func panel(alpha := 1.0) -> Color:
+	return Color(INK_PANEL, INK_PANEL.a * alpha) if ink else Color(PANEL, PANEL.a * alpha)
+
+
+## Text i bläck med en papperskant, som en anteckning i kartans marginal (bara i tuschstilen; annars som text()).
+static func ink_text(ci: CanvasItem, pos: Vector2, s: String, size: int, color: Color,
+		align := HORIZONTAL_ALIGNMENT_LEFT, width := -1.0, outline := 0) -> void:
+	if not ink:
+		text(ci, pos, s, size, color, align, width, outline)
+		return
+	size = maxi(size, MIN_SIZE)
+	ci.draw_string_outline(bold(), pos, s, align, width, size, maxi(outline, 4), Color(PAPER, 0.92 * color.a))
+	ci.draw_string(bold(), pos, s, align, width, size, color)
+
+
+## En färg i tuschstilen: fara och val behåller sin röda och gyllene ton, allt annat blir bläck och sepia.
+static func inked(c: Color) -> Color:
+	if not ink:
+		return c
+	var h := c.h
+	if c.s > 0.35 and (h < 0.05 or h > 0.93):
+		return Color(INK_DANGER, c.a)
+	if c.s > 0.35 and h >= 0.1 and h < 0.17:
+		return Color(INK_GOLD, c.a)
+	if c.s > 0.3 and h >= 0.2 and h < 0.45:
+		return Color(INK_HERO, c.a)
+	return Color(INK.lerp(Color("#7a5a36"), clampf(c.v * 0.6, 0.0, 1.0)), c.a)
+
 
 static func bold() -> Font:
 	if _bold == null:
@@ -65,6 +107,9 @@ static func fit(s: String, size: int, width: float) -> String:
 
 
 static func bar(ci: CanvasItem, rect: Rect2, pct: float, color: Color, ghost := -1.0) -> void:
+	if ink:
+		_ink_bar(ci, rect, pct, color, ghost)
+		return
 	ci.draw_rect(rect, Color(0, 0, 0, 0.55))
 	if ghost > pct:
 		ci.draw_rect(Rect2(rect.position, Vector2(rect.size.x * clampf(ghost, 0, 1), rect.size.y)), Color(1, 0.85, 0.75, 0.75))
@@ -72,6 +117,21 @@ static func bar(ci: CanvasItem, rect: Rect2, pct: float, color: Color, ghost := 
 	ci.draw_rect(fill, color)
 	ci.draw_rect(Rect2(fill.position, Vector2(fill.size.x, fill.size.y * 0.4)), Color(1, 1, 1, 0.12))
 	ci.draw_rect(rect, Color(0, 0, 0, 0.8), false, 1.5)
+
+
+## Livmätaren i tusch: papper, en lavering som fyllning (röd under 30 %) och en ojämn bläckram.
+static func _ink_bar(ci: CanvasItem, rect: Rect2, pct: float, color: Color, ghost: float) -> void:
+	ci.draw_rect(rect, Color(PAPER, 0.85))
+	if ghost > pct:
+		ci.draw_rect(Rect2(rect.position, Vector2(rect.size.x * clampf(ghost, 0, 1), rect.size.y)), Color(INK_DANGER, 0.35))
+	var fill_col := INK_DANGER if pct < 0.3 else inked(color)
+	ci.draw_rect(Rect2(rect.position, Vector2(rect.size.x * clampf(pct, 0, 1), rect.size.y)), Color(fill_col, 0.9))
+	var a := rect.position
+	var b := rect.end
+	ci.draw_line(a + Vector2(-1, 0), Vector2(b.x + 1, a.y + 0.5), INK, 1.6, true)
+	ci.draw_line(Vector2(a.x - 0.5, b.y), Vector2(b.x + 1, b.y - 0.5), INK, 2.0, true)
+	ci.draw_line(a, Vector2(a.x + 0.5, b.y), INK, 1.6, true)
+	ci.draw_line(Vector2(b.x, a.y), b, INK, 1.6, true)
 
 
 static func pie(ci: CanvasItem, center: Vector2, radius: float, fraction: float, color: Color) -> void:

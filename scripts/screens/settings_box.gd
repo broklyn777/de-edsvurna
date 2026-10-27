@@ -73,6 +73,12 @@ func _fps_rect() -> Rect2:
 	return Rect2(r.position.x + 30, r.end.y - 64, 150, 42)
 
 
+## Prototyp (ink-proto): STIL: TUSCH / 3D i hörnet till höger om KLAR. Gäller striden, också den som pågår.
+func _style_rect() -> Rect2:
+	var r := _panel()
+	return Rect2(r.end.x - 200, r.end.y - 64, 170, 42)
+
+
 func _done_rect() -> Rect2:
 	var r := _panel()
 	return Rect2(r.position.x + (W - 200) / 2.0, r.end.y - 66, 200, 46)
@@ -106,6 +112,9 @@ func _input_on(event: InputEvent) -> void:
 			elif not _confirm_reset and _reset_rect().has_point(p):
 				_confirm_reset = true
 				_run().ui("ui_tap", -8.0)
+			elif _style_rect().has_point(p):
+				GameSettings.ink_style = not GameSettings.ink_style
+				get_tree().call_group(&"ink_style", "apply_ink_style")
 			elif _fps_rect().has_point(p):
 				GameSettings.show_fps = not GameSettings.show_fps
 				FpsMeter.set_shown(_run(), GameSettings.show_fps)
@@ -182,6 +191,7 @@ func _paint() -> void:
 		_small_button(_reset_rect(), "NOLLSTÄLL SPELTID", Color(0, 0, 0, 0.5))
 	UiStyle.big_button(_view, _done_rect(), "KLAR", 0.0)
 	_small_button(_fps_rect(), "FPS: " + ("PÅ" if GameSettings.show_fps else "AV"), Color(0, 0, 0, 0.5))
+	_small_button(_style_rect(), "STIL: " + ("TUSCH" if GameSettings.ink_style else "3D"), Color(0, 0, 0, 0.5))
 
 
 func _small_button(b: Rect2, label: String, fill: Color) -> void:

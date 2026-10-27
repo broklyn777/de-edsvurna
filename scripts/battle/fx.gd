@@ -31,6 +31,14 @@ class Ring extends Node2D:
 		var k := clampf(_t / life, 0.0, 1.0)
 		var r := lerpf(radius_from, radius_to, 1.0 - pow(1.0 - k, 3.0))
 		var a := (1.0 - k) * color.a
+		if UiStyle.ink:
+			# Tusch: två tunna, lite förskjutna penndrag i bläck i stället för en lysande ring.
+			var c := UiStyle.inked(color)
+			if filled:
+				draw_circle(Vector2.ZERO, r, Color(c, a * 0.18))
+			draw_arc(Vector2.ZERO, r, 0.2, TAU - 0.1, 40, Color(c, a), maxf(1.5, width * 0.5 * (1.0 - k * 0.6)), true)
+			draw_arc(Vector2(1.5, -1.0), r * 0.94, 0.9, TAU - 0.6, 36, Color(c, a * 0.6), 1.2, true)
+			return
 		if filled:
 			draw_circle(Vector2.ZERO, r, Color(color, a * 0.3))
 		draw_arc(Vector2.ZERO, r, 0, TAU, 48, Color(color, a), width * (1.0 - k * 0.6), true)
@@ -46,10 +54,12 @@ class Sparks extends Node2D:
 	func _init(c: Color, count := 12, speed := 260.0, duration := 0.45) -> void:
 		color = c
 		life = duration
+		if UiStyle.ink:
+			life = duration * 1.6  # bläcket ligger kvar en stund innan det torkar bort
 		for i in count:
 			var a := randf() * TAU
 			_parts.append({"dir": Vector2(cos(a), sin(a)), "speed": speed * randf_range(0.4, 1.0),
-					"len": randf_range(6, 14)})
+					"len": randf_range(6, 14), "blot": randf_range(3.0, 8.0)})
 
 	func _process(delta: float) -> void:
 		_t += delta
@@ -59,10 +69,28 @@ class Sparks extends Node2D:
 
 	func _draw() -> void:
 		var k := _t / life
+		if UiStyle.ink:
+			_draw_ink(k)
+			return
 		for p in _parts:
 			var dist: float = p.speed * _t * (1.0 - k * 0.5)
 			var a: Vector2 = p.dir * dist
 			draw_line(a, a + p.dir * p.len * (1.0 - k), Color(color, 1.0 - k), 3.0 * (1.0 - k) + 1.0, true)
+
+
+	## Tusch: ett bläckstänk. En klick i mitten och droppar som flyger ut kort och stannar, med en tunn rand bakom sig.
+	func _draw_ink(k: float) -> void:
+		var c := Color(UiStyle.inked(color), 1.0)
+		if c.s < 0.3:
+			c = UiStyle.INK
+		var fade := 1.0 - smoothstep(0.55, 1.0, k)
+		var burst := minf(1.0, _t / 0.08)
+		draw_circle(Vector2.ZERO, 7.0 + 5.0 * burst, Color(c, 0.85 * fade))
+		for p in _parts:
+			var dist: float = p.speed * minf(_t, 0.12) * 0.55
+			var at: Vector2 = p.dir * dist
+			draw_line(p.dir * 6.0, at, Color(c, 0.6 * fade), 1.4, true)
+			draw_circle(at, float(p.blot) * (0.6 + 0.4 * burst), Color(c, 0.9 * fade))
 
 
 ## Projektil med svans: Frostbolt, Pyroblast, Shadow Bolt.
@@ -99,7 +127,11 @@ class Projectile extends Node2D:
 	func _draw() -> void:
 		for i in range(_trail.size() - 1, -1, -1):
 			var f := 1.0 - float(i) / _trail.size()
-			draw_circle(_trail[i] - position, size * (0.35 + 0.65 * f), Color(color, 0.5 * f))
+			draw_circle(_trail[i] - position, size * (0.35 + 0.65 * f) * (0.6 if UiStyle.ink else 1.0),
+					Color(UiStyle.INK if UiStyle.ink else color, 0.5 * f))
+		if UiStyle.ink:
+			draw_circle(Vector2.ZERO, size, UiStyle.INK)
+			return
 		draw_circle(Vector2.ZERO, size * 1.5, Color(color, 0.35))
 		draw_circle(Vector2.ZERO, size, color)
 		draw_circle(Vector2.ZERO, size * 0.5, Color(1, 1, 1, 0.9))
@@ -180,6 +212,10 @@ class FloatingText extends Node2D:
 
 	func _draw() -> void:
 		var a := clampf((life - _t) / 0.35, 0.0, 1.0)
+		if UiStyle.ink:
+			UiStyle.ink_text(self, Vector2(-300, 0), text, font_size, Color(UiStyle.inked(color), a),
+					HORIZONTAL_ALIGNMENT_CENTER, 600, 7 if big else 5)
+			return
 		UiStyle.text(self, Vector2(-300, 0), text, font_size, Color(color, a),
 				HORIZONTAL_ALIGNMENT_CENTER, 600, 7 if big else 5)
 
@@ -209,12 +245,18 @@ class Overheads extends Node2D:
 				continue
 			var head := world.project(models[u.id].head_position())
 			var c := UiStyle.HP_GREEN if u.team == 0 else Color("#c23a3a")
+			if UiStyle.ink:
+				c = UiStyle.INK_HERO if u.team == 0 else UiStyle.INK_FOE
 			UiStyle.bar(self, Rect2(head + Vector2(-36, -12), Vector2(72, 8)), u.hp_pct(), c)
 			if not u.auras.is_empty():
 				var n := u.auras.size()
 				StatusIcons.draw(self, sim.data, u, head + Vector2(-n * 12.0, 0), 22.0)
 			if u.team == 1:
-				UiStyle.text(self, head + Vector2(-90, -18), u.name, 13, Color(u.color, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 180, 4)
+				if UiStyle.ink:
+					UiStyle.ink_text(self, head + Vector2(-90, -18), u.name, 15, UiStyle.INK_GOLD.darkened(0.25) if u.elite else UiStyle.INK,
+							HORIZONTAL_ALIGNMENT_CENTER, 180, 5)
+				else:
+					UiStyle.text(self, head + Vector2(-90, -18), u.name, 13, Color(u.color, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 180, 4)
 				_draw_guardian_tag(u, head)
 				_draw_intent(u, head + Vector2(0, -50 if sim.is_charging(u) else -42))
 
@@ -229,9 +271,9 @@ class Overheads extends Node2D:
 				tag = "HÅLLER " + String(sim.ability(held).get("name", "")).to_upper()
 		if tag == "":
 			return
-		var col := Color("#ffd36a")
+		var col := UiStyle.INK_GOLD if UiStyle.ink else Color("#ffd36a")
 		var pulse := 0.75 + 0.25 * sin(_t * 6.0)
-		UiStyle.text(self, head + Vector2(-110, 42), tag, 15, Color(col, pulse), HORIZONTAL_ALIGNMENT_CENTER, 220, 4)
+		UiStyle.ink_text(self, head + Vector2(-110, 42), tag, 15, Color(col, pulse), HORIZONTAL_ALIGNMENT_CENTER, 220, 4)
 
 	func _draw_intent(u: CombatUnit, at: Vector2) -> void:
 		if u.intent.is_empty():
@@ -241,8 +283,16 @@ class Overheads extends Node2D:
 		var kind := "heal" if is_heal else ("melee" if ab.get("melee", false) else "ranged")
 		var col := UiStyle.school_color("heal") if is_heal else Color("#ff6a4a")
 		var pulse := 0.8 + 0.2 * sin(_t * 5.0)
-		draw_circle(at, 15, Color(0, 0, 0, 0.75))
-		draw_arc(at, 15, 0, TAU, 32, Color(col, pulse), 2.0, true)
+		if UiStyle.ink:
+			# Tusch: ett sigill på papper, rött för ett anfall (fara), olivgrönt för en helning.
+			col = UiStyle.INK_HERO if is_heal else UiStyle.INK_DANGER
+			pulse = 1.0
+			draw_circle(at, 15, Color(UiStyle.PAPER, 0.92))
+			draw_arc(at, 15, 0, TAU, 32, UiStyle.INK, 2.2, true)
+			draw_arc(at + Vector2(0.8, -0.6), 13.5, 0.4, TAU - 0.3, 28, Color(UiStyle.INK, 0.5), 1.0, true)
+		else:
+			draw_circle(at, 15, Color(0, 0, 0, 0.75))
+			draw_arc(at, 15, 0, TAU, 32, Color(col, pulse), 2.0, true)
 		Glyphs.draw(self, INTENT_GLYPHS[kind], at, 8.0, Color(col, pulse))
 		var target_name := ""
 		for id in u.intent.get("targets", []):
@@ -262,13 +312,13 @@ class Overheads extends Node2D:
 		if sim.is_charging(u):
 			_draw_windup(u, at, target_name)
 		if target_name != "" and not sim.is_charging(u):
-			UiStyle.text(self, at + Vector2(-80, -20), target_name, 12, Color(col, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 160, 4)
+			UiStyle.ink_text(self, at + Vector2(-80, -20), target_name, 12, Color(col, 0.9), HORIZONTAL_ALIGNMENT_CENTER, 160, 4)
 
 	## 0.31 Varslad attack: en ring med ett segment per tur som återstår, siffran bredvid och en rad ovanför målet.
 	func _draw_windup(u: CombatUnit, at: Vector2, target_name: String) -> void:
 		var left := sim.charge_left(u)
 		var total := maxi(int(u.charging.get("max", left)), 1)
-		var warn := Color("#ffb347")
+		var warn := UiStyle.INK_DANGER if UiStyle.ink else Color("#ffb347")
 		var fast := 0.6 + 0.4 * sin(_t * (9.0 if left <= 1 else 5.0))
 		var gap := 0.18
 		var seg := TAU / total
@@ -276,12 +326,13 @@ class Overheads extends Node2D:
 			var a0 := -PI / 2.0 + i * seg + gap / 2.0
 			var lit := i < left
 			draw_arc(at, 20, a0, a0 + seg - gap, 16, Color(warn, fast if lit else 0.22), 4.0, true)
-		draw_circle(at + Vector2(32, 0), 11, Color(0, 0, 0, 0.85))
+		draw_circle(at + Vector2(32, 0), 11, Color(UiStyle.PAPER, 0.92) if UiStyle.ink else Color(0, 0, 0, 0.85))
 		draw_arc(at + Vector2(32, 0), 11, 0, TAU, 20, Color(warn, 0.9), 1.5, true)
-		UiStyle.text(self, at + Vector2(21, 6), str(left), 15, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, 22, 3)
+		UiStyle.text(self, at + Vector2(21, 6), str(left), 15, UiStyle.INK if UiStyle.ink else Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, 22,
+				0 if UiStyle.ink else 3)
 		var when := "slår nästa tur" if left <= 1 else "slår om %d turer" % left
 		var who := (" " + target_name) if target_name != "" else ""
-		UiStyle.text(self, at + Vector2(-150, -28), "%s%s" % [sim.ability(u.charging.ability).get("name", ""), who], 15,
+		UiStyle.ink_text(self, at + Vector2(-150, -28), "%s%s" % [sim.ability(u.charging.ability).get("name", ""), who], 15,
 				Color(warn, 0.95), HORIZONTAL_ALIGNMENT_CENTER, 300, 4)
-		UiStyle.text(self, at + Vector2(-150, -46), "SAMLAR KRAFT – " + when.to_upper(), 15, Color(warn, fast),
+		UiStyle.ink_text(self, at + Vector2(-150, -46), "SAMLAR KRAFT – " + when.to_upper(), 15, Color(warn, fast),
 				HORIZONTAL_ALIGNMENT_CENTER, 300, 4)

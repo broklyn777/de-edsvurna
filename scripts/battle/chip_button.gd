@@ -29,7 +29,7 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var r := Rect2(Vector2.ZERO, size).grow(-2.0 * _press)
-	draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.7))
-	draw_rect(r, Color(UiStyle.GOLD, 0.95) if on else Color(1, 1, 1, 0.45), false, 2.0)
+	draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else UiStyle.panel(0.8) if UiStyle.ink else Color(0, 0, 0, 0.7))
+	draw_rect(r, Color(UiStyle.GOLD, 0.95) if on else UiStyle.INK_EDGE if UiStyle.ink else Color(1, 1, 1, 0.45), false, 2.0)
 	UiStyle.text(self, Vector2(0, size.y / 2 + 7), label, 18, Color.WHITE if on else Color(1, 1, 1, 0.8),
 			HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
