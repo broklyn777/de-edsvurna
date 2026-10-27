@@ -1106,6 +1106,10 @@ func rescue_prisoner() -> String:
 		text += " Följer med direkt (nivå %d)." % int(profile.hero(data, hero_id).level)
 	else:
 		text += " Sällskapet är fullt – väntar i Värdshuset."
+	var taught := Gambits.teach_for(data, hero_id)
+	if profile.gambit_news.has(taught):
+		profile.gambit_news.erase(taught)
+		text += "\n%s lär dig ett nytt villkor för makrona: %s." % [h.name, Gambits.name_of(data, taught)]
 	ui("room_lock", -4.0)
 	bark("rescue")
 	_save()
@@ -1125,6 +1129,37 @@ func use_object(choice: String) -> Dictionary:
 	return res
 
 
+## Gambits: villkoret som den senaste vunna striden gav (segerskärmen visar "Ny gambit"), eller "".
+var last_gambit := ""
+
+
+## Efter en vunnen strid: kanske ett villkor från de besegrade fiendernas hem (Gambits.roll_battle).
+func roll_gambit(sim: CombatSim) -> String:
+	var kinds := sim.enemies.map(func(u: CombatUnit) -> String: return u.kind)
+	var id := Gambits.roll_battle(data, profile.gambits, kinds, rng)
+	if "--gambit-demo" in OS.get_cmdline_user_args():
+		id = _demo_gambit()  # skärmdumpar: segerskärmens fynd
+	if profile.learn_gambit(data, id):
+		profile.gambit_news.erase(id)
+		return id
+	return ""
+
+
+func _demo_gambit() -> String:
+	for id in ["g_deaths", "g_hp_above", "g_status"]:
+		if not profile.gambits.has(id):
+			return id
+	return ""
+
+
+## Ljudet för ett nytt villkor (samma som en ny trofé, något ljusare).
+func play_gambit_sound(delay := 0.0) -> void:
+	if delay <= 0.0:
+		audio.play("trophy_elite", -4.0)
+	else:
+		get_tree().create_timer(delay).timeout.connect(audio.play.bind("trophy_elite", -4.0, 0.0))
+
+
 func treasure() -> String:
 	var t := state.treasure(data, rng, profile.collection)
 	var amount := roundi(t.silver * state.silver_mult(data))
@@ -1137,6 +1172,11 @@ func treasure() -> String:
 		state.take_trophy(t.trophy)
 		room_result += " och trofén %s!" % data.traits[t.trophy].name
 		_trophy_sound_for([t.trophy])
+	var g := Gambits.roll_chest(data, profile.gambits, state.depth, rng)
+	if profile.learn_gambit(data, g):
+		profile.gambit_news.erase(g)
+		room_result += "\nNytt villkor för makrona: %s!" % Gambits.name_of(data, g)
+		play_gambit_sound(0.6)
 	var finds := roll_finds("treasure" if not state.current_room().get("guarded", false) else "portal_battle")
 	if not finds.is_empty():
 		room_result += "\nFynd: " + ", ".join(finds.map(func(f: Dictionary) -> String: return Forge.find_text(data, f)))
@@ -1183,9 +1223,11 @@ func award_battle(sim: CombatSim, victory: bool) -> Array:
 		state.trait_totals[trait_id] = tot
 	var out := []
 	last_finds = []
+	last_gambit = ""
 	if victory and not state.practice:
 		var r := state.current_room()
 		last_finds = roll_finds("boss" if r.get("boss", false) else RunState.fight_kind(r))
+		last_gambit = roll_gambit(sim)
 		var xp := HeroStats.battle_xp(RunState.fight_kind(r), state.enemy_depth(), r.get("boss", false))
 		last_xp = xp
 		var ups := profile.grant_xp(data, state.party, xp)
@@ -1484,8 +1526,15 @@ func _trophy_sound_for(list: Array) -> void:
 		get_tree().create_timer(0.5).timeout.connect(audio.play.bind("trophy_" + best, -4.0, 0.0))
 
 
-## Makrot som hjälten kör, eller ett tomt makro.
+## Makrot som hjälten kör, så som striden ser det (Gambits.playable): bara hjältens platser, inga avstängda rader och inga
+## rader med villkor som profilen inte äger.
 func macro_for(hero_id: String) -> Dictionary:
+	var slots: int = profile.gambit_slots(data, hero_id) if data.heroes.has(hero_id) else MacroRunner.MAX_LINES
+	return Gambits.playable(data, raw_macro_for(hero_id), profile.gambits, slots)
+
+
+## Makrot som det är sparat (redigeraren och utvecklarflaggor ändrar i det).
+func raw_macro_for(hero_id: String) -> Dictionary:
 	return macros.get(assignment.get(hero_id, ""), {"name": "", "lines": []})
 
 
@@ -1560,6 +1609,8 @@ func _load_macros(fresh := false) -> void:
 			assignment[hero_id] = hero_id if macros.has(hero_id) else ""
 		if not default_action.has(hero_id):
 			default_action[hero_id] = "macro"
+	# Gambits: en ny profil får startvillkoren, en gammal äger allt som står i makrona (docs/plan/gambits.md).
+	profile.setup_gambits(data, macros)
 
 
 func _load() -> void:

@@ -3,7 +3,8 @@ extends RefCounted
 ## Makron som i Siralim Ultimate: ren logik utan noder.
 ##
 ## Ett makro är {name, lines}. En rad är:
-##   {subject, cond, value, action, ability, target}
+##   {subject, cond, value, action, ability, target, enabled}
+## enabled (gambits, valfritt, sant om det saknas): en avstängd rad står kvar men hoppas över.
 ## Raderna prövas uppifrån och ned. Den första rad som matchar och går att utföra utförs, och turen
 ## tar slut. Se docs/plan/0.11-makron.md för vilka regler som är bekräftade i originalet och vilka
 ## som är våra val (märkta VAL nedan).
@@ -44,6 +45,12 @@ static func decide(sim: CombatSim, u: CombatUnit, macro: Dictionary, explain := 
 		var j := i
 		while j < lines.size():
 			var line: Dictionary = lines[j]
+			# Gambits: en avstängd rad (enabled = false) står kvar i listan men prövas inte; i en kedja bryter den kedjan.
+			if not line.get("enabled", true):
+				matched = false
+				if explain:
+					notes.append({"text": "Rad %d är avstängd." % (j + 1), "near": 2000.0})
+				break
 			var hit := match_line(sim, u, line, bound)
 			if hit == null:
 				matched = false

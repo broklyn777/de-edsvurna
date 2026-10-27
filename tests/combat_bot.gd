@@ -111,6 +111,11 @@ static func run_fight(data: Dictionary, seed_value: int, skill: Skill, encounter
 					break
 			lines.insert(at, hero_line if not hero_line.is_empty() else opts.focus_line)
 			macro = {"lines": lines}
+		# Gambits (docs/plan/gambits.md): GAMBITS=ny kör som en ny profil, med startvillkoren och det sällskapet har lärt ut,
+		# och hjältens platser efter nivån (Gambits.playable, samma som striden). opts.gambits = ägda villkor ändrar.
+		var owned: Variant = opts.get("gambits", gambits_new_profile(data, sim) if GAMBITS_NEW else null)
+		if owned != null:
+			macro = Gambits.playable(data, macro, owned, Gambits.slots_for_level(data, int(sim.current.level)))
 		var decision := MacroRunner.decide(sim, sim.current, macro)
 		decisions += 1
 		if decision.ok and _is_generic_attack(macro, decision):
@@ -233,10 +238,14 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 			state.fight()
 			var battle_opts := state.battle_opts()
 			for key in opts:
-				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "omen", "growth", "owned", "slots", "realm_party", "fight_log", "depth_cleared"]:
+				if not battle_opts.has(key) and not key in ["levels", "grow", "party", "recruited", "first_descent", "joins", "max_fights", "elite_snaps", "vow", "omen", "growth", "owned", "slots", "realm_party", "fight_log", "depth_cleared", "gambit_progress"]:
 					battle_opts[key] = opts[key]
 			if not levels.is_empty():
 				battle_opts.levels = levels
+			# Gambits (tests/gambit_drops.gd): villkoren profilen äger just nu, och droppen efter varje vunnen strid.
+			if opts.has("gambit_progress"):
+				_gambit_teach(data, opts.gambit_progress, state.party)
+				battle_opts.gambits = opts.gambit_progress.owned
 			var charges_before: Dictionary = state.charges.duplicate(true) if opts.has("fight_log") else {}
 			var fight_traits := traits
 			if state.vow_trait(data) != "":
@@ -278,6 +287,14 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 						"lost_at": "f%d_%s" % [state.floor, "end" if r.get("boss", false) else r.kind], "f0_fights": f0_fights,
 						"f0_won": f0_won, "levels": levels, "finds": finds, "silver": silver, "by_kind": by_kind, "turns": turns_log}
 			silver += state.battle_silver(depth)
+			if opts.has("gambit_progress"):
+				var gp: Dictionary = opts.gambit_progress
+				gp.wins = int(gp.get("wins", 0)) + 1
+				var kinds := (result.sim as CombatSim).enemies.map(func(u: CombatUnit) -> String: return u.kind)
+				var got := Gambits.roll_battle(data, gp.owned, kinds, loot_rng)
+				if got != "":
+					gp.owned.append(got)
+					gp.log.append({"id": got, "wins": gp.wins})
 			state.vow_after_battle(data, result.sim)
 			if opts.has("finds"):
 				_count_finds(finds, Forge.roll_finds(data, "boss" if r.get("boss", false) else RunState.fight_kind(r), depth,
@@ -304,6 +321,11 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					_bot_recruit(data, state, levels, r)
 				"treasure":
 					silver += int(state.treasure(data, rng).silver)
+					if opts.has("gambit_progress"):
+						var got := Gambits.roll_chest(data, opts.gambit_progress.owned, depth, loot_rng)
+						if got != "":
+							opts.gambit_progress.owned.append(got)
+							opts.gambit_progress.log.append({"id": got, "wins": int(opts.gambit_progress.get("wins", 0)), "chest": true})
 				"item":
 					state.collect_item()
 				"seal":
@@ -324,6 +346,11 @@ static func run_expedition(data: Dictionary, seed_value: int, skill: Skill, trai
 					state.campfire(data)
 				"treasure":
 					silver += int(state.treasure(data, rng).silver)
+					if opts.has("gambit_progress"):
+						var got := Gambits.roll_chest(data, opts.gambit_progress.owned, depth, loot_rng)
+						if got != "":
+							opts.gambit_progress.owned.append(got)
+							opts.gambit_progress.log.append({"id": got, "wins": int(opts.gambit_progress.get("wins", 0)), "chest": true})
 					if opts.has("finds"):
 						_count_finds(finds, Forge.roll_finds(data, "treasure", depth, opts.finds, state.instability, loot_rng))
 				"shrine":
@@ -506,6 +533,26 @@ static func _count_finds(counts: Dictionary, finds: Array) -> void:
 
 ## Makrona i en ny profil (0.23.3, som Run._load_macros): Paladinen har introts föreslagna rad, följeslagarna sina
 ## två första rader.
+static func _gambit_teach(data: Dictionary, gp: Dictionary, party: Array) -> void:
+	for hero_id in party:
+		var t := Gambits.teach_for(data, hero_id)
+		if t != "" and not gp.owned.has(t):
+			gp.owned.append(t)
+
+
+static var GAMBITS_NEW := OS.get_environment("GAMBITS") == "ny"
+
+
+## En ny profils villkor: startvillkoren och det hjältarna i striden har lärt ut när de anslöt.
+static func gambits_new_profile(data: Dictionary, sim: CombatSim) -> Array:
+	var out := Gambits.starters(data)
+	for h in sim.heroes:
+		var t := Gambits.teach_for(data, h.id)
+		if t != "" and not out.has(t):
+			out.append(t)
+	return out
+
+
 static func new_profile_macros(data: Dictionary) -> Dictionary:
 	var out: Dictionary = data.macros.duplicate(true)
 	out.paladin.lines = [{"subject": "any_enemy", "cond": "lowest_hp", "value": 0, "action": "attack", "ability": "",
