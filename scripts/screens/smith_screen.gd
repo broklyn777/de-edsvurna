@@ -49,6 +49,11 @@ func _ready() -> void:
 			slot = {"kind": parts[0], "i": int(parts[1]) if parts.size() > 1 else 0}
 		elif arg.begins_with("--smith-pick="):
 			pending = arg.get_slice("=", 1)  # för skärmdumpar: ett valt alternativ med jämförelsen
+		elif arg.begins_with("--smith-type="):
+			tab = 1  # 0.30.48: smidesfliken med en annan typ vald (typbytets knapp)
+			type = arg.get_slice("=", 1)
+		elif arg == "--smith-confirm":
+			_ask_insert.call_deferred(pending)  # 0.30.48: frågan när trofén tas från någon annan
 
 
 func _process(delta: float) -> void:
@@ -173,7 +178,7 @@ func _tap_artifact(p: Vector2, art: Dictionary) -> void:
 		for i in opts.size():
 			if _option_rect(i).has_point(p):
 				if pending == opts[i]:
-					_insert(opts[i])
+					_ask_insert(opts[i])
 				else:
 					pending = opts[i]
 					run.ui_tap()
@@ -213,6 +218,26 @@ func _delayed_sound(sound: String, delay: float) -> void:
 
 func _insert(option: String) -> void:
 	var ok: bool
+## 0.30.48 (fynd 13): en trofé som en annan hjälte bär eller har i sin artefakt flyttas först efter ett ja.
+func _ask_insert(option: String) -> void:
+	var holder := _trophy_holder(option) if slot.kind == "trophy" else ""
+	if holder == "" or holder == hero:
+		_insert(option)
+		return
+	var data: Dictionary = run.data
+	var from := _hero_name(holder) if run.profile.artifact_trophy_owner(option) == "" \
+			else Profile.possessive(_hero_name(holder)) + " " + _art_name(run.profile.artifact(holder))
+	var q := "Flytta %s från %s till %s %s?" % [data.traits[option].name, from, Profile.possessive(_hero_name(hero)),
+			_art_name(run.profile.artifact(hero))]
+	ConfirmBox.ask(self, q).answered.connect(func(yes: bool) -> void:
+		if yes:
+			_insert(option))
+
+
+func _art_name(art: Dictionary) -> String:
+	return String(run.data.artifacts.get(String(art.get("type", "")), {}).get("name", "artefakt")).to_lower()
+
+
 	match slot.kind:
 		"nether":
 			ok = run.profile.socket_stone(hero, option)
@@ -662,8 +687,8 @@ func _draw_panel(data: Dictionary, profile: Profile, art: Dictionary, level: int
 			# Kortet rymmer två rader; hela texten står i rutan till höger när man trycker.
 			if holder == "":
 				UiStyle.para(self, r.position + Vector2(44, 48), data.traits[id].text, 15, Color(1, 1, 1, 0.75), r.size.x - 52, 2)
-			else:
-				UiStyle.para(self, r.position + Vector2(44, 48), "Hos %s nu. Tryck för att läsa." % _hero_name(holder), 15,
+			else:  # 0.30.48: var den sitter, som i Förberedelser och vid lägerelden
+				UiStyle.para(self, r.position + Vector2(44, 48), "%s nu. Tryck för att läsa." % profile.trophy_label(data, id), 15,
 						Color("#ffb070"), r.size.x - 52, 2)
 		elif slot.kind == "nether":
 			var st := _stone(id)
