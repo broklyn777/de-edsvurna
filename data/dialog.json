@@ -4216,5 +4216,26 @@
 				"text": "Här nere lönar det sig att välja ett mål. Fienden kan göra samma val."
 			}
 		}
+	},
+	"paths": {
+		"_doc": "Paladinens inriktningar (Paths, docs/plan/paladin-inriktningar.md): frågan vid eden, rutan för en profil som fanns före inriktningarna, Gorms bytesscen och hans svar.",
+		"oath_question": "Gorm: \"Ett kall för sällskapet. Och du själv, {namn} – vad bär du in i mörkret? Skölden eller ljuset?\"",
+		"offer_question": "Gorm: \"Du har burit svärdet länge nog för att veta vad du är, {namn}. Välj din väg nu, eller kom till mig när du är redo.\"",
+		"change_question": "Gorm: \"Vilken väg vill du gå?\"",
+		"gorm_choose": [
+			{"id": "gorm_path_choose_1", "text": "Du har burit svärdet länge nog för att veta vad du är."},
+			{"id": "gorm_path_choose_2", "text": "Står du framför de andra, eller lyser du för dem? Båda är en paladins väg."}
+		],
+		"gorm_first_change": [
+			{"id": "gorm_path_change_1", "text": "Du vill byta väg. En paladin som byter väg har inte svikit sin ed – han har lärt sig något om den."},
+			{"id": "gorm_path_change_2", "text": "Första gången kostar det ingenting. Sedan vill jag ha femtio silver till ljusen i kapellet."}
+		],
+		"gorm_change": [
+			{"id": "gorm_path_change_3", "text": "Igen? Femtio silver till ljusen, då. De brinner ned fort när du bestämmer dig."}
+		],
+		"chosen": {
+			"shield": {"id": "gorm_path_shield", "text": "Skölden, alltså. Stå framför dem, så står de kvar."},
+			"light": {"id": "gorm_path_light", "text": "Ljuset. Hela dem medan du slår – det är svårare än det låter."}
+		}
 	}
 }
