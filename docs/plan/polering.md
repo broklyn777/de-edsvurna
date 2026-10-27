@@ -154,3 +154,8 @@ Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som
     som sätts dit borde vara evigt tills jag tar bort den med flit". Förslag: Förberedelser och lägerelden visar var en
     trofé sitter ("i Brokks hjälm", "bärs av Alva") på rutan, och att flytta den kräver en bekräftelse ("Flytta från
     Brokks hjälm till Eira?"). Samma i smedjan åt andra hållet (den visar redan vem som har den).
+
+## Fynd från VD:s provspel av 0.30.50
+
+14. **Följeslagare 3 och 4 kommer lite för fort** (VD, osäker: "det kanske är bra sådär"). Man ska kämpa för dem.
+    Förslag: inte senare, utan dyrare – den fjärde bevakad av en elitgrupp eller efter den första bossen. Avgörs efter mer provspel.
