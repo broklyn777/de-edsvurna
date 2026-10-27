@@ -84,3 +84,8 @@ och iPhone.
    VD fick fråga vad som var bäst för Brokk. Förslag: sortera så att det som passar hjälten och typen står först (t.ex.
    Hjälm → förmågor som skyddar, bärarens egna först) och märk ett "Förslag" utifrån hjältens makro (hur ofta hen
    anfaller/provocerar/försvarar).
+4. Kampanjkartan, panelen till höger: när djupets tecken (Trång passage + BYT · 25), Löfte och fångelistan finns samtidigt
+   ritas "Sägs sitta fången här: Lirien … Ronja" över "Sällskap: Mr Bobo, Imma …". Panelen har för mycket (jfr fynd 2).
+   Dessutom: rubriken säger "DJUPASTE KLARADE 1" för Kapellet fast kortet säger "Djup klarat: 0" (rubriken verkar visa
+   profilens djupaste, inte Realmens). Förslag: rullbar panel eller färre rader (fånge som ett rykte, sällskapet bara i
+   Förberedelser), och Realmens eget djup i rubriken. Kontrollera i 1280×720 och 1560×720 med tecken + löfte + fångar.
