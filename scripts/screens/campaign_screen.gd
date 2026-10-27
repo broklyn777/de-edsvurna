@@ -678,9 +678,8 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 	# 0.23: lärjungar som sitter fångna här syns i förväg (Siralims varelser hör till sina Realms). 0.30.48: på en rad,
 	# den närmaste med namn och resten som ett antal.
 	var captives: Array[String] = []
-	for d in data.realms[prof.realm].get("disciples", []):
-		if not prof.recruited.has(d.hero):
-			captives.append("%s (djup %d)" % [data.heroes[d.hero].get("short", d.hero), int(d.depth)])
+	for d in RunState.findable_for(prof, data, prof.realm):
+		captives.append("%s (djup %d)" % [data.heroes[d.hero].get("short", d.hero), int(d.depth)])
 	if not captives.is_empty() and c + 4 <= limit:
 		var line := "Sägs sitta fången här: " + captives[0] + ("" if captives.size() == 1 else " och %d till" % (captives.size() - 1))
 		UiStyle.text(self, Vector2(x, c + 4), UiStyle.fit(line, 15, w), 15, Color("#ffd27a"), HORIZONTAL_ALIGNMENT_LEFT, w)

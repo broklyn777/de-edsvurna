@@ -227,8 +227,8 @@ func _use_slot(i: int) -> void:
 
 
 ## Sparplatsskärmen väljer en plats: profilen, makrona och körningen laddas därifrån, och spelet fortsätter som
-## förut (en pågående körning återupptas). En tom plats börjar introt.
-func choose_slot(i: int, new_name := "") -> void:
+## förut (en pågående körning återupptas). En tom plats börjar introt; skip_intro (testversioner) hoppar över det.
+func choose_slot(i: int, new_name := "", skip_intro := false) -> void:
 	playtime.suspend()  # en körning på den förra platsen väntar i playtime.cfg
 	_use_slot(i)
 	SaveSlots.set_last(i)
@@ -246,6 +246,12 @@ func choose_slot(i: int, new_name := "") -> void:
 	if SaveSlots.is_empty(i):
 		profile.set_hero_name(new_name)
 		apply_name()
+		if skip_intro:
+			profile.skip_intro(data)
+			state.party = profile.party.duplicate()
+			state.artifacts = profile.artifacts.duplicate(true)
+			if macros.has("paladin") and macros.paladin.lines.is_empty():
+				macros.paladin.lines.append(FIRST_LINE.duplicate(true))  # introts makrosteg: Gorms första rad
 		_save()
 		save_macros()
 	ui("ui_confirm", -8.0)

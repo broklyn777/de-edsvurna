@@ -927,6 +927,9 @@ Homebrew bygger inte längre färdiga paket för macOS 13 – installera inte Ja
   till en animation i en modell igen ur originalet i Drakvalvet om en ny figur behöver den.
 - Exporten är utan Gradle (`gradle_build/use_gradle_build=false`), endast arm64-v8a. Oanvända ljud
   (röstrepliker, gamla WoW-ljud) och docs/ utesluts i `exclude_filter` i export_presets.cfg.
+- Versionsnamnet (0.30.52) står i `project.godot` (`application/config/version`); exportens `version/name` är tom och
+  tar det därifrån, så att spelet kan läsa det. Slutar det på `-test` visar sparplatsskärmen HOPPA ÖVER INTROT (TEST)
+  (`Profile.skip_intro`, `--skip-intro-button` visar den ändå). `version/code` räknas fortfarande upp i export_presets.cfg.
 
 Tester: lägg `tests/test_*.gd` som ärver `res://tests/test_case.gd`, metoder som börjar på `test_`. Köraren fångar körfel (en
 Logger i `run_tests.gd`) och avslutar med felkod om något misslyckas; `tests/test_runner.gd` kör fixturerna i

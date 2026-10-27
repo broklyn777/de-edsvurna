@@ -1135,8 +1135,7 @@ func _quest_line(data: Dictionary) -> String:
 	if run.profile.find_quest == 1:
 		return "UPPDRAG: " + String(data.dialog.get("find_quest", {}).get("quest_line", ""))
 	for realm_id in data.realms:
-		for d in data.realms[realm_id].get("disciples", []):
-			if not run.profile.recruited.has(d.hero) and run.profile.total_descents() >= int(d.get("after_descents", 0)):
-				return "RYKTE: %s sägs sitta fången i %s, djup %d." % [data.heroes[d.hero].get("short", d.hero),
-						String(data.realms[realm_id].short).to_lower(), int(d.depth)]
+		for d in RunState.findable_for(run.profile, data, realm_id):
+			return "RYKTE: %s sägs sitta fången i %s, djup %d." % [data.heroes[d.hero].get("short", d.hero),
+					String(data.realms[realm_id].short).to_lower(), int(d.depth)]
 	return ""
