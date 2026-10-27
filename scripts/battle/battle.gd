@@ -114,6 +114,11 @@ func _ready() -> void:
 			seed_value = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--exhaust="):
 			_dev_exhaust = int(arg.get_slice("=", 1))  # 0.30.20: striden börjar på den turen (skärmdumpar av utmattningen)
+		elif arg == "--float-demo":
+			# polering: ett stigande ord över varje fiende (skärmdumpar av var ordet hamnar mot namnskyltarna)
+			(func() -> void:
+				for u in sim.enemies:
+					_float(u.id, "MOTSTÖT", Color("#ffb347"), 22, true)).call_deferred()
 		elif arg == "--statuses":
 			_dev_statuses = true  # sätter några statusar vid start (skärmdumpar av ikonerna)
 		elif arg == "--settings":
@@ -238,6 +243,7 @@ func _build_scene() -> void:
 			m.position = UnitModel.to_world(spots[u.id])
 		m.sfx = sfx
 		models[u.id] = m
+	_spread_enemies()
 	for team in [0, 1]:
 		var sum := Vector3.ZERO
 		var n := 0
@@ -586,20 +592,42 @@ func _open_damage_log() -> void:
 	damage_log.show_log()
 
 
-## Figuren närmast punkten bland ids (inom 80 px), eller "".
+## Figuren som trycket gäller bland ids, eller "" (polering fynd 6, TargetPick): kroppen från fötterna till huvudet
+## och skylten ovanför (namn, livmätare, avsikt); träffar trycket flera ytor vinner den vars mitt är närmast.
 func _unit_at(pos: Vector2, ids: Array) -> String:
-	var best := ""
-	var best_d := 80.0
+	var units := {}
 	for id in ids:
 		var m: UnitModel = models[id]
-		# Träffytan går från fötterna till huvudet, så att hela figuren går att trycka på.
-		var feet := world.project(m.global_position)
-		var head := world.project(m.head_position())
-		var d := _dist_to_segment(pos, feet, head)
-		if d < best_d:
-			best_d = d
-			best = id
-	return best
+		units[id] = [world.project(m.global_position), world.project(m.head_position())]
+	return TargetPick.pick(pos, units)
+
+
+## Polering fynd 6: fiender som står så nära att skyltarna och huvudena överlappar i bilden skjuts isär (bara utseende,
+## som sällskapets uppställning). Knuffen räknas på skärmen och förs över till golvet; högst MAX_SPREAD världsenheter.
+const MAX_SPREAD := 1.6
+
+
+func _spread_enemies() -> void:
+	var ids: Array = sim.enemies.map(func(u: CombatUnit) -> String: return u.id)
+	var start := {}
+	for id in ids:
+		start[id] = models[id].position
+	for _i in 40:
+		var heads := {}
+		for id in ids:
+			heads[id] = world.project(models[id].head_position())
+		var push := TargetPick.spread_step(heads)
+		if push.is_empty():
+			return
+		for id in push:
+			var m: UnitModel = models[id]
+			var o := world.project(m.global_position)
+			var px := world.project(m.global_position + Vector3.RIGHT).x - o.x
+			var pz := world.project(m.global_position + Vector3.BACK).y - o.y
+			var d: Vector2 = push[id]
+			var step := Vector3(d.x / maxf(absf(px), 1.0) * signf(px), 0, d.y / maxf(absf(pz), 1.0) * signf(pz))
+			var moved: Vector3 = m.position + step - start[id]
+			m.position = start[id] + moved.limit_length(MAX_SPREAD)
 
 
 ## En våningsregel slog till. Dolda regler avslöjas med en skylt.
@@ -1411,8 +1439,13 @@ func _at(node: Node2D, p: Vector2) -> Node2D:
 	return node
 
 
+## Ord som stiger över en figur (egenskaper, statusar). Polering: över en fiende börjar ordet vid bröstet i stället för
+## ovanför huvudet, så att det inte hamnar över namnskyltarna (MOTSTÖT över Häxans namn); det stiger upp mot huvudet.
 func _float(unit_id: String, text: String, color: Color, size: int, big: bool) -> void:
-	var p := world.project(models[unit_id].head_position()) + Vector2(randf_range(-14, 14), -46)
+	var m: UnitModel = models[unit_id]
+	var p := world.project(m.head_position()) + Vector2(randf_range(-14, 14), -46)
+	if sim.unit(unit_id).team == 1:
+		p = world.project(m.chest_position()) + Vector2(randf_range(-14, 14), 18)
 	fx_layer.add_child(_at(Fx.FloatingText.new(text, color, size, big, 1.1 if big else 0.9), p))
 
 
@@ -1433,12 +1466,6 @@ func _tick_later(delta: float) -> void:
 
 func _hitstop(ms: int) -> void:
 	_hitstop_until = maxi(_hitstop_until, Time.get_ticks_msec() + ms)
-
-
-static func _dist_to_segment(p: Vector2, a: Vector2, b: Vector2) -> float:
-	var ab := b - a
-	var t := clampf((p - a).dot(ab) / maxf(ab.length_squared(), 0.001), 0.0, 1.0)
-	return p.distance_to(a + ab * t)
 
 
 ## Ringar på golvet: guld under den som har turen, och markeringar under möjliga mål.

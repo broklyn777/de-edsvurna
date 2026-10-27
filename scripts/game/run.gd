@@ -27,6 +27,7 @@ const HERO_SCENE := "res://scenes/hero.tscn"
 const INN_SCENE := "res://scenes/inn.tscn"
 const HANDBOOK_SCENE := "res://scenes/handbook.tscn"
 const CHRONICLE_SCENE := "res://scenes/chronicle.tscn"
+const PARTY_SCENE := "res://scenes/party.tscn"
 
 var data: Dictionary
 var state := RunState.new()
@@ -432,6 +433,19 @@ func _dev_args() -> void:
 			# --forge-demo: en påhittad profil för Smeden (sparas inte): Brokks sköld på nivå 7 med material,
 			# ett förråd och några Nether Stones. Med --smith öppnas Smeden direkt.
 			_forge_demo()
+		elif arg == "--trophy-demo":
+			# --trophy-demo (efter --all-companions --forge-demo): hela samlingen, troféer på tre hjältar och en i Brokks
+			# artefakt (sparas inte), för skärmdumpar av SÄLLSKAPET och Förberedelser
+			dev_profile = true
+			for t in data.traits:
+				if data.traits[t].get("trophy", false):
+					profile.add_trophy(t)
+			var picks := profile.collection.slice(0, 4)
+			for i in mini(picks.size(), 3):
+				profile.wear(["paladin", "alva", "eira"][i], picks[i])
+			if picks.size() > 3 and not profile.artifact("brokk").is_empty():
+				profile.set_artifact_trophy("brokk", picks[3])
+			state.artifacts = profile.artifacts  # så att lägret (--campfire-camp) visar artefakternas troféer
 		elif arg == "--find-demo":
 			# --find-demo visar scenen för ett legendariskt fynd
 			_find_demo.call_deferred()
@@ -624,10 +638,11 @@ func _dev_args() -> void:
 			get_tree().change_scene_to_file.call_deferred(CHRONICLE_SCENE)  # krönikan och titlarna hos Broder Alrik
 		elif arg == "--descents":
 			profile.descents = {"crypt": 1}  # som efter första nedstigningen (sparas inte om profilen är påhittad)
-		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn", "--handbook"]:
+		elif arg in ["--practice", "--smith", "--library", "--gate", "--altar", "--prep", "--inn", "--handbook",
+				"--party", "--party-collection"]:
 			var scene: String = {"--practice": PRACTICE_SCENE, "--smith": SMITH_SCENE, "--inn": INN_SCENE,
 					"--library": LIBRARY_SCENE, "--gate": CAMPAIGN_SCENE, "--altar": ALTAR_SCENE, "--prep": START_SCENE,
-					"--handbook": HANDBOOK_SCENE}[arg]
+					"--handbook": HANDBOOK_SCENE, "--party": PARTY_SCENE, "--party-collection": PARTY_SCENE}[arg]
 			get_tree().change_scene_to_file.call_deferred(scene)
 		elif arg == "--campfire-camp":
 			# 0.27: trofébytet vid en lägereld (lägret utan erbjudande)

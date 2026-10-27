@@ -181,7 +181,7 @@
 	},
 	"chapel": {
 		"name": "Det fördärvade kapellet",
-		"text": "Kultister, gastar och häxor kring Den fallne biskopen. Två våningar i en grotta med dimma, sedan bossen.",
+		"text": "Kultister, gastar och häxor kring Den fallne biskopen. Två våningar i dimma, sedan bossen.",
 		"floors": [
 			"chapel_1",
 			"chapel_2",

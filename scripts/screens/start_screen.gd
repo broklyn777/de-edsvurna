@@ -328,12 +328,19 @@ func _draw() -> void:
 		var t: Dictionary = data.traits[h.traits[0]]
 		var names: Array = h.abilities.map(func(id: String) -> String: return data.abilities[id].name)
 		var body := "%s: %s\nFörmågor: %s" % [t.name, t.text, ", ".join(names)]
-		if roster.size() > 4:
-			body = t.name
 		var lv := int(run.profile.hero(data, id).level)
-		UiStyle.card(self, _companion_rect(i), "%s · nivå %d" % [h.name, lv], body, companions.has(id), Color(h.color),
+		var title := "%s · nivå %d" % [h.name, lv]
+		if roster.size() > 4:
+			# Polering: små kort klippte namnet ("Lirien Silversträng ·…"); kort namn i titeln, nivån på egen rad.
+			title = String(h.get("short", h.name))
+			body = "Nivå %d · %s" % [lv, t.name]
+		UiStyle.card(self, _companion_rect(i), title, body, companions.has(id), Color(h.color),
 				h.title.to_upper() if roster.size() <= 10 else "", 0.0, 30.0,
 				_sheet_rect(i).size.x + 8 if roster.size() > 10 else 0.0)  # tre rader: BLAD tar rollens plats
+		if roster.size() > 10:  # låga kort: ingen brödtext, nivån till vänster om BLAD
+			var cr := _companion_rect(i)
+			UiStyle.text(self, cr.position + Vector2(16, cr.size.y - 10), "nivå %d" % lv, 15,
+					Color(1, 1, 1, 0.8 if companions.has(id) else 0.55))
 		_sheet_button(_sheet_rect(i))
 		if companions.has(id):
 			_check(_companion_rect(i).position + Vector2(-13, -13))

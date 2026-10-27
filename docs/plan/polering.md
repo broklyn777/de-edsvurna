@@ -70,6 +70,9 @@ Variation i det som finns (fler monster per Realm, bossar som skiftar mellan dju
 och iPhone.
 
 ## Fynd från VD:s provspel av 0.30.47 (ny profil, 2026-10-26)
+Gjort i grenen `claude/polish-final-99cc98` (efter 0.30.48): fynd 1 (SÄLLSKAPET i borgen), 6 (träffytor, fiender isär),
+11 (en rad om troféplatsen hos Smeden) och textfelen (Förberedelsers namn, löftesknappen, kapellets text, lägrets
+artefaktrad, MOTSTÖT över skyltarna, porträtten vid Mor Elin och ovanför PORTEN).
 1. Borgen: hjältebladet går inte att nå härifrån. Man vill kunna se allt om sina karaktärer när som helst
    (Siralim: skapelserna nås från slottets meny). Förslag: tryck på paladinpjäsen, eller en knapp SÄLLSKAPET under
    INSTÄLLNINGAR, som öppnar `hero_screen` för alla som har anslutit. (Område 4, men syns redan i första timmen.)
