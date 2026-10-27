@@ -52,7 +52,7 @@ func _init() -> void:
 					recruited.append(id)
 			var found := _found(gp)
 			per_descent[d] += found.size()
-			owned_after[d] += gp.owned.size()
+			owned_after[d] += Gambits.blocks(data).keys().filter(func(id: String) -> bool: return Gambits.has(gp.owned, id)).size()
 			wins_after[d] += int(gp.wins)
 			for m in MARKS:
 				if not marks_done.has(m) and found.size() >= m:

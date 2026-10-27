@@ -590,7 +590,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   subjekten och målen Allierad 1–4, Fiende 1–6, Alla allierade, Alla fiender och Slumpvis. Fria: Denna hjälte, Någon
   allierad, Någon fiende, Den som matchade, sig själv och alla handlingar. Ett fynd är en färdig rad (`Gambits.make_row`
   ur klossens radmallar `rows`, med en hjälte i sällskapet som kan utföra den; `Profile.learn_row`, `found_rows`): efter en
-  vunnen strid (hem 25 %, elit 60 %, boss 100 %, 3 % var som helst, högst en; `Run.roll_gambit`, `last_row`), i kistor
+  vunnen strid (hem 15 %, elit 60 %, boss 100 %, 2 % var som helst, högst en; `Run.roll_gambit`, `last_row`), i kistor
   (Djupets tecken, Artefakt från djup 2), från följeslagare (makroförslaget eller `teach`, och klossarna i deras startrader,
   `Gambits.recruit_gift`) och introt (Gorms rad, den enda klossen en ny profil har: Lägst liv). Segerskärmen: NY RAD FÖR
   MAKRONA och LÄGG TILL HOS <HJÄLTE> (`Run.add_row`, överst i makrot); gambitsidan: FUNNA RADER. Nya villkor: Svag mot

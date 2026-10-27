@@ -1,10 +1,10 @@
 {
 	"_doc": "Makronas klossar som man förtjänar (gambits, docs/plan/gambits.md). Ett fynd är en färdig rad (rows), och radens klossar blir profilens. Varje post: conds (MacroRunner.CONDITIONS, och action test_next för kedjan) eller subjects/targets (subjektens och målens klossar), name, rarity (start/common/elite/boss/chest), homes (fiendetyper i enemies.json där klossen kan falla), chest ({depth}), clue (Bibliotekets rykte), rows (radmallar i ordning: den första som någon i sällskapet kan utföra blir fyndet). thresholds: gränserna är egna klossar (id 'g_hp_below@50'), med egen rarity/homes/clue; {v} i namnet blir gränsen. I en radmall är ability en förmåga eller en sort (heal, protect, support, cleanse, damage, aoe, debuff, bonus), och value '@aura', '@ability' och '@omen' fylls i från förmågan. Siffrorna i 'drops' och 'slots' är vårt val.",
 	"drops": {
-		"home_common": 0.25,
+		"home_common": 0.15,
 		"home_elite": 0.6,
 		"home_boss": 1.0,
-		"anywhere": 0.03,
+		"anywhere": 0.02,
 		"chest_home": 0.5,
 		"chest_any": 0.12
 	},

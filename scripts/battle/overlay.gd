@@ -229,6 +229,7 @@ func _draw_finds(w: float, h: float, a: float) -> void:
 	var y := h * 0.45 - 40.0
 	if not gambit_row.is_empty():
 		_draw_gambit(_row_card_rect(), a)
+		y = maxf(y, _row_card_rect().end.y + 30.0)
 	if finds.is_empty():
 		return
 	UiStyle.text(self, Vector2(x, y), "FYND", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, 300, 4)
@@ -250,12 +251,12 @@ func _draw_finds(w: float, h: float, a: float) -> void:
 
 ## Gambits 2: den nya raden ovanför fynden, ett guldkort med raden och knappen LÄGG TILL HOS <hjälte>.
 func _row_card_rect() -> Rect2:
-	return Rect2(size.x - 340.0, size.y * 0.45 - 40.0 - 168.0, 320, 156)
+	return Rect2(size.x - 340.0, 118.0, 320, 160)
 
 
 func row_button_rect() -> Rect2:
 	var r := _row_card_rect()
-	return Rect2(r.position.x + 12, r.end.y - 52, r.size.x - 24, 42)
+	return Rect2(r.position.x + 12, r.end.y - 48, r.size.x - 24, 38)
 
 
 func _draw_gambit(r: Rect2, a: float) -> void:
@@ -269,11 +270,11 @@ func _draw_gambit(r: Rect2, a: float) -> void:
 	UiStyle.text(self, r.position + Vector2(14, 22), "NY RAD FÖR MAKRONA", 15, Color(UiStyle.GOLD, 0.85 * a * t),
 			HORIZONTAL_ALIGNMENT_LEFT, 290, 4)
 	UiStyle.para(self, r.position + Vector2(14, 46), "\"%s\"" % MacroRunner.describe_line(data, gambit_row.line), 16,
-			Color(1, 0.95, 0.8, a * t), r.size.x - 28, 2)
+			Color(1, 0.95, 0.8, a * t), r.size.x - 28, 3)
 	var b := row_button_rect()
 	var who: String = String(data.heroes.get(gambit_row.hero, {}).get("name", gambit_row.hero)).to_upper()
 	draw_rect(b, Color(UiStyle.GOLD, (0.25 if row_added else 0.9) * a * t))
-	UiStyle.text(self, b.position + Vector2(0, 28), ("TILLAGD HOS " if row_added else "LÄGG TILL HOS ") + who, 17,
+	UiStyle.text(self, b.position + Vector2(0, 26), ("TILLAGD HOS " if row_added else "LÄGG TILL HOS ") + who, 17,
 			Color(0.1, 0.07, 0.02, a * t) if not row_added else Color(1, 1, 1, 0.7 * a * t), HORIZONTAL_ALIGNMENT_CENTER, b.size.x, 4)
 
 
