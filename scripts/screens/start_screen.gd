@@ -11,6 +11,9 @@ const PARTY_ART := preload("res://assets/illustrations/sallskapet.webp")
 var companions: Array[String] = []
 ## Trofén man har tryckt på och ska sätta på en hjälte.
 var selected := ""
+## 0.30.48: sidan i trofégallret och en rad om en låst trofé man tryckt på.
+var _page := 0
+var _locked_note := ""
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 @onready var run: Node = get_node("/root/Run")
 var _t := 0.0
@@ -28,6 +31,27 @@ func _ready() -> void:
 	companions = previous.filter(func(id: String) -> bool: return run.profile.recruited.has(id))
 	if companions.is_empty() and not run.profile.recruited.is_empty():
 		companions = [run.profile.recruited[0]]
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--tap-trophy="):  # skärmdumpar: som ett tryck på trofén (en låst visar sin rad)
+			var id := a.get_slice("=", 1)
+			var i := _page_trophies().find(id)
+			if i >= 0:
+				_tap.call_deferred(_trophy_rect(i).get_center())
+		elif a == "--ask-move":  # skärmdumpar: frågan när en buren trofé ska flyttas till en annan hjälte
+			_ask_move_demo.call_deferred()
+
+
+## "I Brokks sköld" → "i Brokks sköld" (namnet behåller sin stora bokstav).
+static func _lower_first(s: String) -> String:
+	return s.left(1).to_lower() + s.substr(1)
+
+
+func _ask_move_demo() -> void:
+	for hero_id in run.profile.worn:
+		for other in _party():
+			if other != hero_id:
+				_put_on(other, run.profile.worn[hero_id])
+				return
 
 
 ## Följeslagarna man har (0.23: de befriade lärjungarna; resten bor i Värdshuset).
@@ -80,22 +104,63 @@ func _tap(p: Vector2) -> void:
 				companions.pop_front()
 				companions.append(id)
 			return
-	for i in run.collection.size():
+	if _pages() > 1:
+		for d in [-1, 1]:
+			if _page_rect(d).has_point(p):
+				_page = posmod(_page + d, _pages())
+				return
+	var shown := _page_trophies()
+	for i in shown.size():
 		if _trophy_rect(i).has_point(p):
-			selected = "" if selected == run.collection[i] else run.collection[i]
+			var id: String = shown[i]
+			_locked_note = ""
+			if run.profile.artifact_trophy_owner(id) != "":
+				# 0.30.48 (fynd 13): en trofé i en artefakt sitter kvar tills den tas ut hos Smeden.
+				selected = ""
+				_locked_note = "%s sitter %s – ta ut den hos Hedda." % [data.traits[id].name, _lower_first(run.profile.trophy_label(data, id))]
+				run.ui("ui_error", -10.0)
+				return
+			selected = "" if selected == id else id
 			return
 	var party := _party()
 	for i in party.size():
 		if _wearer_rect(i).has_point(p):
-			run.profile.wear(party[i], selected)  # utan vald trofé tar man av den hjälten bär
-			selected = ""
-			run.save()
+			_put_on(party[i], selected)  # utan vald trofé tar man av den hjälten bär
 			return
 	if _macro_rect().has_point(p):
 		run.open_macros(run.START_SCENE)
 		return
 	if _button_rect().has_point(p) and _can_go():
 		_done()
+
+
+## Sätter trofén på hjälten; tas den från en annan hjälte frågar spelet först (0.30.48, fynd 13).
+func _put_on(hero_id: String, trophy_id: String) -> void:
+	var q := Profile.move_question(run.data, run.profile.worn, run.profile.artifacts, hero_id, trophy_id)
+	if q == "":
+		run.profile.wear(hero_id, trophy_id)
+		selected = ""
+		run.save()
+		return
+	ConfirmBox.ask(self, q).answered.connect(func(yes: bool) -> void:
+		if yes:
+			run.profile.wear(hero_id, trophy_id)
+			run.save()
+		selected = "")
+
+
+## Samlingen i bokstavsordning (0.30.48), så att en trofé står på samma plats när den byter bärare.
+func _trophies() -> Array:
+	var out: Array = run.collection.duplicate()
+	out.sort_custom(func(a: String, b: String) -> bool: return String(run.data.traits[a].name) < String(run.data.traits[b].name))
+	return out
+
+
+func _page_trophies() -> Array:
+	var all := _trophies()
+	var n := _per_page()
+	_page = clampi(_page, 0, maxi(_pages() - 1, 0))
+	return all.slice(_page * n, mini((_page + 1) * n, all.size()))
 
 
 ## 0.25: minst en följeslagare, utom när ingen har anslutit än (introts nedstigning, paladinen går ned ensam).
@@ -156,10 +221,47 @@ func _trophy_top() -> float:
 	return maxf(442.0, _companion_rect(_roster().size() - 1).end.y + 14) if not _roster().is_empty() else 442.0
 
 
-## Samlingen som knappar, sju per rad.
+## 0.30.48 (B6): gallret har en egen yta mellan bärarna och knapparna längst ned; ryms inte allt blir det sidor (‹ ›).
+const TROPHY_COLS := 7
+const TROPHY_H := 50.0
+const TROPHY_STEP := 56.0
+
+
+func _grid_top() -> float:
+	return _trophy_top() + 72
+
+
+func _grid_rows() -> int:
+	return maxi(1, int((_button_rect().position.y - 10 - _grid_top() + TROPHY_STEP - TROPHY_H) / TROPHY_STEP))
+
+
+func _per_page() -> int:
+	return TROPHY_COLS * _grid_rows()
+
+
+func _pages() -> int:
+	return maxi(1, ceili(run.collection.size() / float(_per_page())))
+
+
+## Bredden gallret har: med sidor tar pilarna en remsa till höger.
+func _grid_width() -> float:
+	if _pages() <= 1:
+		return size.x - MARGIN * 2
+	return size.x - MARGIN * 2 - (72.0 if _grid_rows() > 1 else 136.0)
+
+
+## Samlingen som knappar, sju per rad (trofé i = plats på den visade sidan).
 func _trophy_rect(i: int) -> Rect2:
-	var w := (size.x - MARGIN * 2 - GAP * 6) / 7.0
-	return Rect2(MARGIN + (i % 7) * (w + GAP), _trophy_top() + 76 + (i / 7) * 42, w, 36)
+	var w := (_grid_width() - GAP * (TROPHY_COLS - 1)) / float(TROPHY_COLS)
+	return Rect2(MARGIN + (i % TROPHY_COLS) * (w + GAP), _grid_top() + (i / TROPHY_COLS) * TROPHY_STEP, w, TROPHY_H)
+
+
+## Sidpilarna: -1 = föregående, 1 = nästa; under varandra, eller bredvid varandra när gallret har en rad.
+func _page_rect(d: int) -> Rect2:
+	var i := 0 if d < 0 else 1
+	if _grid_rows() > 1:
+		return Rect2(size.x - MARGIN - 58, _grid_top() + i * TROPHY_STEP * (_grid_rows() - 1), 58, TROPHY_H)
+	return Rect2(size.x - MARGIN - 122 + i * 64, _grid_top(), 58, TROPHY_H)
 
 
 ## Sällskapet med det var och en bär: en kolumn per plats (4 eller 5), och en till för den låsta platsen.
@@ -240,8 +342,10 @@ func _draw() -> void:
 	# Med en vald trofé står dess text i rubrikens ställe.
 	var head_t := "TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE. DE BÄR DEM TILLS DU BYTER." if selected == "" \
 			else "%s: %s" % [data.traits[selected].name, data.traits[selected].text]
-	UiStyle.text(self, Vector2(MARGIN, _trophy_top() + 4), head_t, 16, Color(1, 1, 1, 0.6) if selected == "" else UiStyle.TRAIT_GOLD,
-			HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN * 2, 3)
+	if _locked_note != "" and selected == "":
+		head_t = _locked_note
+	UiStyle.text(self, Vector2(MARGIN, _trophy_top() + 4), head_t, 16, Color(1, 1, 1, 0.6) if selected == "" and _locked_note == "" \
+			else UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN * 2, 3)
 	var party := _party()
 	for i in party.size():
 		var r := _wearer_rect(i)
@@ -258,16 +362,30 @@ func _draw() -> void:
 	if lock != "":
 		UiStyle.locked_slot(self, _wearer_rect(run.profile.party_slots()), "FEMTE PLATSEN", lock)
 	if run.collection.is_empty():
-		UiStyle.text(self, Vector2(MARGIN, _trophy_top() + 102), "Samlingen är tom. Besegra monster för att hitta troféer.", 18, Color(1, 1, 1, 0.45))
-	for i in run.collection.size():
-		var id: String = run.collection[i]
+		UiStyle.text(self, Vector2(MARGIN, _grid_top() + 26), "Samlingen är tom. Besegra monster för att hitta troféer.", 18, Color(1, 1, 1, 0.45))
+	var shown := _page_trophies()
+	for i in shown.size():
+		var id: String = shown[i]
 		var r := _trophy_rect(i)
 		var on := selected == id
-		var taken := worn.values().has(id)
-		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.6))
-		draw_rect(r, Color(UiStyle.GOLD, 0.95) if on else Color(UiStyle.TRAIT_GOLD, 0.6 if taken else 0.3), false, 2.0)
-		UiStyle.text(self, r.position + Vector2(0, 24), data.traits[id].name, 15,
-				Color.WHITE if on or not taken else Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
+		var place: String = run.profile.trophy_label(data, id)  # 0.30.48: var den sitter
+		var locked: bool = run.profile.artifact_trophy_owner(id) != ""
+		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.75 if locked else 0.6))
+		draw_rect(r, Color(UiStyle.GOLD, 0.95) if on else Color(UiStyle.TRAIT_GOLD, 0.15 if locked else (0.6 if place != "" else 0.3)), false, 2.0)
+		var name_col := Color.WHITE if on or place == "" else Color(1, 1, 1, 0.35 if locked else 0.6)
+		UiStyle.text(self, r.position + Vector2(0, 21 if place != "" else 31), UiStyle.fit(data.traits[id].name, 15, r.size.x - 8), 15, name_col,
+				HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
+		if place != "":
+			UiStyle.text(self, r.position + Vector2(0, 41), UiStyle.fit(place, 15, r.size.x - 8), 15, Color(UiStyle.TRAIT_GOLD, 0.4 if locked else 0.75),
+					HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 3)
+	if _pages() > 1:
+		for d in [-1, 1]:
+			var pr := _page_rect(d)
+			draw_rect(pr, Color(0, 0, 0, 0.6))
+			draw_rect(pr, Color(UiStyle.TRAIT_GOLD, 0.7), false, 2.0)
+			UiStyle.text(self, pr.position + Vector2(0, 33), "‹" if d < 0 else "›", 26, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_CENTER, pr.size.x, 4)
+		UiStyle.text(self, Vector2(0, _grid_top() - 6), "SIDA %d/%d" % [_page + 1, _pages()], 15, Color(1, 1, 1, 0.5),
+				HORIZONTAL_ALIGNMENT_RIGHT, size.x - MARGIN, 3)
 
 	UiStyle.big_button(self, _button_rect(), "KLAR", _t, _can_go())
 	_small_button(_macro_rect(), "MAKRON")
