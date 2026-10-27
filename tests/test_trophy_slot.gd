@@ -42,8 +42,9 @@ func test_one_place_at_a_time_so_never_twice_on_a_hero() -> void:
 	p.wear("brokk", "rosary")
 	p.set_artifact_trophy("brokk", "rosary")
 	assert_true(not p.worn.has("brokk"), "togs av när den sattes i artefakten: ingen dubblett på Brokk")
-	p.wear("paladin", "rosary")
-	assert_eq(p.artifact("brokk").trophy, "", "att bära den tar den ur artefakten")
+	assert_true(not p.wear("paladin", "rosary"), "0.30.48: en trofé i en artefakt går inte att bära")
+	assert_eq(p.artifact("brokk").trophy, "rosary", "den sitter kvar i artefakten tills den tas ut hos Smeden")
+	assert_true(not p.worn.has("paladin"))
 	p.forge("alva", "staff", "")
 	p.artifacts.alva.level = Forge.TROPHY_LEVEL
 	p.set_artifact_trophy("brokk", "mold_jaw")

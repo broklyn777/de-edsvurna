@@ -718,14 +718,62 @@ func reset_perks(data: Dictionary, oath_id: String) -> int:
 	return refund
 
 
-## Sätter en trofé på hjälten (tar bort den från den som bar den, och ur en artefakts troféplats). Tom sträng tar av.
-func wear(hero_id: String, trophy_id: String) -> void:
+## Sätter en trofé på hjälten (tar bort den från den som bar den). Tom sträng tar av. 0.30.48 (fynd 13): en trofé i en
+## artefakt sitter kvar tills spelaren tar ut den hos Smeden; då händer ingenting och svaret är falskt.
+func wear(hero_id: String, trophy_id: String) -> bool:
 	if trophy_id != "":
+		if artifact_trophy_owner(trophy_id) != "":
+			return false
 		_free_trophy(trophy_id)
 	if trophy_id == "":
 		worn.erase(hero_id)
 	else:
 		worn[hero_id] = trophy_id
+	return true
+
+
+## Var trofén sitter i profilen: "Bärs av Brokk", "I Brokks hjälm" eller "".
+func trophy_label(data: Dictionary, trophy_id: String) -> String:
+	return trophy_place(data, worn, artifacts, trophy_id)
+
+
+## 0.30.48 (fynd 13): var en trofé sitter, för rutorna där man väljer trofé. worn är hjälte → trofé (profilens worn eller
+## körningens equipped), artifacts hjälte → artefakt. Artefakten går före: där sitter trofén fast.
+static func trophy_place(data: Dictionary, worn_map: Dictionary, arts: Dictionary, trophy_id: String) -> String:
+	if trophy_id == "":
+		return ""
+	for hero_id in arts:
+		var art: Dictionary = arts[hero_id]
+		if String(art.get("trophy", "")) == trophy_id:
+			var kind: Dictionary = data.get("artifacts", {}).get(String(art.get("type", "")), {})
+			return "I %s %s" % [possessive(_hero_name(data, hero_id)), String(kind.get("name", "artefakt")).to_lower()]
+	for hero_id in worn_map:
+		if worn_map[hero_id] == trophy_id:
+			return "Bärs av %s" % _hero_name(data, hero_id)
+	return ""
+
+
+## Frågan innan en trofé tas från en annan hjälte ("" när ingen fråga behövs: trofén är ledig, bärs redan av samma hjälte,
+## tas av eller sitter i en artefakt, där den inte går att flytta alls).
+static func move_question(data: Dictionary, worn_map: Dictionary, arts: Dictionary, hero_id: String, trophy_id: String) -> String:
+	if trophy_id == "":
+		return ""
+	for other in arts:
+		if String(arts[other].get("trophy", "")) == trophy_id:
+			return ""
+	for other in worn_map:
+		if worn_map[other] == trophy_id and other != hero_id:
+			return "Flytta %s från %s till %s?" % [data.traits[trophy_id].name, _hero_name(data, other), _hero_name(data, hero_id)]
+	return ""
+
+
+## Svensk genitiv: Brokk → Brokks, Tobias → Tobias.
+static func possessive(name: String) -> String:
+	return name if name.right(1).to_lower() in ["s", "x", "z"] else name + "s"
+
+
+static func _hero_name(data: Dictionary, hero_id: String) -> String:
+	return String(data.heroes[hero_id].name) if data.heroes.has(hero_id) else hero_id
 
 
 ## Det sällskapet bar när körningen slutade eller lägret stängdes sparas (byten i lägret varar).

@@ -158,6 +158,9 @@ func go_back() -> void:
 		if n is SettingsBox:
 			n._close()
 			return
+		if n is ConfirmBox:
+			n.go_back()
+			return
 		if n is HelpBox:
 			n._next()
 			return
