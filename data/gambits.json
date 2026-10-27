@@ -1,5 +1,5 @@
 {
-	"_doc": "Makronas klossar som man förtjänar (gambits, docs/plan/gambits.md). Ett fynd är en färdig rad (rows), och radens klossar blir profilens. Varje post: conds (MacroRunner.CONDITIONS, och action test_next för kedjan) eller subjects/targets (subjektens och målens klossar), name, rarity (start/common/elite/boss/chest), homes (fiendetyper i enemies.json där klossen kan falla), chest ({depth}), clue (Bibliotekets rykte), rows (radmallar i ordning: den första som någon i sällskapet kan utföra blir fyndet). thresholds: gränserna är egna klossar (id 'g_hp_below@50'), med egen rarity/homes/clue; {v} i namnet blir gränsen. I en radmall är ability en förmåga eller en sort (heal, protect, support, cleanse, damage, aoe, debuff, bonus), och value '@aura', '@ability' och '@omen' fylls i från förmågan. Siffrorna i 'drops' och 'slots' är vårt val.",
+	"_doc": "Makronas klossar som man förtjänar (gambits, docs/plan/gambits.md). Ett fynd är en färdig rad (rows), och radens klossar blir profilens. Varje post: conds (MacroRunner.CONDITIONS, och action test_next för kedjan) eller subjects/targets (subjektens och målens klossar), name, rarity (start/common/elite/boss/chest), homes (fiendetyper i enemies.json där klossen kan falla), chest ({depth}), clue (Bibliotekets rykte), rows (radmallar i ordning: den första som någon i sällskapet kan utföra blir fyndet). thresholds: gränserna är egna klossar (id 'g_hp_below@50'), med egen rarity/homes/clue; {v} i namnet blir gränsen. I en radmall är ability en förmåga eller en sort (heal, protect, support, cleanse, damage, aoe, debuff, bonus, revive), och value '@aura', '@ability' och '@omen' fylls i från förmågan. Siffrorna i 'drops' och 'slots' är vårt val. Varje lista slutar med en mall utan förmåga, och en mall får aldrig para ett villkor som matchar döda (Har stupat, Har väckts) med en handling som kräver ett levande mål (Gambits.row_problem).",
 	"drops": {
 		"home_common": 0.15,
 		"home_elite": 0.6,
@@ -8,9 +8,20 @@
 		"chest_home": 0.5,
 		"chest_any": 0.12
 	},
-	"slots": {"start": 3, "every_levels": 2, "max": 12},
-	"free_subjects": ["self", "any_ally", "any_enemy"],
-	"free_targets": ["that", "self"],
+	"slots": {
+		"start": 3,
+		"every_levels": 2,
+		"max": 12
+	},
+	"free_subjects": [
+		"self",
+		"any_ally",
+		"any_enemy"
+	],
+	"free_targets": [
+		"that",
+		"self"
+	],
 	"teach": {
 		"imma": "g_buffs",
 		"tove": "g_debuffs",
@@ -19,190 +30,661 @@
 		"sefir": "g_buffs"
 	},
 	"gambits": {
-		"g_lowest_hp": {"conds": ["lowest_hp"], "name": "Lägst liv", "rarity": "start",
+		"g_lowest_hp": {
+			"conds": [
+				"lowest_hp"
+			],
+			"name": "Lägst liv",
+			"rarity": "start",
 			"clue": "Det första Mäster Gorm lär ut: slå den som snart faller.",
-			"rows": [{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
-		"g_hp_below": {"conds": ["hp_below"], "name": "Liv under {v} %", "rarity": "common",
+			"rows": [
+				{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "that"}
+			]
+		},
+		"g_hp_below": {
+			"conds": [
+				"hp_below"
+			],
+			"name": "Liv under {v} %",
+			"rarity": "common",
 			"clue": "Varje edsvuren vet när en vän blöder.",
 			"thresholds": {
-				"10": {"rarity": "boss", "homes": ["bone_lich", "fallen_bishop", "mountain_king"],
-					"clue": "Bara en furste vet hur nära döden man kan låta någon gå."},
-				"20": {"rarity": "elite", "homes": ["bone_colossus", "black_lance", "ascetic"],
-					"clue": "Elitens kämpar väntar till sista stund med att rädda någon, sägs det."},
-				"30": {"homes": ["grave_priest", "penitent"], "clue": "Gravprästerna vet när en kropp börjar ge upp."},
-				"40": {"homes": ["bone_runner", "corrupted_deacon"], "clue": "Diakonerna helar sina egna när de är svaga."},
-				"50": {"homes": ["skeleton_warrior", "cultist"], "clue": "Skelettkrigarna vet när en vän har tagit hälften."},
-				"60": {"homes": ["mold_skeleton", "witch"], "clue": "Häxorna känner det första såret."},
-				"70": {"homes": ["rattler", "wraith"], "clue": "Skramlarna hör när rustningen får en buckla."},
-				"80": {"homes": ["ember_skeleton", "will_o_wisp"], "clue": "Irrblossen ser varje skråma."}
+				"10": {
+					"rarity": "boss",
+					"homes": [
+						"bone_lich",
+						"fallen_bishop",
+						"mountain_king"
+					],
+					"clue": "Bara en furste vet hur nära döden man kan låta någon gå."
+				},
+				"20": {
+					"rarity": "elite",
+					"homes": [
+						"bone_colossus",
+						"black_lance",
+						"ascetic"
+					],
+					"clue": "Elitens kämpar väntar till sista stund med att rädda någon, sägs det."
+				},
+				"30": {
+					"homes": [
+						"grave_priest",
+						"penitent"
+					],
+					"clue": "Gravprästerna vet när en kropp börjar ge upp."
+				},
+				"40": {
+					"homes": [
+						"bone_runner",
+						"corrupted_deacon"
+					],
+					"clue": "Diakonerna helar sina egna när de är svaga."
+				},
+				"50": {
+					"homes": [
+						"skeleton_warrior",
+						"cultist"
+					],
+					"clue": "Skelettkrigarna vet när en vän har tagit hälften."
+				},
+				"60": {
+					"homes": [
+						"mold_skeleton",
+						"witch"
+					],
+					"clue": "Häxorna känner det första såret."
+				},
+				"70": {
+					"homes": [
+						"rattler",
+						"wraith"
+					],
+					"clue": "Skramlarna hör när rustningen får en buckla."
+				},
+				"80": {
+					"homes": [
+						"ember_skeleton",
+						"will_o_wisp"
+					],
+					"clue": "Irrblossen ser varje skråma."
+				}
 			},
-			"rows": [{"subject": "any_ally", "cond": "hp_below", "action": "ability", "ability": "heal", "target": "that"},
+			"rows": [
+				{"subject": "any_ally", "cond": "hp_below", "action": "ability", "ability": "heal", "target": "that"},
 				{"subject": "any_ally", "cond": "hp_below", "action": "ability", "ability": "protect", "target": "that"},
 				{"subject": "any_ally", "cond": "hp_below", "action": "provoke"},
-				{"subject": "any_enemy", "cond": "hp_below", "action": "attack", "target": "that"}],
-			"sharp_rows": [{"subject": "any_enemy", "cond": "hp_below", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "hp_below", "action": "attack", "target": "that"}]},
-		"g_hp_above": {"conds": ["hp_above"], "name": "Liv över {v} %", "rarity": "common",
+				{"subject": "any_enemy", "cond": "hp_below", "action": "attack", "target": "that"}
+			],
+			"sharp_rows": [
+				{"subject": "any_enemy", "cond": "hp_below", "action": "ability", "ability": "damage", "target": "that"},
+				{"subject": "any_enemy", "cond": "hp_below", "action": "attack", "target": "that"}
+			]
+		},
+		"g_hp_above": {
+			"conds": [
+				"hp_above"
+			],
+			"name": "Liv över {v} %",
+			"rarity": "common",
 			"clue": "Skelettkrigarna går bara på den som ännu står stark, säger man.",
 			"thresholds": {
-				"90": {"rarity": "elite", "homes": ["grave_caller", "cult_overseer"],
-					"clue": "Gravväckaren slår först mot den som ännu är hel."},
-				"30": {"homes": ["fallen_knight", "ghoul"], "clue": "De fallna riddarna slutar aldrig slå så länge något står."},
-				"50": {"homes": ["skeleton_warrior", "cultist"], "clue": "Kultisterna går på den som ännu står stark."},
-				"70": {"homes": ["banner_bearer", "grave_warden"], "clue": "Fanbärarna ser vem som ännu inte är skadad."}
+				"90": {
+					"rarity": "elite",
+					"homes": [
+						"grave_caller",
+						"cult_overseer"
+					],
+					"clue": "Gravväckaren slår först mot den som ännu är hel."
+				},
+				"30": {
+					"homes": [
+						"fallen_knight",
+						"ghoul"
+					],
+					"clue": "De fallna riddarna slutar aldrig slå så länge något står."
+				},
+				"50": {
+					"homes": [
+						"skeleton_warrior",
+						"cultist"
+					],
+					"clue": "Kultisterna går på den som ännu står stark."
+				},
+				"70": {
+					"homes": [
+						"banner_bearer",
+						"grave_warden"
+					],
+					"clue": "Fanbärarna ser vem som ännu inte är skadad."
+				}
 			},
-			"rows": [{"subject": "any_enemy", "cond": "hp_above", "action": "ability", "ability": "debuff", "target": "that"},
-				{"subject": "any_enemy", "cond": "hp_above", "action": "attack", "target": "that"}]},
-		"g_alive": {"conds": ["is_alive"], "name": "Lever", "rarity": "common",
-			"homes": ["skeleton_warrior", "cultist", "rattler"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "hp_above", "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_enemy", "cond": "hp_above", "action": "attack", "target": "that"}
+			]
+		},
+		"g_alive": {
+			"conds": [
+				"is_alive"
+			],
+			"name": "Lever",
+			"rarity": "common",
+			"homes": [
+				"skeleton_warrior",
+				"cultist",
+				"rattler"
+			],
 			"clue": "Den enklaste frågan: står den kvar? Varje skelett vet svaret.",
-			"rows": [{"subject": "any_enemy", "cond": "is_alive", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}]},
-		"g_status": {"conds": ["has_status", "lacks_status"], "name": "Status", "rarity": "common",
-			"homes": ["grave_priest", "witch"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "is_alive", "action": "ability", "ability": "damage", "target": "that"},
+				{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}
+			]
+		},
+		"g_status": {
+			"conds": [
+				"has_status",
+				"lacks_status"
+			],
+			"name": "Status",
+			"rarity": "common",
+			"homes": [
+				"grave_priest",
+				"witch"
+			],
 			"clue": "Gravprästerna läser märkena på levande och döda.",
-			"rows": [{"subject": "any_enemy", "cond": "lacks_status", "value": "@aura", "action": "ability", "ability": "debuff", "target": "that"},
-				{"subject": "any_ally", "cond": "lacks_status", "value": "@aura", "action": "ability", "ability": "support", "target": "that"}]},
-		"g_immune": {"conds": ["not_immune", "is_immune"], "name": "Immun", "rarity": "common",
-			"homes": ["cultist", "rattler"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "lacks_status", "value": "@aura", "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_ally", "cond": "lacks_status", "value": "@aura", "action": "ability", "ability": "support", "target": "that"},
+				{"subject": "any_enemy", "cond": "has_status", "value": "blind", "action": "attack", "target": "that"}
+			]
+		},
+		"g_immune": {
+			"conds": [
+				"not_immune",
+				"is_immune"
+			],
+			"name": "Immun",
+			"rarity": "common",
+			"homes": [
+				"cultist",
+				"rattler"
+			],
 			"clue": "Kultisterna vet vem som går att såra och vem som inte gör det.",
-			"rows": [{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}]},
-		"g_debuffs": {"conds": ["has_debuff", "lacks_debuff"], "name": "Debuff", "rarity": "common",
-			"homes": ["mold_skeleton", "witch", "penitent"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}
+			]
+		},
+		"g_debuffs": {
+			"conds": [
+				"has_debuff",
+				"lacks_debuff"
+			],
+			"name": "Debuff",
+			"rarity": "common",
+			"homes": [
+				"mold_skeleton",
+				"witch",
+				"penitent"
+			],
 			"clue": "Mögelskeletten känner lukten av den som redan är förgiftad.",
-			"rows": [{"subject": "any_ally", "cond": "has_debuff", "action": "ability", "ability": "cleanse", "target": "that"},
+			"rows": [
+				{"subject": "any_ally", "cond": "has_debuff", "action": "ability", "ability": "cleanse", "target": "that"},
 				{"subject": "any_enemy", "cond": "lacks_debuff", "action": "ability", "ability": "debuff", "target": "that"},
-				{"subject": "any_enemy", "cond": "has_debuff", "action": "attack", "target": "that"}]},
-		"g_buffs": {"conds": ["has_buff", "lacks_buff"], "name": "Buff", "rarity": "common",
-			"homes": ["banner_bearer", "corrupted_deacon"],
+				{"subject": "any_enemy", "cond": "has_debuff", "action": "attack", "target": "that"}
+			]
+		},
+		"g_buffs": {
+			"conds": [
+				"has_buff",
+				"lacks_buff"
+			],
+			"name": "Buff",
+			"rarity": "common",
+			"homes": [
+				"banner_bearer",
+				"corrupted_deacon"
+			],
 			"clue": "Fanbärarna ser vem som bär en välsignelse.",
-			"rows": [{"subject": "any_enemy", "cond": "has_buff", "action": "attack", "target": "that"}]},
-		"g_speed": {"conds": ["highest_speed"], "name": "Högst Speed", "rarity": "common",
-			"homes": ["bone_runner", "will_o_wisp"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "has_buff", "action": "attack", "target": "that"}
+			]
+		},
+		"g_speed": {
+			"conds": [
+				"highest_speed"
+			],
+			"name": "Högst Speed",
+			"rarity": "common",
+			"homes": [
+				"bone_runner",
+				"will_o_wisp"
+			],
 			"clue": "Benspringarna vet vem som är snabbast i rummet.",
-			"rows": [{"subject": "any_enemy", "cond": "highest_speed", "action": "ability", "ability": "debuff", "target": "that"},
-				{"subject": "any_enemy", "cond": "highest_speed", "action": "attack", "target": "that"}]},
-		"g_defense_low": {"conds": ["lowest_defense"], "name": "Lägst Defense", "rarity": "common",
-			"homes": ["rattler", "skeleton_archer"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "highest_speed", "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_enemy", "cond": "highest_speed", "action": "attack", "target": "that"}
+			]
+		},
+		"g_defense_low": {
+			"conds": [
+				"lowest_defense"
+			],
+			"name": "Lägst Defense",
+			"rarity": "common",
+			"homes": [
+				"rattler",
+				"skeleton_archer"
+			],
 			"clue": "Skelettbågskyttarna siktar på springan i rustningen.",
-			"rows": [{"subject": "any_enemy", "cond": "lowest_defense", "action": "attack", "target": "that"}]},
-		"g_defense_high": {"conds": ["highest_defense"], "name": "Högst Defense", "rarity": "common",
-			"homes": ["coffin_bearer", "banner_bearer"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "lowest_defense", "action": "attack", "target": "that"}
+			]
+		},
+		"g_defense_high": {
+			"conds": [
+				"highest_defense"
+			],
+			"name": "Högst Defense",
+			"rarity": "common",
+			"homes": [
+				"coffin_bearer",
+				"banner_bearer"
+			],
 			"clue": "Kistbärarna, som själva håller garden, vet vem som står hårdast.",
-			"rows": [{"subject": "any_enemy", "cond": "highest_defense", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "highest_defense", "action": "attack", "target": "that"}]},
-		"g_attack_high": {"conds": ["highest_attack"], "name": "Högst Attack", "rarity": "common",
-			"homes": ["grave_warden", "fallen_knight"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "highest_defense", "action": "ability", "ability": "damage", "target": "that"},
+				{"subject": "any_enemy", "cond": "highest_defense", "action": "attack", "target": "that"}
+			]
+		},
+		"g_attack_high": {
+			"conds": [
+				"highest_attack"
+			],
+			"name": "Högst Attack",
+			"rarity": "common",
+			"homes": [
+				"grave_warden",
+				"fallen_knight"
+			],
 			"clue": "Gravväktarna, som tar emot slagen, vet vem som slår hårdast.",
-			"rows": [{"subject": "any_enemy", "cond": "highest_attack", "action": "ability", "ability": "debuff", "target": "that"},
-				{"subject": "any_enemy", "cond": "highest_attack", "action": "attack", "target": "that"}]},
-		"g_trait": {"conds": ["has_trait", "lacks_trait"], "name": "Egenskap", "rarity": "common",
-			"homes": ["ember_skeleton", "mirror_warden"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "highest_attack", "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_enemy", "cond": "highest_attack", "action": "attack", "target": "that"}
+			]
+		},
+		"g_trait": {
+			"conds": [
+				"has_trait",
+				"lacks_trait"
+			],
+			"name": "Egenskap",
+			"rarity": "common",
+			"homes": [
+				"ember_skeleton",
+				"mirror_warden"
+			],
 			"clue": "Glödskeletten känner igen ett ben som är förbannat.",
-			"rows": [{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "attack", "target": "that"}]},
-		"g_top": {"conds": ["top_of_timeline", "not_top_of_timeline"], "name": "Först i tur", "rarity": "common",
-			"homes": ["fallen_knight", "ghoul"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "ability", "ability": "damage", "target": "that"},
+				{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "attack", "target": "that"}
+			]
+		},
+		"g_top": {
+			"conds": [
+				"top_of_timeline",
+				"not_top_of_timeline"
+			],
+			"name": "Först i tur",
+			"rarity": "common",
+			"homes": [
+				"fallen_knight",
+				"ghoul"
+			],
 			"clue": "De fallna riddarna vet vem som rör sig först.",
-			"rows": [{"subject": "any_enemy", "cond": "not_top_of_timeline", "action": "ability", "ability": "debuff", "target": "that"},
-				{"subject": "any_enemy", "cond": "not_top_of_timeline", "action": "attack", "target": "that"}]},
-		"g_bottom": {"conds": ["bottom_of_timeline", "not_bottom_of_timeline"], "name": "Sist i tur", "rarity": "common",
-			"homes": ["penitent", "mold_skeleton"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "not_top_of_timeline", "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_enemy", "cond": "not_top_of_timeline", "action": "attack", "target": "that"}
+			]
+		},
+		"g_bottom": {
+			"conds": [
+				"bottom_of_timeline",
+				"not_bottom_of_timeline"
+			],
+			"name": "Sist i tur",
+			"rarity": "common",
+			"homes": [
+				"penitent",
+				"mold_skeleton"
+			],
 			"clue": "Botgörarna väntar alltid sist, och vet vem mer som gör det.",
-			"rows": [{"subject": "any_ally", "cond": "bottom_of_timeline", "action": "ability", "ability": "support", "target": "that"},
-				{"subject": "any_enemy", "cond": "bottom_of_timeline", "action": "attack", "target": "that"}]},
-		"g_next": {"conds": ["next_in_turn"], "name": "Näst i tur", "rarity": "common",
-			"homes": ["bone_runner", "cult_zealot"],
+			"rows": [
+				{"subject": "any_ally", "cond": "bottom_of_timeline", "action": "ability", "ability": "support", "target": "that"},
+				{"subject": "any_enemy", "cond": "bottom_of_timeline", "action": "attack", "target": "that"}
+			]
+		},
+		"g_next": {
+			"conds": [
+				"next_in_turn"
+			],
+			"name": "Näst i tur",
+			"rarity": "common",
+			"homes": [
+				"bone_runner",
+				"cult_zealot"
+			],
 			"clue": "Blodsvurna vet vem som står på tur härnäst, och hinner före.",
-			"rows": [{"subject": "any_ally", "cond": "next_in_turn", "action": "ability", "ability": "support", "target": "that"},
+			"rows": [
+				{"subject": "any_ally", "cond": "next_in_turn", "action": "ability", "ability": "support", "target": "that"},
 				{"subject": "any_enemy", "cond": "next_in_turn", "action": "ability", "ability": "debuff", "target": "that"},
-				{"subject": "any_enemy", "cond": "next_in_turn", "action": "attack", "target": "that"}]},
-		"g_weak": {"conds": ["weak_to"], "name": "Svag mot förmågan", "rarity": "common",
-			"homes": ["wraith", "church_grim"],
+				{"subject": "any_enemy", "cond": "next_in_turn", "action": "attack", "target": "that"}
+			]
+		},
+		"g_weak": {
+			"conds": [
+				"weak_to"
+			],
+			"name": "Svag mot förmågan",
+			"rarity": "common",
+			"homes": [
+				"wraith",
+				"church_grim"
+			],
 			"clue": "Gastarna vet vilket slag som biter hårdast på den som redan är märkt.",
-			"rows": [{"subject": "any_enemy", "cond": "weak_to", "value": "@ability", "action": "ability", "ability": "bonus", "target": "that"}]},
-		"g_heal": {"conds": ["intends_heal"], "name": "Tänker hela", "rarity": "common",
-			"homes": ["corrupted_deacon", "grave_priest"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "weak_to", "value": "@ability", "action": "ability", "ability": "bonus", "target": "that"},
+				{"subject": "any_enemy", "cond": "weak_to", "value": "holy_smite", "action": "attack", "target": "that"}
+			]
+		},
+		"g_heal": {
+			"conds": [
+				"intends_heal"
+			],
+			"name": "Tänker hela",
+			"rarity": "common",
+			"homes": [
+				"corrupted_deacon",
+				"grave_priest"
+			],
 			"clue": "I kapellet säger man att diakonerna förråder sig innan de helar.",
-			"rows": [{"subject": "any_enemy", "cond": "intends_heal", "action": "ability", "ability": "torun_ready"},
+			"rows": [
+				{"subject": "any_enemy", "cond": "intends_heal", "action": "ability", "ability": "torun_ready"},
 				{"subject": "any_enemy", "cond": "intends_heal", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "intends_heal", "action": "attack", "target": "that"}]},
-		"g_charges": {"conds": ["has_charges"], "name": "Charges kvar", "rarity": "common",
-			"homes": ["will_o_wisp", "cult_zealot"],
+				{"subject": "any_enemy", "cond": "intends_heal", "action": "attack", "target": "that"}
+			]
+		},
+		"g_charges": {
+			"conds": [
+				"has_charges"
+			],
+			"name": "Charges kvar",
+			"rarity": "common",
+			"homes": [
+				"will_o_wisp",
+				"cult_zealot"
+			],
 			"clue": "Irrblossen räknar varje gnista som finns kvar.",
-			"rows": [{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "ability", "ability": "support", "target": "that"},
-				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "ability", "ability": "heal", "target": "that"}]},
-		"g_silenced": {"conds": ["is_silenced"], "name": "Tystad", "rarity": "elite",
-			"homes": ["inquisitor", "witch"],
+			"rows": [
+				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "ability", "ability": "support", "target": "that"},
+				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "ability", "ability": "heal", "target": "that"},
+				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "ability", "ability": "aoe"},
+				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "ability", "ability": "damage", "target": "random_enemy"},
+				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "defend"}
+			]
+		},
+		"g_silenced": {
+			"conds": [
+				"is_silenced"
+			],
+			"name": "Tystad",
+			"rarity": "elite",
+			"homes": [
+				"inquisitor",
+				"witch"
+			],
 			"clue": "Inkvisitorn vet när någon inte längre kan tala.",
-			"rows": [{"subject": "any_ally", "cond": "is_silenced", "action": "ability", "ability": "cleanse", "target": "that"},
-				{"subject": "any_ally", "cond": "is_silenced", "action": "provoke"}]},
-		"g_own_turn": {"conds": ["own_turn"], "name": "På sin tur …", "rarity": "elite",
-			"homes": ["bone_colossus", "black_lance"],
+			"rows": [
+				{"subject": "any_ally", "cond": "is_silenced", "action": "ability", "ability": "cleanse", "target": "that"},
+				{"subject": "any_ally", "cond": "is_silenced", "action": "provoke"}
+			]
+		},
+		"g_own_turn": {
+			"conds": [
+				"own_turn"
+			],
+			"name": "På sin tur …",
+			"rarity": "elite",
+			"homes": [
+				"bone_colossus",
+				"black_lance"
+			],
 			"clue": "Benkolossen vet vad som ska göras i första turen.",
-			"rows": [{"subject": "self", "cond": "own_turn", "value": 1, "action": "ability", "ability": "support", "target": "that"},
-				{"subject": "self", "cond": "own_turn", "value": 1, "action": "defend"}]},
-		"g_revives": {"conds": ["revives_at_least"], "name": "Har väckts", "rarity": "elite",
-			"homes": ["grave_caller", "bone_scribe"],
+			"rows": [
+				{"subject": "self", "cond": "own_turn", "value": 1, "action": "ability", "ability": "support", "target": "that"},
+				{"subject": "self", "cond": "own_turn", "value": 1, "action": "defend"}
+			]
+		},
+		"g_revives": {
+			"conds": [
+				"revives_at_least"
+			],
+			"name": "Har väckts",
+			"rarity": "elite",
+			"homes": [
+				"grave_caller",
+				"bone_scribe"
+			],
 			"clue": "Gravväckaren räknar hur många gånger någon har kommit tillbaka.",
-			"rows": [{"subject": "any_enemy", "cond": "revives_at_least", "value": 1, "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "revives_at_least", "value": 1, "action": "attack", "target": "that"}]},
-		"g_deaths": {"conds": ["deaths_at_least"], "name": "Har stupat", "rarity": "boss",
-			"homes": ["bell_ringer", "fallen_bishop"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "revives_at_least", "value": 1, "action": "ability", "ability": "aoe"},
+				{"subject": "any_enemy", "cond": "revives_at_least", "value": 1, "action": "defend"}
+			]
+		},
+		"g_deaths": {
+			"conds": [
+				"deaths_at_least"
+			],
+			"name": "Har stupat",
+			"rarity": "boss",
+			"homes": [
+				"bell_ringer",
+				"fallen_bishop"
+			],
 			"clue": "Det sägs att Klockaren vet när en allierad faller.",
-			"rows": [{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "ability", "ability": "protect", "target": "that"},
-				{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "ability", "ability": "heal", "target": "that"},
-				{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "provoke"}]},
-		"g_charging": {"conds": ["is_charging", "charge_left_at_most"], "name": "Laddar", "rarity": "boss",
-			"homes": ["bone_lich", "fallen_bishop", "grave_mist"],
+			"rows": [
+				{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "ability", "ability": "revive", "target": "that"},
+				{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "ability", "ability": "protect", "target": "self"},
+				{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "provoke"}
+			]
+		},
+		"g_charging": {
+			"conds": [
+				"is_charging",
+				"charge_left_at_most"
+			],
+			"name": "Laddar",
+			"rarity": "boss",
+			"homes": [
+				"bone_lich",
+				"fallen_bishop",
+				"grave_mist"
+			],
 			"clue": "Benfursten själv vet när en dom är på väg.",
-			"rows": [{"subject": "any_enemy", "cond": "is_charging", "action": "ability", "ability": "torun_ready"},
+			"rows": [
+				{"subject": "any_enemy", "cond": "is_charging", "action": "ability", "ability": "torun_ready"},
 				{"subject": "any_enemy", "cond": "is_charging", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "is_charging", "action": "defend"}]},
-		"g_channel": {"conds": ["is_channeling", "is_charge_target"], "name": "Bär laddningen", "rarity": "boss",
-			"homes": ["corrupted_abbess", "inquisitor"],
+				{"subject": "any_enemy", "cond": "is_charging", "action": "defend"}
+			]
+		},
+		"g_channel": {
+			"conds": [
+				"is_channeling",
+				"is_charge_target"
+			],
+			"name": "Bär laddningen",
+			"rarity": "boss",
+			"homes": [
+				"corrupted_abbess",
+				"inquisitor"
+			],
 			"clue": "Abbedissan vet vem som bär kören, och vem domen faller över.",
-			"rows": [{"subject": "any_enemy", "cond": "is_channeling", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "is_channeling", "action": "attack", "target": "that"}]},
-		"g_artifact": {"conds": ["has_artifact", "lacks_artifact"], "name": "Artefakt", "rarity": "chest",
-			"chest": {"depth": 2},
+			"rows": [
+				{"subject": "any_enemy", "cond": "is_channeling", "action": "ability", "ability": "damage", "target": "that"},
+				{"subject": "any_enemy", "cond": "is_channeling", "action": "attack", "target": "that"}
+			]
+		},
+		"g_artifact": {
+			"conds": [
+				"has_artifact",
+				"lacks_artifact"
+			],
+			"name": "Artefakt",
+			"rarity": "chest",
+			"chest": {
+				"depth": 2
+			},
 			"clue": "Smeder har gömt sina anteckningar i kistorna från djup 2.",
-			"rows": [{"subject": "self", "cond": "has_artifact", "value": "shield", "action": "defend"}]},
-		"g_omen": {"conds": ["omen_is", "next_ability_echoes", "free_ability_unused"], "name": "Djupets tecken", "rarity": "chest",
-			"chest": {"depth": 1},
+			"rows": [
+				{"subject": "self", "cond": "has_artifact", "value": "shield", "action": "defend"}
+			]
+		},
+		"g_omen": {
+			"conds": [
+				"omen_is",
+				"next_ability_echoes",
+				"free_ability_unused"
+			],
+			"name": "Djupets tecken",
+			"rarity": "chest",
+			"chest": {
+				"depth": 1
+			},
 			"clue": "Pilgrimer lämnar tydningar av tecknen i kistorna.",
-			"rows": [{"subject": "any_enemy", "cond": "omen_is", "value": "@omen", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "any_enemy", "cond": "omen_is", "value": "@omen", "action": "attack", "target": "that"}]},
-		"g_chain": {"conds": ["test_next"], "name": "Kedja", "rarity": "elite",
-			"homes": ["bone_scribe", "cult_overseer"],
+			"rows": [
+				{"subject": "any_enemy", "cond": "omen_is", "value": "@omen", "action": "ability", "ability": "damage", "target": "that"},
+				{"subject": "any_enemy", "cond": "omen_is", "value": "@omen", "action": "attack", "target": "that"}
+			]
+		},
+		"g_chain": {
+			"conds": [
+				"test_next"
+			],
+			"name": "Kedja",
+			"rarity": "elite",
+			"homes": [
+				"bone_scribe",
+				"cult_overseer"
+			],
 			"clue": "Benskrivaren tänker i två led, och kan lära dig detsamma.",
-			"rows": [{"subject": "any_ally", "cond": "hp_below", "value": 80, "action": "test_next"}]},
-		"g_ally_n": {"subjects": ["ally_1", "ally_2", "ally_3", "ally_4"], "targets": ["ally_1", "ally_2", "ally_3", "ally_4"],
-			"name": "Allierad 1–4", "rarity": "common", "homes": ["grave_priest", "banner_bearer"],
+			"rows": [
+				{"subject": "any_ally", "cond": "hp_below", "value": 80, "action": "test_next"}
+			]
+		},
+		"g_ally_n": {
+			"subjects": [
+				"ally_1",
+				"ally_2",
+				"ally_3",
+				"ally_4"
+			],
+			"targets": [
+				"ally_1",
+				"ally_2",
+				"ally_3",
+				"ally_4"
+			],
+			"name": "Allierad 1–4",
+			"rarity": "common",
+			"homes": [
+				"grave_priest",
+				"banner_bearer"
+			],
 			"clue": "Prästerna vakar över en enda själ i taget.",
-			"rows": [{"subject": "ally_1", "cond": "hp_below", "value": 50, "action": "ability", "ability": "heal", "target": "that"},
+			"rows": [
+				{"subject": "ally_1", "cond": "hp_below", "value": 50, "action": "ability", "ability": "heal", "target": "that"},
 				{"subject": "ally_1", "cond": "hp_below", "value": 50, "action": "ability", "ability": "protect", "target": "that"},
-				{"subject": "ally_1", "cond": "hp_below", "value": 50, "action": "provoke"}]},
-		"g_enemy_n": {"subjects": ["enemy_1", "enemy_2", "enemy_3", "enemy_4", "enemy_5", "enemy_6"],
-			"targets": ["enemy_1", "enemy_2", "enemy_3", "enemy_4", "enemy_5", "enemy_6"],
-			"name": "Fiende 1–6", "rarity": "common", "homes": ["skeleton_archer", "wraith"],
+				{"subject": "ally_1", "cond": "hp_below", "value": 50, "action": "provoke"}
+			]
+		},
+		"g_enemy_n": {
+			"subjects": [
+				"enemy_1",
+				"enemy_2",
+				"enemy_3",
+				"enemy_4",
+				"enemy_5",
+				"enemy_6"
+			],
+			"targets": [
+				"enemy_1",
+				"enemy_2",
+				"enemy_3",
+				"enemy_4",
+				"enemy_5",
+				"enemy_6"
+			],
+			"name": "Fiende 1–6",
+			"rarity": "common",
+			"homes": [
+				"skeleton_archer",
+				"wraith"
+			],
 			"clue": "Bågskyttarna väljer ett mål och släpper det aldrig.",
-			"rows": [{"subject": "enemy_1", "cond": "lowest_hp", "action": "ability", "ability": "damage", "target": "that"},
-				{"subject": "enemy_1", "cond": "lowest_hp", "action": "attack", "target": "that"}]},
-		"g_all_enemies": {"subjects": ["all_enemies"], "name": "Alla fiender", "rarity": "common",
-			"homes": ["will_o_wisp", "witch", "ember_skeleton"],
+			"rows": [
+				{"subject": "enemy_1", "cond": "lowest_hp", "action": "ability", "ability": "damage", "target": "that"},
+				{"subject": "enemy_1", "cond": "lowest_hp", "action": "attack", "target": "that"}
+			]
+		},
+		"g_all_enemies": {
+			"subjects": [
+				"all_enemies"
+			],
+			"name": "Alla fiender",
+			"rarity": "common",
+			"homes": [
+				"will_o_wisp",
+				"witch",
+				"ember_skeleton"
+			],
 			"clue": "Glödskeletten bränner hela led på en gång.",
-			"rows": [{"subject": "all_enemies", "cond": "hp_above", "value": 50, "action": "ability", "ability": "aoe", "target": "that"},
-				{"subject": "all_enemies", "cond": "hp_above", "value": 50, "action": "attack", "target": "that"}]},
-		"g_all_allies": {"subjects": ["all_allies"], "name": "Alla allierade", "rarity": "common",
-			"homes": ["banner_bearer", "corrupted_deacon"],
+			"rows": [
+				{"subject": "all_enemies", "cond": "hp_above", "value": 50, "action": "ability", "ability": "aoe", "target": "that"},
+				{"subject": "all_enemies", "cond": "hp_above", "value": 50, "action": "attack", "target": "that"}
+			]
+		},
+		"g_all_allies": {
+			"subjects": [
+				"all_allies"
+			],
+			"name": "Alla allierade",
+			"rarity": "common",
+			"homes": [
+				"banner_bearer",
+				"corrupted_deacon"
+			],
 			"clue": "Fanbäraren ser hela ledet på en gång.",
-			"rows": [{"subject": "all_allies", "cond": "hp_above", "value": 70, "action": "ability", "ability": "support", "target": "that"},
-				{"subject": "all_allies", "cond": "hp_above", "value": 70, "action": "provoke"}]},
-		"g_random": {"targets": ["random_enemy", "random_ally"], "name": "Slumpvis", "rarity": "common",
-			"homes": ["rattler", "ghoul"],
+			"rows": [
+				{"subject": "all_allies", "cond": "hp_above", "value": 70, "action": "ability", "ability": "support", "target": "that"},
+				{"subject": "all_allies", "cond": "hp_above", "value": 70, "action": "provoke"}
+			]
+		},
+		"g_random": {
+			"targets": [
+				"random_enemy",
+				"random_ally"
+			],
+			"name": "Slumpvis",
+			"rarity": "common",
+			"homes": [
+				"rattler",
+				"ghoul"
+			],
 			"clue": "Likätarna biter i vad som helst.",
-			"rows": [{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "debuff", "target": "random_enemy"},
-				{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "random_enemy"}]}
+			"rows": [
+				{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "debuff", "target": "random_enemy"},
+				{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "random_enemy"}
+			]
+		}
 	}
 }

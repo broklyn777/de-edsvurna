@@ -168,6 +168,34 @@ func test_make_row_picks_a_hero_who_can_do_it() -> void:
 					"%s: raden lär inte ut klossen (%s)" % [id, MacroRunner.describe_line(data, row.line)])
 
 
+func test_every_template_can_do_some_good() -> void:
+	# Varje mall, byggd för varje hjälte ensam och för hela sällskapet: målet och handlingen går ihop med villkoret, och
+	# varje lista slutar med en mall utan förmåga, så att ett fynd alltid blir en rad.
+	var rng := RandomNumberGenerator.new()
+	var all_heroes: Array = data.heroes.keys()
+	for id in Gambits.blocks(data):
+		var e := Gambits.entry(data, id)
+		var rows: Array = e.rows
+		assert_true(rows[rows.size() - 1].action != "ability", "%s: den sista mallen behöver ingen förmåga" % id)
+		for t in rows:
+			if t.action != "ability" and t.get("target", "that") == "that":
+				assert_eq(Gambits.row_problem(data, Gambits._fill(data, e, t, "", rng, "paladin")), "", "%s: %s" % [id, t])
+		for party in all_heroes.map(func(h: String) -> Array: return [h]) + [all_heroes]:
+			var row := Gambits.make_row(data, id, party, rng)
+			assert_true(not row.is_empty(), "%s med %s" % [id, party])
+			if row.is_empty():
+				continue
+			assert_eq(Gambits.row_problem(data, row.line), "", "%s: %s" % [id, MacroRunner.describe_line(data, row.line)])
+			if row.line.action == "ability":
+				assert_true(data.heroes[row.hero].abilities.has(row.line.ability), "%s: %s har inte förmågan" % [id, row.hero])
+	# Har stupat ger aldrig en sköld på den som har fallit.
+	var r := Gambits.make_row(data, "g_deaths", ["paladin"], rng)
+	assert_true(r.line.get("target", "") == "self" or r.line.action == "provoke", MacroRunner.describe_line(data, r.line))
+	assert_true(Gambits.row_problem(data, {"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "ability",
+			"ability": "holy_shield", "target": "that"}) != "")
+	assert_true(Gambits.row_problem(data, _line("lowest_hp", 0, "attack", "any_ally")) != "", "anfall på en allierad")
+
+
 func test_new_conditions_work_in_battle() -> void:
 	var sim := CombatSim.create(data, "crypt_1", 3, ["paladin", "imma"])
 	sim.begin()

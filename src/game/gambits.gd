@@ -274,7 +274,7 @@ static func clue(data: Dictionary, id: String) -> String:
 
 ## Fyndet (Gambits 2): en färdig rad för klossen. Radmallarna prövas i ordning; den första som någon hjälte i sällskapet
 ## kan utföra blir raden, och fyndet väljer den hjälten (för en förmåga den som har den, för Anfall någon, för Försvara och
-## Provocera den med högst Defense). Ingen mall passar: den sista mallen med Anfall, hos den första hjälten.
+## Provocera den med högst Defense). En mall vars rad aldrig kan göra nytta hoppas över (row_problem).
 ## Returnerar {line, hero, block} eller {} om klossen saknas.
 static func make_row(data: Dictionary, block_id: String, party: Array, rng: RandomNumberGenerator) -> Dictionary:
 	var e := entry(data, block_id)
@@ -287,10 +287,10 @@ static func make_row(data: Dictionary, block_id: String, party: Array, rng: Rand
 			var h: Dictionary = data.heroes.get(hero_id, {})
 			if t.action == "ability":
 				for ab in h.get("abilities", []):
-					if ability_fits(data, ab, String(t.ability)):
+					if ability_fits(data, ab, String(t.ability)) and row_problem(data, _fill(data, e, t, ab, rng, hero_id)) == "":
 						options.append([hero_id, ab])
 						break
-			elif data.heroes.has(hero_id):
+			elif data.heroes.has(hero_id) and row_problem(data, _fill(data, e, t, "", rng, hero_id)) == "":
 				options.append([hero_id, ""])
 		if options.is_empty():
 			continue
@@ -299,12 +299,46 @@ static func make_row(data: Dictionary, block_id: String, party: Array, rng: Rand
 			options.sort_custom(func(a: Array, b: Array) -> bool: return _base_def(data, a[0]) > _base_def(data, b[0]))
 			pick = options[0]
 		return {"line": _fill(data, e, t, pick[1], rng, pick[0]), "hero": pick[0], "block": block_id}
-	if rows.is_empty():
-		return {}
-	var last: Dictionary = rows[rows.size() - 1].duplicate()
-	last.action = "attack"
-	last.target = "that"
-	return {"line": _fill(data, e, last, "", rng, party[0]), "hero": party[0], "block": block_id}
+	return {}  # varje lista slutar med en mall utan förmåga (test_gambits), så det här händer inte
+
+
+## Villkor som också matchar döda (test_condition prövar dem före "lever").
+const DEAD_CONDS := ["deaths_at_least", "revives_at_least"]
+
+
+## Kan raden någonsin göra nytta? "" om den kan, annars varför inte: handlingens mål måste gå ihop med subjektet och villkoret
+## (ett anfall på en allierad, en sköld på någon som har stupat, en helning på en fiende går aldrig att utföra).
+static func row_problem(data: Dictionary, line: Dictionary) -> String:
+	var action := String(line.get("action", ""))
+	if not action in ["attack", "ability"]:
+		return ""
+	var subject := String(line.get("subject", ""))
+	var enemy_side := subject == "any_enemy" or subject == "all_enemies" or subject.begins_with("enemy_")
+	var dead := DEAD_CONDS.has(String(line.get("cond", "")))
+	var target := String(line.get("target", "that"))
+	var want := "enemy"
+	if action == "ability":
+		want = String(data.abilities.get(line.get("ability", ""), {}).get("target", "self"))
+		if not want in ["enemy", "ally", "dead_ally"]:
+			return ""  # träffar alla eller hjälten själv: inget mål
+	if want == "dead_ally":
+		return "" if target == "that" and not enemy_side and dead else "återupplivar bara den som matchade bland de stupade"
+	match target:
+		"that":
+			if dead:
+				return "villkoret kan matcha en stupad, och handlingen kräver ett levande mål"
+			if enemy_side != (want == "enemy"):
+				return "den som matchade står på fel sida för handlingen"
+		"self", "random_ally":
+			if want == "enemy":
+				return "handlingen kräver en fiende"
+		"random_enemy":
+			if want != "enemy":
+				return "handlingen kräver en allierad"
+		_:
+			if target.begins_with("ally_") == (want == "enemy"):
+				return "målet står på fel sida för handlingen"
+	return ""
 
 
 static func _base_def(data: Dictionary, hero_id: String) -> float:
@@ -348,7 +382,7 @@ static func _first_aura(data: Dictionary, ability: String) -> String:
 
 
 ## Passar förmågan radmallens sort? Sorten är ett förmåge-id eller heal, protect, support, cleanse, damage, aoe, debuff,
-## bonus.
+## bonus, revive.
 static func ability_fits(data: Dictionary, ability: String, kind: String) -> bool:
 	if ability == kind:
 		return true
@@ -377,6 +411,8 @@ static func ability_fits(data: Dictionary, ability: String, kind: String) -> boo
 			return to_enemy and auras.any(func(a: String) -> bool: return data.auras.get(a, {}).get("type", "") != "buff")
 		"bonus":
 			return to_enemy and ab.has("bonus_vs")
+		"revive":
+			return target == "dead_ally"
 	return false
 
 

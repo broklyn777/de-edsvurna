@@ -17,7 +17,10 @@ Biblioteket) gäller som förut.
    för Försvara och Provocera den med högst Defense. Kan ingen läka blir "liv < 30 %" en Helig sköld hos Paladinen, och
    kan ingen skydda blir det Provocera. En mall kan ange en förmåga eller en sort (heal, protect, support, cleanse, damage,
    aoe, debuff, bonus, `Gambits.ability_fits`). *Vårt val*: sorterna läses ur förmågornas effekter, så att nya hjältar
-   passar in utan ny data.
+   passar in utan ny data. **Varje rad ska kunna göra nytta** (`Gambits.row_problem`, testet
+   `test_every_template_can_do_some_good`): målet och handlingen ska gå ihop med subjektet och villkoret. Har stupat och Har
+   väckts matchar också döda, så de paras aldrig med en handling på den som matchade. Har stupat ger en återupplivning om
+   någon har en, annars en sköld på sig själv eller Provocera. Varje lista slutar med en mall utan förmåga.
 2. **Segerskärmen** visar raden i ett guldkort, "NY RAD FÖR MAKRONA", med knappen **LÄGG TILL HOS <HJÄLTE>**. Ett tryck
    lägger raden överst i hjältens makro (`Run.add_row`, samma väg som Spara som order och makroförslagen). Skattkammaren
    skriver raden i rummets text. Alla fynd sparas i **FUNNA RADER** på gambitsidan, där varje rad kan läggas till hos sin
