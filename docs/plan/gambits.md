@@ -4,6 +4,36 @@ VD 2026-10-27: "kör". Förslaget kommer från Claude-chatten (`docs/ideer/claud
 med Final Fantasy XII som förebild. Siralim är en verktygslåda: där har man alla villkor från start, och här förtjänar man dem.
 I spelets text heter det fortfarande **Makron**. VD har inte bestämt namnet, och "gambit" används bara i koden, datan och den här planen.
 
+## Gambits 3: en gång per strid, avsikter och nya hem
+
+VD 2026-10-27 ("kör"), efter 0.30.51.
+
+1. **En gång per strid** (`once` på raden, som PÅ/AV). Brickan under PÅ/AV på kortet växlar mellan VARJE GÅNG och 1 / STRID
+   (`toggle_once`). Striden minns körda rader i `CombatSim.macro_once` (nyckel `MacroRunner.once_key`: hjälten och radens
+   innehåll). `MacroRunner.decide` registrerar raden när den väljs, utom vid en titt (`peek`, Spara som order). I en kedja
+   räknas varje rad med brickan. Förklaringsloggen skriver "Rad N har redan körts den här striden". Exempel: Imma skjuter
+   Rökpil en gång per strid och sparar sina Charges. *Vårt val*: FF XII har ingen sådan bricka, men den löser det vanligaste
+   felet i botarnas makron, en buff eller debuff som läggs om och om igen.
+2. **Villkor som läser fiendernas avsikter** (gruppen Avsikt i radeditorn, tillsammans med Tänker hela). Avsikten syns
+   redan över fienden, så villkoren läser bara det spelaren ser:
+   - `intends_attack` "tänker anfalla" och `intends_attack_on` "tänker anfalla denna hjälte/Paladinen …" (värdet är `me`
+     eller en hjälte), kloss **Tänker anfalla**.
+   - `intends_attack_low` "tänker anfalla någon med liv < 30/50 %", kloss **Tänker anfalla den svage**.
+   - `intends_aoe` "tänker träffa alla", kloss **Tänker träffa alla** (elit).
+   - `leader_charging` "är bossen eller en elit och laddar sitt stora slag", kloss **Bossen laddar** (elit).
+   - `intends_lethal` "tänker fälla någon" (avsiktens väntade skada, `CombatSim.expected_damage`, når målets liv och
+     Barriär), mästarkloss **Tänker fälla någon**.
+   *Vårt val*: en avsikt som är en helning räknas aldrig som ett anfall (`_intent_victims`).
+3. **Hem i Sidenlunden och Trollberget**: alla klossar med hem har nu också ett hem bland spindlarna och ett bland trollen,
+   med egna rykten (`home_clues`, Biblioteket visar alla, `Gambits.clues`). De skarpa gränserna finns hos Vävmodern,
+   Sömnvävaren och Gråluva, och elitklossarna hos Strypvävaren, Brom och Gråluva.
+4. **Mästarklossar (klass III, rarity `master`)** finns bara hos Realmernas bossar Vävmodern och Bergakungen, 50 % av gångerna
+   (`home_master`):
+   - **Tänker fälla någon** ("Om någon fiende tänker fälla någon → Provocera").
+   - **Förbered kamratens slag** (`ally_bonus_missing`): fienden saknar en status som en levande allierad har en förmåga som
+     slår hårdare mot (`bonus_vs`). Till exempel lägger Imma Rökpil på den som inte är Förblindad, så att Paladinens
+     Rättfärdigt slag biter.
+
 ## Gambits 2: legoklossar och funna rader
 
 VD 2026-10-27 ("kör"): **en makrorad består av legoklossar, och man bygger upp makrosystemet från noll genom att hitta hela
@@ -46,8 +76,10 @@ Biblioteket) gäller som förut.
    fiende har en buff → Anfall". Följeslagaren lär också ut klossarna i sina startrader (`Run.starter_lines`), så att en ny
    profils följeslagare gör samma sak som förut. *Vårt val*: VD vill att makrona byggs från noll, men en följeslagare som
    står stilla för att hennes egen startrad är låst är inte roligt.
-7. **Radeditorn visar bara ägda klossar** och sist de låsta villkoren, subjekten och målen, en gång var med sitt rykte.
-   En ny profil ser alltså bara Lägst liv bland villkoren, inte tio rader med liv.
+7. **Radeditorn visar bara ägda klossar.** En ny profil ser alltså bara Lägst liv bland villkoren, inte tio rader med liv.
+   VD 2026-10-27 (Gambits 3): låsta klossar syns inte alls i editorn, inte ens Pröva nästa rad ("Det får komma
+   överraskningar … annars blir det övermäktigt"). En rad i ett gammalt makro med en oägd kloss står kvar som ett låst kort
+   på gambitsidan. Biblioteket och ryktena är oförändrade tills VD har bestämt.
 8. **Gamla profiler förlorar ingenting**. Den här versionen (`gambit_version` 2) behandlar profiler från före gambits och
    från 0.30.50 som gamla: allt i deras makron räknas som ägt, och för ett villkor man äger räknas alla gränser som ägda
    (familjens id, `g_hp_below`, äger alla gränser, `Gambits.has`). De startvillkor som 0.30.50 gav (Liv under …, Lever)

@@ -601,10 +601,16 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   profiler (`gambit_version` < 2, också 0.30.50) äger allt i sina makron med alla gränser för sina villkor (familjens id
   äger alla, `Gambits.has`) och får minst lika många platser som det längsta (`setup_gambits`, `gambit_slot_floor`).
   Gambitsidan: stora kort (en sjättedel av höjden, `Card` i macro_screen), håll kvar tummen och dra, vibration när kortet
-  släpps, PÅ/AV, låsta kort med rykte; radeditorn visar bara ägda klossar och de låsta sist, en gång var. Biblioteket:
+  släpps, PÅ/AV, låsta kort med rykte; radeditorn visar bara ägda klossar (VD: låsta syns inte alls där, bara som låsta kort i gamla makron). Biblioteket:
   VILLKOR med alla klossar och rykten. Botarna: `GAMBITS=ny` (en ny profils klossar, inga droppar), `tests/gambit_drops.gd`
   (strider till 3/6/10 funna rader, ägda klossar per nedstigning). Flaggor: `--macro-focus=<hjälte>`, `--gambit-off`,
   `--gambit-drag`, `--gambit-demo`, `--library-gambits`, `--found-rows`, `--new-line`. Tester: `tests/test_gambits.gd`.
+  **Gambits 3**: en gång per strid (`once` på raden, brickan VARJE GÅNG / 1 / STRID under PÅ/AV, `CombatSim.macro_once`,
+  `MacroRunner.once_key`, `decide(…, peek)`; `--gambit-once`); villkor som läser fiendernas avsikter (gruppen Avsikt:
+  `intends_attack`, `intends_attack_on` me/hjälte, `intends_attack_low`, `intends_aoe`, `leader_charging`, `intends_lethal`,
+  `_intent_victims`); hem och rykten i Lunden och Berget (`home_clues`, `Gambits.clues`); mästarklossar (rarity `master`,
+  klass III, `home_master` 50 %) hos Vävmodern och Bergakungen: Tänker fälla någon och Förbered kamratens slag
+  (`ally_bonus_missing`). `tests/gambit_drops.gd` med `GAMBIT_PLAN=lang` fortsätter karriären i Lunden och Berget.
   **Spara som order** (0.30, prototyp): väljer spelaren själv något som makrot inte hade valt (en helning på en skadad,
   eller en förmåga mot en status den slår hårdare mot) visar striden en guldknapp i 9 sekunder som lägger en sådan rad
   överst i hjältens makro (`battle.gd` `_offer_order`, `_save_order`; `--offer-order`).

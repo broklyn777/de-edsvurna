@@ -240,6 +240,9 @@ Källa: `docs/research/siralim.md`.
 | Gräns (Liv under 50 %, Liv över 90 %) | threshold, `"thresholds"`, id `g_hp_below@50` | – (FF XII: varje tröskel en egen gambit) | Egen kloss; de skarpa (10 och 20 %) hos svårare fiender. Familjens id (gamla profiler) äger alla gränser. |
 | Funnen rad, NY RAD FÖR MAKRONA, LÄGG TILL HOS <hjälte>, FUNNA RADER | found row, `Gambits.make_row`, radmallar `rows`, `Profile.learn_row`/`found_rows`, `Run.add_row`, `last_row` | – | Ett fynd är en färdig rad hos en hjälte som kan utföra den; klossarna i den blir ens egna. |
 | Svag mot förmågan, Näst i tur | makrovillkoren `weak_to` (förmågans `bonus_vs`), `next_in_turn` | – | Gambits 2, ur idéfilen. |
+| En gång per strid (VARJE GÅNG / 1 / STRID) | `once` på raden, `CombatSim.macro_once`, `MacroRunner.once_key` | – (vårt val) | Gambits 3: raden körs högst en gång per strid. |
+| Avsikt: tänker anfalla (denna hjälte, den svage, alla), tänker fälla någon, bossen laddar | `intends_attack`, `intends_attack_on`, `intends_attack_low`, `intends_aoe`, `intends_lethal`, `leader_charging` | – (vår styrka: fiendernas avsikter syns) | Gambits 3, gruppen Avsikt i radeditorn. |
+| Mästarkloss (klass III), Förbered kamratens slag | rarity `master`, `home_master`, `ally_bonus_missing` | – | Bara hos Realmernas bossar (Vävmodern, Bergakungen). |
 | Plats (PLATSER n / m, "Platsen öppnas på nivå N") | gambit slot, `Gambits.slots_for_level`, `Profile.gambit_slots`, `gambit_slot_floor` | – (FF XII:s gambitplatser) | 3 från start, +1 per två nivåer, högst 12. Rader under sista platsen körs inte. |
 | PÅ / AV (avstängd rad) | `enabled` på raden, `Gambits.playable` | – (FF XII: On/Off) | En avstängd rad står kvar men prövas inte; i en kedja bryter den kedjan. |
 | Låst villkor, rykte ("Det sägs att …") | locked condition, `Gambits.missing`, `clue` | – | Syns i radeditorn, på kortet och i Biblioteket (VILLKOR). |
