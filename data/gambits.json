@@ -1,12 +1,13 @@
 {
-	"_doc": "Makronas klossar som man förtjänar (gambits, docs/plan/gambits.md). Ett fynd är en färdig rad (rows), och radens klossar blir profilens. Varje post: conds (MacroRunner.CONDITIONS, och action test_next för kedjan) eller subjects/targets (subjektens och målens klossar), name, rarity (start/common/elite/boss/chest), homes (fiendetyper i enemies.json där klossen kan falla), chest ({depth}), clue (Bibliotekets rykte), rows (radmallar i ordning: den första som någon i sällskapet kan utföra blir fyndet). thresholds: gränserna är egna klossar (id 'g_hp_below@50'), med egen rarity/homes/clue; {v} i namnet blir gränsen. I en radmall är ability en förmåga eller en sort (heal, protect, support, cleanse, damage, aoe, debuff, bonus, revive), och value '@aura', '@ability' och '@omen' fylls i från förmågan. Siffrorna i 'drops' och 'slots' är vårt val. Varje lista slutar med en mall utan förmåga, och en mall får aldrig para ett villkor som matchar döda (Har stupat, Har väckts) med en handling som kräver ett levande mål (Gambits.row_problem).",
+	"_doc": "Makronas klossar som man förtjänar (gambits, docs/plan/gambits.md). Ett fynd är en färdig rad (rows), och radens klossar blir profilens. Varje post: conds (MacroRunner.CONDITIONS, och action test_next för kedjan) eller subjects/targets (subjektens och målens klossar), name, rarity (start/common/elite/boss/chest), homes (fiendetyper i enemies.json där klossen kan falla), chest ({depth}), clue (Bibliotekets rykte), rows (radmallar i ordning: den första som någon i sällskapet kan utföra blir fyndet). thresholds: gränserna är egna klossar (id 'g_hp_below@50'), med egen rarity/homes/clue; {v} i namnet blir gränsen. I en radmall är ability en förmåga eller en sort (heal, protect, support, cleanse, damage, aoe, debuff, bonus, revive), och value '@aura', '@ability' och '@omen' fylls i från förmågan. Siffrorna i 'drops' och 'slots' är vårt val. Varje lista slutar med en mall utan förmåga, och en mall får aldrig para ett villkor som matchar döda (Har stupat, Har väckts) med en handling som kräver ett levande mål (Gambits.row_problem). rarity master (klass III, mästarklossar) finns bara hos Realmernas bossar, home_master av gångerna. home_clues: rykten per Realm där klossen också har hem (grove, mountain).",
 	"drops": {
-		"home_common": 0.15,
-		"home_elite": 0.6,
-		"home_boss": 1.0,
-		"anywhere": 0.02,
-		"chest_home": 0.5,
-		"chest_any": 0.12
+		"home_common": 0.04,
+		"home_elite": 0.25,
+		"home_boss": 0.5,
+		"anywhere": 0.01,
+		"chest_home": 0.15,
+		"chest_any": 0.03,
+		"home_master": 0.5
 	},
 	"slots": {
 		"start": 3,
@@ -54,7 +55,8 @@
 					"homes": [
 						"bone_lich",
 						"fallen_bishop",
-						"mountain_king"
+						"mountain_king",
+						"web_mother"
 					],
 					"clue": "Bara en furste vet hur nära döden man kan låta någon gå."
 				},
@@ -63,49 +65,57 @@
 					"homes": [
 						"bone_colossus",
 						"black_lance",
-						"ascetic"
+						"ascetic",
+						"sleep_weaver",
+						"troll_mother"
 					],
 					"clue": "Elitens kämpar väntar till sista stund med att rädda någon, sägs det."
 				},
 				"30": {
 					"homes": [
 						"grave_priest",
-						"penitent"
+						"penitent",
+						"snare_spider"
 					],
 					"clue": "Gravprästerna vet när en kropp börjar ge upp."
 				},
 				"40": {
 					"homes": [
 						"bone_runner",
-						"corrupted_deacon"
+						"corrupted_deacon",
+						"grumpy_troll"
 					],
 					"clue": "Diakonerna helar sina egna när de är svaga."
 				},
 				"50": {
 					"homes": [
 						"skeleton_warrior",
-						"cultist"
+						"cultist",
+						"club_troll"
 					],
 					"clue": "Skelettkrigarna vet när en vän har tagit hälften."
 				},
 				"60": {
 					"homes": [
 						"mold_skeleton",
-						"witch"
+						"witch",
+						"venom_spider"
 					],
 					"clue": "Häxorna känner det första såret."
 				},
 				"70": {
 					"homes": [
 						"rattler",
-						"wraith"
+						"wraith",
+						"moss_troll"
 					],
 					"clue": "Skramlarna hör när rustningen får en buckla."
 				},
 				"80": {
 					"homes": [
 						"ember_skeleton",
-						"will_o_wisp"
+						"will_o_wisp",
+						"dust_spider"
 					],
 					"clue": "Irrblossen ser varje skråma."
 				}
@@ -119,7 +129,11 @@
 			"sharp_rows": [
 				{"subject": "any_enemy", "cond": "hp_below", "action": "ability", "ability": "damage", "target": "that"},
 				{"subject": "any_enemy", "cond": "hp_below", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "I Lunden känner spindlarna i tråden hur mycket liv som finns kvar.",
+				"mountain": "Trollen i Berget luktar sig till hur skadad någon är."
+			}
 		},
 		"g_hp_above": {
 			"conds": [
@@ -133,28 +147,32 @@
 					"rarity": "elite",
 					"homes": [
 						"grave_caller",
-						"cult_overseer"
+						"cult_overseer",
+						"devourer_spider"
 					],
 					"clue": "Gravväckaren slår först mot den som ännu är hel."
 				},
 				"30": {
 					"homes": [
 						"fallen_knight",
-						"ghoul"
+						"ghoul",
+						"barb_spider"
 					],
 					"clue": "De fallna riddarna slutar aldrig slå så länge något står."
 				},
 				"50": {
 					"homes": [
 						"skeleton_warrior",
-						"cultist"
+						"cultist",
+						"grumpy_troll"
 					],
 					"clue": "Kultisterna går på den som ännu står stark."
 				},
 				"70": {
 					"homes": [
 						"banner_bearer",
-						"grave_warden"
+						"grave_warden",
+						"moss_troll"
 					],
 					"clue": "Fanbärarna ser vem som ännu inte är skadad."
 				}
@@ -162,7 +180,11 @@
 			"rows": [
 				{"subject": "any_enemy", "cond": "hp_above", "action": "ability", "ability": "debuff", "target": "that"},
 				{"subject": "any_enemy", "cond": "hp_above", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "I Lunden känner spindlarna i tråden hur mycket liv som finns kvar.",
+				"mountain": "Trollen i Berget luktar sig till hur skadad någon är."
+			}
 		},
 		"g_alive": {
 			"conds": [
@@ -173,13 +195,19 @@
 			"homes": [
 				"skeleton_warrior",
 				"cultist",
-				"rattler"
+				"rattler",
+				"snare_spider",
+				"moss_troll"
 			],
 			"clue": "Den enklaste frågan: står den kvar? Varje skelett vet svaret.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "is_alive", "action": "ability", "ability": "damage", "target": "that"},
 				{"subject": "any_enemy", "cond": "is_alive", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Snärjspindlarna känner i tråden om bytet ännu lever.",
+				"mountain": "Mossrygg rör sig inte förrän han vet att något står kvar."
+			}
 		},
 		"g_status": {
 			"conds": [
@@ -190,14 +218,20 @@
 			"rarity": "common",
 			"homes": [
 				"grave_priest",
-				"witch"
+				"witch",
+				"venom_spider",
+				"porridge_troll"
 			],
 			"clue": "Gravprästerna läser märkena på levande och döda.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "lacks_status", "value": "@aura", "action": "ability", "ability": "debuff", "target": "that"},
 				{"subject": "any_ally", "cond": "lacks_status", "value": "@aura", "action": "ability", "ability": "support", "target": "that"},
 				{"subject": "any_enemy", "cond": "has_status", "value": "blind", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Gifttänderna ser vem som redan bär deras gift.",
+				"mountain": "Grytmodern vet vem som har ätit av grytan."
+			}
 		},
 		"g_immune": {
 			"conds": [
@@ -208,12 +242,18 @@
 			"rarity": "common",
 			"homes": [
 				"cultist",
-				"rattler"
+				"rattler",
+				"dust_spider",
+				"changeling_troll"
 			],
 			"clue": "Kultisterna vet vem som går att såra och vem som inte gör det.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "not_immune", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Dammspindlarna vet vem bakom dammet som inte går att såra.",
+				"mountain": "Bortbytingen vet vem som skyddas av en större famn."
+			}
 		},
 		"g_debuffs": {
 			"conds": [
@@ -225,14 +265,20 @@
 			"homes": [
 				"mold_skeleton",
 				"witch",
-				"penitent"
+				"penitent",
+				"barb_spider",
+				"grumpy_troll"
 			],
 			"clue": "Mögelskeletten känner lukten av den som redan är förgiftad.",
 			"rows": [
 				{"subject": "any_ally", "cond": "has_debuff", "action": "ability", "ability": "cleanse", "target": "that"},
 				{"subject": "any_enemy", "cond": "lacks_debuff", "action": "ability", "ability": "debuff", "target": "that"},
 				{"subject": "any_enemy", "cond": "has_debuff", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Hullingspindlarna slår bara där en hulling redan sitter.",
+				"mountain": "Avundsjätten ser genast vem som redan är svag."
+			}
 		},
 		"g_buffs": {
 			"conds": [
@@ -243,12 +289,18 @@
 			"rarity": "common",
 			"homes": [
 				"banner_bearer",
-				"corrupted_deacon"
+				"corrupted_deacon",
+				"dust_spider",
+				"grumpy_troll"
 			],
 			"clue": "Fanbärarna ser vem som bär en välsignelse.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "has_buff", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Dammspindlarna ser vem som bär en välsignelse.",
+				"mountain": "Avundsjätten avundas varje välsignelse han ser."
+			}
 		},
 		"g_speed": {
 			"conds": [
@@ -258,13 +310,19 @@
 			"rarity": "common",
 			"homes": [
 				"bone_runner",
-				"will_o_wisp"
+				"will_o_wisp",
+				"barb_spider",
+				"changeling_troll"
 			],
 			"clue": "Benspringarna vet vem som är snabbast i rummet.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "highest_speed", "action": "ability", "ability": "debuff", "target": "that"},
 				{"subject": "any_enemy", "cond": "highest_speed", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Hullingspindlarna vet vem som rör sig fortast i snåret.",
+				"mountain": "Bortbytingen vet vem som är snabbare än han."
+			}
 		},
 		"g_defense_low": {
 			"conds": [
@@ -274,12 +332,18 @@
 			"rarity": "common",
 			"homes": [
 				"rattler",
-				"skeleton_archer"
+				"skeleton_archer",
+				"snare_spider",
+				"club_troll"
 			],
 			"clue": "Skelettbågskyttarna siktar på springan i rustningen.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "lowest_defense", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Snärjspindlarna letar efter glipan i rustningen.",
+				"mountain": "Stenkrossaren slår där stenen är tunnast."
+			}
 		},
 		"g_defense_high": {
 			"conds": [
@@ -289,13 +353,19 @@
 			"rarity": "common",
 			"homes": [
 				"coffin_bearer",
-				"banner_bearer"
+				"banner_bearer",
+				"venom_spider",
+				"moss_troll"
 			],
 			"clue": "Kistbärarna, som själva håller garden, vet vem som står hårdast.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "highest_defense", "action": "ability", "ability": "damage", "target": "that"},
 				{"subject": "any_enemy", "cond": "highest_defense", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Gifttänderna vet vilken rustning giftet inte biter på.",
+				"mountain": "Mossrygg känner igen en som står lika hårt som han."
+			}
 		},
 		"g_attack_high": {
 			"conds": [
@@ -305,13 +375,19 @@
 			"rarity": "common",
 			"homes": [
 				"grave_warden",
-				"fallen_knight"
+				"fallen_knight",
+				"barb_spider",
+				"club_troll"
 			],
 			"clue": "Gravväktarna, som tar emot slagen, vet vem som slår hårdast.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "highest_attack", "action": "ability", "ability": "debuff", "target": "that"},
 				{"subject": "any_enemy", "cond": "highest_attack", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Hullingspindlarna fäster sig vid den som slår hårdast.",
+				"mountain": "Stenkrossaren söker upp den som slår lika hårt som han."
+			}
 		},
 		"g_trait": {
 			"conds": [
@@ -322,13 +398,19 @@
 			"rarity": "common",
 			"homes": [
 				"ember_skeleton",
-				"mirror_warden"
+				"mirror_warden",
+				"dust_spider",
+				"moss_troll"
 			],
 			"clue": "Glödskeletten känner igen ett ben som är förbannat.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "ability", "ability": "damage", "target": "that"},
 				{"subject": "any_enemy", "cond": "has_trait", "value": "grave_pact", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Dammspindlarna känner igen en förbannelse på lukten.",
+				"mountain": "Mossrygg vet vilka troll som bär sten i huden."
+			}
 		},
 		"g_top": {
 			"conds": [
@@ -339,13 +421,19 @@
 			"rarity": "common",
 			"homes": [
 				"fallen_knight",
-				"ghoul"
+				"ghoul",
+				"barb_spider",
+				"changeling_troll"
 			],
 			"clue": "De fallna riddarna vet vem som rör sig först.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "not_top_of_timeline", "action": "ability", "ability": "debuff", "target": "that"},
 				{"subject": "any_enemy", "cond": "not_top_of_timeline", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Hullingspindlarna vet vem som rör sig först.",
+				"mountain": "Bortbytingen hinner alltid först, och vet vem som annars hade gjort det."
+			}
 		},
 		"g_bottom": {
 			"conds": [
@@ -356,13 +444,19 @@
 			"rarity": "common",
 			"homes": [
 				"penitent",
-				"mold_skeleton"
+				"mold_skeleton",
+				"snare_spider",
+				"moss_troll"
 			],
 			"clue": "Botgörarna väntar alltid sist, och vet vem mer som gör det.",
 			"rows": [
 				{"subject": "any_ally", "cond": "bottom_of_timeline", "action": "ability", "ability": "support", "target": "that"},
 				{"subject": "any_enemy", "cond": "bottom_of_timeline", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Snärjspindlarna väntar sist och vet vem mer som gör det.",
+				"mountain": "Mossrygg rör sig sist av alla och vet vem som kommer efter."
+			}
 		},
 		"g_next": {
 			"conds": [
@@ -372,14 +466,20 @@
 			"rarity": "common",
 			"homes": [
 				"bone_runner",
-				"cult_zealot"
+				"cult_zealot",
+				"venom_spider",
+				"grumpy_troll"
 			],
 			"clue": "Blodsvurna vet vem som står på tur härnäst, och hinner före.",
 			"rows": [
 				{"subject": "any_ally", "cond": "next_in_turn", "action": "ability", "ability": "support", "target": "that"},
 				{"subject": "any_enemy", "cond": "next_in_turn", "action": "ability", "ability": "debuff", "target": "that"},
 				{"subject": "any_enemy", "cond": "next_in_turn", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Gifttänderna vet vem som står på tur härnäst.",
+				"mountain": "Avundsjätten ser vem som får gå före honom."
+			}
 		},
 		"g_weak": {
 			"conds": [
@@ -389,13 +489,19 @@
 			"rarity": "common",
 			"homes": [
 				"wraith",
-				"church_grim"
+				"church_grim",
+				"venom_spider",
+				"porridge_troll"
 			],
 			"clue": "Gastarna vet vilket slag som biter hårdast på den som redan är märkt.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "weak_to", "value": "@ability", "action": "ability", "ability": "bonus", "target": "that"},
 				{"subject": "any_enemy", "cond": "weak_to", "value": "holy_smite", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Gifttänderna vet vilket bett som tar hårdast på den förgiftade.",
+				"mountain": "Grytmodern vet vilken eld som biter på svedd hud."
+			}
 		},
 		"g_heal": {
 			"conds": [
@@ -405,14 +511,20 @@
 			"rarity": "common",
 			"homes": [
 				"corrupted_deacon",
-				"grave_priest"
+				"grave_priest",
+				"dust_spider",
+				"porridge_troll"
 			],
 			"clue": "I kapellet säger man att diakonerna förråder sig innan de helar.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "intends_heal", "action": "ability", "ability": "torun_ready"},
 				{"subject": "any_enemy", "cond": "intends_heal", "action": "ability", "ability": "damage", "target": "that"},
 				{"subject": "any_enemy", "cond": "intends_heal", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Dammspindlarna hör när någon börjar laga sina sår.",
+				"mountain": "Grytmodern förråder sig när hon rör om i grytan."
+			}
 		},
 		"g_charges": {
 			"conds": [
@@ -422,7 +534,9 @@
 			"rarity": "common",
 			"homes": [
 				"will_o_wisp",
-				"cult_zealot"
+				"cult_zealot",
+				"dust_spider",
+				"porridge_troll"
 			],
 			"clue": "Irrblossen räknar varje gnista som finns kvar.",
 			"rows": [
@@ -431,7 +545,11 @@
 				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "ability", "ability": "aoe"},
 				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "ability", "ability": "damage", "target": "random_enemy"},
 				{"subject": "self", "cond": "has_charges", "value": "@ability", "action": "defend"}
-			]
+			],
+			"home_clues": {
+				"grove": "Dammspindlarna räknar varje gnista som finns kvar.",
+				"mountain": "Grytmodern vet hur många slevar som återstår."
+			}
 		},
 		"g_silenced": {
 			"conds": [
@@ -441,13 +559,19 @@
 			"rarity": "elite",
 			"homes": [
 				"inquisitor",
-				"witch"
+				"witch",
+				"sleep_weaver",
+				"troll_mother"
 			],
 			"clue": "Inkvisitorn vet när någon inte längre kan tala.",
 			"rows": [
 				{"subject": "any_ally", "cond": "is_silenced", "action": "ability", "ability": "cleanse", "target": "that"},
 				{"subject": "any_ally", "cond": "is_silenced", "action": "provoke"}
-			]
+			],
+			"home_clues": {
+				"grove": "Sömnvävaren vet när någon inte längre kan tala.",
+				"mountain": "Gråluva tystar sina barn och vet när det har lyckats."
+			}
 		},
 		"g_own_turn": {
 			"conds": [
@@ -457,13 +581,19 @@
 			"rarity": "elite",
 			"homes": [
 				"bone_colossus",
-				"black_lance"
+				"black_lance",
+				"sleep_weaver",
+				"troll_mother"
 			],
 			"clue": "Benkolossen vet vad som ska göras i första turen.",
 			"rows": [
 				{"subject": "self", "cond": "own_turn", "value": 1, "action": "ability", "ability": "support", "target": "that"},
 				{"subject": "self", "cond": "own_turn", "value": 1, "action": "defend"}
-			]
+			],
+			"home_clues": {
+				"grove": "Sömnvävaren vet vad som ska göras innan någon hunnit vakna.",
+				"mountain": "Gråluva vet vad som ska göras i första turen."
+			}
 		},
 		"g_revives": {
 			"conds": [
@@ -473,13 +603,19 @@
 			"rarity": "elite",
 			"homes": [
 				"grave_caller",
-				"bone_scribe"
+				"bone_scribe",
+				"devourer_spider",
+				"troll_mother"
 			],
 			"clue": "Gravväckaren räknar hur många gånger någon har kommit tillbaka.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "revives_at_least", "value": 1, "action": "ability", "ability": "aoe"},
 				{"subject": "any_enemy", "cond": "revives_at_least", "value": 1, "action": "defend"}
-			]
+			],
+			"home_clues": {
+				"grove": "Slukaren räknar hur många gånger ett byte har rest sig.",
+				"mountain": "Gråluva räknar hur många gånger hennes barn har rest sig."
+			}
 		},
 		"g_deaths": {
 			"conds": [
@@ -489,14 +625,20 @@
 			"rarity": "boss",
 			"homes": [
 				"bell_ringer",
-				"fallen_bishop"
+				"fallen_bishop",
+				"old_knot",
+				"bridge_troll"
 			],
 			"clue": "Det sägs att Klockaren vet när en allierad faller.",
 			"rows": [
 				{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "ability", "ability": "revive", "target": "that"},
 				{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "ability", "ability": "protect", "target": "self"},
 				{"subject": "any_ally", "cond": "deaths_at_least", "value": 1, "action": "provoke"}
-			]
+			],
+			"home_clues": {
+				"grove": "Strypvävaren minns var och en som fastnat i nätet.",
+				"mountain": "Brom vet vem som redan har fallit från bron."
+			}
 		},
 		"g_charging": {
 			"conds": [
@@ -508,14 +650,20 @@
 			"homes": [
 				"bone_lich",
 				"fallen_bishop",
-				"grave_mist"
+				"grave_mist",
+				"web_mother",
+				"mountain_king"
 			],
 			"clue": "Benfursten själv vet när en dom är på väg.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "is_charging", "action": "ability", "ability": "torun_ready"},
 				{"subject": "any_enemy", "cond": "is_charging", "action": "ability", "ability": "damage", "target": "that"},
 				{"subject": "any_enemy", "cond": "is_charging", "action": "defend"}
-			]
+			],
+			"home_clues": {
+				"grove": "Vävmodern känner när ett stort slag spänns i nätet.",
+				"mountain": "Bergakungen vet när berget samlar kraft."
+			}
 		},
 		"g_channel": {
 			"conds": [
@@ -526,13 +674,19 @@
 			"rarity": "boss",
 			"homes": [
 				"corrupted_abbess",
-				"inquisitor"
+				"inquisitor",
+				"old_knot",
+				"bridge_troll"
 			],
 			"clue": "Abbedissan vet vem som bär kören, och vem domen faller över.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "is_channeling", "action": "ability", "ability": "damage", "target": "that"},
 				{"subject": "any_enemy", "cond": "is_channeling", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Strypvävaren vet vem som håller knuten vid liv.",
+				"mountain": "Brom vet vem som bär domen över bron."
+			}
 		},
 		"g_artifact": {
 			"conds": [
@@ -574,12 +728,18 @@
 			"rarity": "elite",
 			"homes": [
 				"bone_scribe",
-				"cult_overseer"
+				"cult_overseer",
+				"old_knot",
+				"bridge_troll"
 			],
 			"clue": "Benskrivaren tänker i två led, och kan lära dig detsamma.",
 			"rows": [
 				{"subject": "any_ally", "cond": "hp_below", "value": 80, "action": "test_next"}
-			]
+			],
+			"home_clues": {
+				"grove": "Strypvävaren tänker i två led, som en knut.",
+				"mountain": "Brom tänker i två led: först bron, sedan den som går på den."
+			}
 		},
 		"g_ally_n": {
 			"subjects": [
@@ -598,14 +758,20 @@
 			"rarity": "common",
 			"homes": [
 				"grave_priest",
-				"banner_bearer"
+				"banner_bearer",
+				"snare_spider",
+				"porridge_troll"
 			],
 			"clue": "Prästerna vakar över en enda själ i taget.",
 			"rows": [
 				{"subject": "ally_1", "cond": "hp_below", "value": 50, "action": "ability", "ability": "heal", "target": "that"},
 				{"subject": "ally_1", "cond": "hp_below", "value": 50, "action": "ability", "ability": "protect", "target": "that"},
 				{"subject": "ally_1", "cond": "hp_below", "value": 50, "action": "provoke"}
-			]
+			],
+			"home_clues": {
+				"grove": "Snärjspindlarna vakar över en enda tråd i taget.",
+				"mountain": "Grytmodern matar ett barn i taget."
+			}
 		},
 		"g_enemy_n": {
 			"subjects": [
@@ -628,13 +794,19 @@
 			"rarity": "common",
 			"homes": [
 				"skeleton_archer",
-				"wraith"
+				"wraith",
+				"barb_spider",
+				"club_troll"
 			],
 			"clue": "Bågskyttarna väljer ett mål och släpper det aldrig.",
 			"rows": [
 				{"subject": "enemy_1", "cond": "lowest_hp", "action": "ability", "ability": "damage", "target": "that"},
 				{"subject": "enemy_1", "cond": "lowest_hp", "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Hullingspindlarna väljer ett byte och släpper det aldrig.",
+				"mountain": "Stenkrossaren väljer en sten och krossar den."
+			}
 		},
 		"g_all_enemies": {
 			"subjects": [
@@ -645,13 +817,19 @@
 			"homes": [
 				"will_o_wisp",
 				"witch",
-				"ember_skeleton"
+				"ember_skeleton",
+				"snare_spider",
+				"grumpy_troll"
 			],
 			"clue": "Glödskeletten bränner hela led på en gång.",
 			"rows": [
 				{"subject": "all_enemies", "cond": "hp_above", "value": 50, "action": "ability", "ability": "aoe", "target": "that"},
 				{"subject": "all_enemies", "cond": "hp_above", "value": 50, "action": "attack", "target": "that"}
-			]
+			],
+			"home_clues": {
+				"grove": "Snärjspindlarna spänner nätet över alla på en gång.",
+				"mountain": "Avundsjätten avundas alla på en gång."
+			}
 		},
 		"g_all_allies": {
 			"subjects": [
@@ -661,13 +839,19 @@
 			"rarity": "common",
 			"homes": [
 				"banner_bearer",
-				"corrupted_deacon"
+				"corrupted_deacon",
+				"web_mother",
+				"troll_mother"
 			],
 			"clue": "Fanbäraren ser hela ledet på en gång.",
 			"rows": [
 				{"subject": "all_allies", "cond": "hp_above", "value": 70, "action": "ability", "ability": "support", "target": "that"},
 				{"subject": "all_allies", "cond": "hp_above", "value": 70, "action": "provoke"}
-			]
+			],
+			"home_clues": {
+				"grove": "Vävmodern ser hela nätet på en gång.",
+				"mountain": "Gråluva ser hela flocken på en gång."
+			}
 		},
 		"g_random": {
 			"targets": [
@@ -678,12 +862,145 @@
 			"rarity": "common",
 			"homes": [
 				"rattler",
-				"ghoul"
+				"ghoul",
+				"dust_spider",
+				"changeling_troll"
 			],
 			"clue": "Likätarna biter i vad som helst.",
 			"rows": [
 				{"subject": "any_enemy", "cond": "lowest_hp", "action": "ability", "ability": "debuff", "target": "random_enemy"},
 				{"subject": "any_enemy", "cond": "lowest_hp", "action": "attack", "target": "random_enemy"}
+			],
+			"home_clues": {
+				"grove": "Dammspindlarna biter i vad som helst i dammet.",
+				"mountain": "Bortbytingen river i vad som helst."
+			}
+		},
+		"g_intent_attack": {
+			"conds": [
+				"intends_attack",
+				"intends_attack_on"
+			],
+			"name": "Tänker anfalla",
+			"rarity": "common",
+			"homes": [
+				"club_troll",
+				"snare_spider",
+				"skeleton_archer",
+				"fallen_knight"
+			],
+			"clue": "Skelettbågskyttarna siktar alltid lite för länge, och den som ser det hinner undan.",
+			"home_clues": {
+				"grove": "Snärjspindlarna spänner tråden mot den de tänker ta.",
+				"mountain": "Stenkrossaren lyfter stenen långt innan han slår."
+			},
+			"rows": [
+				{"subject": "any_enemy", "cond": "intends_attack_on", "value": "me", "action": "defend"},
+				{"subject": "any_enemy", "cond": "intends_attack_on", "value": "paladin", "action": "provoke"},
+				{"subject": "any_enemy", "cond": "intends_attack", "action": "attack", "target": "that"}
+			]
+		},
+		"g_intent_low": {
+			"conds": [
+				"intends_attack_low"
+			],
+			"name": "Tänker anfalla den svage",
+			"rarity": "common",
+			"homes": [
+				"changeling_troll",
+				"barb_spider",
+				"ghoul"
+			],
+			"clue": "Likätarna går alltid på den som redan blöder.",
+			"home_clues": {
+				"grove": "Hullingspindlarna väljer det byte som redan sprattlar svagast.",
+				"mountain": "Bortbytingen river alltid den svagaste, förbi vem som helst."
+			},
+			"rows": [
+				{"subject": "any_enemy", "cond": "intends_attack_low", "value": 50, "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_enemy", "cond": "intends_attack_low", "value": 50, "action": "provoke"}
+			]
+		},
+		"g_intent_aoe": {
+			"conds": [
+				"intends_aoe"
+			],
+			"name": "Tänker träffa alla",
+			"rarity": "elite",
+			"homes": [
+				"sleep_weaver",
+				"troll_mother",
+				"inquisitor"
+			],
+			"clue": "Inkvisitorn drar efter andan innan domen faller över alla.",
+			"home_clues": {
+				"grove": "Sömnvävaren sjunger lägre innan sömnen sänker sig över alla.",
+				"mountain": "Gråluva ropar på hela flocken innan hon slår."
+			},
+			"rows": [
+				{"subject": "any_enemy", "cond": "intends_aoe", "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_enemy", "cond": "intends_aoe", "action": "defend"}
+			]
+		},
+		"g_leader_charging": {
+			"conds": [
+				"leader_charging"
+			],
+			"name": "Bossen laddar",
+			"rarity": "elite",
+			"homes": [
+				"bridge_troll",
+				"old_knot",
+				"bone_colossus"
+			],
+			"clue": "Benkolossen vet hur länge ett stort slag tar att lyfta.",
+			"home_clues": {
+				"grove": "Strypvävaren drar åt knuten långsamt, så att man ser det.",
+				"mountain": "Brom lyfter sin klubba högt över bron, länge."
+			},
+			"rows": [
+				{"subject": "any_enemy", "cond": "leader_charging", "action": "ability", "ability": "torun_ready"},
+				{"subject": "any_enemy", "cond": "leader_charging", "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_enemy", "cond": "leader_charging", "action": "defend"}
+			]
+		},
+		"g_lethal": {
+			"conds": [
+				"intends_lethal"
+			],
+			"name": "Tänker fälla någon",
+			"rarity": "master",
+			"homes": [
+				"mountain_king",
+				"web_mother"
+			],
+			"clue": "Bara en kung under berget räknar ut ett slag så noga att han vet vem som faller.",
+			"home_clues": {
+				"grove": "Vävmodern vet vilket byte som inte orkar ett bett till.",
+				"mountain": "Bergakungen vet vem som faller av nästa slag."
+			},
+			"rows": [
+				{"subject": "any_enemy", "cond": "intends_lethal", "action": "provoke"}
+			]
+		},
+		"g_party_bonus": {
+			"conds": [
+				"ally_bonus_missing"
+			],
+			"name": "Förbered kamratens slag",
+			"rarity": "master",
+			"homes": [
+				"web_mother",
+				"mountain_king"
+			],
+			"clue": "Den som har vävt ett helt nät vet vilken tråd som ska spännas först.",
+			"home_clues": {
+				"grove": "Vävmodern spänner först den tråd som de andra behöver.",
+				"mountain": "Bergakungen låter först svedjan bita, så att klubban biter hårdare."
+			},
+			"rows": [
+				{"subject": "any_enemy", "cond": "ally_bonus_missing", "action": "ability", "ability": "debuff", "target": "that"},
+				{"subject": "any_enemy", "cond": "ally_bonus_missing", "action": "attack", "target": "that"}
 			]
 		}
 	}

@@ -102,7 +102,7 @@ func _toggle_rect() -> Rect2:
 ## Makronas villkor i ordning: ägda först, sedan efter sällsynthet.
 func _gambit_ids() -> Array:
 	var g := Gambits.blocks(run.data)
-	var order := {"start": 0, "common": 1, "chest": 2, "elite": 3, "boss": 4}
+	var order := {"start": 0, "common": 1, "chest": 2, "elite": 3, "boss": 4, "master": 5}
 	var ids := g.keys()
 	ids.sort_custom(func(a: String, b: String) -> bool:
 		var oa: bool = Gambits.has(run.profile.gambits, a)
@@ -119,7 +119,8 @@ func _gambit_rect(i: int) -> Rect2:
 	return Rect2(MARGIN + (i % per) * (w + GAP), 142 + (i / per) * 46, w, 40)
 
 
-const GAMBIT_TAG := {"start": "START", "common": "VANLIGT", "chest": "KISTA", "elite": "ELIT", "boss": "BOSS"}
+const GAMBIT_TAG := {"start": "START", "common": "VANLIGT", "chest": "KISTA", "elite": "ELIT", "boss": "BOSS",
+		"master": "MÄSTARE"}
 
 
 ## Villkoren: ägda i guld, de andra som rykten (som troféernas), och ryktet i rutan under.
@@ -158,10 +159,10 @@ func _draw_gambits() -> void:
 				else MacroRunner.subject_name(t.subject) + " …"
 	UiStyle.text(self, box.position + Vector2(16, 28), "%s – %s" % [Gambits.name_of(data, sel),
 			"ditt" if owned else "rykte, inte ditt än"], 20, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, box.size.x - 32, 3)
-	var text := Gambits.clue(data, sel)
+	var text := " ".join(Gambits.clues(data, sel))
 	if owned:
 		text = "I makrona: \"%s\". %s" % [example, text]
-	UiStyle.para(self, box.position + Vector2(16, 54), text, 18, Color(1, 1, 1, 0.9), box.size.x - 32, 2)
+	UiStyle.para(self, box.position + Vector2(16, 54), text, 18, Color(1, 1, 1, 0.9), box.size.x - 32, 3)
 
 
 func _draw() -> void:

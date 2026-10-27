@@ -41,8 +41,9 @@ func test_the_suggested_line_attacks_the_weakest_enemy_and_ends_the_intro_step()
 
 func test_alva_teaches_a_condition_when_she_joins() -> void:
 	var r := _run(Profile.new())
-	var hint: Dictionary = r.macro_hint("alva")
-	assert_true(not hint.is_empty(), "förslaget visas i en ny profil: hennes startrader saknar helningen")
-	assert_eq(hint.line.cond, "hp_below", "ett villkor: lågt liv")
-	assert_true(r.macros.alva.lines.size() >= 1, "hon har ändå något att göra")
+	# VD 2026-10-27: en rad per följeslagare. Alvas enda rad i en ny profil är hennes förslag, så det föreslås inte igen.
+	assert_eq(r.macros.alva.lines.size(), 1)
+	assert_eq(r.macros.alva.lines[0].cond, "hp_below", "ett villkor: lågt liv")
+	assert_eq(r.macros.alva.lines[0].ability, "healing_light")
+	assert_true(r.macro_hint("alva").is_empty(), "raden finns redan")
 	r.free()

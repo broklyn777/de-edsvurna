@@ -49,7 +49,7 @@ var _search: LineEdit
 var _group := "common"
 var _group_buttons := {}
 var _shown := {}  # kolumn → index i _options som syns
-const COND_GROUPS := [["common", "Vanliga"], ["hp", "Liv"], ["status", "Status"], ["windup", "Laddning"],
+const COND_GROUPS := [["common", "Vanliga"], ["hp", "Liv"], ["status", "Status"], ["intent", "Avsikt"], ["windup", "Laddning"],
 		["trait", "Egenskaper"], ["omen", "Tecken"],
 		["charges", "Charges"], ["artifact", "Artefakt"], ["all", "Alla"]]
 ## Makro-UX förslag 5: förslag som fyller i sökningen med ett tryck. Fältet får fokus av sig självt när villkoren är
@@ -80,6 +80,12 @@ func _ready() -> void:
 		_select(own)
 	elif not ids.is_empty():
 		_select(ids[0])
+	if "--all-gambits" in OS.get_cmdline_user_args():  # skärmdumpar: profilen äger alla klossar (sparas inte från här)
+		for id in Gambits.blocks(data):
+			if not Gambits.has(run.profile.gambits, id):
+				run.profile.gambits.append(id)
+	if "--gambit-once" in OS.get_cmdline_user_args() and current != "" and not run.macros[current].lines.is_empty():
+		run.macros[current].lines[0].once = true  # skärmdumpar: brickan EN GÅNG PER STRID på det första kortet
 	if "--gambit-off" in OS.get_cmdline_user_args() and current != "" and run.macros[current].lines.size() > 1:
 		run.macros[current].lines[1].enabled = false  # skärmdumpar: en avstängd rad (sparas inte med en påhittad profil)
 	_refresh_all()
@@ -446,11 +452,6 @@ func _found_from(r: Dictionary) -> String:
 	return FOUND_SOURCE.get(r.get("source", ""), "")
 
 
-## En låst kloss i radeditorn: namnet och ryktet.
-func _locked_label(block: String) -> String:
-	return "LÅST · %s – %s" % [Gambits.name_of(data, block), Gambits.clue(data, block)]
-
-
 # --- Uppdatera listorna ---------------------------------------------------------
 
 func _refresh_all() -> void:
@@ -571,6 +572,18 @@ func _demo_drag() -> void:
 func toggle_line(i: int) -> void:
 	var line: Dictionary = run.macros[current].lines[i]
 	line.enabled = not line.get("enabled", true)
+	run.save_macros()
+	run.ui("ui_toggle", -10.0)
+	_refresh_lines()
+
+
+## Gambits 3: brickan på kortet växlar mellan varje gång och en gång per strid.
+func toggle_once(i: int) -> void:
+	var line: Dictionary = run.macros[current].lines[i]
+	if line.get("once", false):
+		line.erase("once")
+	else:
+		line.once = true
 	run.save_macros()
 	run.ui("ui_toggle", -10.0)
 	_refresh_lines()
@@ -748,49 +761,30 @@ func _open_editor(index: int) -> void:
 func _fill_lists() -> void:
 	_options.clear()
 	var owned: Array = run.profile.gambits
-	# Gambits 2: bara ägda klossar, och de låsta en gång var, sist och med sitt rykte (de går inte att välja).
+	# Bara ägda klossar syns (VD 2026-10-27: "Det får komma överraskningar"); oägda erbjuds aldrig, inte ens som låsta.
 	var subjects: Array = []
-	var locked_subjects: Array = []
 	for s in MacroRunner.SUBJECTS:
 		var b := Gambits.subject_block(data, s)
 		if b == "" or Gambits.has(owned, b):
 			subjects.append({"label": _cap(MacroRunner.subject_name(s)), "subject": s})
-		elif not locked_subjects.any(func(o: Dictionary) -> bool: return o.gambit == b):
-			locked_subjects.append({"label": _locked_label(b), "subject": s, "locked": true, "gambit": b})
-	subjects.append_array(locked_subjects)
 	var conds: Array = []
-	var locked: Array = []
 	for cond in MacroRunner.CONDITIONS:
 		var gid := Gambits.for_cond(data, cond)
-		var shown := 0
 		for v in _values_for(cond):
 			if gid == "" or Gambits.has(owned, Gambits.cond_block(data, cond, v)):
 				conds.append({"label": MacroRunner.condition_name(data, cond, v), "cond": cond, "value": v})
-				shown += 1
-		if shown == 0 and gid != "" and not locked.any(func(o: Dictionary) -> bool: return o.get("gambit", "") == gid):
-			var first: Variant = _values_for(cond)[0]
-			locked.append({"label": _locked_label(Gambits.cond_block(data, cond, 50 if cond in ["hp_below", "hp_above"] else first)),
-					"cond": cond, "value": first, "locked": true, "gambit": gid})
-	conds.append_array(locked)
 	var actions: Array = []
 	for a in ["attack", "defend", "provoke", "skip", "test_next"]:
 		var gid := Gambits.for_cond(data, a)
-		if gid != "" and not Gambits.has(owned, gid):
-			actions.append({"label": "LÅST · %s – %s" % [MacroRunner.action_label(data, a), Gambits.clue(data, gid)], "action": a,
-					"ability": "", "locked": true})
-			continue
-		actions.append({"label": MacroRunner.action_label(data, a), "action": a, "ability": ""})
+		if gid == "" or Gambits.has(owned, gid):
+			actions.append({"label": MacroRunner.action_label(data, a), "action": a, "ability": ""})
 	for ability_id in _macro_abilities():
 		actions.insert(1, {"label": MacroRunner.action_label(data, "ability", ability_id), "action": "ability", "ability": ability_id})
 	var targets: Array = []
-	var locked_targets: Array = []
 	for t in MacroRunner.TARGETS:
 		var b := Gambits.target_block(data, t)
 		if b == "" or Gambits.has(owned, b):
 			targets.append({"label": _cap(MacroRunner.target_name(t)), "target": t})
-		elif not locked_targets.any(func(o: Dictionary) -> bool: return o.gambit == b):
-			locked_targets.append({"label": _locked_label(b), "target": t, "locked": true, "gambit": b})
-	targets.append_array(locked_targets)
 	_options = {"subject": subjects, "cond": conds, "action": actions, "target": targets}
 	_search.text = ""
 	if conds.size() > AUTO_FOCUS_OVER and not OS.has_feature("mobile"):
@@ -812,7 +806,10 @@ static func _cond_group(cond: String) -> String:
 		return "status"
 	if cond in ["has_trait", "lacks_trait"]:
 		return "trait"
-	if cond in ["is_charging", "charge_left_at_most", "is_channeling", "is_charge_target", "intends_heal"]:
+	if cond in ["intends_heal", "intends_attack", "intends_attack_on", "intends_attack_low", "intends_aoe", "intends_lethal",
+			"leader_charging"]:
+		return "intent"
+	if cond in ["is_charging", "charge_left_at_most", "is_channeling", "is_charge_target"]:
 		return "windup"
 	if cond == "has_charges":
 		return "charges"
@@ -904,7 +901,12 @@ class Card extends Control:
 
 	func toggle_rect() -> Rect2:
 		var w := minf(118.0, size.x * 0.16)
-		return Rect2(size.x - w - 10.0, 12.0, w, size.y - 24.0)
+		return Rect2(size.x - w - 10.0, 10.0, w, (size.y - 20.0) * 0.6)
+
+	## Gambits 3: brickan under PÅ/AV, VARJE GÅNG eller EN GÅNG PER STRID.
+	func once_rect() -> Rect2:
+		var t := toggle_rect()
+		return Rect2(t.position.x, t.end.y + 6.0, t.size.x, size.y - 10.0 - t.end.y - 6.0)
 
 	func _gui_input(event: InputEvent) -> void:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -924,6 +926,8 @@ class Card extends Control:
 				elif event.global_position.distance_to(_press) < HOLD_SLOP:
 					if toggle_rect().has_point(event.position):
 						screen.toggle_line(index)
+					elif once_rect().has_point(event.position):
+						screen.toggle_once(index)
 					else:
 						screen.run.ui_tap()
 						screen._open_editor(index)
@@ -998,6 +1002,14 @@ class Card extends Control:
 		draw_rect(tr, Color(1, 1, 1, 0.35), false, 2.0)
 		UiStyle.text(self, Vector2(tr.position.x, tr.get_center().y + 10), "PÅ" if on else "AV", 26,
 				Color(1, 1, 1, 0.95 if on else 0.6), HORIZONTAL_ALIGNMENT_CENTER, tr.size.x)
+		# En gång per strid.
+		var orr := once_rect()
+		orr.position.y += shift + drag_offset
+		var once: bool = line.get("once", false)
+		draw_rect(orr, Color(0.36, 0.27, 0.08) if once else Color(0.13, 0.12, 0.16))
+		draw_rect(orr, Color(UiStyle.GOLD, 0.8) if once else Color(1, 1, 1, 0.25), false, 2.0)
+		UiStyle.text(self, Vector2(orr.position.x, orr.get_center().y + 6), "1 / STRID" if once else "VARJE GÅNG", 15,
+				Color(1, 0.95, 0.8, 0.95) if once else Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_CENTER, orr.size.x)
 
 
 ## Luppen i sökfältet, ritad med linjer så att den inte beror på typsnittets tecken.
@@ -1034,6 +1046,10 @@ func _values_for(cond: String) -> Array:
 			return [1, 2, 3]
 		"has_charges":
 			return _macro_abilities()
+		"intends_attack_on":
+			return ["me"] + run.macro_heroes()
+		"intends_attack_low":
+			return [30, 50]
 		"weak_to":
 			var bonus := _macro_abilities().filter(func(a: String) -> bool: return data.abilities.get(a, {}).has("bonus_vs"))
 			return bonus if not bonus.is_empty() else ["holy_smite"]

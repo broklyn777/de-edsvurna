@@ -7,8 +7,12 @@ extends SceneTree
 ## kryptan, kapellet på djup 1, sedan djup 2 ×4 och kryptan djup 3.
 
 const Bot := preload("res://tests/combat_bot.gd")
-const PLAN := [["crypt", 1], ["crypt", 1], ["chapel", 1], ["crypt", 1], ["chapel", 1], ["crypt", 2], ["chapel", 2],
+const BASE_PLAN := [["crypt", 1], ["crypt", 1], ["chapel", 1], ["crypt", 1], ["chapel", 1], ["crypt", 2], ["chapel", 2],
 		["crypt", 2], ["chapel", 2], ["crypt", 3]]
+## GAMBIT_PLAN=lang (Gambits 3): karriären fortsätter i Lunden och Berget, för att se hur länge förrådet räcker.
+const LONG_PLAN := [["grove", 1], ["mountain", 1], ["grove", 1], ["mountain", 1], ["grove", 2], ["mountain", 2],
+		["crypt", 3], ["chapel", 3]]
+var PLAN: Array = BASE_PLAN + (LONG_PLAN if OS.get_environment("GAMBIT_PLAN") == "lang" else [])
 const MARKS := [3, 6, 10]
 
 

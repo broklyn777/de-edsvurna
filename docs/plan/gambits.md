@@ -4,6 +4,115 @@ VD 2026-10-27: "kör". Förslaget kommer från Claude-chatten (`docs/ideer/claud
 med Final Fantasy XII som förebild. Siralim är en verktygslåda: där har man alla villkor från start, och här förtjänar man dem.
 I spelets text heter det fortfarande **Makron**. VD har inte bestämt namnet, och "gambit" används bara i koden, datan och den här planen.
 
+## Gambits 3: en gång per strid, avsikter och nya hem
+
+VD 2026-10-27 ("kör"), efter 0.30.51.
+
+1. **En gång per strid** (`once` på raden, som PÅ/AV). Brickan under PÅ/AV på kortet växlar mellan VARJE GÅNG och 1 / STRID
+   (`toggle_once`). Striden minns körda rader i `CombatSim.macro_once` (nyckel `MacroRunner.once_key`: hjälten och radens
+   innehåll). `MacroRunner.decide` registrerar raden när den väljs, utom vid en titt (`peek`, Spara som order). I en kedja
+   räknas varje rad med brickan. Förklaringsloggen skriver "Rad N har redan körts den här striden". Exempel: Imma skjuter
+   Rökpil en gång per strid och sparar sina Charges. *Vårt val*: FF XII har ingen sådan bricka, men den löser det vanligaste
+   felet i botarnas makron, en buff eller debuff som läggs om och om igen.
+2. **Villkor som läser fiendernas avsikter** (gruppen Avsikt i radeditorn, tillsammans med Tänker hela). Avsikten syns
+   redan över fienden, så villkoren läser bara det spelaren ser:
+   - `intends_attack` "tänker anfalla" och `intends_attack_on` "tänker anfalla denna hjälte/Paladinen …" (värdet är `me`
+     eller en hjälte), kloss **Tänker anfalla**.
+   - `intends_attack_low` "tänker anfalla någon med liv < 30/50 %", kloss **Tänker anfalla den svage**.
+   - `intends_aoe` "tänker träffa alla", kloss **Tänker träffa alla** (elit).
+   - `leader_charging` "är bossen eller en elit och laddar sitt stora slag", kloss **Bossen laddar** (elit).
+   - `intends_lethal` "tänker fälla någon" (avsiktens väntade skada, `CombatSim.expected_damage`, når målets liv och
+     Barriär), mästarkloss **Tänker fälla någon**.
+   *Vårt val*: en avsikt som är en helning räknas aldrig som ett anfall (`_intent_victims`).
+3. **Hem i Sidenlunden och Trollberget**: alla klossar med hem har nu också ett hem bland spindlarna och ett bland trollen,
+   med egna rykten (`home_clues`, Biblioteket visar alla, `Gambits.clues`). De skarpa gränserna finns hos Vävmodern,
+   Sömnvävaren och Gråluva, och elitklossarna hos Strypvävaren, Brom och Gråluva.
+4. **Mästarklossar (klass III, rarity `master`)** finns bara hos Realmernas bossar Vävmodern och Bergakungen, 50 % av gångerna
+   (`home_master`):
+   - **Tänker fälla någon** ("Om någon fiende tänker fälla någon → Provocera").
+   - **Förbered kamratens slag** (`ally_bonus_missing`): fienden saknar en status som en levande allierad har en förmåga som
+     slår hårdare mot (`bonus_vs`). Till exempel lägger Imma Rökpil på den som inte är Förblindad, så att Paladinens
+     Rättfärdigt slag biter.
+
+### Balans för Gambits 3 (kört 2026-10-27)
+
+`BALANS=forsta` med `GAMBITS=ny`, före (test-0.30, 0.30.51) och efter, 100 körningar per rad: **identiskt på varje rad**
+(kryptan ensam MACRO 44 % → 44 %, TUNED 45 → 45; kapellet 96 → 96, 98 → 98; Paladinen + Imma 31/69 % → 31/69 %). En ny
+profil äger varken avsiktsvillkoren eller brickan, och botarna använder inte brickan.
+
+Droppmätningen med `GAMBIT_PLAN=lang` (40 karriärer, MACRO): samma tio nedstigningar som förut, sedan Lunden och Berget
+djup 1 två gånger var, djup 2 en gång var, och sist kryptan och kapellet på djup 3. Före = 0.30.51 (43 klossar, inga hem i
+Lunden och Berget). Efter = Gambits 3 (49 klossar).
+
+| Efter nedstigning | 5 | 8 | 10 | 11 (Lunden) | 12 (Berget) | 13 (Lunden) | 16 (Berget 2) | 18 |
+|---|---|---|---|---|---|---|---|---|
+| Klossar ägda före (av 43) | 33,1 | 39,8 | 41,6 | 41,8 | 41,9 | 41,9 | 42,0 | 42,6 |
+| Klossar ägda efter (av 49) | 34,2 | 41,2 | 43,9 | 46,0 | 46,8 | 47,8 | 48,1 | 48,2 |
+| Funna rader före | 25,1 | 31,5 | 33,3 | 33,5 | 33,6 | 33,6 | 33,8 | 34,3 |
+| Funna rader efter | 26,5 | 33,3 | 35,9 | 38,0 | 38,7 | 39,8 | 40,1 | 40,1 |
+
+3/6/10 rader: 3/7/14 vunna strider både före och efter. Mästarklossarna hittades i 31 (Tänker fälla någon) och 24 (Förbered
+kamratens slag) av 40 karriärer, Bossen laddar i 34 och Tänker träffa alla i 39.
+
+**Så ska tabellen läsas**
+
+- Före gav Lunden och Berget i stort sett ingenting (+0,4 klossar på sex nedstigningar). Nu ger de 4,2 klossar och 4,2 rader,
+  de flesta på de första tre nedstigningarna där.
+- **Förrådet räcker fortfarande inte mycket längre.** Med den här karriären har man 44 av 49 klossar efter tio nedstigningar,
+  eftersom kryptan och kapellet redan ger alla vanliga klossar. Hemmen i Lunden och Berget är ett andra ställe att hitta samma klossar,
+  inte nya klossar. Den som går till Lunden tidigt hittar sina klossar där i stället. För att förrådet ska räcka märkbart
+  längre behövs fler klossar som bara finns i de nya Realmerna, eller färre hem per kloss i kryptan och kapellet. Det är VD:s
+  val.
+
+### En rad per följeslagare och lugnare droppar (VD 2026-10-27, efter provspel av 0.30.51)
+
+5. **En rad per följeslagare** (`Gambits.own_row`, `recruit_gift`, `Run.starter_lines`). En följeslagare som ansluter ger
+   bara sin egen rad, makroförslaget eller teach-raden om förslag saknas, och klossarna i den. Hon ger inte sina startmakron
+   och inte klossarna i dem. En ny profils följeslagare börjar med den raden och inget annat (Alva: "liv < 50 % → Helande
+   ljus", Imma: "har en buff → Anfall"). Passar den inte väntar hjälten, och man spelar henne för hand. Gamla profiler
+   behåller sina makron och allt de äger.
+6. **Lugnare droppar**: hem 4 %, elit 25 %, boss 50 %, mästare 50 %, var som helst 1 %, kista 15 % för en kistkloss och 3 %
+   för en vanlig (förut 15/60/100/50/2, 50/12). VD bad om ungefär 10 % och 1 %, men det gav 9,9 rader efter två
+   nedstigningar. Målet 5–6 krävde också lägre chans hos elit, boss och kistor.
+
+`BALANS=forsta`, `GAMBITS=ny`, 100 körningar per rad, MACRO. *Före* = 0.30.51 (följeslagarna med två startrader och
+reservanfallet). *Efter, AUTO* = en rad per följeslagare, och boten försvarar sig när ingen rad passar, som en spelare som
+bara trycker AUTO. *Efter, för hand* = samma, men boten anfaller den svagaste fienden när ingen rad passar
+(`BOT_HAND=1`), som en spelare som tar över.
+
+| Realm | Rad | Före | Efter, AUTO | Efter, för hand |
+|---|---|---|---|---|
+| Kryptan | ensam, Imma efter strid 1 (profilens första) | 44 % | 19 % | 46 % |
+| Kryptan | första nedstigningen (trappa) | 46 % | 17 % | 46 % |
+| Kryptan | Paladinen + Imma, nivå 3 | 31 % | 0 % | 28 % |
+| Kryptan | + Imma + Brokk, nivå 3 | 51 % | 2 % | 62 % |
+| Kryptan | andra, nivå 3, en fånge | 33 % | 0 % | 35 % |
+| Kryptan | ny profil nivå 1, befriar fångar | 10 % | 0 % | 9 % |
+| Kapellet | ensam, Imma efter strid 1 | 96 % | 33 % | 96 % |
+| Kapellet | första nedstigningen (trappa) | 96 % | 33 % | 96 % |
+| Kapellet | Paladinen + Imma, nivå 3 | 69 % | 9 % | 69 % |
+| Kapellet | + Imma + Brokk, nivå 3 | 49 % | 11 % | 46 % |
+| Kapellet | andra, nivå 3, en fånge | 41 % | 6 % | 42 % |
+| Kapellet | ny profil nivå 1, befriar fångar | 15 % | 1 % | 18 % |
+
+- **Den som bara trycker AUTO förlorar mycket oftare**: kryptans första nedstigning 44 → 19 % och kapellets 96 → 33 %. Imma
+  har bara "har en buff → Anfall" och står och försvarar sig nästan hela striden. Det är VD:s avsikt ("då spelar man henne
+  för hand"), men den som inte vet det fastnar. En hjälpruta eller Gorms replik om att en hjälte utan passande rad väntar
+  på en kan behövas. Siffrorna är inte kompenserade.
+- **Den som tar över för hand vinner lika ofta som förut.**
+
+Droppmätningen (`BOT_HAND=1 GAMBIT_PLAN=lang`, 40 karriärer):
+
+| Efter nedstigning | 1 | 2 | 3 | 5 | 10 | 13 (Lunden) | 16 (Berget 2) | 18 |
+|---|---|---|---|---|---|---|---|---|
+| Funna rader | 3,3 | 6,5 | 10,0 | 15,2 | 24,3 | 32,5 | 36,4 | 37,8 |
+| Klossar ägda (av 49) | 5,5 | 9,2 | 13,3 | 19,1 | 28,7 | 37,1 | 41,1 | 42,5 |
+
+3/6/10 rader efter 8/17/26 vunna strider (median, nedstigning 1/2/3), förut 3/7/14. Med 15 % gav samma karriär 12,8 rader
+efter två nedstigningar och 44 av 49 klossar efter tio. Nu räcker förrådet ungefär 18 nedstigningar, och Lunden och Berget
+ger en tredjedel av fynden. Mästarklossarna hittades i 29 (Tänker fälla någon) och 17 (Förbered kamratens slag) av 40
+karriärer.
+
 ## Gambits 2: legoklossar och funna rader
 
 VD 2026-10-27 ("kör"): **en makrorad består av legoklossar, och man bygger upp makrosystemet från noll genom att hitta hela
@@ -46,8 +155,10 @@ Biblioteket) gäller som förut.
    fiende har en buff → Anfall". Följeslagaren lär också ut klossarna i sina startrader (`Run.starter_lines`), så att en ny
    profils följeslagare gör samma sak som förut. *Vårt val*: VD vill att makrona byggs från noll, men en följeslagare som
    står stilla för att hennes egen startrad är låst är inte roligt.
-7. **Radeditorn visar bara ägda klossar** och sist de låsta villkoren, subjekten och målen, en gång var med sitt rykte.
-   En ny profil ser alltså bara Lägst liv bland villkoren, inte tio rader med liv.
+7. **Radeditorn visar bara ägda klossar.** En ny profil ser alltså bara Lägst liv bland villkoren, inte tio rader med liv.
+   VD 2026-10-27 (Gambits 3): låsta klossar syns inte alls i editorn, inte ens Pröva nästa rad ("Det får komma
+   överraskningar … annars blir det övermäktigt"). En rad i ett gammalt makro med en oägd kloss står kvar som ett låst kort
+   på gambitsidan. Biblioteket och ryktena är oförändrade tills VD har bestämt.
 8. **Gamla profiler förlorar ingenting**. Den här versionen (`gambit_version` 2) behandlar profiler från före gambits och
    från 0.30.50 som gamla: allt i deras makron räknas som ägt, och för ett villkor man äger räknas alla gränser som ägda
    (familjens id, `g_hp_below`, äger alla gränser, `Gambits.has`). De startvillkor som 0.30.50 gav (Liv under …, Lever)

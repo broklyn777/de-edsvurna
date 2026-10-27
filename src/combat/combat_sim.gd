@@ -119,6 +119,8 @@ var units: Array[CombatUnit] = []
 var heroes: Array[CombatUnit] = []
 var enemies: Array[CombatUnit] = []
 var turn_no := 0
+## Gambits 3: makrorader med "en gång per strid" som har körts (MacroRunner.once_key).
+var macro_once := {}
 ## Tidslinjen efter den som har turen: kön av levande figurer, i ordning.
 var order: Array[String] = []
 var current: CombatUnit
