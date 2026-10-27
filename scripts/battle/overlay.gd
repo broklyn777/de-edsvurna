@@ -96,7 +96,7 @@ func _draw_calc(w: float) -> void:
 	for line in calc_lines:
 		h += font.get_multiline_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, bw - 40, 18).y + 6
 	var r := Rect2((w - bw) / 2.0, 66, bw, h + 34)
-	draw_rect(r, Color(0.03, 0.025, 0.05, 0.95))
+	draw_rect(r, UiStyle.panel(0.95) if UiStyle.ink else Color(0.03, 0.025, 0.05, 0.95))
 	draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.85), false, 2.0)
 	UiStyle.text(self, r.position + Vector2(20, 36), calc_title, 22, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_LEFT, bw - 40, 4)
 	var y := r.position.y + 70
@@ -172,7 +172,7 @@ func _draw_deciders(w: float, h: float, a: float) -> void:
 	var y := _deciders_top(h)
 	# En mörk platta, så att raderna går att läsa ovanpå sällskapets ramar (tre eller fyra hjältar).
 	var plate := Rect2(x - 14, y - 26, 358, 48 + deciders.size() * 64)
-	draw_rect(plate, Color(0.03, 0.03, 0.05, 0.92 * a))
+	draw_rect(plate, UiStyle.panel(0.92 * a) if UiStyle.ink else Color(0.03, 0.03, 0.05, 0.92 * a))
 	draw_rect(plate, Color(UiStyle.TRAIT_GOLD, 0.35 * a), false, 1.5)
 	UiStyle.text(self, Vector2(x, y), "DET HÄR AVGJORDE STRIDEN", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT, 330, 4)
 	for i in deciders.size():
@@ -207,7 +207,7 @@ func _decider_rect(i: int) -> Rect2:
 func _draw_alternatives(h: float, a: float) -> void:
 	var list: Array = alternatives[alt_open]
 	var r := Rect2(384, _deciders_top(h) - 26, 440, 52 + list.size() * 66)
-	draw_rect(r, Color(0.03, 0.03, 0.05, 0.96 * a))
+	draw_rect(r, UiStyle.panel(0.96 * a) if UiStyle.ink else Color(0.03, 0.03, 0.05, 0.96 * a))
 	draw_rect(r, Color(UiStyle.GOLD, 0.6 * a), false, 2.0)
 	UiStyle.text(self, r.position + Vector2(14, 26), "KUNDE TA DESS PLATS", 16, Color(1, 1, 1, 0.6 * a), HORIZONTAL_ALIGNMENT_LEFT,
 			r.size.x - 28, 4)
@@ -305,7 +305,7 @@ func confirm_no_rect() -> Rect2:
 func _draw_confirm(w: float, h: float) -> void:
 	draw_rect(Rect2(0, 0, w, h), Color(0, 0, 0, 0.72))
 	var panel := Rect2(w / 2 - 330, h / 2 - 120, 660, 250)
-	draw_rect(panel, Color(0.07, 0.06, 0.09, 0.97))
+	draw_rect(panel, UiStyle.panel(0.97) if UiStyle.ink else Color(0.07, 0.06, 0.09, 0.97))
 	draw_rect(panel, Color("#e0412e", 0.8), false, 2.0)
 	UiStyle.text(self, Vector2(0, h / 2 - 72), "GE UPP?", 34, Color("#e0412e"), HORIZONTAL_ALIGNMENT_CENTER, w, 6)
 	var text := "Övningen avslutas." if _confirm_practice else "Körningen är förlorad och Realmen börjar om från våning 1."
@@ -400,7 +400,8 @@ func _draw() -> void:
 		var a := minf(1.0, _announce_t)
 		var pop := 1.0 + 0.3 * maxf(0.0, (_announce_t - 2.8) / 0.2)
 		draw_set_transform(Vector2(w / 2, 150), 0, Vector2.ONE * pop)
-		UiStyle.text(self, Vector2(-w / 2, 0), _announce, 30, Color(1, 0.55, 0.2, a), HORIZONTAL_ALIGNMENT_CENTER, w, 6)
+		UiStyle.ink_text(self, Vector2(-w / 2, 0), _announce, 30, Color(UiStyle.INK_DANGER if UiStyle.ink else Color(1, 0.55, 0.2), a),
+				HORIZONTAL_ALIGNMENT_CENTER, w, 6)
 		draw_set_transform(Vector2.ZERO)
 	if rules_text != "":
 		# Till vänster om knappkolumnen (STRIDSLOGG, MAKRON, LJUD), så att raden inte ritas ovanpå dem.
@@ -409,7 +410,7 @@ func _draw() -> void:
 	if inspect_title != "":
 		var bw := minf(w - 40.0, 760.0)
 		var r := Rect2((w - bw) / 2.0, 70, bw, 70 + inspect_lines.size() * 46)
-		draw_rect(r, Color(0.03, 0.025, 0.05, 0.94))
+		draw_rect(r, UiStyle.panel(0.94) if UiStyle.ink else Color(0.03, 0.025, 0.05, 0.94))
 		draw_rect(r, Color(UiStyle.TRAIT_GOLD, 0.8), false, 2.0)
 		UiStyle.text(self, r.position + Vector2(0, 38), inspect_title, 28, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, bw, 5)
 		for i in inspect_lines.size():

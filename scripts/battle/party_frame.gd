@@ -72,8 +72,8 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var r := Rect2(Vector2.ZERO, size).grow(-2.0 * _press)
-	draw_rect(r, UiStyle.PANEL)
-	var border := Color(unit.color, 0.5)
+	draw_rect(r, UiStyle.panel())
+	var border := UiStyle.INK_EDGE if UiStyle.ink else Color(unit.color, 0.5)
 	var border_w := 2.0
 	if active:
 		border = Color(UiStyle.GOLD, 0.75 + 0.25 * sin(_t * 6.0))
@@ -83,7 +83,7 @@ func _draw() -> void:
 		border_w = 3.0
 	elif unit.alive and unit.hp_pct() < 0.35:
 		border = Color(1, 0.2, 0.15, 0.6 + 0.4 * sin(_t * 10.0))
-	draw_rect(r, border, false, border_w)
+	draw_rect(r, UiStyle.inked(border) if UiStyle.ink and not active else border, false, border_w)
 
 	Glyphs.draw(self, UiStyle.GLYPHS.get(unit.id, "diamond"), Vector2(19, 15), 8.0, unit.color)
 	# 0.26: livet har decimaler; den som lever visar minst 1.

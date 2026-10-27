@@ -156,6 +156,8 @@ func _ready() -> void:
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
 			state.artifacts, state.depth, opts)
 	data = sim.data  # med artefakternas egenskaper
+	UiStyle.ink = GameSettings.ink_style  # prototyp (ink-proto): tuschstilen
+	add_to_group(&"ink_style")
 	_build_scene()
 	_build_ui()
 	_update_rules_text()
@@ -216,6 +218,7 @@ func _build_scene() -> void:
 	add_child(sfx)
 	world = CryptWorld.new()
 	world.style = data.realms.get(run.state.realm, {}).get("style", "crypt")
+	world.ink = GameSettings.ink_style
 	add_child(world)
 	var spots := UnitModel.formation(sim.heroes)  # sköldarna längst fram, bara utseende
 	for u in sim.units:
@@ -312,7 +315,7 @@ func _build_ui() -> void:
 	macro_chip.pressed.connect(_open_macro_editor)
 	ui.add_child(macro_chip)
 	settings_chip = ChipButton.new()
-	settings_chip.setup("LJUD", 140)
+	settings_chip.setup("LJUD · STIL", 140)
 	settings_chip.pressed.connect(func() -> void: SettingsBox.open(self, true))  # 0.30: pausar striden
 	ui.add_child(settings_chip)
 	overlay = BattleOverlay.new()
@@ -967,6 +970,13 @@ func receipt() -> Array[String]:
 
 func _exit_tree() -> void:
 	UnitModel.free_shared()
+	UiStyle.ink = false  # menyerna ritas alltid som förut
+
+
+## Prototyp (ink-proto): STIL växlades i inställningsrutan mitt i striden.
+func apply_ink_style() -> void:
+	UiStyle.ink = GameSettings.ink_style
+	world.set_ink(GameSettings.ink_style)
 
 
 # --- Händelser → känsla -----------------------------------------------------
@@ -1497,5 +1507,11 @@ class Markers extends Node2D:
 		var m: UnitModel = battle.models[unit_id]
 		var feet: Vector2 = battle.world.project(m.global_position)
 		draw_set_transform(feet, 0, Vector2(1, 0.42))
-		draw_arc(Vector2.ZERO, radius, 0, TAU, 48, color, width, true)
+		if UiStyle.ink:
+			# Tusch: en handdragen ellips i två drag som inte riktigt möts, guld för den som agerar, rött för ett mål.
+			var c := UiStyle.inked(color)
+			draw_arc(Vector2.ZERO, radius, -0.3, TAU - 0.5, 48, c, width * 0.8, true)
+			draw_arc(Vector2(2, 1), radius + 3.0, 0.6, TAU - 0.1, 48, Color(c, c.a * 0.55), 1.5, true)
+		else:
+			draw_arc(Vector2.ZERO, radius, 0, TAU, 48, color, width, true)
 		draw_set_transform(Vector2.ZERO)
