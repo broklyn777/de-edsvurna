@@ -2187,5 +2187,83 @@
 				"aura": "guilt"
 			}
 		]
+	},
+	"pal_intervene": {
+		"name": "Kasta sig emellan",
+		"cue": "defend",
+		"target": "self",
+		"icon": "shield",
+		"button_color": "#c9a24a",
+		"sound": "k_shield_wall",
+		"charges": 6,
+		"cooldown": 2,
+		"text": "Paladinen kastar sig emellan: fiendernas anfall går till honom fram till hans nästa tur, och han tar 25 % mindre skada. Ingen Defense går förlorad.",
+		"effects": [
+			{
+				"type": "aura",
+				"aura": "pal_between"
+			}
+		]
+	},
+	"pal_command": {
+		"name": "Befäl",
+		"cue": "bloodlust",
+		"target": "ally",
+		"kind": "spell",
+		"icon": "bolt",
+		"button_color": "#f2c85b",
+		"sound": "bloodlust",
+		"stack_cost": {
+			"stack": "glod",
+			"n": 3
+		},
+		"extra_action": true,
+		"text": "Kostar 3 Glöd. En allierad agerar direkt, en extra handling som inte flyttar hens plats på tidslinjen, och hens nästa anfall gör 30 % mer skada. Aldrig samma allierad två gånger på en runda.",
+		"effects": [
+			{
+				"type": "extra_action"
+			},
+			{
+				"type": "aura",
+				"aura": "pal_commanded"
+			}
+		]
+	},
+	"pal_foresight": {
+		"name": "Förutseende ljus",
+		"cue": "spell_holy",
+		"target": "ally",
+		"kind": "spell",
+		"school": "holy",
+		"icon": "shield",
+		"button_color": "#ffe48a",
+		"sound": "shield_wall",
+		"charges": 6,
+		"text": "En allierad får en Barriär (160 % av Intelligence) innan slaget kommer.",
+		"effects": [
+			{
+				"type": "barrier",
+				"stat": "intelligence",
+				"pct": 1.6
+			}
+		]
+	},
+	"pal_dawn_wave": {
+		"name": "Gryningsvåg",
+		"cue": "heal_light",
+		"target": "all_allies",
+		"kind": "spell",
+		"school": "holy",
+		"icon": "cross",
+		"button_color": "#5dff73",
+		"sound": "heal_light",
+		"charges": 4,
+		"text": "Hela sällskapet helas (75 % av Intelligence).",
+		"effects": [
+			{
+				"type": "heal",
+				"power": 0.75
+			}
+		]
 	}
 }

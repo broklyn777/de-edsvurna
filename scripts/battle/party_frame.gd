@@ -54,6 +54,20 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 
 
+## Glöden (paladinens inriktningar): fem pärlor, tända efter hur mycket han har. Tre tända räcker till Befäl, och
+## Rättfärdigt slag förbrukar alla.
+func _draw_glow(at: Vector2) -> void:
+	var n := int(unit.stacks.get(CombatSim.GLOW, 0.0))
+	var ember := Color("#ffb347")
+	for i in 5:
+		var c := at + Vector2(i * 11.0, 0)
+		if i < n:
+			draw_circle(c, 5.0 + (0.6 * sin(_t * 5.0 + i) if n >= 5 else 0.0), ember)
+			draw_circle(c, 2.0, Color("#fff2c0"))
+		else:
+			draw_arc(c, 4.5, 0, TAU, 16, Color(ember, 0.45), 1.5, true)
+
+
 func _process(delta: float) -> void:
 	_t += delta
 	_hit_flash = maxf(0.0, _hit_flash - delta * 4.0)
@@ -104,7 +118,10 @@ func _draw() -> void:
 		draw_rect(hp_rect, Color(0.5, 1, 0.5, 0.35 * _heal_flash))
 
 	# 0.22: statusikoner under livmätaren (buff ljus kant, debuff röd, turer kvar i hörnet).
-	StatusIcons.draw(self, sim.data, unit, Vector2(10, 50), 25.0, size.x - 108)
+	var glow: bool = sim.data.heroes.get(unit.id, {}).has("path")  # paladinens inriktning: Glödens pärlor bredvid AUTO
+	StatusIcons.draw(self, sim.data, unit, Vector2(10, 50), 25.0, size.x - (164 if glow else 108))
+	if glow and unit.alive:
+		_draw_glow(Vector2(size.x - 152, 63))
 	if unit.alive:
 		var tag := Rect2(size.x - 94, 52, 84, 22)
 		draw_rect(tag, Color(UiStyle.GOLD, 0.22) if auto else Color(0, 0, 0, 0.45))

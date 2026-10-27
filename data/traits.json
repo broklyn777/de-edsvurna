@@ -556,9 +556,9 @@
 			"creates": "damage_bonus",
 			"scope": "self"
 		},
-		"name": "Den slocknade glöden",
+		"name": "Den slocknade askan",
 		"trophy": true,
-		"text": "När någon i sällskapet helas får bäraren en Glöd (högst 5). Bärarens nästa förmåga förbrukar dem: +15 % skada per Glöd.",
+		"text": "När någon i sällskapet helas får bäraren en Aska (högst 5). Bärarens nästa förmåga förbrukar dem: +15 % skada per Aska.",
 		"trigger": "heal",
 		"quiet": true,
 		"when": {
@@ -568,14 +568,14 @@
 		"effects": [
 			{
 				"type": "stack",
-				"stack": "glod",
+				"stack": "aska",
 				"max": 5,
 				"target": "self"
 			}
 		],
 		"release": {
 			"action": "ability",
-			"stack": "glod",
+			"stack": "aska",
 			"damage_mult_per": 0.15
 		},
 		"lesson": "Glödskelettet hade bara aska kvar. När sällskapet läker tänds i stället något i {bärare}."
@@ -4038,5 +4038,123 @@
 				"target": "self"
 			}
 		]
+	},
+	"path_shield_core": {
+		"name": "Edens sköld",
+		"trigger": "passive",
+		"guard_allies": 0.15,
+		"text": "Paladinen tar 15 % av varje träff mot en annan i sällskapet. Hans Försvara, Beskyddad och Kasta sig emellan minskar andelen."
+	},
+	"path_shield_glow": {
+		"name": "Glöd",
+		"quiet": true,
+		"text": "Paladinen får en Glöd när han träffas eller tar en träff åt någon (högst 5). Rättfärdigt slag förbrukar all: +15 % skada, 2 Barriär och 2 helning åt honom per Glöd. Befäl kostar 3.",
+		"trigger": "damage",
+		"when": {
+			"target": "self",
+			"source": "enemy",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "stack",
+				"stack": "glod",
+				"max": 5,
+				"target": "self"
+			}
+		],
+		"release": {
+			"ability": "holy_smite",
+			"stack": "glod",
+			"damage_mult_per": 0.15,
+			"effects": [
+				{
+					"type": "barrier",
+					"min": 2,
+					"max": 2,
+					"per_stack": true,
+					"target": "self"
+				},
+				{
+					"type": "heal",
+					"min": 2,
+					"max": 2,
+					"per_stack": true,
+					"target": "self"
+				}
+			]
+		},
+		"parts": [
+			"path_shield_glow_guard"
+		]
+	},
+	"path_shield_glow_guard": {
+		"name": "Glöd",
+		"hidden": true,
+		"quiet": true,
+		"text": "",
+		"trigger": "guarded",
+		"when": {
+			"unit": "self"
+		},
+		"effects": [
+			{
+				"type": "stack",
+				"stack": "glod",
+				"max": 5,
+				"target": "self"
+			}
+		]
+	},
+	"path_light_core": {
+		"name": "Gryningens hand",
+		"text": "Paladinens direkta träffar helar den svagaste i sällskapet för 25 % av skadan. Med Gryningens kall ersätter den kallets egen helning.",
+		"trigger": "damage",
+		"when": {
+			"source": "self",
+			"direct": true
+		},
+		"effects": [
+			{
+				"type": "heal",
+				"pct_of_event": 0.25,
+				"target": "weakest_ally"
+			}
+		],
+		"suppresses": [
+			"oath_dawn_light"
+		]
+	},
+	"path_light_glow": {
+		"name": "Glöd",
+		"quiet": true,
+		"text": "Paladinen får en Glöd när han helar någon (högst 5). Rättfärdigt slag förbrukar all: +15 % skada och 2 Barriär åt den svagaste per Glöd. Befäl kostar 3.",
+		"trigger": "heal",
+		"when": {
+			"source": "self",
+			"min_effective": 1
+		},
+		"effects": [
+			{
+				"type": "stack",
+				"stack": "glod",
+				"max": 5,
+				"target": "self"
+			}
+		],
+		"release": {
+			"ability": "holy_smite",
+			"stack": "glod",
+			"damage_mult_per": 0.15,
+			"effects": [
+				{
+					"type": "barrier",
+					"min": 2,
+					"max": 2,
+					"per_stack": true,
+					"target": "weakest_ally"
+				}
+			]
+		}
 	}
 }

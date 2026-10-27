@@ -1,6 +1,6 @@
 {
 	"_comment": "0.25 (docs/plan/0.25-berattelsen.md §3): hjälprutorna med ett grönt ?, som Siralims. Varje ruta visas första gången man möter systemet (Help.offer), en gång per profil, och alla går att läsa igen i Broder Alriks handbok. Ordningen här är handbokens.",
-	"order": ["timeline", "combo", "windup", "guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "room_map", "realm_quest", "seals", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "omens", "living_map", "forfeit"],
+	"order": ["timeline", "combo", "glow", "windup", "guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "room_map", "realm_quest", "seals", "trophies", "charges", "macros", "artifacts", "materials", "statuses", "perks", "disciples", "depth", "instability", "omens", "living_map", "forfeit"],
 	"entries": {
 		"timeline": {
 			"title": "Tidslinjen",
@@ -120,6 +120,10 @@
 				"De flesta varar några turer, räknat i ägarens egna turer. En del försvinner när något särskilt händer.",
 				"Granska en figur för att se vad varje status gör och hur länge den varar."
 			]
+		},
+		"glow": {
+			"title": "Glöden och din väg",
+			"text": ["Sköldbäraren får Glöd av slagen han tar, också dem han tar åt någon annan. Ljusbäraren helar genom att slåss och får Glöd när han helar.", "Glöden är de fem pärlorna i hans ram. Rättfärdigt slag förbrukar all och slår hårdare för varje pärla. Befäl kostar tre: en vän agerar direkt.", "Kasta sig emellan drar fiendernas anfall till Sköldbäraren till nästa tur. Vägen byts hos Mäster Gorm."]
 		},
 		"perks": {
 			"title": "Kallets perks",

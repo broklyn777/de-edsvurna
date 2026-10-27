@@ -60,6 +60,12 @@ var intro_talked := false
 ## 0.24.2: paladinens namn (Siralim låter spelaren namnge sig). Tomt blir DEFAULT_NAME.
 var hero_name := DEFAULT_NAME
 const DEFAULT_NAME := "Paladinen"
+## Paladinens inriktning (Paths, docs/plan/paladin-inriktningar.md): "shield", "light" eller "" (som förut, gamla profiler
+## tills de väljer). path_changes räknar bytena hos Gorm (det första är gratis); path_offered = rutan har visats en gång
+## för en profil som fanns före inriktningarna.
+var path := ""
+var path_changes := 0
+var path_offered := false
 const NAME_MAX := 16
 ## 0.24: påbörjade nedstigningar per Realm (Syster Alva räddas på den andra i kryptan) och samtal per person
 ## (vardagsrepliken växlar).
@@ -831,6 +837,28 @@ func learn_gambit(data: Dictionary, id: String) -> bool:
 	return true
 
 
+## Väljer eller byter paladinens inriktning. Det första valet och det första bytet är gratis, sedan Paths.BYTE_COST
+## silver. Eden lär ut inriktningens startrader (färdiga rader och deras klossar). Returnerar raderna som är nya hos
+## profilen (för makrot), eller null om valet inte gick (okänd väg, samma väg, för lite silver).
+func choose_path(data: Dictionary, path_id: String) -> Variant:
+	if not Paths.valid(data, path_id) or path_id == path:
+		return null
+	var price := Paths.cost(path, path_changes)
+	if silver < price:
+		return null
+	silver -= price
+	if path != "":
+		path_changes += 1
+	path = path_id
+	var out := []
+	for row in Paths.rows(data, path_id):
+		var known := found_rows.any(func(r: Dictionary) -> bool: return Gambits.same_line(r.line, row.line))
+		learn_row(data, row, "oath", "Lärd vid eden: " + Paths.path_name(data, path_id))
+		if not known:
+			out.append(row.line)
+	return out
+
+
 ## Gambits 2: ett fynd är en färdig rad ({line, hero, block}, Gambits.make_row). Radens klossar blir profilens, och raden
 ## sparas bland de funna. Returnerar klossarna som var nya.
 func learn_row(data: Dictionary, row: Dictionary, source: String, from := "") -> Array:
@@ -920,6 +948,9 @@ func save(path: String) -> Error:
 	cfg.set_value("progress", "inn_seen", inn_seen)
 	cfg.set_value("progress", "intro_talked", intro_talked)
 	cfg.set_value("progress", "hero_name", hero_name)
+	cfg.set_value("progress", "path", path)
+	cfg.set_value("progress", "path_changes", path_changes)
+	cfg.set_value("progress", "path_offered", path_offered)
 	cfg.set_value("progress", "descents", descents)
 	cfg.set_value("progress", "talks", talks)
 	cfg.set_value("progress", "home_runs", home_runs)
@@ -1007,6 +1038,9 @@ static func load_from(path: String) -> Profile:
 		p.intro_talked = false  # svärdssteget börjar med Heddas samtal
 	p.inn_seen = int(cfg.get_value("progress", "inn_seen", p.recruited.size()))
 	p.set_hero_name(String(cfg.get_value("progress", "hero_name", DEFAULT_NAME)))
+	p.path = String(cfg.get_value("progress", "path", ""))
+	p.path_changes = int(cfg.get_value("progress", "path_changes", 0))
+	p.path_offered = bool(cfg.get_value("progress", "path_offered", false))
 	p.talks = cfg.get_value("progress", "talks", {})
 	p.home_runs = cfg.get_value("progress", "home_runs", {})
 	p.last_contrib = cfg.get_value("progress", "last_contrib", {})

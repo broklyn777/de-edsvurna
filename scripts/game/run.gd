@@ -264,6 +264,21 @@ func choose_slot(i: int, new_name := "", skip_intro := false) -> void:
 func apply_name() -> void:
 	data.heroes.paladin.name = profile.hero_name
 	data.heroes.paladin.short = profile.hero_name
+	Paths.apply(data, profile.path)  # paladinens inriktning hör till samma data om honom
+
+
+## Väljer eller byter paladinens inriktning (eden, Gorm). Eden lägger startraderna överst i paladinens makro.
+## Sant om valet gick igenom.
+func choose_path(path_id: String) -> bool:
+	var rows: Variant = profile.choose_path(data, path_id)
+	if rows == null:
+		return false
+	Paths.apply(data, profile.path)
+	var lines: Array = rows
+	for i in range(lines.size() - 1, -1, -1):
+		add_row("paladin", lines[i])
+	save()
+	return true
 
 
 func rename(n: String) -> void:
@@ -552,6 +567,10 @@ func _dev_args() -> void:
 			sheet_heroes = profile.party.duplicate()
 			sheet_can_change_personality = true
 			get_tree().change_scene_to_file.call_deferred(HERO_SCENE)
+		elif arg.begins_with("--path="):
+			# Paladinens inriktning för en körning (shield, light, "" = som förut); sparas inte av sig själv.
+			profile.path = arg.get_slice("=", 1)
+			Paths.apply(data, profile.path)
 		elif arg.begins_with("--name="):
 			profile.set_hero_name(arg.get_slice("=", 1))  # paladinens namn (0.24.2), sparas inte av sig självt
 		elif arg.begins_with("--silver="):

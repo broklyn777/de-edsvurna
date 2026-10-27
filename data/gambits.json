@@ -720,6 +720,38 @@
 				{"subject": "any_enemy", "cond": "omen_is", "value": "@omen", "action": "attack", "target": "that"}
 			]
 		},
+		"g_glow": {
+			"conds": [
+				"glow_at_least"
+			],
+			"name": "Glöd minst …",
+			"rarity": "oath",
+			"clue": "Eden lär ut det: den som har valt en väg vet när Glöden räcker.",
+			"rows": [
+				{"subject": "self", "cond": "glow_at_least", "value": 4, "action": "ability", "ability": "damage", "target": "that"},
+				{"subject": "self", "cond": "glow_at_least", "value": 4, "action": "defend"}
+			]
+		},
+		"g_attack_target": {
+			"conds": [
+				"is_attack_target"
+			],
+			"name": "Är målet för ett anfall",
+			"rarity": "common",
+			"homes": [
+				"bone_runner",
+				"cult_zealot",
+				"barb_spider"
+			],
+			"clue": "Benspringarna och Blodsvurna pekar ut sitt byte innan de slår.",
+			"home_clues": {
+				"grove": "Hullingspindeln stirrar på sitt byte en lång stund innan den hugger."
+			},
+			"rows": [
+				{"subject": "any_ally", "cond": "is_attack_target", "action": "ability", "ability": "protect", "target": "that"},
+				{"subject": "any_ally", "cond": "is_attack_target", "action": "provoke"}
+			]
+		},
 		"g_chain": {
 			"conds": [
 				"test_next"

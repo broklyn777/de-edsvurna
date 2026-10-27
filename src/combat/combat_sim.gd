@@ -515,12 +515,18 @@ static func scale_unit(u: CombatUnit, mult: float) -> void:
 
 
 ## Lägger till dolda delar ("parts") av egenskaper, t.ex. en kronas nackdel.
+## Paladinens inriktning (docs/plan/paladin-inriktningar.md): en egenskap med "suppresses" tar bort de delarna, så att
+## Ljusbärarens kärna ersätter Gryningens kalls egen helning i stället för att staplas med den.
 static func expand_traits(game_data: Dictionary, list: Array) -> Array:
+	var suppressed := []
+	for trait_id in list:
+		suppressed.append_array(game_data.traits[trait_id].get("suppresses", []))
 	var out := []
 	for trait_id in list:
 		out.append(trait_id)
 		for part in game_data.traits[trait_id].get("parts", []):
-			out.append(part)
+			if not suppressed.has(part):
+				out.append(part)
 	return out
 
 ## Ger hjälten artefakten: typens stat och en egenskap som kastar förmågan när handlingen görs.
@@ -691,6 +697,12 @@ func can_act(u: CombatUnit, action: String, ability_id := "") -> String:
 		return "forbidden"
 	if u.cooldown_left(id) > 0.0:
 		return "cooldown"
+	# Paladinens inriktning: en förmåga som kostar Glöd (Befäl) kräver så många staplar.
+	var cost: Dictionary = data.abilities[id].get("stack_cost", {})
+	if not cost.is_empty() and u.stacks.get(cost.stack, 0.0) < float(cost.n):
+		return "glow"
+	if data.abilities[id].get("extra_action", false) and u.team == 0 and command_targets(u).is_empty():
+		return "no_target"
 	return ""
 
 
@@ -1396,6 +1408,8 @@ func _perform(u: CombatUnit, ability_id: String, action: String, target_id: Stri
 		_remove_aura(u, "arcane", "used")
 	elif u.charges.has(ability_id) and full_charges(ability_id) > 0:
 		u.charges[ability_id] -= 1
+	if ab.has("stack_cost"):
+		u.stacks[ab.stack_cost.stack] = maxf(0.0, u.stacks.get(ab.stack_cost.stack, 0.0) - float(ab.stack_cost.n))
 	var targets := _targets_for(u, ab, target_id)
 	var cooldown: float = ab.get("cooldown", 0.0)
 	if cooldown > 0.0:
@@ -1541,6 +1555,8 @@ func _apply_effects(caster: CombatUnit, ability_id: String, targets: Array) -> v
 					_status_effect(effect, t)
 				"family_to_top":
 					_group_to_top(_family(t))
+				"extra_action":
+					_grant_extra_action(caster, t)
 				"drain_charge":
 					_drain_charge(t)
 				"consume_corpse":
@@ -2089,14 +2105,19 @@ func _guard_for(src: CombatUnit, tgt: CombatUnit) -> CombatUnit:
 	for x in _family(tgt):
 		if _guard_pct(x) > 0.0:
 			return x
+	# Sköldbärarens Edens sköld: en annan levande i laget med "guard_allies" tar en del av varje träff.
+	for x in _allies(tgt):
+		if x != tgt and x.alive and _guard_pct(x, "guard_allies") > 0.0:
+			return x
 	return null
 
 
-func _guard_pct(u: CombatUnit) -> float:
+func _guard_pct(u: CombatUnit, key := "") -> float:
 	for trait_id in u.traits:
-		var pct := float(data.traits[trait_id].get("guard_family", 0.0))
-		if pct > 0.0:
-			return pct
+		for k in ([key] if key != "" else ["guard_family", "guard_allies"]):
+			var pct := float(data.traits.get(trait_id, {}).get(k, 0.0))
+			if pct > 0.0:
+				return pct
 	return 0.0
 
 
@@ -2139,6 +2160,11 @@ func _guard_takes(src: CombatUnit, guard: CombatUnit, protected: CombatUnit, amo
 		shelter := "") -> void:
 	if not guard.alive:
 		return
+	if guard.team == 0 and shelter == "":
+		# Edens sköld räknas mot paladinens eget försvar: Försvara, Beskyddad och Kasta sig emellan tar del av andelen.
+		for aura_id in guard.auras:
+			amount *= float(data.auras.get(aura_id, {}).get("damage_taken_mult", 1.0))
+		amount = roundf(amount)
 	var absorbed := minf(guard.barrier, amount)
 	if absorbed > 0.0:
 		guard.barrier -= absorbed
@@ -3226,6 +3252,32 @@ func _when(owner: CombatUnit, when: Dictionary, e: Dictionary) -> bool:
 				elif typeof(got) != typeof(want) or got != want:
 					return false
 	return true
+
+
+# --- Befäl (paladinens inriktningar) ----------------------------------------
+# docs/plan/paladin-inriktningar.md: en allierad agerar direkt, en extra handling som inte flyttar hens plats på
+# tidslinjen. Spärrar: aldrig paladinen själv, aldrig den som fick Befäl inom den senaste rundan (antalet levande turer).
+
+var _commanded := {}
+## Paladinens resurs (Glöd) är en stapel med det här namnet (stack/release i egenskaperna, stack_cost i förmågorna).
+const GLOW := "glod"
+
+
+## Allierade som kan få Befäl just nu.
+func command_targets(u: CombatUnit) -> Array:
+	var round_len := units.filter(func(x: CombatUnit) -> bool: return x.alive).size()
+	return _allies(u).filter(func(x: CombatUnit) -> bool:
+		return x != u and x.alive and cannot_act(x) == "" \
+				and turn_no - int(_commanded.get(x.id, -9999)) >= round_len)
+
+
+func _grant_extra_action(caster: CombatUnit, t: CombatUnit) -> void:
+	if not command_targets(caster).has(t):
+		_emit({"type": "timeline_blocked", "unit": t.id, "dir": "top", "reason": "commanded"})
+		return
+	_commanded[t.id] = turn_no
+	order.push_front(t.id)  # en extra post: den vanliga ligger kvar där den låg
+	_emit({"type": "timeline_move", "unit": t.id, "dir": "top", "steps": 0, "extra": true})
 
 
 # --- Staplar och förlösning -------------------------------------------------

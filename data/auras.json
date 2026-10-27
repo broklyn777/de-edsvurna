@@ -439,5 +439,22 @@
 		"damage_mult": 0.85,
 		"glyph": "shield",
 		"text": "Den vandrande kronan: tar 30 % mindre skada men gör 15 % mindre. Går vidare till den allierade med lägst liv efter tre turer."
+	},
+	"pal_between": {
+		"name": "Emellan",
+		"duration": 1,
+		"taunt": true,
+		"damage_taken_mult": 0.75,
+		"buff": true,
+		"text": "Emellan: fiendernas anfall går hit och tar 25 % mindre skada, till nästa tur.",
+		"glyph": "shield"
+	},
+	"pal_commanded": {
+		"name": "Befäl",
+		"duration": 2,
+		"next_attack_mult": 1.3,
+		"buff": true,
+		"text": "Befäl: nästa direkta anfall gör 30 % mer skada.",
+		"glyph": "bolt"
 	}
 }
