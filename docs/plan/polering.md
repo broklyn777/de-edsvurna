@@ -73,6 +73,10 @@ och iPhone.
 1. Borgen: hjältebladet går inte att nå härifrån. Man vill kunna se allt om sina karaktärer när som helst
    (Siralim: skapelserna nås från slottets meny). Förslag: tryck på paladinpjäsen, eller en knapp SÄLLSKAPET under
    INSTÄLLNINGAR, som öppnar `hero_screen` för alla som har anslutit. (Område 4, men syns redan i första timmen.)
+   VD 2026-10-27 (andra gången, HÖG PRIO): "titta på sina karaktärsblad, se vilka troféer man har med mera" ska vara lätt
+   från borgen. Förslag: knappen SÄLLSKAPET i borgen → en översikt med alla hjältar (nivå, trofé, artefakt och dess
+   troféplats, tomma platser markerade) där ett tryck öppnar hjältebladet, och en flik SAMLINGEN med alla troféer
+   sorterade efter roll och vem som bär dem (i dag bara i Biblioteket som rykten/lista).
 2. Kampanjkartan, första nedstigningen: Kapellet och Sidenlunden går att välja (bara Trollberget har `requires` i
    `realms.json`). Förslag: Kapellet öppnas när Kryptan är klarad på djup 1, Sidenlunden efter Kapellet (som Siralim, där
    Realms öppnas efter hand); under introts nedstigning bara Kryptan.
