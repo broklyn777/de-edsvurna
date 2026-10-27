@@ -206,7 +206,11 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   `data/dialog.json`): personen hälsar, säger en vardagsreplik (nyheter först) och erbjuder tjänsterna som val, sist
   "Ingenting just nu". Porträtten läses från `assets/illustrations/portraits/<id>.png` (utklippta ur VD:ns ark
   `portrattark.webp` med `tools/cut_symbols.gd`, `"opaque": true`, `"out"`); Sven och följeslagarna utom Imma ritas som en tuschbyst. Befriade som inte är med bor i
-  värdshuset. Kortraden längst ned är genvägar. **Repliker under nedstigningen** (`Dialog.bark`, `Run.bark`):
+  värdshuset. Kortraden längst ned är genvägar, sist **SÄLLSKAPET** (polering fynd 1, `party_screen`, logiken i `PartyOverview`):
+  alla rekryterade med nivå, trofé, artefakt och dess troféplats, MED eller VÄRDSHUSET (ett tryck öppnar hjältebladet),
+  och fliken SAMLINGEN med var varje trofé sitter (`Profile.trophy_place`), de som bärs först, sedan boss/elit/vanlig;
+  `--party`, `--party-collection`, `--trophy-demo` (efter `--all-companions --forge-demo`). Sällskapet står i sicksack
+  bakom paladinen (`_line_up`) och värdshusets platser lämnar Mor Elin fri. **Repliker under nedstigningen** (`Dialog.bark`, `Run.bark`):
   Imma (och andra) säger en rad efter en svår strid, vid lägerelden, vid ett sällsynt fynd, en befrielse, i en ny
   Realm eller när paladinen står ensam kvar; högst en per rum, aldrig i striden, inget upprepas samma körning
   (`RunState.barks_used`); ibland ett kort samtal mellan två (`pairs`). Visas på rumskartan. 0.28.1: tillfällen i grottan (cave, elite, back, treasure, stairs, boss, fallen; home i datan men visas inte än) för
@@ -601,6 +605,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   mot evigt lås). Sömn/Frusen skjuter upp. Makrovillkor `is_charging`, `charge_left_at_most` (gruppen Laddning); inga rader i
   startmakrona – hjälprutan "windup" och Gorms replik (`help_seen`) lär ut det. Först: Benfurstens Dödsdom (1 tur).
   `--windup` startar en laddning direkt (skärmdumpar). Tester: `tests/test_windup.gd`.
+  **Träffytor** (polering fynd 6, `TargetPick`): kroppen och namnskylten (namn, livmätare, avsikt) räknas; träffar ett tryck
+  flera vinner närmaste mitt. Fiender vars skyltar och överkroppar överlappar i bilden knuffas isär i sidled när striden
+  byggs (`battle.gd` `_spread_enemies`, bara utseende). Ord som stiger över en fiende börjar vid bröstet (`--float-demo`).
   Tidslinjen visar hjältarnas porträtt, fiendernas begynnelsebokstav (elit i guld) och "NU: <namn>". Förklaringsloggen
   visar varför ("rad 2 matchade: …"). Regler, källor och våra val: `docs/plan/0.11-makron.md`,
   `docs/research/siralim.md` §9–9b.
