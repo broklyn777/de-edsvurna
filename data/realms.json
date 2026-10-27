@@ -12,6 +12,7 @@
 			"crypt_g2"
 		],
 		"short": "Kryptan",
+		"gender": "en",
 		"objects": [
 			"sarcophagus",
 			"grave_bell",
@@ -191,6 +192,7 @@
 			"chapel_g2"
 		],
 		"short": "Kapellet",
+		"gender": "ett",
 		"objects": [
 			"stained_window",
 			"bell_rope",
@@ -359,6 +361,7 @@
 			"grove_g2"
 		],
 		"short": "Lunden",
+		"gender": "en",
 		"objects": [
 			"cocoon",
 			"dew_web",
@@ -424,6 +427,7 @@
 			"troll_g2"
 		],
 		"short": "Berget",
+		"gender": "ett",
 		"requires": {
 			"realm": "chapel",
 			"depth": 1

@@ -69,6 +69,9 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   egenskap. Vanlig = pålitlig byggdel, elit = specialiserad, boss = ändrar en regel (med kostnad).
   Hjältarna behåller sina troféer (0.26.3, som i Siralim, `Profile.worn`, `wear()`, `keep_worn()`): de följer med i varje
   körning och i Övningsgården tills man byter i lägret eller i Förberedelser; allt som hittas hamnar i samlingen.
+  **Trofélåset** (0.30.48, fynd 13): en trofé i en artefakt sitter kvar tills den tas ut hos Smeden (`Profile.wear()` och
+  `RunState.equip()` vägrar); rutorna visar var en trofé sitter (`Profile.trophy_place`: "Bärs av Brokk", "I Brokks hjälm")
+  och att ta en trofé från en annan hjälte frågar först (`Profile.move_question`, `ConfirmBox`). Tester: `test_trophy_lock.gd`.
   En andel av en träff (`pct_of_event`, t.ex. följdanfall) blir aldrig kritisk igen.
   Gruppläkaren (0.30, vanlig): Irrblosset lämnar **Den delade lågan** (`shared_flame`): bärarens helning ger hela sällskapet
   Läkning i 1 tur, en gång per tur; villkoret `not_hot` gör att en HoT som tickar inte räknas (`tests/test_shared_flame.gd`).

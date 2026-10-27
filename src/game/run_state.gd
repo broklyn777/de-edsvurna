@@ -584,6 +584,13 @@ static func guardian_trophy(data: Dictionary, enc_id: String) -> String:
 	return String(enc.get("trophy", "")) if enc.get("guardian", false) else ""
 
 
+## Segerns rubrik efter den sista striden, böjd efter Realmens genus (realms.json "gender": "en" eller "ett"):
+## "KRYPTAN RENSAD!", "KAPELLET RENSAT!".
+static func cleared_title(data: Dictionary, realm_id: String) -> String:
+	var realm: Dictionary = data.realms[realm_id]
+	return "%s %s!" % [String(realm.short).to_upper(), "RENSAT" if realm.get("gender", "en") == "ett" else "RENSAD"]
+
+
 func take_trophy(trophy_id: String) -> void:
 	if not trophies.has(trophy_id):
 		trophies.append(trophy_id)

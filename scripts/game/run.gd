@@ -158,6 +158,9 @@ func go_back() -> void:
 		if n is SettingsBox:
 			n._close()
 			return
+		if n is ConfirmBox:
+			n.go_back()
+			return
 		if n is HelpBox:
 			n._next()
 			return
@@ -567,6 +570,11 @@ func _dev_args() -> void:
 				oid = "omen_" + oid
 			profile.omen = oid if RunState.is_omen(data, oid) else ""
 			state.omen = profile.omen
+		elif arg.begins_with("--recruited="):
+			# --recruited=imma,brokk (0.30.48, efter --all-companions): bara de här har anslutit, de andra sitter fångna
+			var keep := arg.get_slice("=", 1).split(",")
+			profile.recruited.assign(profile.recruited.filter(func(id: String) -> bool: return keep.has(id)))
+			profile.set_party(Array(keep))
 		elif arg.begins_with("--vow="):
 			profile.vow = arg.get_slice("=", 1)  # 0.30.17: löftet för nästa körning (före --map)
 		elif arg.begins_with("--growth="):

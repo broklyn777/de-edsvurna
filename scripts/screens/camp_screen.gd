@@ -13,6 +13,8 @@ const RARE_GLOW := Color("#ff9a3c")
 
 var chosen := ""
 var selected := ""
+## 0.30.48: raden när man tryckt på en trofé som sitter i en artefakt.
+var _locked_note := ""
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 @onready var run: Node = get_node("/root/Run")
 var _t := 0.0
@@ -34,6 +36,18 @@ func _ready() -> void:
 		chosen = run.camp_chosen if run.offer.has(run.camp_chosen) else run.offer[0]
 		run.camp_chosen = chosen
 		selected = chosen
+	if OS.get_cmdline_user_args().has("--ask-move") and _swap():  # skärmdumpar: frågan när en buren trofé flyttas
+		_ask_move_demo.call_deferred()
+
+
+func _ask_move_demo() -> void:
+	var state: RunState = run.state
+	for hero_id in state.equipped:
+		for i in state.party.size():
+			if state.party[i] != hero_id:
+				selected = state.equipped[hero_id]
+				_tap(_hero_rect(i).get_center())
+				return
 
 
 func _process(delta: float) -> void:
@@ -75,6 +89,13 @@ func _tap(p: Vector2) -> void:
 	var inv := _inventory()
 	for i in inv.size():
 		if _swap() and _chip_rect(i).has_point(p):
+			_locked_note = ""
+			if _locked(inv[i]):
+				# 0.30.48 (fynd 13): en trofé i en artefakt sitter kvar tills den tas ut hos Smeden.
+				selected = ""
+				_locked_note = "%s sitter %s – ta ut den hos Hedda." % [run.data.traits[inv[i]].name, _place(inv[i]).left(1).to_lower() + _place(inv[i]).substr(1)]
+				run.ui("ui_error", -10.0)
+				return
 			selected = "" if selected == inv[i] else inv[i]
 			return
 	for i in state.party.size():
@@ -84,11 +105,19 @@ func _tap(p: Vector2) -> void:
 	for i in state.party.size():
 		if _swap() and _hero_rect(i).has_point(p):
 			var hero_id := state.party[i]
-			if selected != "":
-				state.equip(hero_id, selected)
-				selected = ""
-			else:
+			if selected == "":
 				state.equip(hero_id, "")
+				return
+			var trophy := selected
+			var q := Profile.move_question(run.data, state.equipped, state.artifacts, hero_id, trophy)
+			if q == "":
+				state.equip(hero_id, trophy)
+				selected = ""
+			else:  # 0.30.48: att ta en trofé från en annan hjälte kräver ett ja
+				ConfirmBox.ask(self, q).answered.connect(func(yes: bool) -> void:
+					if yes:
+						state.equip(hero_id, trophy)
+					selected = "")
 			return
 	if _macro_rect().has_point(p):
 		run.open_macros(run.CAMP_SCENE)
@@ -97,6 +126,15 @@ func _tap(p: Vector2) -> void:
 		if chosen != "":
 			state.take_trophy(chosen)
 		run.after_camp()
+
+
+## Var trofén sitter i körningen ("Bärs av Brokk", "I Brokks hjälm" eller "").
+func _place(trophy_id: String) -> String:
+	return Profile.trophy_place(run.data, run.state.equipped, run.state.artifacts, trophy_id)
+
+
+func _locked(trophy_id: String) -> bool:
+	return run.state.artifacts.values().any(func(a: Dictionary) -> bool: return String(a.get("trophy", "")) == trophy_id)
 
 
 ## Troféer att fördela: de hittade plus den nyss valda.
@@ -115,7 +153,7 @@ func _offer_rect(i: int) -> Rect2:
 
 
 func _chip_rect(i: int) -> Rect2:
-	return Rect2(MARGIN + i * 230, 318, 220, 40)
+	return Rect2(MARGIN + i * 230, 314, 220, 50)
 
 
 func _hero_rect(i: int) -> Rect2:
@@ -183,26 +221,35 @@ func _draw() -> void:
 		UiStyle.lesson(self, Vector2(MARGIN, 287), lesson, size.x - MARGIN * 2, 1)
 
 	# 0.27.2: med en vald trofé står vad den gör i rubrikens ställe.
-	var head := "DINA TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE" if _swap() \
-			else "DINA TROFÉER – DE BYTS VID EN LÄGERELD I GROTTAN"
+	# 0.30.48 (fynd 5): det är körningens troféer; hela samlingen väljs i Förberedelser.
+	var head := "KÖRNINGENS TROFÉER – TRYCK PÅ EN TROFÉ OCH SEDAN PÅ EN HJÄLTE" if _swap() \
+			else "KÖRNINGENS TROFÉER – DE BYTS VID EN LÄGERELD I GROTTAN"
 	if _swap() and selected != "":
 		head = "%s: %s Tryck på en hjälte." % [data.traits[selected].name, data.traits[selected].text]
-	UiStyle.text(self, Vector2(MARGIN, 306), head, 15, Color(1, 1, 1, 0.6) if selected == "" or not _swap() else UiStyle.TRAIT_GOLD,
-			HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN * 2, 3)
+	elif _swap() and _locked_note != "":
+		head = _locked_note
+	UiStyle.text(self, Vector2(MARGIN, 304), head, 15, Color(1, 1, 1, 0.6) if (selected == "" and _locked_note == "") or not _swap() \
+			else UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN * 2, 3)
+	if _swap():
+		UiStyle.text(self, Vector2(MARGIN, 385), "Hela samlingen väljer du i Förberedelser innan du går ned.", 15, Color(1, 1, 1, 0.5),
+				HORIZONTAL_ALIGNMENT_LEFT, size.x - MARGIN * 2, 3)
 	var inv := _inventory()
 	for i in inv.size():
 		var r := _chip_rect(i)
 		var on := selected == inv[i]
-		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.6))
-		draw_rect(r, Color(UiStyle.GOLD, 0.6 + 0.4 * sin(_t * 8.0)) if on else Color(UiStyle.TRAIT_GOLD, 0.4), false, 2.0)
-		var who := state.wearer(inv[i])
-		var label: String = data.traits[inv[i]].name + (" · " + String(data.heroes[who].short) if who != "" else "")
+		var locked := _locked(inv[i])
+		draw_rect(r, Color(0.35, 0.25, 0.05, 0.92) if on else Color(0, 0, 0, 0.75 if locked else 0.6))
+		draw_rect(r, Color(UiStyle.GOLD, 0.6 + 0.4 * sin(_t * 8.0)) if on else Color(UiStyle.TRAIT_GOLD, 0.15 if locked else 0.4), false, 2.0)
+		var place := _place(inv[i])  # 0.30.48: var den sitter
 		var left := 10.0
 		if state.fresh_trophies.has(inv[i]):  # ny för profilen under den här körningen
-			UiStyle.text(self, r.position + Vector2(8, 26), "NY", 15, NEW_GREEN, HORIZONTAL_ALIGNMENT_LEFT, 30, 3)
+			UiStyle.text(self, r.position + Vector2(8, 21), "NY", 15, NEW_GREEN, HORIZONTAL_ALIGNMENT_LEFT, 30, 3)
 			left = 36.0
-		UiStyle.text(self, r.position + Vector2(left, 26), label, 15, UiStyle.TRAIT_GOLD, HORIZONTAL_ALIGNMENT_LEFT,
-				r.size.x - left - 6, 3)
+		UiStyle.text(self, r.position + Vector2(left, 21 if place != "" else 31), UiStyle.fit(data.traits[inv[i]].name, 15, r.size.x - left - 6),
+				15, Color(UiStyle.TRAIT_GOLD, 0.45 if locked else 1.0), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - left - 6, 3)
+		if place != "":
+			UiStyle.text(self, r.position + Vector2(10, 42), UiStyle.fit(place, 15, r.size.x - 16), 15,
+					Color(1, 1, 1, 0.35 if locked else 0.65), HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 16, 3)
 
 	for i in state.party.size():
 		var hero_id := state.party[i]
