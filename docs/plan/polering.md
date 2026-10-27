@@ -93,3 +93,23 @@ och iPhone.
    VD trodde att de andra troféerna var borta eller måste väljas i borgen. Förslag: rubriken "KÖRNINGENS TROFÉER" och en
    rad "Hela samlingen väljer du i Förberedelser innan du går ned"; en hjälte utan trofé (Brokk) markerad som "tom plats".
    Fråga till VD senare: ska hela samlingen gå att välja vid lägerelden? (Mer att hålla reda på, men mindre förvirring.)
+
+## Granskning av fem skärmdumpar (Claude-chatten, 2026-10-27, `docs/provspel/chatt-granskning-skarmdumpar-0.30.47.txt`)
+Huvudpoäng: allt har samma tyngd, mer att läsa än beslutet kräver (samma som VD:s BG3-ledstång). Claudes bedömning:
+- **Ta direkt (billigt, rätt):** porträttklungan vid Mor Elin och porträtten staplade ovanför Porten (layoutfel);
+  makrologgens rad klipps ("någon allierad har li…") – kort form "Alva → Helande ljus på Paladinen · rad 1";
+  "Inga våningsregler" krockar med Djupets tecken → "Inga regler från instabilitet"; 0/3-märkena oförklarade (fynd 2);
+  Questraden "QUEST: Samla: ta 3 bevakade föremål" → "Hämta 3 bevakade föremål · 0/3 – öppnar trappan"; låst trappa
+  tydligare; rykteringarna svagare/streckade; hörnmarkeringarna (möjliga steg) starkare än dimman; Immas döda porträtt
+  läsbart namn + DÖD; "Syster Alva: Helande ljus" vid effekten när NU visar någon annan; "BASEN" → "BORGEN".
+- **Ta i sitt område:** tidslinjen (K/H/F-bokstäver → konsekvent symbol per figur, aktören tydligast; område 2);
+  fiendernas namn/liv/avsikt i fast ordning med mer luft; hjältebladets källformler bakom ett tryck, decimaler bara i
+  detaljen, "Vad det betyder" i tre rader, historiken i två rader (område 4); stridens lila golv och neonringar dämpas
+  mot tuschvärlden (område 2, ljus och färg, inga nya modeller).
+- **VD avgör (fråga 83):** termerna. Granskningen vill ha allt på svenska (Liv, Anfall, Laddningar, Uppdrag,
+  Talangpoäng). VD sa 2026-10-26 att standardord som healer/dps/tank kan stå på engelska, och spelet använder Siralims
+  Health/Attack/Charges/Quest/Perk medvetet. Förslag: EN regel – stats och Siralim-system på svenska i spelets text
+  (Liv, Anfall, Intelligens, Försvar, Snabbhet, Laddningar, Uppdrag), rollord (tank, healer) får vara engelska; ordlistan
+  uppdateras. Nackdel: spelare som kan Siralim känner igen mindre.
+- **Avvisa/vänta:** "RUMSÖGONBLICK" bort ur grottvyn (flytta till Inställningar, inte ta bort); "GÅ HEM" → "Avsluta
+  nedstigningen" (ok, billigt).

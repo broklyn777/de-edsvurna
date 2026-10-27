@@ -1,0 +1,120 @@
+DE EDSVURNA – GRANSKNING OCH POLERINGSFÖRSLAG
+Version 0.30.47 · Underlag: fem skärmdumpar
+
+Min bedömning är att spelet främst behöver en tydligare visuell rangordning. Många skärmar visar relevant information, men ger nästan allt samma tyngd. Det blir mer att läsa än vad själva beslutet kräver.
+
+Borgen och pergamentkartorna har mest personlighet. Jag skulle använda deras sotiga, tecknade uttryck som riktmärke. Den starka gula knappfärgen, de svarta panelerna och stridens lila ljus drar ibland åt ett annat håll.
+
+Jag bedömer stillbilderna; misstänkta layoutfel nedan behöver alltså kontrolleras i spelet.
+
+1. BORGEN
+
+På bild 1, borgen, är själva borgbilden mycket tilltalande. Det som stör är framför allt det som ligger ovanpå den.
+
+- Porträtten vid Mor Elin ligger i en klunga. Namnet överlappar porträttramarna, och den stora gulaktiga ringen gör det ännu svårare att skilja personerna åt. Ge varje befintligt porträtt en egen fri yta och låt namnet stå utanför ramarna. Det här ser för närvarande ut som ett layoutfel.
+
+- Ovanför PORTEN ligger flera porträttrutor staplade lodrätt. De skymmer gården och saknar tydlig koppling till Sven nedanför. Om de visar sällskapet behöver de få en samlad placering där de inte ser ut som ytterligare personer vid porten.
+
+- ”VÄRDSHUSET !” är en oklar signal. Betyder utropstecknet ny dialog, ett uppdrag eller att något kräver åtgärd? Behåll markeringen bara när det finns något konkret att uppmärksamma, och skilj den grafiskt från platsnamnet.
+
+- Nästa handling framgår inte. Värdshusets nederknapp har gul ram, men bilden förklarar inte varför. Använd den befintliga markeringen konsekvent: valt ställe eller nästa berättelsesteg måste gå att skilja åt.
+
+- Platsnamnen och nederknapparna dubblerar varandra. Dubbleringen kan vara bra på mobil, eftersom knapparna är lättare att träffa. Låt då kartans skyltar vara lugna orienteringspunkter och nederknapparna stå för den tydliga interaktionen. Nu konkurrerar båda lagren om uppmärksamheten.
+
+Jag skulle polera placeringen av porträtt och etiketter innan jag lade mer arbete på borgens bakgrund. Bakgrunden fungerar redan.
+
+2. KAMPANJKARTAN
+
+På bild 2, kampanjkartan, är högerpanelens stora ”IN I KRYPTAN” tydlig och bra. Problemet är mängden information före den.
+
+- Kryptan saknar en tydlig valmarkering på själva kartan. Högerpanelen berättar vad som är valt, men ge också Kryptans befintliga ram en tydlig markering. Då blir sambandet mellan tryck och resultat omedelbart.
+
+- De röda märkena ”0/3” saknar förklaring. De kan lätt läsas som klarade djup, särskilt eftersom ”Djup klarat: 0” står strax intill. Om de avser bosssegrar till trofén behöver det framgå. Annars kan märkena tas bort här; högerpanelen visar redan ”Benfursten: 0/3 segrar till trofén”.
+
+- ”Quests klarade” och ”Perk-poäng” mitt i högerpanelen bryter beslutets ordning. Här väljer jag område, djup och instabilitet. Flytta sådan bygginformation till de befintliga förberedelserna om den inte påverkar just valet på kartan.
+
+- ”Inga våningsregler” kan krocka med Djupets tecken. Nästa bild har ju en regel trots instabilitet 0. Skriv exempelvis ”Inga extra regler från instabilitet”, om det är den faktiska innebörden.
+
+- Texten under rubriken har låg kontrast: ”Tryck på ett område. Fördärvet viker för varje klarat djup.” Mörka texten och tona ned pergamentmönstret bakom den.
+
+- Trollbergets lilla ruinbild sticker ut åt höger från huvudramen. Jag uppfattar den först som ett löst bildelement. Samla områdets illustration tydligare inom dess ram. Det låsta huvudmotivet är dessutom så mörkt att det nästan liknar en bild som inte har laddats.
+
+Språkligt: byt ”BASEN” till ”BORGEN”, ”Quests” till ”Uppdrag” och ”Perk-poäng” till ett valt svenskt begrepp, exempelvis ”Talangpoäng”. Skriv gärna ”Djupaste klarade: 0” i stället för ”DJUPASTE KLARADE 0”.
+
+3. GROTTAN
+
+På bild 3, grottan, behöver spelaren snabbare kunna skilja på vart jag kan gå, vad jag söker och vad som bara är ett rykte.
+
+- Uppdragsraden är språkligt stökig: ”QUEST: Samla: ta 3 bevakade föremål”. Skriv exempelvis ”Uppdrag: Hämta 3 bevakade föremål · 0/3”, följt av ”Öppnar trappan”. Samma information blir betydligt lättare att läsa.
+
+- De stora röda ringarna liknar farozoner. Att de anger ungefärliga uppdragsmål framgår först i stycket till höger. Lägg förklaringen nära uppdraget och gör ringarna svagare eller streckade. De ska kännas ungefärliga, inte som exakta områdesgränser.
+
+- De gulbruna hörnmarkeringarna försvinner mot dimmans rutmönster. Om de visar möjliga steg är de viktigare än dimmans skraffering. Förstärk markeringarna och tona ned rutorna i outforskad mark.
+
+- Trappan uppe till höger är synlig men låst. Det lilla röda låset är lätt att missa. Gör låset mer läsbart och låt den befintliga informationen vid trappan tydligt säga ”Låst – slutför uppdraget”.
+
+- Högerspalten upprepar grundinstruktioner i ett långt stycke. ”Tryck på en angränsande ruta för att gå” räcker som snabb instruktion. Förklaringen av återbesök och rykten kan ges i kortare, åtskilda meningar. Här finns utrymme att använda större text.
+
+- ”CHARGES” följt av fyra bråktal blir en tung överrad. Byt till ”Laddningar”. Om totalsummorna sällan behövs under förflyttning kan detaljraden ligga i den befintliga hjälte- eller förmågevyn.
+
+- ”RUMSÖGONBLICK: PÅ” är obegripligt utan förkunskap. Jag kan inte avgöra funktionen från bilden. Ge den ett namn som beskriver vad spelaren faktiskt slår på, eller ta bort knappen från den vanliga spelvyn om den är ett utvecklarverktyg.
+
+Även ”GÅ HEM” bör säga vad handlingen innebär. Om den avslutar körningen är ”Avsluta nedstigningen” tydligare.
+
+4. STRIDEN
+
+På bild 4, striden, är läsbarheten det största poleringsbehovet. Här ligger flest saker ovanpå varandra, samtidigt som spelaren behöver förstå orsak och verkan.
+
+- Tidslinjens K, H och F kräver att spelaren redan kan koden. Blandningen av bokstäver, porträtt och sköldsymboler gör det svårt att känna igen samma figur på arenan. Använd en konsekvent representation och gör den aktuella aktören tydligast.
+
+- ”NU: PALADINEN” visas samtidigt som ”HELANDE LJUS” och en loggrad om Syster Alva. Det kan vara helt korrekt vid en reaktion eller en animation mellan turer, men bilden blir svår att tolka. Skriv exempelvis ”Syster Alva: Helande ljus” vid effekten så att handlingens utförare framgår.
+
+- Fiendeavsikterna trängs med namn, livmätare och statussymboler. Särskilt kring Fallen riddare och Häxa ligger flera textrader tätt. Ge varje fiende en konsekvent ordning för namn, liv och avsikt, med mer avstånd mellan figurerna på skärmen.
+
+- Makrologgen tar en stor yta men klipper ändå den enda meningen: ”någon allierad har li…”. Gör sammanfattningen kortare, exempelvis ”Alva → Helande ljus på Paladinen · makrorad 1”. Den fullständiga villkorsförklaringen hör hemma bakom det befintliga trycket för mer information.
+
+- Makrologg och stridslogg är två konkurrerande ingångar. Behåll deras olika uppgifter, men namnge dem tydligare: exempelvis ”Senaste makroval” för nederpanelen och ”Stridslogg” för hela förloppet.
+
+- ”ALLA AUTO” är oklart som knapp. Visar den tillståndet eller ändrar den det? Om det är en handling: ”Sätt alla på auto”. Om det är status behöver utseendet tydligt skilja sig från en handlingsknapp.
+
+- Immas döda porträtt är så nedtonat att även namnet blir svårläst. Låt namn och ”DÖD” vara tydliga. Hennes passiva egenskap behöver däremot inte ha samma synlighet som de levande hjältarnas aktuella information.
+
+Min estetiska invändning är det mättade lila golvet, de starkgröna ringarna och de röda avsiktsetiketterna tillsammans. De gör striden mer plastig än borgens allvarliga tuschvärld. Börja med ljus, färgmättnad och markeringar; det kan ge stor sammanhållning utan nya modeller.
+
+5. HJÄLTEBLADET
+
+På bild 5, hjältebladet, finns två mycket bra idéer: ”Vad det betyder” och ”Det här har Brokk gjort”. De kopplar siffrorna till spelandet. Formen behöver däremot bli lugnare.
+
+- Engelskan är det tydligaste stilbrottet: ”STATS”, ”Health”, ”Attack”, ”Intelligence”, ”Defense” och ”Speed”. Använd exempelvis Värden, Liv, Anfall, Intelligens, Försvar och Snabbhet. Då går fliken också att skilja från ”Egenskaper”.
+
+- Varje värde har tre informationsnivåer samtidigt: totalsumma, fullständig källformel och nästa nivå. Visa totalsummorna tydligast. Lägg källformlerna i den befintliga sifferförklaringen så att spelaren själv kan söka den detaljen.
+
+- Decimalerna gör översikten bokföringslik. Visa avrundade värden där precisionen inte behövs för beslutet och behåll exakt precision i detaljförklaringen.
+
+- Personlighetsrutan kan först läsas som bonus på nuvarande värden. Lyft fram att procentsatserna gäller tillväxt: ”Envis · Tillväxt per nivå: Liv 40 %, Snabbhet 20 %”. Grundtillväxten kan stå i den mindre förklaringen.
+
+- ”Vad det betyder” är ett kompakt textblock. Dela upp det i tre tydliga rader: Brokks anfall, fiendens anfall och snabbhetens effekt. Den valda jämförelsefienden bör stå som en lugn underrad.
+
+- ”Nästa steg” blandar tydlig vägledning med tekniska termer. ”Tom: trick-plats 2 – fyll hos Smeden” kan bli ”Ledig trickplats – besök Hedda i smedjan”. Byt ”Stat-plats” till namnet på det spelaren faktiskt placerar där, om det avser bärnsten.
+
+- Historiken är skriven som en lång löptext. Ge ”Denna nedstigning” och ”Förra nedstigningen” varsin tydlig rad och använd samma ordning för resultaten. Behåll panelen; den ger följeslagaren identitet på ett sätt som grundvärdena inte gör.
+
+GEMENSAM TERMINOLOGI
+
+Över alla fem bilder skulle jag låsa terminologin: borgen, område, uppdrag, laddningar, talang och grundvärden. Använd också Hedda, smedjan och andra person- och platsnamn konsekvent. Versaler fungerar på korta knappar, men långa instruktioner blir lugnare med vanlig meningsform.
+
+PRIORITERING – BILLIGAST OCH MEST VERKNINGSFULLT FÖRST
+
+1. Rätta språk och oklara etiketter. Engelskan på hjältebladet, ”Quest”, ”Charges”, ”Basen”, ”Rumsögonblick” och ”Alla auto”.
+
+2. Rätta synliga överlappningar. Porträtten vid Mor Elin och porten samt namn och avsikter över fienderna.
+
+3. Korta makrologgens standardrad. Den viktigaste informationen måste rymmas utan avklippning.
+
+4. Förtydliga befintliga markeringar. Valt område, möjliga steg, låst trappa och rykten ska ha skilda, konsekventa uttryck.
+
+5. Minska informationsmängden före beslutet. Flytta byggstatistik från kampanjkartan och källformler från hjältebladets översikt till befintliga detaljvyer.
+
+6. Gör tidslinjen lätt att identifiera. Det är ett större gränssnittsarbete, men centralt för att striden ska gå att följa.
+
+7. Samordna färger och paneler. Dämpa stridens lila och neonfärger, reservera guld för tydliga val och ge de svarta panelerna ett uttryck som hör ihop med tuschen och pergamentet.
