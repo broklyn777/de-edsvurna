@@ -656,7 +656,7 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 			UiStyle.TRAIT_GOLD)
 
 	# Bossar och quests
-	var y := p.position.y + 318
+	var y := p.position.y + 300  # 0.30.48: tätare, så att fångarna ryms under tecknet
 	for boss in _bosses(prof.realm):
 		UiStyle.text(self, Vector2(x, y), "%s: %d/%d segrar till trofén" % [data.enemies[boss].name,
 				mini(int(prof.boss_wins.get(boss, 0)), RunState.BOSS_WINS_FOR_TROPHY), RunState.BOSS_WINS_FOR_TROPHY],
@@ -670,29 +670,33 @@ func _draw_panel(data: Dictionary, prof: Profile) -> void:
 			Color(1, 1, 1, 0.85), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
 	UiStyle.text(self, Vector2(x, y + 22), "Perk-poäng: %d (en per ny quest)" % prof.perk_points(), 14,
 			Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT, w, 2)
-	y += _draw_omen(x, y + 50, w)
-	# 0.23: lärjungar som sitter fångna här syns i förväg (Siralims varelser hör till sina Realms).
+	# 0.30.48 (B5, fynd 4): allt under questraden ritas nedåt mot en fast gräns ovanför Sällskap-raden, aldrig över den.
+	var limit := _prep_rect().position.y - 30
+	var c := y + 48
+	c += _draw_omen(x, c, w)
+	# 0.23: lärjungar som sitter fångna här syns i förväg (Siralims varelser hör till sina Realms). 0.30.48: på en rad,
+	# den närmaste med namn och resten som ett antal.
 	var captives: Array[String] = []
 	for d in data.realms[prof.realm].get("disciples", []):
 		if not prof.recruited.has(d.hero):
 			captives.append("%s (djup %d)" % [data.heroes[d.hero].get("short", d.hero), int(d.depth)])
-	if not captives.is_empty():
-		# 0.29.5: radbryts (förr klipptes den av när fler än en satt fången).
-		y += UiStyle.para(self, Vector2(x, y + 46), "Sägs sitta fången här: " + ", ".join(captives), 15, Color("#ffd27a"), w, 3)
+	if not captives.is_empty() and c + 4 <= limit:
+		var line := "Sägs sitta fången här: " + captives[0] + ("" if captives.size() == 1 else " och %d till" % (captives.size() - 1))
+		UiStyle.text(self, Vector2(x, c + 4), UiStyle.fit(line, 15, w), 15, Color("#ffd27a"), HORIZONTAL_ALIGNMENT_LEFT, w)
+		c += 24
 	# Den levande kartan: en rad före avfärd om vad som händer här och på andra håll (utan siffror).
 	# Den levande världen: händelsen som pågår (alla Realms) och vad den här Realmen kostar hemma.
-	var event_line := WorldEvents.map_line(prof, data) if prof.intro_done else ""
 	var cost := WorldEvents.cost_line(prof, data, prof.realm)
-	var yy := y + 54
+	var yy := c + 8
 	if prof.intro_done and _living(prof.realm):
-		var room := _prep_rect().position.y - 30 - yy
+		var room := limit - yy
 		var rumour := WorldEvents.rumour_line(prof, data)
 		var text := ("" if cost == "" else cost + " ") + ("" if rumour == "" else rumour + " ") \
 				+ LivingMap.departure_line(prof, data, prof.realm)
 		if room >= 16:
 			UiStyle.para(self, Vector2(x, yy), text, 15,
 					Color("#f0b49a") if LivingMap.awake(prof, data, prof.realm) or cost != "" else Color(1, 1, 1, 0.85), w,
-					clampi(int(room / 19.0), 1, 5))
+					clampi(int(room / 19.0) + 1, 1, 5))
 
 	var companions: Array = prof.party.map(func(id: String) -> String: return data.heroes[id].name)
 	UiStyle.text(self, Vector2(x, _prep_rect().position.y - 10), "Sällskap: " + ", ".join(companions), 13,
