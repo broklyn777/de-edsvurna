@@ -80,6 +80,10 @@ func _ready() -> void:
 		_select(own)
 	elif not ids.is_empty():
 		_select(ids[0])
+	if "--all-gambits" in OS.get_cmdline_user_args():  # skärmdumpar: profilen äger alla klossar (sparas inte från här)
+		for id in Gambits.blocks(data):
+			if not Gambits.has(run.profile.gambits, id):
+				run.profile.gambits.append(id)
 	if "--gambit-once" in OS.get_cmdline_user_args() and current != "" and not run.macros[current].lines.is_empty():
 		run.macros[current].lines[0].once = true  # skärmdumpar: brickan EN GÅNG PER STRID på det första kortet
 	if "--gambit-off" in OS.get_cmdline_user_args() and current != "" and run.macros[current].lines.size() > 1:

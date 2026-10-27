@@ -606,7 +606,7 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   (strider till 3/6/10 funna rader, ägda klossar per nedstigning). Flaggor: `--macro-focus=<hjälte>`, `--gambit-off`,
   `--gambit-drag`, `--gambit-demo`, `--library-gambits`, `--found-rows`, `--new-line`. Tester: `tests/test_gambits.gd`.
   **Gambits 3**: en gång per strid (`once` på raden, brickan VARJE GÅNG / 1 / STRID under PÅ/AV, `CombatSim.macro_once`,
-  `MacroRunner.once_key`, `decide(…, peek)`; `--gambit-once`); villkor som läser fiendernas avsikter (gruppen Avsikt:
+  `MacroRunner.once_key`, `decide(…, peek)`; `--gambit-once`, `--all-gambits`); villkor som läser fiendernas avsikter (gruppen Avsikt:
   `intends_attack`, `intends_attack_on` me/hjälte, `intends_attack_low`, `intends_aoe`, `leader_charging`, `intends_lethal`,
   `_intent_victims`); hem och rykten i Lunden och Berget (`home_clues`, `Gambits.clues`); mästarklossar (rarity `master`,
   klass III, `home_master` 50 %) hos Vävmodern och Bergakungen: Tänker fälla någon och Förbered kamratens slag

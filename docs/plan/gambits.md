@@ -34,6 +34,36 @@ VD 2026-10-27 ("kör"), efter 0.30.51.
      slår hårdare mot (`bonus_vs`). Till exempel lägger Imma Rökpil på den som inte är Förblindad, så att Paladinens
      Rättfärdigt slag biter.
 
+### Balans för Gambits 3 (kört 2026-10-27)
+
+`BALANS=forsta` med `GAMBITS=ny`, före (test-0.30, 0.30.51) och efter, 100 körningar per rad: **identiskt på varje rad**
+(kryptan ensam MACRO 44 % → 44 %, TUNED 45 → 45; kapellet 96 → 96, 98 → 98; Paladinen + Imma 31/69 % → 31/69 %). En ny
+profil äger varken avsiktsvillkoren eller brickan, och botarna använder inte brickan.
+
+Droppmätningen med `GAMBIT_PLAN=lang` (40 karriärer, MACRO): samma tio nedstigningar som förut, sedan Lunden och Berget
+djup 1 två gånger var, djup 2 en gång var, och sist kryptan och kapellet på djup 3. Före = 0.30.51 (43 klossar, inga hem i
+Lunden och Berget). Efter = Gambits 3 (49 klossar).
+
+| Efter nedstigning | 5 | 8 | 10 | 11 (Lunden) | 12 (Berget) | 13 (Lunden) | 16 (Berget 2) | 18 |
+|---|---|---|---|---|---|---|---|---|
+| Klossar ägda före (av 43) | 33,1 | 39,8 | 41,6 | 41,8 | 41,9 | 41,9 | 42,0 | 42,6 |
+| Klossar ägda efter (av 49) | 34,2 | 41,2 | 43,9 | 46,0 | 46,8 | 47,8 | 48,1 | 48,2 |
+| Funna rader före | 25,1 | 31,5 | 33,3 | 33,5 | 33,6 | 33,6 | 33,8 | 34,3 |
+| Funna rader efter | 26,5 | 33,3 | 35,9 | 38,0 | 38,7 | 39,8 | 40,1 | 40,1 |
+
+3/6/10 rader: 3/7/14 vunna strider både före och efter. Mästarklossarna hittades i 31 (Tänker fälla någon) och 24 (Förbered
+kamratens slag) av 40 karriärer, Bossen laddar i 34 och Tänker träffa alla i 39.
+
+**Så ska tabellen läsas**
+
+- Före gav Lunden och Berget i stort sett ingenting (+0,4 klossar på sex nedstigningar). Nu ger de 4,2 klossar och 4,2 rader,
+  de flesta på de första tre nedstigningarna där.
+- **Förrådet räcker fortfarande inte mycket längre.** Med den här karriären har man 44 av 49 klossar efter tio nedstigningar,
+  för krypta och kapell ger alla vanliga klossar först. Hemmen i Lunden och Berget är ett andra ställe att hitta samma klossar,
+  inte nya klossar. Den som går till Lunden tidigt hittar sina klossar där i stället. För att förrådet ska räcka märkbart
+  längre behövs fler klossar som bara finns i de nya Realmerna, eller färre hem per kloss i kryptan och kapellet. Det är VD:s
+  val.
+
 ## Gambits 2: legoklossar och funna rader
 
 VD 2026-10-27 ("kör"): **en makrorad består av legoklossar, och man bygger upp makrosystemet från noll genom att hitta hela
