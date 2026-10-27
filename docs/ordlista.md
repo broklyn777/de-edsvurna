@@ -236,6 +236,11 @@ Källa: `docs/research/siralim.md`.
 | Hoppa över tur | skip | skip turn |
 | Den som matchade | that_unit | that creature |
 | Förklaring | macro log | – (vårt tillägg) |
+| Villkor man äger, nytt villkor (UI: "Makron"; namnet gambit är bara ett förslag) | gambit (`data/gambits.json`, `Gambits`, `Profile.gambits`, `learn_gambit`, `setup_gambits`) | – (FF XII:s gambits; i Siralim har man alla från start) | Villkoren förtjänas, handlingarna är fria. Startvillkor: Lägst liv, Liv under …, Lever. docs/plan/gambits.md. |
+| Plats (PLATSER n / m, "Platsen öppnas på nivå N") | gambit slot, `Gambits.slots_for_level`, `Profile.gambit_slots`, `gambit_slot_floor` | – (FF XII:s gambitplatser) | 3 från start, +1 per två nivåer, högst 12. Rader under sista platsen körs inte. |
+| PÅ / AV (avstängd rad) | `enabled` på raden, `Gambits.playable` | – (FF XII: On/Off) | En avstängd rad står kvar men prövas inte; i en kedja bryter den kedjan. |
+| Låst villkor, rykte ("Det sägs att …") | locked condition, `Gambits.missing`, `clue` | – | Syns i radeditorn, på kortet och i Biblioteket (VILLKOR). |
+| Kedja | `g_chain` (action test_next) | test next line | Pröva nästa rad är ett villkor man förtjänar (Alva lär ut det). |
 | Trollhud, Svedd hud | `troll_hide` i traits.json, auran `troll_scorched` (`no_heal`), villkoret `source_used_ability` | – (vårt val, research K) | En träff från en förmåga stoppar trollets läkning till efter dess nästa tur. |
 | Den delade lågan (en tickande Läkning räknas inte) | `shared_flame` i traits.json, villkoret `not_hot` | – (vårt val) | Irrblossets trofé (gruppläkaren): bärarens helning ger hela sällskapet Läkning i 1 tur. |
 | Stenhjärta | `stone_heart`, villkoret `source_repeats_team_action`, `CombatSim.team_repeats()` | – | Bergakungen tar 60 % mindre skada när sällskapet gör samma sorts handling två gånger i rad. |

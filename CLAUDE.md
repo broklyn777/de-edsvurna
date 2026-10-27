@@ -579,6 +579,20 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   radtexten säger "pröva nästa rad med den", radeditorn och hjälpen förklarar det, förklaringsloggen skriver "Kedjan prövade
   bara X". Alvas startmakro prövar den skadade först (liv < 80 % → pröva nästa rad; saknar Läkning → Läkande hand).
   Tester: `tests/test_starter_chains.gd` (skriver ut varje startmakro).
+  **Villkoren förtjänas** (gambits, VD 2026-10-27, `docs/plan/gambits.md`, som Final Fantasy XII; i texten fortfarande
+  "Makron"): handlingarna är fria, villkoren ägs per profil (`Profile.gambits`, `data/gambits.json`, `src/game/gambits.gd`
+  `Gambits`). Start: Lägst liv, Liv under …, Lever; följeslagare lär ut sitt när de ansluter (`teach`, `Profile.recruit`),
+  vanliga villkor faller hos sina hem bland fienderna (40 %), elit 60 %, boss 100 % (Klockaren: Har stupat), kistor ger
+  kistvillkor (Djupets tecken, Artefakt från djup 2), 4 % var som helst; högst ett per strid (`Run.roll_gambit`,
+  `last_gambit`, segerskärmens NYTT VILLKOR, skattkammaren). Platser 3 + 1 per två nivåer, högst 12
+  (`Gambits.slots_for_level`, `Profile.gambit_slots`). Striden kör `Run.macro_for` = `Gambits.playable`: de första platserna,
+  utan avstängda rader (`enabled`, `MacroRunner.decide` hoppar också över dem) och utan oägda villkor, kedjor hela eller
+  inte alls. Gamla profiler (`gambits` saknas) äger allt i sina makron och får minst lika många platser som det längsta
+  (`setup_gambits`, `gambit_slot_floor`). Gambitsidan: stora kort (en sjättedel av höjden, `Card` i macro_screen), håll
+  kvar tummen och dra, vibration när kortet släpps, PÅ/AV, låsta kort med rykte; radeditorn visar oägda villkor låsta sist.
+  Biblioteket: VILLKOR med rykten. Botarna: `GAMBITS=ny` (en ny profils villkor, inga droppar), `tests/gambit_drops.gd`
+  (strider till 3/6/10 villkor). Flaggor: `--macro-focus=<hjälte>`, `--gambit-off`, `--gambit-drag`, `--gambit-demo`,
+  `--library-gambits`. Tester: `tests/test_gambits.gd`.
   **Spara som order** (0.30, prototyp): väljer spelaren själv något som makrot inte hade valt (en helning på en skadad,
   eller en förmåga mot en status den slår hårdare mot) visar striden en guldknapp i 9 sekunder som lägger en sådan rad
   överst i hjältens makro (`battle.gd` `_offer_order`, `_save_order`; `--offer-order`).
