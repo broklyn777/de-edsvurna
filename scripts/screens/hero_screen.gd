@@ -371,7 +371,10 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 		var ab: Dictionary = data.abilities[ability_id]
 		var full := int(ab.get("charges", 0))
 		var left := int(state.charges.get(hero_id, {}).get(ability_id, full))
-		UiStyle.text(self, Vector2(x, yy), "%s – %d/%d Charges" % [ab.name, left, full], 19, UiStyle.GOLD,
+		var count := "%d/%d Charges" % [left, full]
+		if ab.has("stack_cost"):
+			count = "%d Glöd" % int(ab.stack_cost.n)  # Befäl
+		UiStyle.text(self, Vector2(x, yy), "%s – %s" % [ab.name, count], 19, UiStyle.GOLD,
 				HORIZONTAL_ALIGNMENT_LEFT, wr, 2)
 		yy += 30 + UiStyle.para(self, Vector2(x, yy + 24), ab.get("text", ""), 17, Color(1, 1, 1, 0.75), wr, 2)
 	var art: Dictionary = prof.artifact(hero_id)

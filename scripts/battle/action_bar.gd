@@ -121,12 +121,18 @@ func _draw_ability(i: int, ability_id: String) -> void:
 	var col := Color(ab.get("button_color", "#888888"))
 	var left: int = unit.charges.get(ability_id, 0)
 	var usable := left > 0
+	var cost: Dictionary = ab.get("stack_cost", {})  # Befäl: kostar Glöd, inte Charges
+	if not cost.is_empty():
+		usable = sim.can_act(unit, "ability", ability_id) == ""
 	draw_rect(r, Color(col.darkened(0.6), 0.95 if usable else 0.5))
 	draw_rect(r, Color(UiStyle.GOLD, 0.9) if selected == ability_id else Color(col.lightened(0.2), 0.8), false, 2.5)
 	Glyphs.draw(self, ab.get("icon", "diamond"), r.position + Vector2(20, r.size.y / 2), 10.0, col.lightened(0.35))
 	UiStyle.text(self, r.position + Vector2(36, 26), ab.name, 17, Color.WHITE if usable else Color(1, 1, 1, 0.4),
 			HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 40, 3)
-	UiStyle.text(self, r.position + Vector2(36, 50), "%d / %d" % [left, sim.full_charges(ability_id)], 16,
+	var count := "%d / %d" % [left, sim.full_charges(ability_id)]
+	if not cost.is_empty():
+		count = "%d Glöd" % int(cost.n)
+	UiStyle.text(self, r.position + Vector2(36, 50), count, 16,
 			UiStyle.TRAIT_GOLD if usable else Color(1, 0.4, 0.3), HORIZONTAL_ALIGNMENT_LEFT, -1, 3)
 
 

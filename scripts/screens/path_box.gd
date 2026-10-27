@@ -97,8 +97,11 @@ func _paint() -> void:
 	_view.draw_rect(r, Color(0.05, 0.045, 0.06, 0.97))
 	_view.draw_rect(r, Color(UiStyle.GOLD, 0.85), false, 2.0)
 	UiStyle.text(_view, r.position + Vector2(0, 50), "VÄLJ DIN VÄG", 28, UiStyle.GOLD, HORIZONTAL_ALIGNMENT_CENTER, W)
-	UiStyle.text(_view, r.position + Vector2(0, 84), UiStyle.fit(question, 18, W - 60), 18, Color(1, 1, 1, 0.8),
-			HORIZONTAL_ALIGNMENT_CENTER, W)
+	var qw := UiStyle.bold().get_string_size(question, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x
+	if qw <= W - 60:
+		UiStyle.text(_view, r.position + Vector2(0, 86), question, 17, Color(1, 1, 1, 0.8), HORIZONTAL_ALIGNMENT_CENTER, W)
+	else:  # Gorms längre fråga på två rader
+		UiStyle.para(_view, r.position + Vector2(30, 76), question, 17, Color(1, 1, 1, 0.8), W - 60, 2)
 	for i in Paths.IDS.size():
 		var id: String = Paths.IDS[i]
 		var p: Dictionary = data.paths[id]
