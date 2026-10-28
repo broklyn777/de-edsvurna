@@ -20,7 +20,8 @@ const WEAPON_CUES := {"Greatsword": "atk_sword", "Longsword": "atk_sword", "Shor
 const CHAIN_STEP := 0.22
 const ERROR_TEXT := {"cooldown": "Inte redo än", "dead": "Hjälten har stupat", "none": "Ingen sådan förmåga",
 		"charges": "Inga Charges kvar", "silenced": "Tystad – förmågor går inte",
-		"sealed": "Förseglad (Förseglade ord)", "forbidden": "Ingen gard: ingen kan försvara eller provocera"}
+		"sealed": "Förseglad (Förseglade ord)", "forbidden": "Ingen gard: ingen kan försvara eller provocera",
+		"glow": "Befäl kostar 3 Glöd", "no_target": "Ingen kan få Befäl just nu"}
 
 ## Autoload-noden Run (hämtas via sökväg så att skriptet kompilerar även utan autoloads).
 var run: Node
@@ -102,6 +103,7 @@ func _ready() -> void:
 	# 0.24.2: paladinens namn i ramen, tidslinjen och fiendernas avsikter.
 	data.heroes.paladin.name = run.profile.hero_name
 	data.heroes.paladin.short = run.profile.hero_name
+	Paths.apply(data, run.profile.path)  # paladinens inriktning (stats, förmågor, kärnan och Glöden)
 	var seed_value := randi()
 	var warp_turns := 0
 	var demo := false
@@ -156,8 +158,6 @@ func _ready() -> void:
 	sim = CombatSim.create(data, state.encounter(), seed_value, state.party, state.hero_traits(data), state.charges,
 			state.artifacts, state.depth, opts)
 	data = sim.data  # med artefakternas egenskaper
-	UiStyle.ink = GameSettings.ink_style  # prototyp (ink-proto): tuschstilen
-	add_to_group(&"ink_style")
 	_build_scene()
 	_build_ui()
 	_update_rules_text()
@@ -168,6 +168,8 @@ func _ready() -> void:
 	_help_ok = not demo and warp_turns == 0
 	if _help_ok and not _dev_combo:
 		var ids := ["timeline"]
+		if data.heroes.paladin.has("path"):
+			ids.append("glow")  # paladinens inriktning: Glöden första gången
 		if not state.practice and run.profile.total_descents() >= 2:
 			ids.append("forfeit")
 		# Väktarsteg 2: väktarens egen fråga förklaras första gången (encounters.json "help").
@@ -218,7 +220,6 @@ func _build_scene() -> void:
 	add_child(sfx)
 	world = CryptWorld.new()
 	world.style = data.realms.get(run.state.realm, {}).get("style", "crypt")
-	world.ink = GameSettings.ink_style
 	add_child(world)
 	var spots := UnitModel.formation(sim.heroes)  # sköldarna längst fram, bara utseende
 	for u in sim.units:
@@ -315,7 +316,7 @@ func _build_ui() -> void:
 	macro_chip.pressed.connect(_open_macro_editor)
 	ui.add_child(macro_chip)
 	settings_chip = ChipButton.new()
-	settings_chip.setup("LJUD · STIL", 140)
+	settings_chip.setup("LJUD", 140)
 	settings_chip.pressed.connect(func() -> void: SettingsBox.open(self, true))  # 0.30: pausar striden
 	ui.add_child(settings_chip)
 	overlay = BattleOverlay.new()
@@ -970,13 +971,6 @@ func receipt() -> Array[String]:
 
 func _exit_tree() -> void:
 	UnitModel.free_shared()
-	UiStyle.ink = false  # menyerna ritas alltid som förut
-
-
-## Prototyp (ink-proto): STIL växlades i inställningsrutan mitt i striden.
-func apply_ink_style() -> void:
-	UiStyle.ink = GameSettings.ink_style
-	world.set_ink(GameSettings.ink_style)
 
 
 # --- Händelser → känsla -----------------------------------------------------
@@ -997,16 +991,22 @@ func _handle(e: Dictionary) -> void:
 				sfx.play("k_ready", -14.0, 0.0)
 		"action":
 			_on_action(e)
+			if e.get("ability", "") == "pal_intervene":  # Sköldbäraren kastar sig emellan
+				_after(_cursor + 0.15, _float.bind(e.unit, "EMELLAN!", UiStyle.GOLD, 24, true))
 			# 0.26.2: Charges-rutan första gången en hjälte använder en förmåga.
 			if _help_ok and e.get("action", "") == "ability" and sim.unit(e.unit).team == 0:
 				_after(_cursor + 0.6, _help_charges)
 		"damage":
 			_after(_effect_delay(e), _on_damage.bind(e))
 		"timeline_move":
-			_after(_cursor + 0.1, _float.bind(e.unit, "↑ ÖVERST" if e.dir == "top" else "↓ SIST",
-					Color("#bcd2ff"), 20, false))
+			if e.get("extra", false):  # Befäl: en extra handling direkt
+				_after(_cursor + 0.1, _float.bind(e.unit, "BEFÄL! AGERAR NU", UiStyle.GOLD, 22, true))
+			else:
+				_after(_cursor + 0.1, _float.bind(e.unit, "↑ ÖVERST" if e.dir == "top" else "↓ SIST",
+						Color("#bcd2ff"), 20, false))
 		"timeline_blocked":
-			_after(_cursor + 0.1, _float.bind(e.unit, "SNÄRJD", StatusIcons.DEBUFF, 20, false))
+			_after(_cursor + 0.1, _float.bind(e.unit, "INTE NU" if e.get("reason", "") == "commanded" else "SNÄRJD",
+					StatusIcons.DEBUFF, 20, false))
 		"dodge":
 			_after(_effect_delay(e), _float.bind(e.target, "UNDVEK", Color("#d8e6ff"), 22, false))
 			_after(_effect_delay(e), _remember_number.bind(e))
@@ -1018,6 +1018,8 @@ func _handle(e: Dictionary) -> void:
 		# 0.28: livvakten tar en del av skadan; Ordensregeln stoppar en helning.
 		"guarded":
 			var guard_word := "FAMN" if String(e.get("shelter", "")) != "" else "VAKT"  # Moderns famn (Bortbytingen)
+			if sim.unit(e.unit).team == 0:
+				guard_word = "SKÖLD"  # Sköldbärarens Edens sköld
 			_after(_effect_delay(e), _float.bind(e.unit, "%s %d" % [guard_word, int(e.amount)], Color("#ffc86a"), 20, false))
 		"heal_blocked":
 			_after(_effect_delay(e), _float.bind(e.unit, "INGEN HELNING", StatusIcons.DEBUFF, 18, false))
@@ -1507,11 +1509,5 @@ class Markers extends Node2D:
 		var m: UnitModel = battle.models[unit_id]
 		var feet: Vector2 = battle.world.project(m.global_position)
 		draw_set_transform(feet, 0, Vector2(1, 0.42))
-		if UiStyle.ink:
-			# Tusch: en handdragen ellips i två drag som inte riktigt möts, guld för den som agerar, rött för ett mål.
-			var c := UiStyle.inked(color)
-			draw_arc(Vector2.ZERO, radius, -0.3, TAU - 0.5, 48, c, width * 0.8, true)
-			draw_arc(Vector2(2, 1), radius + 3.0, 0.6, TAU - 0.1, 48, Color(c, c.a * 0.55), 1.5, true)
-		else:
-			draw_arc(Vector2.ZERO, radius, 0, TAU, 48, color, width, true)
+		draw_arc(Vector2.ZERO, radius, 0, TAU, 48, color, width, true)
 		draw_set_transform(Vector2.ZERO)

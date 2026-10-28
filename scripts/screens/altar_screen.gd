@@ -15,6 +15,8 @@ func _ready() -> void:
 	super()
 	HelpBox.offer(self, ["perks"])  # 0.25: hjälprutan första gången
 	anoint_mode = OS.get_cmdline_user_args().has("--anoint")
+	if OS.get_cmdline_user_args().has("--path-oath"):  # valet vid eden (skärmdumpar; sparas inte)
+		PathBox.open.call_deferred(self, Dialog.fill_for(String(run.data.dialog.get("paths", {}).get("oath_question", "")), run.profile))
 
 
 func _process(delta: float) -> void:
@@ -51,6 +53,13 @@ func _tap(p: Vector2) -> void:
 			selected_perk = ""
 			anoint_mode = false
 			run.save("ui_confirm")
+			# Paladinens inriktningar: under eden väljer han också sin väg (skölden eller ljuset), sedan är eden svuren.
+			if not profile.intro_done and profile.path == "":
+				var q := Dialog.fill_for(String(data.dialog.get("paths", {}).get("oath_question", "")), profile)
+				PathBox.open(self, q).done.connect(func(path_id: String) -> void:
+					run.choose_path(path_id)
+					run.intro("oath_chosen"))
+				return
 			run.intro("oath_chosen")  # 0.23: att välja kall är edsceremonin
 			return
 	var perks := _perks()

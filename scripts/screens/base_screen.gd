@@ -136,6 +136,9 @@ func _ready() -> void:
 	run.audio.start_ambience("ambience_home", -16.0)
 	_start_dialog()
 	_home_pending = _has_homecoming()
+	if run.profile.intro_done and run.profile.path == "" and not run.profile.path_offered and not _home_pending \
+			and not run.dev_profile:
+		_offer_path.call_deferred()
 	# Utvecklarflagga för skärmdumpar: --talk=<station> står vid stationen och pratar.
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--home-summary" and _home_pending:
@@ -158,6 +161,12 @@ func _ready() -> void:
 			_conv.i = clampi(int(arg.get_slice("=", 1)), 0, _conv.lines.size() - 1)  # 0.25: en viss rad i samtalet
 		elif arg == "--rename":
 			_rename()  # namnrutan hos Broder Alrik (0.24.2)
+		elif arg == "--path-change":
+			pal = _v(keep.rooms.macros.stand)
+			_trail.append(pal)
+			_change_path()  # Gorms bytesscen (paladinens inriktningar)
+		elif arg == "--path-box":
+			_offer_path.call_deferred(true)  # rutan för en gammal profil, utan att den sparas som visad
 		elif arg.begins_with("--buy=") and run.dev_profile and WorldEvents.merchant_here(run.profile):
 			# --buy=amber|trick (med --world-demo): ett köp hos handelsmannen, som sedan stannar (skärmdumpar)
 			run.profile.silver = maxi(run.profile.silver, 200)
@@ -413,6 +422,11 @@ func _talk_pilgrim() -> void:
 ## Valen hos en station; handelsmannens med vara och pris (det han redan har sålt finns inte kvar).
 func _station_options(station: String) -> Array:
 	var opts := Dialog.options(run.data, station)
+	# Paladinens inriktningar: hos Gorm, efter introt, att välja eller byta väg (före "Ingenting just nu").
+	if station == "macros" and run.profile.intro_done:
+		var label := "Välj min väg: skölden eller ljuset" if run.profile.path == "" else "Byt väg (nu: %s)" % \
+				Paths.path_name(run.data, run.profile.path)
+		opts.insert(opts.size() - 1, {"label": label, "open": "path"})
 	if station == "merchant":
 		opts = opts.filter(func(o: Dictionary) -> bool:
 			return not WorldEvents.merchant_sold(run.profile, String(o.get("open", "")).trim_prefix("buy_")))
@@ -714,6 +728,8 @@ func _open(station: String) -> void:
 			run.go(run.INN_SCENE)
 		"rename":
 			_rename()
+		"path":
+			_change_path()
 		"handbook":
 			run.go(run.HANDBOOK_SCENE)
 		"chronicle":
@@ -738,6 +754,35 @@ func _rename() -> void:
 	entry.start_name = "" if run.profile.hero_name == Profile.DEFAULT_NAME else run.profile.hero_name
 	entry.chosen.connect(_renamed)
 	add_child(entry)
+
+
+## Paladinens inriktningar: Gorms scen och sedan valet. Det första bytet är gratis, sedan Paths.BYTE_COST silver.
+func _change_path() -> void:
+	var t: Dictionary = run.data.dialog.get("paths", {})
+	var key := "gorm_choose" if run.profile.path == "" else ("gorm_first_change" if run.profile.path_changes == 0 else "gorm_change")
+	var lines: Array = Array(t.get(key, [])).map(func(l) -> String: return Dialog.line_text(l))
+	_talk("gorm", lines, "", false, _open_path_box.bind(String(t.get("change_question", ""))))
+
+
+func _open_path_box(question: String) -> void:
+	var box := PathBox.open(self, Dialog.fill_for(question, run.profile))
+	box.done.connect(_path_chosen)
+
+
+func _path_chosen(path_id: String) -> void:
+	if path_id == "" or not run.choose_path(path_id):
+		return
+	var said: Dictionary = run.data.dialog.get("paths", {}).get("chosen", {}).get(path_id, {})
+	_talk("gorm", [Dialog.line_text(said)], "", false)
+
+
+## En profil som fanns före inriktningarna får välja en gång när borgen öppnas, utan tvång (SENARE); sedan hos Gorm.
+func _offer_path(dev := false) -> void:
+	if not dev:
+		run.profile.path_offered = true
+		run._save()
+	var box := PathBox.open(self, Dialog.fill_for(String(run.data.dialog.get("paths", {}).get("offer_question", "")), run.profile), true)
+	box.done.connect(_path_chosen)
 
 
 func _renamed(n: String) -> void:

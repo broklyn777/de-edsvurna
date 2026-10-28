@@ -1,0 +1,109 @@
+{
+	"_doc": "Paladinens inriktningar (docs/plan/paladin-inriktningar.md, VD 2026-10-28). Väljs vid eden, byts hos Gorm (första gratis, sedan 50 silver). Ersätter paladinens stats och förmågor och lägger till egenskaperna; kallet är ett eget val. rows = startraderna eden ger (Gambits: färdiga rader och klossar).",
+	"shield": {
+		"name": "Sköldbäraren",
+		"short": "Skölden",
+		"icon": "shield",
+		"feel": "Du står framför de andra. Slagen som skulle ha fällt dem tar du, och av varje slag växer din Glöd.",
+		"card": [
+			"Tank: mer liv och Defense, lite mindre Intelligence och Speed.",
+			"Edens sköld: tar 15 % av varje träff mot de andra.",
+			"Glöd av slagen du tar. Rättfärdigt slag helar och skyddar dig.",
+			"Kasta sig emellan och Befäl."
+		],
+		"stats": {
+			"health": 105,
+			"attack": 9.5,
+			"intelligence": 8.8,
+			"defense": 6.5,
+			"speed": 9
+		},
+		"abilities": [
+			"holy_smite",
+			"pal_intervene",
+			"holy_shield",
+			"pal_command"
+		],
+		"traits": [
+			"path_shield_core",
+			"path_shield_glow"
+		],
+		"rows": [
+			{
+				"subject": "any_enemy",
+				"cond": "is_charging",
+				"action": "ability",
+				"ability": "pal_intervene"
+			},
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 40,
+				"action": "ability",
+				"ability": "holy_shield",
+				"target": "that"
+			},
+			{
+				"subject": "self",
+				"cond": "glow_at_least",
+				"value": 3,
+				"action": "ability",
+				"ability": "holy_smite",
+				"target": "that"
+			}
+		]
+	},
+	"light": {
+		"name": "Ljusbäraren",
+		"short": "Ljuset",
+		"icon": "cross",
+		"feel": "Du helar genom att slåss. Du ser slaget komma och lägger ljuset över den som det gäller innan det träffar.",
+		"card": [
+			"Helare: mer Intelligence och Speed, lite mindre Defense.",
+			"Gryningens hand: dina träffar helar den svagaste.",
+			"Glöd av helningarna. Rättfärdigt slag blir en Barriär.",
+			"Förutseende ljus, Gryningsvåg och Befäl."
+		],
+		"stats": {
+			"health": 90,
+			"attack": 9.5,
+			"intelligence": 10.5,
+			"defense": 4.5,
+			"speed": 11
+		},
+		"abilities": [
+			"holy_smite",
+			"pal_foresight",
+			"pal_dawn_wave",
+			"pal_command"
+		],
+		"traits": [
+			"path_light_core",
+			"path_light_glow"
+		],
+		"rows": [
+			{
+				"subject": "any_ally",
+				"cond": "is_charge_target",
+				"action": "ability",
+				"ability": "pal_foresight",
+				"target": "that"
+			},
+			{
+				"subject": "any_ally",
+				"cond": "hp_below",
+				"value": 40,
+				"action": "ability",
+				"ability": "pal_dawn_wave"
+			},
+			{
+				"subject": "self",
+				"cond": "glow_at_least",
+				"value": 3,
+				"action": "ability",
+				"ability": "holy_smite",
+				"target": "that"
+			}
+		]
+	}
+}

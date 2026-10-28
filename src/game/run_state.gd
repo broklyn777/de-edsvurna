@@ -433,7 +433,8 @@ func is_last_floor() -> bool:
 func hero_traits(data: Dictionary) -> Dictionary:
 	var out := {}
 	for hero_id in party:
-		var list: Array = ([oath] + perks) if hero_id == "paladin" else data.heroes[hero_id].get("traits", []).duplicate()
+		var list: Array = ([oath] + perks + data.heroes.paladin.get("path_traits", [])) if hero_id == "paladin" \
+				else data.heroes[hero_id].get("traits", []).duplicate()
 		if hero_id == "paladin" and vow_trait(data) != "":
 			list.append(vow_trait(data))
 		if equipped.has(hero_id):
@@ -513,7 +514,7 @@ func silver_mult(data: Dictionary) -> float:
 ## (alltid), sedan från monstren i striden och påfyllnad ur samma Realm. Bosstroféer bara om bossen
 ## är besegrad BOSS_WINS_FOR_TROPHY gånger (unlocked_bosses). Elittroféerna och den första vanliga är
 ## säkra, resten kommer med trophy_chance(depth, instabilitet).
-## Mot upprepning (textspelet: Den slocknade glöden i 17 av 38 läger): owned är profilens samling. Troféer man inte äger
+## Mot upprepning (textspelet: Den slocknade askan (förr glöden) i 17 av 38 läger): owned är profilens samling. Troféer man inte äger
 ## går före ägda, påfyllnaden tar olika först, och de sällsynta (väktarens, den förvridnas, elitvarianternas, bossens)
 ## står först. En trofé som redan finns i körningen (t.ex. ur skatten bakom gruppen) erbjuds aldrig.
 func trophy_offer(data: Dictionary, rng: RandomNumberGenerator, elites: Array = [],

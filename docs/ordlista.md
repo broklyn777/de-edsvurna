@@ -262,3 +262,11 @@ Källa: `docs/research/siralim.md`.
 | Djupets prägel | twist, `twist` i encounters.json (+ `overrides`, `base`), `RunState.pools_for`, realms.json `depth_pools` | – (VAL, mot upprepning) | En vanlig grupp från djup 3 som ändrar vem man fäller först; visas på kortet, högst en gång per nedstigning. |
 | Sorgens vrede, Livvakt, Bundna | `grief_wrath`, `bodyguard` (`guard_family`), `bound_pair` (villkoret `ally_has_trait`) | – | Prägelns egenskaper: Barriär och Bärsärk när en allierad faller; tar halva skadan mot familjen; mindre skada så länge den andra bundna står. |
 | Inkräktare | intruder, realms.json `intruders`, rutans `intruder` | Creatures from other Realms (instabilitet) | Från djup 4 ibland en vanlig grupp ur en annan Realm. |
+| Inriktning, väg | path, `Profile.path`, `Paths`, data/paths.json | – (VD 2026-10-28, ungefär WoW:s spec) | Vad paladinen är: stats, förmågor, kärna och Glöd. Väljs vid eden, byts hos Gorm. Kallet är ett eget val. |
+| Sköldbäraren, Ljusbäraren | `shield`, `light` | – | Tanken och helaren. |
+| Glöd | glow, stapeln `glod` (`CombatSim.GLOW`), `stack_cost` | – (som warriorns rage) | 0–5 pärlor i ramen. Rättfärdigt slag förbrukar all, Befäl kostar 3. |
+| Befäl | `pal_command`, effekten `extra_action` | – | En allierad agerar direkt, en extra handling; aldrig sig själv, inte samma allierad två gånger på en runda. |
+| Kasta sig emellan | `pal_intervene`, auran `pal_between` | – | Fiendernas anfall går till Sköldbäraren till nästa tur, −25 %, utan Provoceras Defense-straff. |
+| Edens sköld | `path_shield_core`, `guard_allies` | Bodyguard (för sällskapet) | Sköldbäraren tar 15 % av varje träff mot de andra; paladinens försvar räknas. |
+| Gryningens hand | `path_light_core`, `suppresses` | Cleric: Luminesce (halva) | Ljusbärarens träffar helar den svagaste; ersätter Gryningens kalls egen helning. |
+| Den slocknade askan | `ember_jaw`, stapeln `aska` | – | Hette förr Den slocknade glöden; bytte namn när Glöd blev paladinens resurs. |

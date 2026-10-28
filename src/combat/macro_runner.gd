@@ -26,7 +26,7 @@ const CONDITIONS := ["hp_below", "hp_above", "has_status", "lacks_status", "top_
 		"has_buff", "has_debuff", "lacks_buff", "lacks_debuff", "is_charging", "charge_left_at_most",
 		"is_channeling", "is_charge_target", "omen_is", "next_ability_echoes", "free_ability_unused", "intends_heal",
 		"weak_to", "next_in_turn", "intends_attack", "intends_attack_on", "intends_attack_low", "intends_aoe", "leader_charging",
-		"intends_lethal", "ally_bonus_missing"]
+		"intends_lethal", "ally_bonus_missing", "glow_at_least", "is_attack_target"]
 
 
 ## Väljer vad hjälten gör. Returnerar:
@@ -244,6 +244,12 @@ static func test_condition(sim: CombatSim, u: CombatUnit, x: CombatUnit, line: D
 			return _timeline_pos(sim, x) == _timeline_len(sim) - 1
 		"not_bottom_of_timeline":
 			return _timeline_pos(sim, x) != _timeline_len(sim) - 1
+		# Paladinens inriktningar: minst så mycket Glöd, och en allierad som en fiendes avsikt pekar på.
+		"glow_at_least":
+			return x.stacks.get(CombatSim.GLOW, 0.0) >= float(v)
+		"is_attack_target":
+			var foes: Array = sim.enemies if x.team == 0 else sim.heroes
+			return foes.any(func(e: CombatUnit) -> bool: return e.alive and _intent_victims(sim, e).has(x))
 		# Gambits 2 (idéfilen): står näst på tidslinjen, efter den som har turen.
 		"next_in_turn":
 			return _timeline_pos(sim, x) == 1
@@ -381,6 +387,10 @@ static func _plan_action(sim: CombatSim, u: CombatUnit, line: Dictionary, that: 
 		return {"ok": true, "action": action, "ability": ability_id, "target": ""}
 	var t := _resolve_target(sim, u, line.get("target", "that"), that)
 	var want_enemy := target_kind == "enemy"
+	# Paladinens inriktningar: en rad om hjälten själv ("Om Glöd minst 4 → Rättfärdigt slag") tar förmågans förvalda mål.
+	if line.get("subject", "") == "self" and line.get("target", "that") == "that" and t == u and want_enemy:
+		var def := sim.default_target(u, action, ability_id)
+		t = sim.unit(def) if def != "" else null
 	if t == null or not t.alive or (t.team != u.team) != want_enemy:
 		return {"ok": false, "reason": "%s har inget giltigt mål (%s)" % [_action_name(sim, action, ability_id),
 				describe_target(sim, u, line.get("target", "that"))]}
@@ -534,6 +544,10 @@ static func condition_name(data: Dictionary, cond: String, value: Variant) -> St
 			return "är bossen eller en elit och laddar sitt stora slag"
 		"ally_bonus_missing":
 			return "saknar en status som en allierad slår hårdare mot"
+		"glow_at_least":
+			return "har Glöd minst %d" % int(value)
+		"is_attack_target":
+			return "är målet för ett anfall"
 	return cond
 
 
@@ -598,6 +612,10 @@ static func _reason_text(sim: CombatSim, u: CombatUnit, action: String, ability_
 	match reason:
 		"charges":
 			return "%s har inga Charges kvar" % name
+		"glow":
+			return "%s behöver mer Glöd" % name
+		"no_target":
+			return "ingen kan få %s just nu" % name
 		"cooldown":
 			return "%s är inte redo" % name
 		"none":

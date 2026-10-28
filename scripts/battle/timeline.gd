@@ -39,7 +39,7 @@ func _draw() -> void:
 		if big:
 			draw_circle(c, r + 7, Color(UiStyle.GOLD, 0.18 + 0.1 * sin(_t * 6.0)))  # ett sken runt den som agerar
 		draw_circle(c, r + 2, Color(0, 0, 0, 0.8 * a))
-		draw_circle(c, r, Color(UiStyle.INK_PANEL if UiStyle.ink else u.color.darkened(0.55), a))
+		draw_circle(c, r, Color(u.color.darkened(0.55), a))
 		# 0.29.5: hjältarna med sina porträtt, fienderna med begynnelsebokstaven (elit i guld).
 		var tex: Texture2D = DialogBox.portrait_texture(u.id) if u.team == 0 else null
 		if tex != null:
@@ -50,8 +50,6 @@ func _draw() -> void:
 			UiStyle.text(self, c + Vector2(-r, r * 0.42), u.name.left(1).to_upper(), int(r * 1.05),
 					Color(UiStyle.GOLD if u.elite else Color("#ffd2c4"), a), HORIZONTAL_ALIGNMENT_CENTER, r * 2.0)
 		var ring := Color("#4a8cff") if u.team == 0 else (Color(UiStyle.GOLD, 0.8) if u.elite else Color("#e0412e"))
-		if UiStyle.ink:
-			ring = UiStyle.INK_EDGE if u.team == 0 else (UiStyle.INK_GOLD if u.elite else UiStyle.INK_DANGER)
 		if big:
 			ring = Color(UiStyle.GOLD, 0.75 + 0.25 * sin(_t * 6.0))
 		draw_arc(c, r + 1, 0, TAU, 32, Color(ring, a), 4.0 if big else 2.0, true)

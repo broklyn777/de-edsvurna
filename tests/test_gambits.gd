@@ -42,7 +42,7 @@ func test_every_block_has_home_clue_and_rows() -> void:
 		assert_true(not g.get("rows", []).is_empty(), "%s saknar radmall" % id)
 		for kind in g.get("homes", []):
 			assert_true(data.enemies.has(kind), "%s: okänd fiende %s" % [id, kind])
-		if not g.rarity in ["start", "chest"]:
+		if not g.rarity in ["start", "chest", "oath"]:  # oath: paladinens inriktning lär ut den vid eden
 			assert_true(not g.get("homes", []).is_empty(), "%s har inget hem" % id)
 	for hero_id in data.gambits.teach:
 		assert_true(data.heroes.has(hero_id), "okänd hjälte " + hero_id)

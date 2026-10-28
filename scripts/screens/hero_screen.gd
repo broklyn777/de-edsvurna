@@ -115,8 +115,12 @@ func _draw() -> void:
 	# Nivå och erfarenhet (inget tak, som i Siralim).
 	var need := HeroStats.xp_to_next(level)
 	var title := String(h.get("title", h.role))
+	if hero_id == "paladin" and h.has("path"):
+		title = Paths.path_name(data, h.path)  # inriktningen
 	if hero_id == "paladin" and HeroStats.oath_rank(level) > 0:
 		title = Dialog.oath_rank_title(data, HeroStats.oath_rank(level))  # edsgraden (VD 2026-10-25)
+		if h.has("path"):
+			title = "%s · %s" % [Paths.path_name(data, h.path), title]
 	var head_size := 24 if title.length() < 16 else 20  # edsgraden är lång: rymmas före fiendernas nivå (x 470)
 	UiStyle.text(self, Vector2(MARGIN, 104), UiStyle.fit("%s · NIVÅ %d" % [title.to_upper(), level], head_size, 455),
 			head_size, Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, 600, 3)
@@ -263,7 +267,7 @@ static func sheet_party(prof: Profile, id: String) -> Array:
 
 ## Paladinens kall och perks, som i striden (RunState.hero_traits); de andra har sina egna egenskaper.
 static func sheet_traits(data: Dictionary, prof: Profile) -> Dictionary:
-	return {"paladin": [prof.oath] + prof.active_perks(data, prof.oath)}
+	return {"paladin": [prof.oath] + prof.active_perks(data, prof.oath) + data.heroes.paladin.get("path_traits", [])}
 
 
 func _build_meaning(data: Dictionary, prof: Profile, level: int, personality: String, art: Dictionary) -> void:
@@ -310,6 +314,7 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 	if hero_id == "paladin":
 		list.append(prof.oath)
 		list.append_array(prof.active_perks(data, prof.oath))
+		list.append_array(h.get("path_traits", []))  # inriktningens kärna och Glöd
 	else:
 		list.append_array(h.get("traits", []))
 	if state.equipped.has(hero_id):
@@ -337,6 +342,8 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 			if float(tot.heal) > 0.0:
 				stat += ", %d helat" % tot.heal
 		var tag := "ARTEFAKTENS TROFÉ" if trait_id == art_trophy else "TROFÉ" if t.get("trophy", false) else ("KALL" if trait_id == prof.oath else ("PERK" if t.get("perk", false) else "EGEN"))
+		if h.get("path_traits", []).has(trait_id):
+			tag = String(data.paths[h.path].name).to_upper()  # inriktningen (Sköldbäraren, Ljusbäraren)
 		var body: String = t.text + ("\n" + stat if stat != "" else "")
 		var lines := ceili(UiStyle.bold().get_string_size(t.text, HORIZONTAL_ALIGNMENT_LEFT, -1, UiStyle.BODY_SIZE).x
 				/ (_left_w() - 40)) + (1 if stat != "" else 0)
@@ -364,7 +371,10 @@ func _draw_traits(data: Dictionary, prof: Profile) -> void:
 		var ab: Dictionary = data.abilities[ability_id]
 		var full := int(ab.get("charges", 0))
 		var left := int(state.charges.get(hero_id, {}).get(ability_id, full))
-		UiStyle.text(self, Vector2(x, yy), "%s – %d/%d Charges" % [ab.name, left, full], 19, UiStyle.GOLD,
+		var count := "%d/%d Charges" % [left, full]
+		if ab.has("stack_cost"):
+			count = "%d Glöd" % int(ab.stack_cost.n)  # Befäl
+		UiStyle.text(self, Vector2(x, yy), "%s – %s" % [ab.name, count], 19, UiStyle.GOLD,
 				HORIZONTAL_ALIGNMENT_LEFT, wr, 2)
 		yy += 30 + UiStyle.para(self, Vector2(x, yy + 24), ab.get("text", ""), 17, Color(1, 1, 1, 0.75), wr, 2)
 	var art: Dictionary = prof.artifact(hero_id)

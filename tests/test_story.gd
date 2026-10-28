@@ -81,7 +81,7 @@ func test_the_narrator_speaks_in_parentheses() -> void:
 func test_every_help_box_is_short_and_in_the_handbook() -> void:
 	var want := ["room_map", "realm_quest", "seals", "trophies", "macros", "artifacts", "materials", "depth", "instability",
 			"perks", "disciples", "timeline", "statuses", "forfeit", "charges", "combo", "living_map", "windup",
-			"guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "omens"]
+			"guardian_bell", "guardian_council", "guardian_tribunal", "guardian_crown", "omens", "glow"]
 	var order := Help.order(_data)
 	assert_eq(order.size(), want.size())
 	for id in want:

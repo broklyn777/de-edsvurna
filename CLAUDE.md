@@ -34,6 +34,19 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   läser sin egen data och gör samma). Repliker använder `{namn}` (`Dialog.fill`) ibland, inte i varje rad. Namnet
   skrivs om hos Broder Alrik ("Skriv om mitt namn i krönikan"). Rollen ("Paladinen", titeln "Edsvuren") står kvar
   där den beskriver klassen. Flaggor: `--ask-name=<plats>` på sparplatsskärmen, `--name=Tran`, `--rename` i borgen.
+- **Paladinens inriktningar** (VD 2026-10-28, `docs/plan/paladin-inriktningar.md`, `data/paths.json`, `Paths`): **Sköldbäraren**
+  (tank) och **Ljusbäraren** (helare) är vad paladinen är (stats, förmågor, kärna, Glöd); kallet är ett eget val. Väljs vid
+  eden efter kallet (`PathBox`), byts hos Gorm ("Byt väg", första bytet gratis, sedan 50 silver, `Profile.choose_path`); en
+  profil från före inriktningarna får rutan en gång i borgen (SENARE går) och är annars "Den edsvurne" som förut.
+  **Glöd** (stapeln `glod`, fem pärlor i ramen): Sköldbäraren av träffar mot sig och dem Edens sköld tar (`guard_allies`, räknas
+  mot paladinens försvar), Ljusbäraren av sina helningar. Rättfärdigt slag förbrukar all (release), **Befäl** kostar 3 (`stack_cost`):
+  en allierad agerar direkt (`extra_action`, aldrig sig själv, inte samma två gånger på en runda). **Kasta sig emellan**:
+  provokation utan Defense-straff, −25 %, mot alla slag (tajmingen kommer i steg 4). Ljusbärarens Gryningens hand ersätter
+  Gryningens kalls egen helning (`suppresses`); fyra förmågor utan Helig sköld. Eden lär ut startraderna och klossen Glöd minst N;
+  Är målet för ett anfall är ett fynd. Trofén `ember_jaw` heter Den slocknade askan (stapeln `aska`). Flaggor: `--path=shield|light`
+  (också startraderna i minnet), `--path-oath` (altaret), `--path-box`, `--path-change` (borgen), `--path-pick=<väg>`.
+  Botarna: `tests/paladin_paths_report.gd` (`PP_MAKRO=fulla`, `PP_LAG=utan_alva`, `PP_NIVA`, `PP_BEFAL=1`). Tester:
+  `tests/test_paladin_paths.gd`.
 - **Följeslagare** (Brokk, Syster Alva, Jägaren Eira, Solveig …): namn, roll, egen egenskap och en
   signaturhandling. Börja med 5–8, inte 30.
   **Lärjungar och Värdshuset** (0.23, Siralims rekrytering och Menagerie, `docs/plan/0.23-vardshuset.md`): en ny
@@ -634,11 +647,6 @@ frivilligt en hjälte eller trofé efter att ha upptäckt en ny kombination, och
   mot evigt lås). Sömn/Frusen skjuter upp. Makrovillkor `is_charging`, `charge_left_at_most` (gruppen Laddning); inga rader i
   startmakrona – hjälprutan "windup" och Gorms replik (`help_seen`) lär ut det. Först: Benfurstens Dödsdom (1 tur).
   `--windup` startar en laddning direkt (skärmdumpar). Tester: `tests/test_windup.gd`.
-  **Tuschstilen** (prototyp, grenen `ink-proto`, `docs/plan/tusch-strid.md`): STIL: TUSCH / 3D i inställningsrutan (LJUD ·
-  STIL i striden; `GameSettings.ink_style`, `--ink`/`--no-ink`) växlar direkt. `InkPost` (silhuetter ur djupet, färgens
-  kanter, sepia, papper, skraffering), `CryptWorld.set_ink` (pergamentgolv, varmt ljus, `_ink_swaps`) och `UiStyle.ink`
-  (livmätare, avsikter, ringar, siffror, paneler, bläckstänk; guld bara för val, rött bara för fara, `UiStyle.inked`).
-  `INK_PROBE=1|2|3` mäter delarna. Tester: `tests/test_ink_style.gd`.
   **Träffytor** (polering fynd 6, `TargetPick`): kroppen och namnskylten (namn, livmätare, avsikt) räknas; träffar ett tryck
   flera vinner närmaste mitt. Fiender vars skyltar och överkroppar överlappar i bilden knuffas isär i sidled när striden
   byggs (`battle.gd` `_spread_enemies`, bara utseende). Ord som stiger över en fiende börjar vid bröstet (`--float-demo`).
